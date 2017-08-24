@@ -95,9 +95,8 @@ public class ProviderRepository {
 	private List<TTopologyTemplate> getAllTopologyFragmentsFromServiceTemplate(TTopologyTemplate topologyTemplate) {
 
 		List<TTopologyTemplate> topologyFragments = new ArrayList<>();
-
-		Splitting helperFunctions = new Splitting();
-		List<TNodeTemplate> nodeTemplatesWithoutIncomingRelationship = helperFunctions.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate);
+		
+		List<TNodeTemplate> nodeTemplatesWithoutIncomingRelationship = SplittingUtilities.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate);
 		List<TNodeTemplate> visitedNodeTemplates = new ArrayList<>();
 
 		//It can only be one topology fragment contained in the service template

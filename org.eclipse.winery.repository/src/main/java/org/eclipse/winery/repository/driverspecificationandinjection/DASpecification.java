@@ -177,7 +177,7 @@ public class DASpecification {
 	}
 
 	/**
-	 * method already exists in Splitting. Put into ModelUtilities
+	 * method already exists in SplittingTopology. Put into ModelUtilities
 	 * @param relationshipTypeQName
 	 * @return
 	 */

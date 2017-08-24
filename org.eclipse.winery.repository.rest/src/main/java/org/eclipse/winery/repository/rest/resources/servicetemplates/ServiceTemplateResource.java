@@ -53,8 +53,8 @@ import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydef
 import org.eclipse.winery.repository.rest.resources.servicetemplates.plans.PlansResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.selfserviceportal.SelfServicePortalResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.topologytemplates.TopologyTemplateResource;
-import org.eclipse.winery.repository.splitting.Splitting;
 import org.eclipse.winery.repository.splitting.SplittingException;
+import org.eclipse.winery.repository.splitting.SplittingTopology;
 
 import org.restdoc.annotations.RestDoc;
 import org.slf4j.Logger;
@@ -161,7 +161,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
 	@Path("injector/options")
 	@Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
 	public Response getInjectorOptions() {
-		Splitting splitting = new Splitting();
+		SplittingTopology splitting = new SplittingTopology();
 		TTopologyTemplate topologyTemplate = this.getServiceTemplate().getTopologyTemplate();
 		Map<String, List<TTopologyTemplate>> hostMatchingOptions;
 		Map<String, List<TTopologyTemplate>> connectionMatchingOptions;
@@ -229,7 +229,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
 			});
 		}
 
-		Splitting splitting = new Splitting();
+		SplittingTopology splitting = new SplittingTopology();
 		TTopologyTemplate matchedHostsTopologyTemplate;
 		TTopologyTemplate matchedConnectedTopologyTemplate;
 

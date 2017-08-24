@@ -51,9 +51,9 @@ import org.eclipse.winery.repository.driverspecificationandinjection.DriverInjec
 import org.eclipse.jdt.annotation.NonNull;
 import org.slf4j.LoggerFactory;
 
-public class Splitting {
+public class SplittingTopology {
 
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Splitting.class);
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SplittingTopology.class);
 
 	// counter for relationships starts at 100 because all TRelationshipTemplate should have a 3 digit number in their id
 	private static int newRelationshipIdCounter = 100;
@@ -199,7 +199,7 @@ public class Splitting {
 		Map<TNodeTemplate, Set<TNodeTemplate>> transitiveAndDirectSuccessors = computeTransitiveClosure(topologyTemplate);
 
 		//check if the highest level node templates have target labels assigned
-		for (TNodeTemplate node : getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate)) {
+		for (TNodeTemplate node : SplittingUtilities.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate)) {
 			if (!ModelUtilities.getTargetLabel(node).isPresent()) {
 				return false;
 			}
@@ -243,7 +243,7 @@ public class Splitting {
 
 			for (TNodeTemplate currentNode : nodeTemplatesWhichPredecessorsHasNoPredecessors) {
 
-				List<TNodeTemplate> predecessors = getHostedOnPredecessorsOfNodeTemplate(topologyTemplateCopy, currentNode);
+				List<TNodeTemplate> predecessors = SplittingUtilities.getHostedOnPredecessorsOfNodeTemplate(topologyTemplateCopy, currentNode);
 				Set<String> predecessorsTargetLabel = new HashSet<>();
 
 				for (TNodeTemplate predecessor : predecessors) {
@@ -287,7 +287,7 @@ public class Splitting {
 							TNodeTemplate sourceNodeTemplate = ModelUtilities.getSourceNodeTemplateOfRelationshipTemplate(topologyTemplateCopy, incomingRelationship);
 							if (((ModelUtilities.getTargetLabel(sourceNodeTemplate).get()
 								.equalsIgnoreCase(ModelUtilities.getTargetLabel(duplicatedNode).get())
-								&& getBasisRelationshipType(incomingRelationship.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Container"))
+								&& SplittingUtilities.getBasisRelationshipType(incomingRelationship.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Container"))
 								|| !predecessors.contains(sourceNodeTemplate))) {
 
 								List<TRelationshipTemplate> reassignRelationship = new ArrayList<>();
@@ -400,7 +400,7 @@ public class Splitting {
 
 		while (!replacementNodeTemplateCandidates.isEmpty()) {
 			for (TNodeTemplate replacementCandidate : replacementNodeTemplateCandidates) {
-				List<TNodeTemplate> predecessorsOfReplacementCandidate = getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, replacementCandidate);
+				List<TNodeTemplate> predecessorsOfReplacementCandidate = SplittingUtilities.getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, replacementCandidate);
 				Optional<String> label = ModelUtilities.getTargetLabel(replacementCandidate);
 				if (!label.isPresent()) {
 					LOGGER.error("No target label present");
@@ -635,7 +635,7 @@ public class Splitting {
 				//The incoming Relationships not from the predecessors have to be copied
 				List<TRelationshipTemplate> incomingRelationshipsNotHostedOn =
 					incomingRelationshipsOfReplacementCandidate.stream()
-						.filter(r -> !getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, originHost)
+						.filter(r -> !SplittingUtilities.getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, originHost)
 							.contains(ModelUtilities.getSourceNodeTemplateOfRelationshipTemplate(topologyTemplate, r)))
 						.collect(Collectors.toList());
 
@@ -968,24 +968,11 @@ public class Splitting {
 		return ModelUtilities.getAllNodeTemplates(topologyTemplate)
 			.stream()
 			.filter(y -> !matchingNodeTemplates.contains(y))
-			.filter(y -> !getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate).contains(y))
+			.filter(y -> !SplittingUtilities.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate).contains(y))
 			.filter(z -> getNodeTemplatesWithoutOutgoingHostedOnRelationships(topologyTemplate).contains(z))
 			.collect(Collectors.toList());
 	}
-
-	/**
-	 * Find all node templates which has no incoming hostedOn relationships (highest level nodes)
-	 *
-	 * @return list of node templates
-	 */
-	protected List<TNodeTemplate> getNodeTemplatesWithoutIncomingHostedOnRelationships(TTopologyTemplate topologyTemplate) {
-
-		return ModelUtilities.getAllNodeTemplates(topologyTemplate)
-			.stream()
-			.filter(nt -> getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, nt).isEmpty())
-			.collect(Collectors.toList());
-	}
-
+	
 	/**
 	 * Find all node templates which has no outgoing hostedOn relationships (lowest level nodes)
 	 *
@@ -1012,11 +999,11 @@ public class Splitting {
 		predecessorsOfpredecessors.clear();
 		List<TNodeTemplate> candidates = new ArrayList<>();
 		for (TNodeTemplate nodeTemplate : nodeTemplates) {
-			List<TNodeTemplate> allPredecessors = getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, nodeTemplate);
+			List<TNodeTemplate> allPredecessors = SplittingUtilities.getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, nodeTemplate);
 			if (!allPredecessors.isEmpty()) {
 				predecessorsOfpredecessors.clear();
 				for (TNodeTemplate predecessor : allPredecessors) {
-					predecessorsOfpredecessors.addAll(getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, predecessor));
+					predecessorsOfpredecessors.addAll(SplittingUtilities.getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, predecessor));
 				}
 				if (predecessorsOfpredecessors.isEmpty()) {
 					candidates.add(nodeTemplate);
@@ -1036,35 +1023,14 @@ public class Splitting {
 	protected List<TNodeTemplate> getHostedOnSuccessorsOfNodeTemplate(TTopologyTemplate topologyTemplate, TNodeTemplate nodeTemplate) {
 		List<TNodeTemplate> successorNodeTemplates = new ArrayList<>();
 		for (TRelationshipTemplate relationshipTemplate : ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate)) {
-			if (getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget() != null &&
-				getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Container")) {
+			if (SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget() != null &&
+				SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Container")) {
 				successorNodeTemplates.add(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, relationshipTemplate));
 			}
 		}
 		return successorNodeTemplates;
 	}
-
-	/**
-	 * Find all predecessors of a node template. the predecessor is the target of a hostedOn relationship to the
-	 * nodeTemplate
-	 *
-	 * @param nodeTemplate for which all predecessors should be found
-	 * @return list of predecessors
-	 */
-	protected List<TNodeTemplate> getHostedOnPredecessorsOfNodeTemplate(TTopologyTemplate topologyTemplate, TNodeTemplate nodeTemplate) {
-		List<TNodeTemplate> predecessorNodeTemplates = new ArrayList<>();
-		predecessorNodeTemplates.clear();
-		List<TRelationshipTemplate> incomingRelationships = ModelUtilities.getIncomingRelationshipTemplates(topologyTemplate, nodeTemplate);
-		for (TRelationshipTemplate relationshipTemplate : incomingRelationships) {
-			if (getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget() != null &&
-				getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Container")) {
-				predecessorNodeTemplates.add(ModelUtilities.getSourceNodeTemplateOfRelationshipTemplate(topologyTemplate, relationshipTemplate));
-			}
-		}
-		return predecessorNodeTemplates;
-	}
-
-
+	
 	/**
 	 * Compute transitive closure of a given topology template based on the hostedOn relationships
 	 */
@@ -1169,24 +1135,5 @@ public class Splitting {
 		RequirementTypeId reqTypeId = new RequirementTypeId(reqTypeQName);
 		TRequirementType requirementType = RepositoryFactory.getRepository().getElement(reqTypeId);
 		return requirementType.getRequiredCapabilityType();
-	}
-
-	private TRelationshipType getBasisRelationshipType(QName relationshipTypeQName) {
-		RelationshipTypeId parentRelationshipTypeId = new RelationshipTypeId(relationshipTypeQName);
-		TRelationshipType parentRelationshipType = RepositoryFactory.getRepository().getElement(parentRelationshipTypeId);
-		TRelationshipType basisRelationshipType = parentRelationshipType;
-
-		while (parentRelationshipType != null) {
-			basisRelationshipType = parentRelationshipType;
-
-			if (parentRelationshipType.getDerivedFrom() != null) {
-				relationshipTypeQName = parentRelationshipType.getDerivedFrom().getTypeRef();
-				parentRelationshipTypeId = new RelationshipTypeId(relationshipTypeQName);
-				parentRelationshipType = RepositoryFactory.getRepository().getElement(parentRelationshipTypeId);
-			} else {
-				parentRelationshipType = null;
-			}
-		}
-		return basisRelationshipType;
 	}
 }

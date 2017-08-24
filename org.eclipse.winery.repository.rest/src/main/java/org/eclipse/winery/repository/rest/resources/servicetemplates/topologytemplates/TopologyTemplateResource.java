@@ -49,7 +49,7 @@ import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplatesResource;
-import org.eclipse.winery.repository.splitting.Splitting;
+import org.eclipse.winery.repository.splitting.SplittingTopology;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource.Builder;
@@ -355,7 +355,7 @@ public class TopologyTemplateResource {
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST
 	public Response split(@Context UriInfo uriInfo) {
-		Splitting splitting = new Splitting();
+		SplittingTopology splitting = new SplittingTopology();
 		ServiceTemplateId splitServiceTemplateId;
 		try {
 			splitServiceTemplateId = splitting.splitTopologyOfServiceTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());
@@ -370,7 +370,7 @@ public class TopologyTemplateResource {
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST
 	public Response match(@Context UriInfo uriInfo) {
-		Splitting splitting = new Splitting();
+		SplittingTopology splitting = new SplittingTopology();
 		ServiceTemplateId matchedServiceTemplateId;
 		try {
 			matchedServiceTemplateId = splitting.matchTopologyOfServiceTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());

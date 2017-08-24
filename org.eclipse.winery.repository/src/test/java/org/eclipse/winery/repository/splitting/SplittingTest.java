@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 @Ignore("Needs to be updated to public test cases")
 public class SplittingTest extends TestWithGitBackedRepository {
 
-	private Splitting splitting = new Splitting();
+	private SplittingTopology splitting = new SplittingTopology();
 	private TTopologyTemplate topologyTemplate;
 	private TTopologyTemplate topologyTemplate2;
 
@@ -68,7 +68,7 @@ public class SplittingTest extends TestWithGitBackedRepository {
 				.filter(nt -> expectedIds.contains(nt.getId()))
 				.collect(Collectors.toList());
 
-		List<TNodeTemplate> nodeTemplatesWithoutIncomingEdges = splitting.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate);
+		List<TNodeTemplate> nodeTemplatesWithoutIncomingEdges = SplittingUtilities.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate);
 		assertEquals(expectedNodeTemplates, nodeTemplatesWithoutIncomingEdges);
 	}
 
