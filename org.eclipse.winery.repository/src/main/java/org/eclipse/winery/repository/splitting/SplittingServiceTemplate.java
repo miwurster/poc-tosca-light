@@ -23,50 +23,174 @@ import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.Group;
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.GroupProvisioningOrderGraph;
+import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.OrderRelation;
 
+import org.jgrapht.alg.CycleDetector;
+import org.jgrapht.alg.TransitiveReduction;
 import org.slf4j.LoggerFactory;
 
 public class SplittingServiceTemplate {
 
 	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SplittingServiceTemplate.class);
 	
-	public static GroupProvisioningOrderGraph determineProvisiongingOrder (TTopologyTemplate topologyTemplate) {
+	/**
+	 * 
+	 * @param gPoG
+	 * @return compressed GPOG with a reduced number of Provisioning Groups
+	 */
+	public static GroupProvisioningOrderGraph compressGPOG (GroupProvisioningOrderGraph gPoG) {
+		TransitiveReduction TRANSITIVEREDUCTION = TransitiveReduction.INSTANCE;
+		TRANSITIVEREDUCTION.reduce(gPoG);
+		List<OrderRelation> queue = gPoG.edgeSet().stream()
+			.filter(e -> e.getSource().getLabel().equals(e.getTarget().getLabel())).collect(Collectors.toList());
 		
+		while (!queue.isEmpty()) {
+			OrderRelation relation = queue.get(0);
+			GroupProvisioningOrderGraph tempGPOG = contractRelationInGPOG(gPoG, relation);
+				if (tempGPOG != null) {
+					Group compressedGroup = tempGPOG.vertexSet().stream()
+						.filter(v -> v.getGroupComponents().containsAll(relation.getSource().getGroupComponents())).findFirst().get();
+					
+					queue.remove(relation);
+					List<OrderRelation> replacedOutgoingRelations = queue.stream()
+						.filter(r -> compressedGroup.getGroupComponents().containsAll(r.getSource().getGroupComponents())).collect(Collectors.toList());
+					List<OrderRelation> replacingOutgoingRelations = tempGPOG.outgoingEdgesOf(compressedGroup).stream()
+						.filter(r -> replacedOutgoingRelations.stream().anyMatch(or -> or.getTarget().equals(r.getTarget())))
+						.collect(Collectors.toList());
+					queue.removeAll(replacedOutgoingRelations);
+					queue.addAll(replacingOutgoingRelations);
+
+					List<OrderRelation> replacedIncomingRelations = queue.stream()
+						.filter(r -> r.getTarget().equals(relation.getTarget())).collect(Collectors.toList());
+					List<OrderRelation> replacingIncomingRelations = tempGPOG.incomingEdgesOf(compressedGroup).stream()
+						.filter(r -> replacedIncomingRelations.stream().anyMatch(or -> or.getSource().equals(r.getSource())))
+						.collect(Collectors.toList());
+					queue.removeAll(replacedIncomingRelations);
+					queue.addAll(replacingIncomingRelations);
+					
+					gPoG.clearGraph();
+					tempGPOG.vertexSet().forEach(v -> gPoG.addVertex(v));
+					tempGPOG.edgeSet().forEach(e -> gPoG.addEdge(e.getSource(), e.getTarget()));
+				} 
+				queue.remove(relation);
+				
+		}
+		return gPoG;
+	}
+
+	/**
+	 * 
+	 * @param gPoG
+	 * @param relation
+	 * @return either the compressed gPoG or null if the compression results in a loop
+	 */
+	public static GroupProvisioningOrderGraph contractRelationInGPOG(GroupProvisioningOrderGraph gPoG, OrderRelation relation) {
+		GroupProvisioningOrderGraph graph = new GroupProvisioningOrderGraph();
+		gPoG.vertexSet().forEach(v -> graph.addVertex(v));
+		gPoG.edgeSet().forEach(e -> graph.addEdge(e.getSource(), e.getTarget()));
+		CycleDetector cycleDetector = new CycleDetector(graph);
+		// Former target element is added to the source element group
+		Group mergedGroup = relation.getSource();
+		mergedGroup.addAllNodeTemplatesToGroupComponents(relation.getTarget().getGroupComponents());
+		
+		// For each edge related to the former target element a new edge has to be added
+		Set<OrderRelation> outgoingRelations = graph.outgoingEdgesOf(relation.getTarget()).stream().collect(Collectors.toSet());
+		Set<OrderRelation> incomingRelations = graph.incomingEdgesOf(relation.getTarget()).stream()
+			.filter(ir -> !ir.getSource().equals(relation.getSource())).collect(Collectors.toSet());
+		outgoingRelations.forEach(or -> graph.addEdge(relation.getSource(), or.getTarget()));
+		incomingRelations.forEach(ir -> graph.addEdge(ir.getSource(), relation.getSource()));
+		
+		// Old edges and the former target element are removed
+		graph.removeAllEdges(outgoingRelations);
+		graph.removeAllEdges(incomingRelations);
+		Set<TNodeTemplate> movedGroupSet = relation.getTarget().getGroupComponents();
+		graph.removeVertex(relation.getTarget());
+		graph.removeEdge(relation);
+			
+		if (cycleDetector.detectCycles()) {
+				mergedGroup.getGroupComponents().removeAll(movedGroupSet);
+				return null;
+		}
+		return graph;		
+	}
+
+	/**
+	 * Creates a Provisioning Order Graph from a given Topology Template. Each source and target of the edges
+	 * in the GPOG are the other way around as the relationships in the Topology Template. Each Node Template is
+	 * contained in a separated Group
+	 * 
+	 * @param topologyTemplate
+	 * @return Group Provisioning Order Graph with edges for the provisioning dependencies
+	 */
+	public static GroupProvisioningOrderGraph initializeGPOG (TTopologyTemplate topologyTemplate) {
 		GroupProvisioningOrderGraph gPOG = new GroupProvisioningOrderGraph();
-		Set<TNodeTemplate> queue = new HashSet<>();
 		TTopologyTemplate connectionTopology = createConnectionTopology(topologyTemplate);
-		
+		Set<TNodeTemplate> queue = new HashSet<>();
+
 		List<TNodeTemplate> nodesWithoutIncomingRel = connectionTopology.getNodeTemplates().stream()
-			.filter(nt -> ModelUtilities.getOutgoingRelationshipTemplates(connectionTopology, nt).isEmpty())
+			.filter(nt -> ModelUtilities.getIncomingRelationshipTemplates(connectionTopology, nt).isEmpty())
 			.collect(Collectors.toList());
-		queue.addAll(nodesWithoutIncomingRel);
-		
+
 		nodesWithoutIncomingRel.forEach(nt -> {
 			Group group = new Group();
 			group.addToGroupComponents(nt);
 			group.setLabel(ModelUtilities.getTargetLabel(nt).get());
 			gPOG.addVertex(group);
+			queue.add(nt);
 		});
-		
-		while (!queue.isEmpty()) {
-			//TODO: To be finished
+
+		while (!connectionTopology.getNodeTemplates().isEmpty()) {
+			Set<TNodeTemplate> tempQueue = new HashSet<>();	
+			for (TNodeTemplate node : queue) {
+				ModelUtilities.getOutgoingRelationshipTemplates(connectionTopology, node).stream()
+					.forEach(rt -> {
+						TNodeTemplate targetElement = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(connectionTopology, rt);
+						Group targetGroup;
+						if (!gPOG.vertexSet().stream().
+							filter(v -> (v.getGroupComponents().stream().findFirst().get()).getId().equals(targetElement.getId())).findAny().isPresent()) {
+								targetGroup = new Group();
+								targetGroup.addToGroupComponents(targetElement);
+								targetGroup.setLabel(ModelUtilities.getTargetLabel(targetElement).get());
+								gPOG.addVertex(targetGroup);
+						} else {
+							targetGroup = gPOG.vertexSet().stream()
+								.filter(v -> (v.getGroupComponents().stream().findFirst().get()).getId().equals(targetElement.getId())).findAny().get();
+						}
+						Group sourceGroup = gPOG.vertexSet().stream().filter(g -> (g.getGroupComponents().stream().findFirst().get())
+							.getId().equals(node.getId())).findFirst().get();
+						gPOG.addEdge(targetGroup, sourceGroup);
+						connectionTopology.getNodeTemplateOrRelationshipTemplate().remove(rt);
+						if (ModelUtilities.getIncomingRelationshipTemplates(connectionTopology, targetElement).isEmpty()) {
+							tempQueue.add(targetElement);
+						} 
+					});				
+			}
+			connectionTopology.getNodeTemplateOrRelationshipTemplate().removeAll(queue);
+			queue.clear();
+			queue.addAll(tempQueue);
+			tempQueue.clear();
 		}
-		
 		return gPOG;
 	}
-	
-	private static TTopologyTemplate createConnectionTopology (TTopologyTemplate topologyTemplate) {
-		List<TNodeTemplate> hostingNodesTemplates = topologyTemplate.getNodeTemplates().stream()
+
+	/**
+	 * Removes all nodes which are not application-specific nodes and all not connectsTo relationships
+	 * 
+	 * @param topologyTemplate
+	 * @return a topology with just the application-specific components and connectsTo relationships
+	 */
+	public static TTopologyTemplate createConnectionTopology (TTopologyTemplate topologyTemplate) {
+		List<TNodeTemplate> hostingNodeTemplates = topologyTemplate.getNodeTemplates().stream()
 			.filter(nt -> !SplittingUtilities.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate).contains(nt))
 			.collect(Collectors.toList());
 		
-		topologyTemplate.getNodeTemplates().removeAll(hostingNodesTemplates);
+		topologyTemplate.getNodeTemplateOrRelationshipTemplate().removeAll(hostingNodeTemplates);
 		
 		List<TRelationshipTemplate> hostingRelationshipTemplates = topologyTemplate.getRelationshipTemplates().stream()
-			.filter(rt -> SplittingUtilities.getBasisRelationshipType(rt.getType()).getName().equalsIgnoreCase("hostedOn"))
+			.filter(rt -> !SplittingUtilities.getBasisRelationshipType(rt.getType()).getName().equalsIgnoreCase("connectsTo"))
 			.collect(Collectors.toList());
 		
-		topologyTemplate.getRelationshipTemplates().removeAll(hostingNodesTemplates);
+		topologyTemplate.getNodeTemplateOrRelationshipTemplate().removeAll(hostingRelationshipTemplates);
 		
 		return topologyTemplate;
 	}

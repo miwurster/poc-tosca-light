@@ -12,13 +12,14 @@
 
 package org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 
 public class Group {
 	
-    private Set<TNodeTemplate> groupComponents;
+    public Set<TNodeTemplate> groupComponents = new HashSet<>();
     private String label;
 
     public void setGroupComponents(Set<TNodeTemplate> groupComponents) {
@@ -33,9 +34,13 @@ public class Group {
         this.groupComponents.add(nodeTemplate);
     }
     
-    public void addAllToGroupComponents(Set<TNodeTemplate> nodeTemplates) {
+    public void addAllNodeTemplatesToGroupComponents(Set<TNodeTemplate> nodeTemplates) {
         this.groupComponents.addAll(nodeTemplates);
     }
+    
+    public void clearGroupComponents() {
+    	this.groupComponents.clear();
+	}
     
     public String getLabel() {
         return label;
@@ -44,4 +49,5 @@ public class Group {
     public void setLabel(String label) {
         this.label = label;
     }
+	
 }
