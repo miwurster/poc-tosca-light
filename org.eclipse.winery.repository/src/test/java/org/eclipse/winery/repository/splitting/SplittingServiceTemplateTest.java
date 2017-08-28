@@ -12,9 +12,12 @@
 
 package org.eclipse.winery.repository.splitting;
 
+import java.util.List;
+
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.repository.TestWithGitBackedRepository;
+import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.Group;
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.GroupProvisioningOrderGraph;
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.OrderRelation;
 
@@ -71,18 +74,20 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
 		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
 		GroupProvisioningOrderGraph gPOG = SplittingServiceTemplate.initializeGPOG(topologyTemplate);
+		
 		GroupProvisioningOrderGraph newGPOG = new GroupProvisioningOrderGraph();
 		gPOG.vertexSet().forEach(v -> newGPOG.addVertex(v));
 		gPOG.edgeSet().forEach(e -> newGPOG.addEdge(e.getSource(), e.getTarget()));
-		OrderRelation relation1 = gPOG.edgeSet().stream()
+		OrderRelation relation1 = newGPOG.edgeSet().stream()
 			.filter(r -> r.getSource().getGroupComponents().stream().anyMatch(nt -> nt.getId().equalsIgnoreCase("ponycompetition")))
 			.filter(r -> r.getTarget().getLabel().equals(r.getSource().getLabel())).findAny().get();
-		GroupProvisioningOrderGraph compressGPOGNull = SplittingServiceTemplate.contractRelationInGPOG(newGPOG, relation1);
+		GroupProvisioningOrderGraph compressGPOGNull;
+		compressGPOGNull = SplittingServiceTemplate.contractRelationInGPOG(newGPOG, relation1);
 
-		OrderRelation relation2 = gPOG.edgeSet().stream()
+		OrderRelation relation2 = compressGPOGNull.edgeSet().stream()
 			.filter(r -> r.getSource().getGroupComponents().stream().anyMatch(nt -> nt.getId().equalsIgnoreCase("ponycompetition_3")))
 			.filter(r -> r.getTarget().getGroupComponents().stream().anyMatch(nt -> nt.getId().equalsIgnoreCase("unicorn"))).findAny().get();
-		compressGPOGNull = SplittingServiceTemplate.contractRelationInGPOG(newGPOG, relation2);
+		compressGPOGNull = SplittingServiceTemplate.contractRelationInGPOG(compressGPOGNull, relation2);
 
 		assertEquals(null, compressGPOGNull);
 	}
@@ -100,5 +105,15 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 		GroupProvisioningOrderGraph compressedGPOG = SplittingServiceTemplate.compressGPOG(newGPOG);
 		
 		assertEquals(3, compressedGPOG.vertexSet().size());
+	}
+
+	@Test
+	public void determineProvisiongingOrder() throws GitAPIException {
+		this.setRevisionTo("d0db2444cdf4d804ced17394c6578e697ce41729");
+		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
+		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
+		List<Group> topologicalSorting = SplittingServiceTemplate.determineProvisiongingOrder(topologyTemplate);
+
+		assertEquals(3, topologicalSorting.size());
 	}
 }

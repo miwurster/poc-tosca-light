@@ -12,8 +12,11 @@
 
 package org.eclipse.winery.repository.splitting;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,7 +35,41 @@ import org.slf4j.LoggerFactory;
 public class SplittingServiceTemplate {
 
 	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SplittingServiceTemplate.class);
-	
+
+	/**
+	 *  topological sorting based on Kahn's algorithm
+	 * @param topologyTemplate
+	 * @return
+	 */
+	public static List<Group> determineProvisiongingOrder (TTopologyTemplate topologyTemplate) {
+		Queue<Group> queue = new LinkedList<>();
+		List<Group> visitNodes = new ArrayList<>();
+		List<Group> topologicialSorting = new ArrayList<>();
+		GroupProvisioningOrderGraph gPOG = initializeGPOG(topologyTemplate);
+		GroupProvisioningOrderGraph compressedGPOG = compressGPOG(gPOG);
+		GroupProvisioningOrderGraph workingCopyGPOG = new GroupProvisioningOrderGraph();
+		compressedGPOG.vertexSet().forEach(v -> workingCopyGPOG.addVertex(v));
+		compressedGPOG.edgeSet().forEach(e -> workingCopyGPOG.addEdge(e.getSource(), e.getTarget()));
+		
+		queue.addAll(workingCopyGPOG.vertexSet().stream().filter(v -> workingCopyGPOG.incomingEdgesOf(v).isEmpty()).collect(Collectors.toSet()));
+		int i = 0;
+
+		while (!queue.isEmpty()) {
+			Group group = queue.poll();
+			visitNodes.add(group);
+			topologicialSorting.add(i, group);
+			Set<OrderRelation> outgoingRelations = workingCopyGPOG.outgoingEdgesOf(group).stream().collect(Collectors.toSet());
+			workingCopyGPOG.removeAllEdges(outgoingRelations);
+			workingCopyGPOG.removeVertex(group);
+			queue.addAll(workingCopyGPOG.vertexSet().stream().filter(v -> workingCopyGPOG.incomingEdgesOf(v).isEmpty())
+				.filter(v -> !visitNodes.contains(v)).collect(Collectors.toSet()));
+			i++;
+		}
+
+		return topologicialSorting;
+	}
+
+
 	/**
 	 * 
 	 * @param gPoG
