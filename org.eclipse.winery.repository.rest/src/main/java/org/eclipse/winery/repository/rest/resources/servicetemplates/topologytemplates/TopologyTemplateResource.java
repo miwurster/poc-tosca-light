@@ -49,6 +49,7 @@ import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplatesResource;
+import org.eclipse.winery.repository.splitting.SplittingServiceTemplate;
 import org.eclipse.winery.repository.splitting.SplittingTopology;
 
 import com.sun.jersey.api.client.Client;
@@ -355,6 +356,21 @@ public class TopologyTemplateResource {
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST
 	public Response split(@Context UriInfo uriInfo) {
+		List<ServiceTemplateId> splitServiceTemplateIds;
+		try {
+			splitServiceTemplateIds = SplittingServiceTemplate.splitServiceTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not split. " + e.getMessage()).build();
+		}
+		URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(splitServiceTemplateIds.get(0)));
+		return Response.created(url).build();
+	}
+
+	/*
+	@Path("split/")
+	@Produces(MediaType.TEXT_PLAIN)
+	@POST
+	public Response split(@Context UriInfo uriInfo) {
 		SplittingTopology splitting = new SplittingTopology();
 		ServiceTemplateId splitServiceTemplateId;
 		try {
@@ -365,7 +381,8 @@ public class TopologyTemplateResource {
 		URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(splitServiceTemplateId));
 		return Response.created(url).build();
 	}
-
+	*/
+	
 	@Path("match/")
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST

@@ -12,18 +12,28 @@
 
 package org.eclipse.winery.repository.splitting;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
+import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.model.tosca.TDocumentation;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TRelationshipTemplate;
+import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
+import org.eclipse.winery.repository.backend.BackendUtils;
+import org.eclipse.winery.repository.backend.IRepository;
+import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.Group;
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.GroupProvisioningOrderGraph;
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.OrderRelation;
@@ -35,6 +45,167 @@ import org.slf4j.LoggerFactory;
 public class SplittingServiceTemplate {
 
 	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SplittingServiceTemplate.class);
+	private static SplittingTopology splittingTopology = new SplittingTopology();
+
+	/**
+	 * 
+	 * @param id
+	 * @return
+	 * @throws SplittingException
+	 * @throws IOException
+	 */
+	public static List<ServiceTemplateId> splitServiceTemplate(ServiceTemplateId id) throws SplittingException, IOException {
+		List<ServiceTemplateId> splitServiceTemplateIDs = new ArrayList<>();
+		IRepository repository = RepositoryFactory.getRepository();
+		TServiceTemplate serviceTemplate = repository.getElement(id);
+		/*
+		TTopologyTemplate splitTopologyTemplate = 
+			splittingTopology.hostMatchingWithDefaultHostSelection(splittingTopology.split(serviceTemplate.getTopologyTemplate()));
+		*/
+		TTopologyTemplate splitTopologyTemplate = serviceTemplate.getTopologyTemplate();
+		List<Group> provisioningOrder = determineProvisiongingOrder(splitTopologyTemplate);
+		
+		for (Group group : provisioningOrder) {
+			// create wrapper service template
+			ServiceTemplateId splitServiceTemplateId =
+				new ServiceTemplateId(
+					id.getNamespace().getDecoded(),
+					id.getXmlId().getDecoded() + "-" + provisioningOrder.indexOf(group),
+					false);
+			repository.forceDelete(splitServiceTemplateId);
+			repository.flagAsExisting(splitServiceTemplateId);
+			
+			Queue<TNodeTemplate> queue = new LinkedList<>();
+			TServiceTemplate splitServiceTemplate = new TServiceTemplate();
+			TDocumentation orderID = new TDocumentation();
+			orderID.getContent().add("This Service Template is number " + provisioningOrder.indexOf(group)
+				+ " in the provisioning order amd has to be deployed by" + group.getLabel());
+			splitServiceTemplate.getDocumentation().add(orderID);
+			TTopologyTemplate newTopologyTemplate = new TTopologyTemplate();
+			splitServiceTemplate.setTopologyTemplate(newTopologyTemplate);
+			newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().addAll(group.getGroupComponents());
+			queue.addAll(group.getGroupComponents());
+			// Handle host stacks for each contained node in the group
+			while (!queue.isEmpty()) {
+				TNodeTemplate sourceElement = queue.poll();
+				List<TRelationshipTemplate> hostedOnOutgoingRel = 
+					SplittingUtilities.getHostedOnOutgoingRelationshipTemplates(splitTopologyTemplate, sourceElement);
+
+				for (TRelationshipTemplate rel : hostedOnOutgoingRel) {
+					TRelationshipTemplate clonedRelationshipTemplate = BackendUtils.clone(rel);
+					newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(clonedRelationshipTemplate);
+					TNodeTemplate newSourceElement = newTopologyTemplate.getNodeTemplates().stream()
+						.filter(n -> n.getId().equals(sourceElement.getId())).findFirst().get();
+					clonedRelationshipTemplate.setSourceNodeTemplate(newSourceElement);
+					TNodeTemplate targetElement = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(splitTopologyTemplate, clonedRelationshipTemplate);
+					TNodeTemplate newTargetElement;
+					if (!newTopologyTemplate.getNodeTemplates().stream().anyMatch(n -> n.getId().equals(targetElement.getId()))) {
+						newTargetElement = BackendUtils.clone(targetElement);
+						newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(newTargetElement);
+						if (ModelUtilities.getPropertiesKV(newSourceElement) != null &&
+							ModelUtilities.getPropertiesKV(newSourceElement).getProperty("State").equalsIgnoreCase("running")) {
+							setStatePropertyToRunning(newTargetElement);
+						} else {
+							List<TNodeTemplate> appSpecificHostedOnPredecessors =
+								getApplicationSpecificHostedOnPredecessors(splitTopologyTemplate, targetElement);
+							appSpecificHostedOnPredecessors.removeIf(nt -> group.groupComponents.contains(nt));
+							if (!appSpecificHostedOnPredecessors.isEmpty()) {
+								for (TNodeTemplate nodeTemplate : appSpecificHostedOnPredecessors) {
+									int order = provisioningOrder
+										.indexOf(provisioningOrder.stream().filter(g -> g.groupComponents.contains(nodeTemplate)).findFirst().get());
+									if (order < provisioningOrder.indexOf(group)) {
+										setStatePropertyToRunning(newTargetElement);
+										TDocumentation input = new TDocumentation();
+										input.getContent().add("This Service Template requires input from ServiceTemplate number " + order
+											+ " from the Participant " + ModelUtilities.getTargetLabel(nodeTemplate));
+										splitServiceTemplate.getDocumentation().add(input);
+									}
+								}
+							}
+						}
+						if (!SplittingUtilities.getHostedOnOutgoingRelationshipTemplates(splitTopologyTemplate, targetElement).isEmpty()) {
+							queue.add(targetElement);
+						}
+					} else {
+						newTargetElement = newTopologyTemplate.getNodeTemplate(targetElement.getId());
+					}
+					clonedRelationshipTemplate.setTargetNodeTemplate(newTargetElement);
+				}
+			}
+			// Handel outgoing connectsTo relationships
+			for (TNodeTemplate appSpecificNode : group.getGroupComponents()) {
+				List<TRelationshipTemplate> connectsToOutgoingRels = 
+					SplittingUtilities.getConnectsToOutgoingRelationshipTemplates(splitTopologyTemplate, appSpecificNode);
+				for (TRelationshipTemplate connectsToRel : connectsToOutgoingRels) {
+					TRelationshipTemplate clonedRelationshipTemplate = BackendUtils.clone(connectsToRel);
+					TNodeTemplate newSourceElement = newTopologyTemplate.getNodeTemplates().stream()
+						.filter(n -> n.getId().equals(appSpecificNode.getId())).findFirst().get();
+					clonedRelationshipTemplate.setSourceNodeTemplate(newSourceElement);
+					newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(clonedRelationshipTemplate);
+					TNodeTemplate targetElement = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(splitTopologyTemplate, clonedRelationshipTemplate);
+					TNodeTemplate newTargetElement;
+					if (!newTopologyTemplate.getNodeTemplates().stream().anyMatch(n -> n.getId().equals(targetElement.getId()))) {
+						int order = provisioningOrder
+							.indexOf(provisioningOrder.stream().filter(g -> g.groupComponents.contains(targetElement)).findFirst().get());
+						TDocumentation input = new TDocumentation();
+						input.getContent().add("This Service Template requires input from ServiceTemplate number " + order
+							+ " from the Participant " + ModelUtilities.getTargetLabel(targetElement));
+						splitServiceTemplate.getDocumentation().add(input);
+						newTargetElement = BackendUtils.clone(targetElement);
+						newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(newTargetElement);
+						setStatePropertyToRunning(newTargetElement);
+						queue.clear();
+						queue.add(targetElement);
+						while (!queue.isEmpty()) {
+							TNodeTemplate sourceElement = queue.poll();
+							List<TRelationshipTemplate> outgoinghostingRels = SplittingUtilities.getHostedOnOutgoingRelationshipTemplates(splitTopologyTemplate, sourceElement);
+							for (TRelationshipTemplate hostingRel : outgoinghostingRels) {
+								TRelationshipTemplate clonedhostingRel = BackendUtils.clone(hostingRel);
+								newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(clonedhostingRel);
+								TNodeTemplate existingSourceElement = newTopologyTemplate.getNodeTemplate(sourceElement.getId());
+								TNodeTemplate oldTargetElement = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(splitTopologyTemplate, hostingRel);
+								if (newTopologyTemplate.getNodeTemplates().stream().anyMatch(n -> n.getId().equals(oldTargetElement.getId()))) {
+									TNodeTemplate existingTargetElement = newTopologyTemplate.getNodeTemplate(oldTargetElement.getId());
+									clonedhostingRel.setSourceNodeTemplate(existingSourceElement);
+									clonedhostingRel.setTargetNodeTemplate(existingTargetElement);
+								} else {
+									TNodeTemplate clonedTargetElement = BackendUtils.clone(oldTargetElement);
+									newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(clonedTargetElement);
+									clonedhostingRel.setTargetNodeTemplate(clonedTargetElement);
+									setStatePropertyToRunning(clonedTargetElement);
+									queue.add(oldTargetElement);
+								}
+							}
+						}
+						
+					} else {
+						newTargetElement = newTopologyTemplate.getNodeTemplate(targetElement.getId());
+					}
+					clonedRelationshipTemplate.setTargetNodeTemplate(newTargetElement);
+				}
+				
+			}
+			LOGGER.debug("Persisting...");
+			repository.setElement(splitServiceTemplateId, splitServiceTemplate);
+			splitServiceTemplateIDs.add(splitServiceTemplateId);
+			LOGGER.debug("Persisted.");
+		}
+		return splitServiceTemplateIDs;
+	}
+	
+	public static List<TNodeTemplate> getApplicationSpecificHostedOnPredecessors (TTopologyTemplate topologyTemplate, TNodeTemplate nodeTemplate) {
+		List<TNodeTemplate> appSpecificHostedOnPredecessors = new ArrayList<>();
+		
+		List<TNodeTemplate> predecessors = SplittingUtilities.getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, nodeTemplate);
+		for (TNodeTemplate predecessor : predecessors) {
+			if (!SplittingUtilities.getHostedOnPredecessorsOfNodeTemplate(topologyTemplate, predecessor).isEmpty()) {
+				return getApplicationSpecificHostedOnPredecessors(topologyTemplate, predecessor);
+			} else {
+				appSpecificHostedOnPredecessors.add(predecessor);
+			}
+		}
+		return appSpecificHostedOnPredecessors;
+	}
 
 	/**
 	 *  topological sorting based on Kahn's algorithm
@@ -217,19 +388,27 @@ public class SplittingServiceTemplate {
 	 * @return a topology with just the application-specific components and connectsTo relationships
 	 */
 	public static TTopologyTemplate createConnectionTopology (TTopologyTemplate topologyTemplate) {
-		List<TNodeTemplate> hostingNodeTemplates = topologyTemplate.getNodeTemplates().stream()
-			.filter(nt -> !SplittingUtilities.getNodeTemplatesWithoutIncomingHostedOnRelationships(topologyTemplate).contains(nt))
+		TTopologyTemplate cloneTopologyTempplate = BackendUtils.clone(topologyTemplate);
+		List<TNodeTemplate> hostingNodeTemplates = cloneTopologyTempplate.getNodeTemplates().stream()
+			.filter(nt -> !SplittingUtilities.getNodeTemplatesWithoutIncomingHostedOnRelationships(cloneTopologyTempplate).contains(nt))
 			.collect(Collectors.toList());
 		
-		topologyTemplate.getNodeTemplateOrRelationshipTemplate().removeAll(hostingNodeTemplates);
+		cloneTopologyTempplate.getNodeTemplateOrRelationshipTemplate().removeAll(hostingNodeTemplates);
 		
-		List<TRelationshipTemplate> hostingRelationshipTemplates = topologyTemplate.getRelationshipTemplates().stream()
+		List<TRelationshipTemplate> hostingRelationshipTemplates = cloneTopologyTempplate.getRelationshipTemplates().stream()
 			.filter(rt -> !SplittingUtilities.getBasisRelationshipType(rt.getType()).getName().equalsIgnoreCase("connectsTo"))
 			.collect(Collectors.toList());
 		
-		topologyTemplate.getNodeTemplateOrRelationshipTemplate().removeAll(hostingRelationshipTemplates);
+		cloneTopologyTempplate.getNodeTemplateOrRelationshipTemplate().removeAll(hostingRelationshipTemplates);
 		
-		return topologyTemplate;
+		return cloneTopologyTempplate;
 	}
 	
+	private static void setStatePropertyToRunning (TNodeTemplate nodeTemplate) {
+		Properties nodeTemplateProperties = ModelUtilities.getPropertiesKV(nodeTemplate);
+		nodeTemplateProperties.setProperty("State", "running");
+		NodeTypeId nodeTypeId = new NodeTypeId(nodeTemplate.getType());
+		TNodeType nodeType = RepositoryFactory.getRepository().getElement(nodeTypeId);
+		ModelUtilities.setPropertiesKV(ModelUtilities.getWinerysPropertiesDefinition(nodeType), nodeTemplate, nodeTemplateProperties);
+	}
 }

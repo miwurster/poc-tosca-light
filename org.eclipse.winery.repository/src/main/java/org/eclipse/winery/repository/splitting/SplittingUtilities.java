@@ -61,6 +61,28 @@ public class SplittingUtilities {
 		return predecessorNodeTemplates;
 	}
 	
+	public static List<TRelationshipTemplate> getHostedOnOutgoingRelationshipTemplates (TTopologyTemplate topologyTemplate, TNodeTemplate nodeTemplate) {
+		List<TRelationshipTemplate> hostedOnOutgoingRelationshipTemplates = new ArrayList<>();
+		for (TRelationshipTemplate relationshipTemplate : ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate)) {
+			if (SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget() != null &&
+				SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Container")) {
+				hostedOnOutgoingRelationshipTemplates.add(relationshipTemplate);
+			}
+		}
+		return hostedOnOutgoingRelationshipTemplates;
+	}
+
+	public static List<TRelationshipTemplate> getConnectsToOutgoingRelationshipTemplates (TTopologyTemplate topologyTemplate, TNodeTemplate nodeTemplate) {
+		List<TRelationshipTemplate> connectsToOutgoingRelationshipTemplates = new ArrayList<>();
+		for (TRelationshipTemplate relationshipTemplate : ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate)) {
+			if (SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget() != null &&
+				SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Endpoint")) {
+				connectsToOutgoingRelationshipTemplates.add(relationshipTemplate);
+			}
+		}
+		return connectsToOutgoingRelationshipTemplates;
+	}
+	
 	public static TRelationshipType getBasisRelationshipType(QName relationshipTypeQName) {
 		RelationshipTypeId parentRelationshipTypeId = new RelationshipTypeId(relationshipTypeQName);
 		TRelationshipType parentRelationshipType = RepositoryFactory.getRepository().getElement(parentRelationshipTypeId);

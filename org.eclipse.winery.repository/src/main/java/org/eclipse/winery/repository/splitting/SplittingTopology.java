@@ -1022,12 +1022,8 @@ public class SplittingTopology {
 	 */
 	protected List<TNodeTemplate> getHostedOnSuccessorsOfNodeTemplate(TTopologyTemplate topologyTemplate, TNodeTemplate nodeTemplate) {
 		List<TNodeTemplate> successorNodeTemplates = new ArrayList<>();
-		for (TRelationshipTemplate relationshipTemplate : ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate)) {
-			if (SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget() != null &&
-				SplittingUtilities.getBasisRelationshipType(relationshipTemplate.getType()).getValidTarget().getTypeRef().getLocalPart().equalsIgnoreCase("Container")) {
-				successorNodeTemplates.add(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, relationshipTemplate));
-			}
-		}
+		SplittingUtilities.getHostedOnOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate).forEach(rt ->
+			successorNodeTemplates.add(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, rt)));
 		return successorNodeTemplates;
 	}
 	

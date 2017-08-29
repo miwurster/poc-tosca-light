@@ -12,6 +12,7 @@
 
 package org.eclipse.winery.repository.splitting;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
@@ -30,7 +31,7 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 
 	@Test
 	public void createConnectionTopology() throws GitAPIException {
-		this.setRevisionTo("d0db2444cdf4d804ced17394c6578e697ce41729");
+		this.setRevisionTo("a71490a6d5dc6f7a0739520d6b968d765f75249e");
 		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
 		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
 		TTopologyTemplate connectionTopology = SplittingServiceTemplate.createConnectionTopology(topologyTemplate);
@@ -41,7 +42,7 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 
 	@Test
 	public void createGPOG() throws GitAPIException {
-		this.setRevisionTo("d0db2444cdf4d804ced17394c6578e697ce41729");
+		this.setRevisionTo("a71490a6d5dc6f7a0739520d6b968d765f75249e");
 		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
 		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
 		GroupProvisioningOrderGraph gPOG = SplittingServiceTemplate.initializeGPOG(topologyTemplate);
@@ -52,7 +53,7 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 
 	@Test
 	public void compressRelationInGPOG() throws GitAPIException {
-		this.setRevisionTo("d0db2444cdf4d804ced17394c6578e697ce41729");
+		this.setRevisionTo("a71490a6d5dc6f7a0739520d6b968d765f75249e");
 		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
 		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
 		GroupProvisioningOrderGraph gPOG = SplittingServiceTemplate.initializeGPOG(topologyTemplate);
@@ -70,7 +71,7 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 
 	@Test
 	public void compressRelationInGPOGProducingCycle() throws GitAPIException {
-		this.setRevisionTo("d0db2444cdf4d804ced17394c6578e697ce41729");
+		this.setRevisionTo("a71490a6d5dc6f7a0739520d6b968d765f75249e");
 		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
 		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
 		GroupProvisioningOrderGraph gPOG = SplittingServiceTemplate.initializeGPOG(topologyTemplate);
@@ -94,7 +95,7 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 
 	@Test
 	public void compressGPOG() throws GitAPIException {
-		this.setRevisionTo("d0db2444cdf4d804ced17394c6578e697ce41729");
+		this.setRevisionTo("a71490a6d5dc6f7a0739520d6b968d765f75249e");
 		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
 		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
 		GroupProvisioningOrderGraph gPOG = SplittingServiceTemplate.initializeGPOG(topologyTemplate);
@@ -109,11 +110,20 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 
 	@Test
 	public void determineProvisiongingOrder() throws GitAPIException {
-		this.setRevisionTo("d0db2444cdf4d804ced17394c6578e697ce41729");
+		this.setRevisionTo("a71490a6d5dc6f7a0739520d6b968d765f75249e");
 		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
 		TTopologyTemplate topologyTemplate = this.repository.getElement(id).getTopologyTemplate();
 		List<Group> topologicalSorting = SplittingServiceTemplate.determineProvisiongingOrder(topologyTemplate);
 
 		assertEquals(3, topologicalSorting.size());
+	}
+
+	@Test
+	public void splitServiceTemplate() throws GitAPIException, IOException, SplittingException {
+		this.setRevisionTo("a71490a6d5dc6f7a0739520d6b968d765f75249e");
+		ServiceTemplateId id = new ServiceTemplateId("http://winery.opentosca.org/test/servicetemplates/ponyuniverse/splittingservicetemplate", "SplittingServiceTemplateTest", false);
+		List<ServiceTemplateId> serviceTemplateIds = SplittingServiceTemplate.splitServiceTemplate(id);
+
+		assertEquals(3, serviceTemplateIds.size());
 	}
 }
