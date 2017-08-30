@@ -351,6 +351,7 @@ public class SplittingServiceTemplate {
 		graph.removeAllEdges(incomingRelations);
 		Set<TNodeTemplate> movedGroupSet = mergedGroup.getGroupComponents();
 		graph.removeAllEdges(graph.getAllEdges(mergingGroup, mergedGroup));
+		graph.removeAllEdges(graph.getAllEdges(mergedGroup, mergingGroup));
 		graph.removeVertex(mergedGroup);
 		
 		if (cycleDetector.detectCycles()) {
