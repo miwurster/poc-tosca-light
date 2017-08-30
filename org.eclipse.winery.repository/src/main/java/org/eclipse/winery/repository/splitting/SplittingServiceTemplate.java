@@ -77,10 +77,10 @@ public class SplittingServiceTemplate {
 			
 			Queue<TNodeTemplate> queue = new LinkedList<>();
 			TServiceTemplate splitServiceTemplate = new TServiceTemplate();
-			TDocumentation orderID = new TDocumentation();
-			orderID.getContent().add("This Service Template is number " + provisioningOrder.indexOf(group)
-				+ " in the provisioning order amd has to be deployed by" + group.getLabel());
-			splitServiceTemplate.getDocumentation().add(orderID);
+			TDocumentation orderDocumentation = new TDocumentation();
+			orderDocumentation.getContent().add("This Service Template is number " + provisioningOrder.indexOf(group)
+				+ " in the provisioning order amd has to be deployed by " + group.getLabel());
+			splitServiceTemplate.getDocumentation().add(orderDocumentation);
 			TTopologyTemplate newTopologyTemplate = new TTopologyTemplate();
 			splitServiceTemplate.setTopologyTemplate(newTopologyTemplate);
 			newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().addAll(group.getGroupComponents());
@@ -115,10 +115,7 @@ public class SplittingServiceTemplate {
 										.indexOf(provisioningOrder.stream().filter(g -> g.groupComponents.contains(nodeTemplate)).findFirst().get());
 									if (order < provisioningOrder.indexOf(group)) {
 										setStatePropertyToRunning(newTargetElement);
-										TDocumentation input = new TDocumentation();
-										input.getContent().add("This Service Template requires input from ServiceTemplate number " + order
-											+ " from the Participant " + ModelUtilities.getTargetLabel(nodeTemplate));
-										splitServiceTemplate.getDocumentation().add(input);
+										addInputDocumentation(splitServiceTemplate, order, ModelUtilities.getTargetLabel(nodeTemplate).get());
 									}
 								}
 							}
@@ -147,10 +144,7 @@ public class SplittingServiceTemplate {
 					if (!newTopologyTemplate.getNodeTemplates().stream().anyMatch(n -> n.getId().equals(targetElement.getId()))) {
 						int order = provisioningOrder
 							.indexOf(provisioningOrder.stream().filter(g -> g.groupComponents.contains(targetElement)).findFirst().get());
-						TDocumentation input = new TDocumentation();
-						input.getContent().add("This Service Template requires input from ServiceTemplate number " + order
-							+ " from the Participant " + ModelUtilities.getTargetLabel(targetElement));
-						splitServiceTemplate.getDocumentation().add(input);
+						addInputDocumentation(splitServiceTemplate, order, ModelUtilities.getTargetLabel(targetElement).get());
 						newTargetElement = BackendUtils.clone(targetElement);
 						newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(newTargetElement);
 						setStatePropertyToRunning(newTargetElement);
@@ -410,5 +404,27 @@ public class SplittingServiceTemplate {
 		NodeTypeId nodeTypeId = new NodeTypeId(nodeTemplate.getType());
 		TNodeType nodeType = RepositoryFactory.getRepository().getElement(nodeTypeId);
 		ModelUtilities.setPropertiesKV(ModelUtilities.getWinerysPropertiesDefinition(nodeType), nodeTemplate, nodeTemplateProperties);
+	}
+	
+	/**
+	 * Add a new documentation entry to the ServiceTemplate iff already no entry for the specified cSARProvisioningOrderNumber
+	 * and partnerLabel is available. For each required input from another CSAR only one entry should be added
+	 * 
+	 * @param serviceTemplate
+	 * @param cSARProvisioningOrderNumber
+	 * @param partnerLabel
+	 */
+	private static void addInputDocumentation (TServiceTemplate serviceTemplate, int cSARProvisioningOrderNumber, String partnerLabel) {
+		String cSARNumber = String.valueOf(cSARProvisioningOrderNumber);
+		List<TDocumentation> documentations = serviceTemplate.getDocumentation();
+		List<Object> documentationentries = new ArrayList<>(); 
+		documentations.stream().forEach(d -> documentationentries.addAll(d.getContent()));
+		
+		if (!documentationentries.stream().anyMatch(o -> o instanceof String && ((String) o).contains(cSARNumber))) {
+			TDocumentation input = new TDocumentation();
+			input.getContent().add("This Service Template requires input from ServiceTemplate number " + cSARProvisioningOrderNumber
+				+ " from the Participant " + partnerLabel);
+			serviceTemplate.getDocumentation().add(input);
+		}
 	}
 }
