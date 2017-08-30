@@ -63,7 +63,7 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 		OrderRelation relation = gPOG.edgeSet().stream()
 			.filter(r -> r.getSource().getGroupComponents().stream().anyMatch(nt -> nt.getId().equalsIgnoreCase("ponycompetition")))
 			.filter(r -> r.getTarget().getLabel().equals(r.getSource().getLabel())).findAny().get();
-		GroupProvisioningOrderGraph compressGPOG = SplittingServiceTemplate.contractRelationInGPOG(newGPOG, relation);
+		GroupProvisioningOrderGraph compressGPOG = SplittingServiceTemplate.contractGroupsInGPOG(newGPOG, relation.getSource(), relation.getTarget());
 
 		assertEquals(4, compressGPOG.vertexSet().size());
 		assertEquals(4, compressGPOG.edgeSet().size());
@@ -83,12 +83,12 @@ public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 			.filter(r -> r.getSource().getGroupComponents().stream().anyMatch(nt -> nt.getId().equalsIgnoreCase("ponycompetition")))
 			.filter(r -> r.getTarget().getLabel().equals(r.getSource().getLabel())).findAny().get();
 		GroupProvisioningOrderGraph compressGPOGNull;
-		compressGPOGNull = SplittingServiceTemplate.contractRelationInGPOG(newGPOG, relation1);
+		compressGPOGNull = SplittingServiceTemplate.contractGroupsInGPOG(newGPOG, relation1.getSource(), relation1.getTarget());
 
 		OrderRelation relation2 = compressGPOGNull.edgeSet().stream()
 			.filter(r -> r.getSource().getGroupComponents().stream().anyMatch(nt -> nt.getId().equalsIgnoreCase("ponycompetition_3")))
 			.filter(r -> r.getTarget().getGroupComponents().stream().anyMatch(nt -> nt.getId().equalsIgnoreCase("unicorn"))).findAny().get();
-		compressGPOGNull = SplittingServiceTemplate.contractRelationInGPOG(compressGPOGNull, relation2);
+		compressGPOGNull = SplittingServiceTemplate.contractGroupsInGPOG(compressGPOGNull, relation2.getSource(), relation2.getTarget());
 
 		assertEquals(null, compressGPOGNull);
 	}

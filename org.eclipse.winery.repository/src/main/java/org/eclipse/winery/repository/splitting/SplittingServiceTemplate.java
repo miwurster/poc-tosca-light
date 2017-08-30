@@ -39,7 +39,9 @@ import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.Group
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.OrderRelation;
 
 import org.jgrapht.alg.CycleDetector;
+import org.jgrapht.alg.TransitiveClosure;
 import org.jgrapht.alg.TransitiveReduction;
+import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.slf4j.LoggerFactory;
 
 public class SplittingServiceTemplate {
@@ -241,41 +243,83 @@ public class SplittingServiceTemplate {
 	 * @return compressed GPOG with a reduced number of Provisioning Groups
 	 */
 	public static GroupProvisioningOrderGraph compressGPOG (GroupProvisioningOrderGraph gPoG) {
+		TransitiveClosure TRANSITIVECLOSURE = TransitiveClosure.INSTANCE;
 		TransitiveReduction TRANSITIVEREDUCTION = TransitiveReduction.INSTANCE;
+		
+		GroupProvisioningOrderGraph tempGPOG = new GroupProvisioningOrderGraph();
 		TRANSITIVEREDUCTION.reduce(gPoG);
-		List<OrderRelation> queue = gPoG.edgeSet().stream()
+		List<OrderRelation> orderRelationsQueue = gPoG.edgeSet().stream()
 			.filter(e -> e.getSource().getLabel().equals(e.getTarget().getLabel())).collect(Collectors.toList());
 		
-		while (!queue.isEmpty()) {
-			OrderRelation relation = queue.get(0);
-			GroupProvisioningOrderGraph tempGPOG = contractRelationInGPOG(gPoG, relation);
+		while (!orderRelationsQueue.isEmpty()) {
+			OrderRelation relation = orderRelationsQueue.get(0);
+			tempGPOG = contractGroupsInGPOG(gPoG, relation.getSource(), relation.getTarget());
 				if (tempGPOG != null) {
 					Group compressedGroup = tempGPOG.vertexSet().stream()
 						.filter(v -> v.getGroupComponents().containsAll(relation.getSource().getGroupComponents())).findFirst().get();
 					
-					queue.remove(relation);
-					List<OrderRelation> replacedOutgoingRelations = queue.stream()
+					orderRelationsQueue.remove(relation);
+					List<OrderRelation> replacedOutgoingRelations = orderRelationsQueue.stream()
 						.filter(r -> compressedGroup.getGroupComponents().containsAll(r.getSource().getGroupComponents())).collect(Collectors.toList());
 					List<OrderRelation> replacingOutgoingRelations = tempGPOG.outgoingEdgesOf(compressedGroup).stream()
 						.filter(r -> replacedOutgoingRelations.stream().anyMatch(or -> or.getTarget().equals(r.getTarget())))
 						.collect(Collectors.toList());
-					queue.removeAll(replacedOutgoingRelations);
-					queue.addAll(replacingOutgoingRelations);
+					orderRelationsQueue.removeAll(replacedOutgoingRelations);
+					orderRelationsQueue.addAll(replacingOutgoingRelations);
 
-					List<OrderRelation> replacedIncomingRelations = queue.stream()
+					List<OrderRelation> replacedIncomingRelations = orderRelationsQueue.stream()
 						.filter(r -> r.getTarget().equals(relation.getTarget())).collect(Collectors.toList());
 					List<OrderRelation> replacingIncomingRelations = tempGPOG.incomingEdgesOf(compressedGroup).stream()
 						.filter(r -> replacedIncomingRelations.stream().anyMatch(or -> or.getSource().equals(r.getSource())))
 						.collect(Collectors.toList());
-					queue.removeAll(replacedIncomingRelations);
-					queue.addAll(replacingIncomingRelations);
+					orderRelationsQueue.removeAll(replacedIncomingRelations);
+					orderRelationsQueue.addAll(replacingIncomingRelations);
 					
 					gPoG.clearGraph();
 					tempGPOG.vertexSet().forEach(v -> gPoG.addVertex(v));
 					tempGPOG.edgeSet().forEach(e -> gPoG.addEdge(e.getSource(), e.getTarget()));
+					tempGPOG.clearGraph();
 				} 
-				queue.remove(relation);
-				
+				orderRelationsQueue.remove(relation);
+		}
+		Set<String> labels = new HashSet<>();
+		gPoG.vertexSet().forEach(v -> labels.add(v.getLabel()));
+		DirectedAcyclicGraph<Group, OrderRelation> transitiveClousure = new DirectedAcyclicGraph(OrderRelation.class);
+		gPoG.vertexSet().forEach(v -> transitiveClousure.addVertex(v));
+		gPoG.edgeSet().forEach(e -> transitiveClousure.addEdge(e.getSource(), e.getTarget()));
+		TRANSITIVECLOSURE.closeDirectedAcyclicGraph(transitiveClousure);
+		gPoG.clearGraph();
+		transitiveClousure.vertexSet().forEach(v -> gPoG.addVertex(v));
+		transitiveClousure.edgeSet().forEach(e -> gPoG.addEdge(e.getSource(), e.getTarget()));
+		
+		for (String label : labels) {
+			List<Group> groupsWithSameLabel = gPoG.vertexSet().stream()
+				.filter(v -> v.getLabel().equals(label)).collect(Collectors.toList());
+			
+			if (groupsWithSameLabel.size() > 1) {
+				Queue<Group> groupQueue = new LinkedList<>();
+				groupQueue.addAll(groupsWithSameLabel);
+
+				while (!groupQueue.isEmpty()) {
+					Group group = groupQueue.poll();
+					List<Group> connectedGroups = new ArrayList<>();
+					gPoG.outgoingEdgesOf(group).stream().forEach(o -> connectedGroups.add(o.getTarget()));
+					gPoG.incomingEdgesOf(group).stream().forEach(o -> connectedGroups.add(o.getSource()));
+
+					List<Group> transitiveIndependentGroups = groupsWithSameLabel.stream().filter(g -> !g.equals(group))
+						.filter(g -> !connectedGroups.contains(g)).collect(Collectors.toList());
+					if (!transitiveIndependentGroups.isEmpty()) {
+						tempGPOG = contractGroupsInGPOG(gPoG, transitiveIndependentGroups.get(0), group);
+						if (tempGPOG != null) {
+							groupsWithSameLabel.remove(group);						
+							gPoG.clearGraph();
+							tempGPOG.vertexSet().forEach(v -> gPoG.addVertex(v));
+							tempGPOG.edgeSet().forEach(e -> gPoG.addEdge(e.getSource(), e.getTarget()));
+							tempGPOG.clearGraph();
+						}
+					}
+				}				
+			}
 		}
 		return gPoG;
 	}
@@ -283,34 +327,34 @@ public class SplittingServiceTemplate {
 	/**
 	 * 
 	 * @param gPoG
-	 * @param relation
+	 * @param mergingGroup
+	 * @param mergedGroup
 	 * @return either the compressed gPoG or null if the compression results in a loop
 	 */
-	public static GroupProvisioningOrderGraph contractRelationInGPOG(GroupProvisioningOrderGraph gPoG, OrderRelation relation) {
+	public static GroupProvisioningOrderGraph contractGroupsInGPOG(GroupProvisioningOrderGraph gPoG, Group mergingGroup, Group mergedGroup) {
 		GroupProvisioningOrderGraph graph = new GroupProvisioningOrderGraph();
 		gPoG.vertexSet().forEach(v -> graph.addVertex(v));
 		gPoG.edgeSet().forEach(e -> graph.addEdge(e.getSource(), e.getTarget()));
 		CycleDetector cycleDetector = new CycleDetector(graph);
 		// Former target element is added to the source element group
-		Group mergedGroup = relation.getSource();
-		mergedGroup.addAllNodeTemplatesToGroupComponents(relation.getTarget().getGroupComponents());
+		mergingGroup.addAllNodeTemplatesToGroupComponents(mergedGroup.groupComponents);
 		
 		// For each edge related to the former target element a new edge has to be added
-		Set<OrderRelation> outgoingRelations = graph.outgoingEdgesOf(relation.getTarget()).stream().collect(Collectors.toSet());
-		Set<OrderRelation> incomingRelations = graph.incomingEdgesOf(relation.getTarget()).stream()
-			.filter(ir -> !ir.getSource().equals(relation.getSource())).collect(Collectors.toSet());
-		outgoingRelations.forEach(or -> graph.addEdge(relation.getSource(), or.getTarget()));
-		incomingRelations.forEach(ir -> graph.addEdge(ir.getSource(), relation.getSource()));
+		Set<OrderRelation> outgoingRelations = graph.outgoingEdgesOf(mergedGroup).stream().collect(Collectors.toSet());
+		Set<OrderRelation> incomingRelations = graph.incomingEdgesOf(mergedGroup).stream()
+			.filter(ir -> !ir.getSource().equals(mergingGroup)).collect(Collectors.toSet());
+		outgoingRelations.forEach(or -> graph.addEdge(mergingGroup, or.getTarget()));
+		incomingRelations.forEach(ir -> graph.addEdge(ir.getSource(), mergingGroup));
 		
 		// Old edges and the former target element are removed
 		graph.removeAllEdges(outgoingRelations);
 		graph.removeAllEdges(incomingRelations);
-		Set<TNodeTemplate> movedGroupSet = relation.getTarget().getGroupComponents();
-		graph.removeVertex(relation.getTarget());
-		graph.removeEdge(relation);
-			
+		Set<TNodeTemplate> movedGroupSet = mergedGroup.getGroupComponents();
+		graph.removeAllEdges(graph.getAllEdges(mergingGroup, mergedGroup));
+		graph.removeVertex(mergedGroup);
+		
 		if (cycleDetector.detectCycles()) {
-				mergedGroup.getGroupComponents().removeAll(movedGroupSet);
+				mergingGroup.getGroupComponents().removeAll(movedGroupSet);
 				return null;
 		}
 		return graph;		

@@ -32,9 +32,8 @@ public class GroupProvisioningOrderGraph extends DefaultDirectedGraph<Group, Ord
 
 	public void clearGraph() {
 		removeAllEdges(this);
-		removeAllVertices(this);
+		removeAllVertices(this);	
 	}
-
 
 	public void removeAllVertices(GroupProvisioningOrderGraph graph) {
 		LinkedList<Group> copy = new LinkedList<Group>();
