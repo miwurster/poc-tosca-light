@@ -33,6 +33,7 @@ import org.eclipse.winery.common.ids.definitions.TOSCAComponentId;
 import org.eclipse.winery.common.ids.elements.TOSCAElementId;
 import org.eclipse.winery.common.interfaces.IWineryRepositoryCommon;
 import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.HasId;
 import org.eclipse.winery.model.tosca.HasType;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
@@ -223,7 +224,11 @@ interface IGenericRepository extends IWineryRepositoryCommon {
 
 	/**
 	 * Updates the element belonging to the given TOSCAComponentId Regenerates wrapper definitions; thus all extensions
-	 * at the wrapper definitions are lost
+	 * at the wrapper definitions are lost.
+	 * 
+	 * SIDE EFFECT: The id of the element is updated according to the given id.
+	 * 
+	 * No change is made at the namespace element.
 	 *
 	 * @param id      the TOSCAComponentId to update
 	 * @param element the element to set
@@ -233,6 +238,7 @@ interface IGenericRepository extends IWineryRepositoryCommon {
 		// default implementation on the server side
 		// the client side has to use the REST method
 		Definitions definitions = BackendUtils.createWrapperDefinitions(id);
+		((HasId) element).setId(id.getXmlId().getDecoded());
 		definitions.setElement(element);
 		BackendUtils.persist(id, definitions);
 	}

@@ -16,6 +16,7 @@ package org.eclipse.winery.model.tosca;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -51,7 +52,7 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tDocumentation", propOrder = {
-        "content"
+    "content"
 })
 public class TDocumentation {
 
@@ -70,8 +71,8 @@ public class TDocumentation {
         if (!(o instanceof TDocumentation)) return false;
         TDocumentation that = (TDocumentation) o;
         return Objects.equals(content, that.content) &&
-                Objects.equals(source, that.source) &&
-                Objects.equals(lang, that.lang);
+            Objects.equals(source, that.source) &&
+            Objects.equals(lang, that.lang);
     }
 
     @Override
@@ -82,24 +83,17 @@ public class TDocumentation {
     /**
      * Gets the value of the content property.
      *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the content property.
+     * <p> This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you
+     * make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE>
+     * method for the content property.
      *
-     * <p>
-     * For example, to add a new item, do as follows:
+     * <p> For example, to add a new item, do as follows:
      * <pre>
      *    getContent().add(newItem);
      * </pre>
      *
      *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Element }
-     * {@link String }
-     * {@link Object }
+     * <p> Objects of the following type(s) are allowed in the list {@link Element } {@link String } {@link Object }
      */
     @NonNull
     public List<Object> getContent() {
@@ -145,5 +139,47 @@ public class TDocumentation {
      */
     public void setLang(String value) {
         this.lang = value;
+    }
+
+    /**
+     * Adds a new paragraph to the first documentation. Separated by \n\n. The last object in the getContent() list is
+     * searched. If it is a String, the paragraph is added directly. Otherwise, a new String object is created an added
+     * to the list.
+     *
+     * @param paragraph The paragraph to add
+     */
+    public void addParagraph(String paragraph) {
+        @NonNull List<Object> contents = getContent();
+        if (contents.isEmpty()) {
+            contents.add(paragraph);
+        } else {
+            int lastElementIndex = contents.size() - 1;
+            Object lastContent = contents.get(lastElementIndex);
+            if (lastContent instanceof String) {
+                String content = (String) lastContent;
+                content = content + "\n\n" + paragraph;
+                contents.set(lastElementIndex, content);
+            } else {
+                contents.add(paragraph);
+            }
+        }
+    }
+
+    /**
+     * @return the last String entry in getContents if it exists. If the last entry of getContents is not a String,
+     * Optional.empty() is returned.
+     */
+    public Optional<String> getLastStringContent() {
+        @NonNull List<Object> contents = getContent();
+        if (contents.isEmpty()) {
+            return Optional.empty();
+        } else {
+            Object lastContent = contents.get(contents.size() - 1);
+            if (lastContent instanceof String) {
+                return Optional.of((String) lastContent);
+            } else {
+                return Optional.empty();
+            }
+        }
     }
 }

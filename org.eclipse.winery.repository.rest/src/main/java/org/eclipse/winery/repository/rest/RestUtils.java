@@ -81,6 +81,7 @@ import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.export.CSARExporter;
 import org.eclipse.winery.repository.export.TOSCAExportUtil;
 import org.eclipse.winery.repository.rest.datatypes.NamespaceAndDefinedLocalNamesForAngular;
+import org.eclipse.winery.repository.rest.datatypes.SplitServiceTemplateInformation;
 import org.eclipse.winery.repository.rest.resources.AbstractComponentInstanceResource;
 import org.eclipse.winery.repository.rest.resources.AbstractComponentsResource;
 import org.eclipse.winery.repository.rest.resources._support.IPersistable;
@@ -94,6 +95,7 @@ import org.eclipse.winery.repository.rest.resources.entitytypes.nodetypes.NodeTy
 import org.eclipse.winery.repository.rest.resources.entitytypes.relationshiptypes.RelationshipTypeResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.relationshiptypes.RelationshipTypesResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
+import org.eclipse.winery.repository.splitting.SplittingServiceTemplate;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -290,6 +292,10 @@ public class RestUtils {
 	 */
 	public static String getAbsoluteURL(GenericId id) {
 		return Environment.getUrlConfiguration().getRepositoryApiUrl() + "/" + Util.getUrlPath(id);
+	}
+	
+	public static String getUiUrl(GenericId id) {
+		return Environment.getUrlConfiguration().getRepositoryUiUrl() + "/" + Util.getUrlPath(id);
 	}
 
 	/**
@@ -996,5 +1002,23 @@ public class RestUtils {
 		return list.stream().map(namespaceAndDefinedLocalNames -> new NamespaceAndDefinedLocalNamesForAngular(
 			namespaceAndDefinedLocalNames.getNamespace(),
 			namespaceAndDefinedLocalNames.getDefinedLocalNames())).collect(Collectors.toList());
+	}
+	
+	public static List<SplitServiceTemplateInformation> getListOfSplitServiceTemplateInformation(ServiceTemplateId id) {
+		List<ServiceTemplateId> splitServiceTemplateIds;
+		try {
+			splitServiceTemplateIds = SplittingServiceTemplate.splitServiceTemplate(id);
+		} catch (Exception e) {
+			throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not split. " + e.getMessage()).build());
+		}
+		List<SplitServiceTemplateInformation> list = splitServiceTemplateIds.stream()
+			.map(splitId -> {
+				TServiceTemplate serviceTemplate = RepositoryFactory.getRepository().getElement(splitId);
+				String url = getUiUrl(splitId);
+				String documentation = serviceTemplate.getFirstDocumentation().getLastStringContent().orElse("");
+				return new SplitServiceTemplateInformation(serviceTemplate.getId(), url, documentation);
+			})
+			.collect(Collectors.toList());
+		return list;
 	}
 }

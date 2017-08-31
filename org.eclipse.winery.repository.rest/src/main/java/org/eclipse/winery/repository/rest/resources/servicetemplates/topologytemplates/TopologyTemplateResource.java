@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -47,9 +48,9 @@ import org.eclipse.winery.repository.client.IWineryRepositoryClient;
 import org.eclipse.winery.repository.client.WineryRepositoryClientFactory;
 import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.rest.RestUtils;
+import org.eclipse.winery.repository.rest.datatypes.SplitServiceTemplateInformation;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplatesResource;
-import org.eclipse.winery.repository.splitting.SplittingServiceTemplate;
 import org.eclipse.winery.repository.splitting.SplittingTopology;
 
 import com.sun.jersey.api.client.Client;
@@ -352,37 +353,27 @@ public class TopologyTemplateResource {
 		return RestUtils.getXML(TTopologyTemplate.class, this.topologyTemplate);
 	}
 
+	/**
 	@Path("split/")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	@POST
 	public Response split(@Context UriInfo uriInfo) {
-		List<ServiceTemplateId> splitServiceTemplateIds;
-		try {
-			splitServiceTemplateIds = SplittingServiceTemplate.splitServiceTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());
-		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not split. " + e.getMessage()).build();
-		}
-		URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(splitServiceTemplateIds.get(0)));
-		return Response.created(url).build();
+		List<SplitServiceTemplateInformation> list = RestUtils.getListOfSplitServiceTemplateInformation((ServiceTemplateId) this.serviceTemplateRes.getId());
+		return Response.status(Response.Status.CREATED).entity(list).build();
+	}
+	 */
+
+	@Path("split/")
+	@Produces(MediaType.TEXT_HTML)
+	@POST
+	public Response splitWithHtmlResult(@Context UriInfo uriInfo) {
+		List<SplitServiceTemplateInformation> list = RestUtils.getListOfSplitServiceTemplateInformation((ServiceTemplateId) this.serviceTemplateRes.getId());
+		String html = list.stream().map(
+			information -> "<li><a href=\"" + information.getUrl() + "\" target=\"_blank\">" + information.getId() + "</a>: " + information.getDocumentation() + "</li>"
+		).collect(Collectors.joining("<br>", "Successfully split. <ul>", "</ul>"));
+		return Response.status(Response.Status.CREATED).entity(html).build();
 	}
 
-	/*
-	@Path("split/")
-	@Produces(MediaType.TEXT_PLAIN)
-	@POST
-	public Response split(@Context UriInfo uriInfo) {
-		SplittingTopology splitting = new SplittingTopology();
-		ServiceTemplateId splitServiceTemplateId;
-		try {
-			splitServiceTemplateId = splitting.splitTopologyOfServiceTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());
-		} catch (Exception e) {
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not split. " + e.getMessage()).build();
-		}
-		URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(splitServiceTemplateId));
-		return Response.created(url).build();
-	}
-	*/
-	
 	@Path("match/")
 	@Produces(MediaType.TEXT_PLAIN)
 	@POST

@@ -4,6 +4,7 @@ import org.apache.commons.configuration2.Configuration;
 
 public class UrlConfiguration {
 
+	private String repositoryUiUrl = "http://localhost:8080/#/";
 	private String repositoryApiUrl = "http://localhost:8080/winery";
 	private String bpmn4ToscaModelerUrl = "http://localhost:8080/winery-topoloymodeler";
 	private String topologyModelerUrl = "http://localhost:8080/winery-workflowmodeler";
@@ -14,6 +15,10 @@ public class UrlConfiguration {
 	public UrlConfiguration(Configuration configuration) {
 		this.setBpmn4ToscaModelerUrl(configuration.getString(Environment.KEY_URL_BPMN4TOSCA_MODELER, null));
 		this.setTopologyModelerUrl(configuration.getString(Environment.KEY_URL_TOPOLOGY_MODELER, null));
+	}
+	
+	public String getRepositoryUiUrl() {
+		return repositoryUiUrl;
 	}
 
 	public String getRepositoryApiUrl() {

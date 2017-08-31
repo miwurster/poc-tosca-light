@@ -22,6 +22,7 @@ import org.eclipse.winery.repository.TestWithGitBackedRepository;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.eclipse.jetty.server.Server;
+import org.json.JSONException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -60,7 +61,7 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 	protected RequestSpecification start() {
 		return given()
 				.log()
-				.ifValidationFails();
+				.all();
 	}
 
 	protected String callURL(String restURL) {
@@ -204,6 +205,37 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 				.post(callURL(restURL))
 				.then()
 				.statusCode(201);
+	}
+
+	public void assertEmptyPostReturnsGivenContent(String restURL, String fileName) {
+		String expectedStr = readFromClasspath(fileName);
+		final String receivedStr = start()
+			.contentType(ContentType.JSON.toString())
+			.accept(getAccept(fileName))
+			.post(callURL(restURL))
+			.then()
+			.log()
+			.all()
+			.statusCode(201)
+			.extract()
+			.response()
+			.getBody()
+			.asString();
+		if (isXml(fileName)) {
+			org.hamcrest.MatcherAssert.assertThat(receivedStr, CompareMatcher.isIdenticalTo(expectedStr).ignoreWhitespace());
+		} else if (isZip(fileName)) {
+			// TODO  @pmeyer: Cool ZIP equal test
+			Assert.assertNotNull(receivedStr);
+		} else {
+			try {
+				JSONAssert.assertEquals(
+                    expectedStr,
+                    receivedStr,
+                    true);
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	/**

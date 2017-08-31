@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
@@ -24,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
-import org.eclipse.winery.model.tosca.TDocumentation;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TRelationshipTemplate;
@@ -79,10 +79,10 @@ public class SplittingServiceTemplate {
 			
 			Queue<TNodeTemplate> queue = new LinkedList<>();
 			TServiceTemplate splitServiceTemplate = new TServiceTemplate();
-			TDocumentation orderDocumentation = new TDocumentation();
-			orderDocumentation.getContent().add("This Service Template is number " + provisioningOrder.indexOf(group)
-				+ " in the provisioning order amd has to be deployed by " + group.getLabel());
-			splitServiceTemplate.getDocumentation().add(orderDocumentation);
+			
+			String serviceTemplateInformation = "This Service Template is number " + provisioningOrder.indexOf(group)
+				+ " in the provisioning order and has to be deployed by " + group.getLabel();
+			splitServiceTemplate.getFirstDocumentation().addParagraph(serviceTemplateInformation);
 			TTopologyTemplate newTopologyTemplate = new TTopologyTemplate();
 			splitServiceTemplate.setTopologyTemplate(newTopologyTemplate);
 			newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().addAll(group.getGroupComponents());
@@ -461,15 +461,12 @@ public class SplittingServiceTemplate {
 	 */
 	private static void addInputDocumentation (TServiceTemplate serviceTemplate, int cSARProvisioningOrderNumber, String partnerLabel) {
 		String cSARNumber = String.valueOf(cSARProvisioningOrderNumber);
-		List<TDocumentation> documentations = serviceTemplate.getDocumentation();
-		List<Object> documentationentries = new ArrayList<>(); 
-		documentations.stream().forEach(d -> documentationentries.addAll(d.getContent()));
-		
-		if (!documentationentries.stream().anyMatch(o -> o instanceof String && ((String) o).contains(cSARNumber))) {
-			TDocumentation input = new TDocumentation();
-			input.getContent().add("This Service Template requires input from ServiceTemplate number " + cSARProvisioningOrderNumber
-				+ " from the Participant " + partnerLabel);
-			serviceTemplate.getDocumentation().add(input);
+		String serviceTemplateInputInformation = "This Service Template requires input from ServiceTemplate number " + cSARProvisioningOrderNumber
+			+ " from the Participant " + partnerLabel;
+
+		Optional<String> lastStringContent = serviceTemplate.getFirstDocumentation().getLastStringContent();
+		if (!lastStringContent.isPresent() || (!lastStringContent.get().contains(cSARNumber))) {
+			serviceTemplate.getFirstDocumentation().addParagraph(serviceTemplateInputInformation);
 		}
 	}
 }

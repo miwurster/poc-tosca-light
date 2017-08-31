@@ -15,10 +15,10 @@ package org.eclipse.winery.repository.rest.resources.servicetemplates.topologyte
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.repository.backend.BackendUtils;
-import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.rest.resources.AbstractResourceTest;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TopologyTemplateResourceTest  extends AbstractResourceTest {
@@ -75,6 +75,13 @@ public class TopologyTemplateResourceTest  extends AbstractResourceTest {
 	public void strawStallTopologyTemplateJsonCanBeParsed() throws Exception {
 		final String jsonStr = AbstractResourceTest.readFromClasspath("entitytypes/servicetemplates/straw-stall.json");
 		final TTopologyTemplate topologyTemplate = BackendUtils.mapper.readValue(jsonStr, TTopologyTemplate.class);
+	}
+
+	@Test
+	@Ignore("The ordering of the list changes at each run. Thus, the test has to use ReastAssurd's methods. E.g., size() etc.")
+	public void splitServiceTemplateReturnsCorrectJson() throws Exception {
+		this.setRevisionTo("6e7f63d64c9affbb39047c4558bad418b9349f1a");
+		this.assertEmptyPostReturnsGivenContent("servicetemplates/http%253A%252F%252Fwinery.opentosca.org%252Ftest%252Fservicetemplates%252Fponyuniverse%252Fsplittingservicetemplate/SplittingServiceTemplateTest/topologytemplate/split/", "servicetemplates/ponyUniverseSplit.json");
 	}
 
 }

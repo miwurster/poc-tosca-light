@@ -119,10 +119,12 @@ define(
 			$.ajax({
 				url: topologyTemplateURL + 'split',
 				type: "POST",
+				dataType: "text",
 				success: function(data, textStatus, jqXHR) {
 					$("#splitBtn").button("reset");
-					var location = jqXHR.getResponseHeader("Location");
-					vShowSuccess("Successfully split. <a target=\"_blank\" href=\"" + location + "\">Open split service template</a>");
+					console.log(data);
+					console.log("HALLLLOOOOOOOO");
+					vShowSuccess(data);
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
 					$("#splitBtn").button("reset");

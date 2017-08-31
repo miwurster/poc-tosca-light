@@ -31,7 +31,6 @@ import javax.xml.namespace.QName;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.w3c.dom.Element;
 
 
 /**
@@ -136,6 +135,21 @@ public class TExtensibleElements {
             documentation = new ArrayList<TDocumentation>();
         }
         return this.documentation;
+    }
+
+    /**
+     * @return The first TDocumentation element. It is created and added if it does not exists. It is <emph>not</emph> a copy, so
+     * the caller can directly modify it.
+     */
+    public @NonNull TDocumentation getFirstDocumentation() {
+        @NonNull List<TDocumentation> documentation = this.getDocumentation();
+        if (documentation.isEmpty()) {
+            TDocumentation documentationElement = new TDocumentation();
+            documentation.add(documentationElement);
+            return documentationElement;
+        } else {
+            return documentation.get(0);
+        }
     }
 
     /**
