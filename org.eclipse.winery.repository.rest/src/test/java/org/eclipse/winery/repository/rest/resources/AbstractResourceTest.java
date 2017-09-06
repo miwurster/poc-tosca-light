@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Scanner;
 
@@ -58,10 +59,10 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 		return new Scanner(inputStream, "UTF-8").useDelimiter("\\A").next();
 	}
 
-	protected RequestSpecification start() {
+	private RequestSpecification start() {
 		return given()
-				.log()
-				.all();
+			.log()
+			.ifValidationFails();
 	}
 
 	protected String callURL(String restURL) {
@@ -177,34 +178,34 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 	public void assertPut(String restURL, String fileName) {
 		String contents = readFromClasspath(fileName);
 		start()
-				.body(contents)
-				.contentType(getAccept(fileName))
-				.put(callURL(restURL))
-				.then()
-				.statusCode(204);
+			.body(contents)
+			.contentType(getAccept(fileName))
+			.put(callURL(restURL))
+			.then()
+			.statusCode(204);
 	}
 
 	/**
 	 * Maybe remove in order to force JSON.
 	 */
-	public void assertPutText(String restURL, String content) {
+	protected void assertPutText(String restURL, String content) {
 		start()
-				.body(content)
-				.contentType(ContentType.TEXT)
-				.put(callURL(restURL))
-				.then()
-				.statusCode(204);
+			.body(content)
+			.contentType(ContentType.TEXT)
+			.put(callURL(restURL))
+			.then()
+			.statusCode(204);
 	}
 
-	public void assertPost(String restURL, String fileName) {
+	protected void assertPost(String restURL, String fileName) {
 		String contents = readFromClasspath(fileName);
 		start()
-				.body(contents)
-				.contentType(getAccept(fileName))
-				.accept(getAccept(fileName))
-				.post(callURL(restURL))
-				.then()
-				.statusCode(201);
+			.body(contents)
+			.contentType(getAccept(fileName))
+			.accept(getAccept(fileName))
+			.post(callURL(restURL))
+			.then()
+			.statusCode(201);
 	}
 
 	public void assertEmptyPostReturnsGivenContent(String restURL, String fileName) {
@@ -242,33 +243,40 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 	 * Because some methods don't respond with a "created" status. TODO: fix all methods which return "noContent" status
 	 * so that this method can be deleted.
 	 */
-	public void assertNoContentPost(String restURL, String fileName) {
+	protected void assertNoContentPost(String restURL, String fileName) {
 		String contents = readFromClasspath(fileName);
 		start()
-				.body(contents)
-				.contentType(getAccept(fileName))
-				.post(callURL(restURL))
-				.then()
-				.statusCode(204);
+			.body(contents)
+			.contentType(getAccept(fileName))
+			.post(callURL(restURL))
+			.then()
+			.statusCode(204);
 	}
 
-	public void assertPost(String restURL, String namespace, String name) {
+	protected void assertPost(String restURL, String namespace, String name) {
 		start()
-				.formParam("namespace", namespace)
-				.formParam("name", name)
-				.post(callURL(restURL))
-				.then()
-				.statusCode(201);
+			.formParam("namespace", namespace)
+			.formParam("name", name)
+			.post(callURL(restURL))
+			.then()
+			.statusCode(201);
 	}
 
 	protected void assertDelete(String restURL) {
 		try {
 			start()
-					.delete(callURL(restURL))
-					.then()
-					.statusCode(204);
+				.delete(callURL(restURL))
+				.then()
+				.statusCode(204);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	protected void assertUploadBinary(String restURL, String fileName) {
+		given()
+			.multiPart(new File(fileName))
+			.then()
+			.statusCode(204);
 	}
 }
