@@ -11,12 +11,16 @@
  *******************************************************************************/
 package org.eclipse.winery.cli;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -46,8 +50,9 @@ public class WineryCli {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WineryCli.class);
 
 	private enum Verbosity {
-		NOTHING,
-		OUTPUT_CURRENT_TOSCA_COMPONENT_ID
+		OUTPUT_NUMBER_OF_TOSCA_COMPONENTS,
+		OUTPUT_CURRENT_TOSCA_COMPONENT_ID,
+		OUTPUT_ERROS
 	}
 
 	public static void main(String[] args) throws ParseException {
@@ -76,54 +81,113 @@ public class WineryCli {
 		}
 		System.out.println("Using repository path " + ((FilebasedRepository) repository).getRepositoryRoot() + "...");
 
-		Verbosity verbosity;
+		EnumSet<Verbosity> verbosity;
 		if (line.hasOption("v")) {
-			verbosity = Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID;
+			verbosity = EnumSet.of(Verbosity.OUTPUT_NUMBER_OF_TOSCA_COMPONENTS, Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID, Verbosity.OUTPUT_ERROS);
 		} else {
-			verbosity = Verbosity.NOTHING;
+			verbosity = EnumSet.of(Verbosity.OUTPUT_NUMBER_OF_TOSCA_COMPONENTS);
 		}
 
-		Optional<String> error = checkCorruptionUsingCsarExport(repository, verbosity);
-		if (error.isPresent()) {
-			System.out.println("Error in repository found:");
-			System.out.println(error.get());
-			System.exit(1);
-		} else {
+		List<String> errors = checkCorruptionUsingCsarExport(repository, verbosity);
+
+		System.out.println();
+		if (errors.isEmpty()) {
 			System.out.println("No errors exist.");
+		} else {
+			System.out.println("Errors in repository found:");
+			System.out.println();
+			for (String error: errors) {
+				System.out.println(error);
+			}
+			System.exit(1);
 		}
 	}
 
-	private static Optional<String> checkCorruptionUsingCsarExport(IRepository repository, Verbosity verbosity) {
+	private static List<String> checkCorruptionUsingCsarExport(IRepository repository, EnumSet<Verbosity> verbosity) {
+		List<String> res = new ArrayList<>();
 		CSARExporter exporter = new CSARExporter();
-		try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-			SortedSet<TOSCAComponentId> allToscaComponentIds = repository.getAllToscaComponentIds();
-			if (verbosity == Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID) {
-				System.out.format("Number of TOSCA definitions to check: %d\n", allToscaComponentIds.size());
+		SortedSet<TOSCAComponentId> allToscaComponentIds = repository.getAllToscaComponentIds();
+		if (verbosity.contains(Verbosity.OUTPUT_NUMBER_OF_TOSCA_COMPONENTS)) {
+			System.out.format("Number of TOSCA definitions to check: %d\n", allToscaComponentIds.size());
+		}
+		if (!verbosity.contains(Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+			System.out.print("Checking ");
+		}
+		final Path tempCsar;
+		try {
+			tempCsar = Files.createTempFile("Export", ".csar");
+		} catch (IOException e) {
+			LOGGER.debug("Could not create temp CSAR file", e);
+			res.add("Could not create temp CSAR file");
+			return res;
+		}
+		for (TOSCAComponentId id : allToscaComponentIds) {
+			if (verbosity.contains(Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+				System.out.format("Checking %s...\n", id.toReadableString());
+			} else {
+				System.out.print(".");
 			}
-			for (TOSCAComponentId id : allToscaComponentIds) {
-				if (verbosity == Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID) {
-					System.out.format("Checking %s...\n", id.toReadableString());
+			final OutputStream outputStream;
+			try {
+				 outputStream = Files.newOutputStream(tempCsar, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			} catch (IOException e) {
+				final String error = "Could not write to temp CSAR file";
+				LOGGER.debug(error, e);
+				res.add(error);
+				if (verbosity.contains(Verbosity.OUTPUT_ERROS)) {
+					if (!verbosity.contains(Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+						System.out.println();
+					}
+					System.out.println(error);
 				}
-				exporter.writeCSAR(id, os);
-				try (InputStream is = new ByteArrayInputStream(os.toByteArray());
-					 ZipInputStream zis = new ZipInputStream(is)) {
+				continue;
+			}
+			try {
+				exporter.writeCSAR(id, outputStream);
+				try (InputStream inputStream = Files.newInputStream(tempCsar);
+					 ZipInputStream zis = new ZipInputStream(inputStream)) {
 					ZipEntry entry;
 					while ((entry = zis.getNextEntry()) != null) {
 						if (entry.getName() == null) {
-							return Optional.of("Empty filename in zip file");
+							final String error = "Empty filename in zip file";
+							if (verbosity.contains(Verbosity.OUTPUT_ERROS)) {
+								if (!verbosity.contains(Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+									System.out.println();
+								}
+								System.out.println(error);
+							}
+							res.add(id.toReadableString() + ": " + error);
 						}
 					}
 				}
+			} catch (ArchiveException | JAXBException | IOException e) {
+				LOGGER.debug("Error during checking ZIP", e);
+				final String error = "Invalid zip file";
+				if (verbosity.contains(Verbosity.OUTPUT_ERROS)) {
+					if (!verbosity.contains(Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+						System.out.println();
+					}
+					System.out.println(error);
+				}
+				res.add(id.toReadableString() + ": " + error);
+			} catch (RepositoryCorruptException e) {
+				LOGGER.debug("Repository is corrupt", e);
+				final String error = "Corrupt: " + e.getMessage();
+				if (verbosity.contains(Verbosity.OUTPUT_ERROS)) {
+					if (verbosity.contains(Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+						System.out.println(error);
+					} else {
+						System.out.println(id.toReadableString() + ": " + error);
+					}
+				}
+				res.add(id.toReadableString() + ": " + error);
 			}
-		} catch (ArchiveException | JAXBException | IOException e) {
-			LOGGER.debug("Error during checking ZIP", e);
-			return Optional.of(e.getMessage());
-		} catch (RepositoryCorruptException e) {
-			LOGGER.debug("Repository is corrupt", e);
-			return Optional.of(e.getMessage());
 		}
-
-		// no error during checking
-		return Optional.empty();
+		if (verbosity.contains(Verbosity.OUTPUT_ERROS)) {
+			if (!verbosity.contains(Verbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+				System.out.println();
+			}
+		}
+		return res;
 	}
 }

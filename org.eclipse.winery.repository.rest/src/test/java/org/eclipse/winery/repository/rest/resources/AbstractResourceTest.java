@@ -28,6 +28,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xmlunit.matchers.CompareMatcher;
 
 import static io.restassured.RestAssured.given;
@@ -126,9 +127,10 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 				Assert.assertNotNull(receivedStr);
 			} else {
 				JSONAssert.assertEquals(
-						expectedStr,
-						receivedStr,
-						true);
+					expectedStr,
+					receivedStr,
+					// we allow different ordering in lists and also extensible JSON. That means, more elements are OK.
+					JSONCompareMode.LENIENT);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
