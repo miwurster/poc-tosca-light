@@ -1,4 +1,4 @@
-# Eclipse Winery™ User Guide
+# Eclipse Winery User Guide
 
 <!-- toc -->
 
@@ -11,7 +11,7 @@
 
 ## Overview
 
-Eclipse Winery™ is a Web-based environment to graphically model [OASIS TOSCA](../tosca/) topologies and plans managing these topologies.
+Eclipse Winery is a Web-based environment to graphically model [OASIS TOSCA](../tosca/) topologies and plans managing these topologies.
 It is an Eclipse project and thus support is available through its project page <https://projects.eclipse.org/projects/soa.winery>.
 Winery is also part of the OpenTOSCA ecosystem where more information is available at <http://www.opentosca.org>.
 
@@ -39,10 +39,11 @@ On Windows:
 
 1. `mkdir c:\winery-repository`
 2. `cd c:\winery-repository`
-3. `git clone https://github.com/OpenTOSCA/tosca-definitions/ .`
-4. `git remote add test-repository https://github.com/winery/test-repository.git`
-5. `git fetch test-repository`
-6. `git checkout black`
+2. `git config --global core.longpaths true` to enable long paths. Works perfectly on Windows.
+3. `git clone https://github.com/winery/test-repository.git .` to clone the [test repository](https://github.com/winery/test-repository).
+4. `git remote add production-repository https://github.com/OpenTOSCA/tosca-definitions/` to make the [production repository](https://github.com/OpenTOSCA/tosca-definitions/) known
+5. `git fetch production-repository` - to fetch the production repository
+6. `git checkout black` - to switch to the main branch of the test repository
 
 Now you are at the [test repository](https://github.com/winery/test-repository) containing testing types.
 If you do `git checkout master`, you are seeing the [OpenTOSCA TOSCA Definitions repository](https://github.com/OpenTOSCA/tosca-definitions/).
