@@ -25,9 +25,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -141,6 +143,8 @@ public class TExtensibleElements {
      * @return The first TDocumentation element. It is created and added if it does not exists. It is <emph>not</emph> a copy, so
      * the caller can directly modify it.
      */
+    @XmlTransient
+    @JsonIgnore
     public @NonNull TDocumentation getFirstDocumentation() {
         @NonNull List<TDocumentation> documentation = this.getDocumentation();
         if (documentation.isEmpty()) {
