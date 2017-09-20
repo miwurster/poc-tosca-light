@@ -24,8 +24,10 @@ import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlMixed;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.w3c.dom.Element;
@@ -169,6 +171,8 @@ public class TDocumentation {
      * @return the last String entry in getContents if it exists. If the last entry of getContents is not a String,
      * Optional.empty() is returned.
      */
+    @JsonIgnore
+    @XmlTransient
     public Optional<String> getLastStringContent() {
         @NonNull List<Object> contents = getContent();
         if (contents.isEmpty()) {

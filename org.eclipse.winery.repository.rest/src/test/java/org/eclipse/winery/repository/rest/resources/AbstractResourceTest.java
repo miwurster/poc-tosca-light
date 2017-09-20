@@ -79,7 +79,7 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 	}
 
 	private boolean isZip(String fileName) {
-		return (fileName.endsWith("zip"));
+		return (fileName.endsWith("zip") || fileName.endsWith(".csar"));
 	}
 
 	private String getAccept(String fileName) {
@@ -110,16 +110,16 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
 		try {
 			String expectedStr = readFromClasspath(fileName);
 			final String receivedStr = start()
-					.accept(getAccept(fileName))
-					.get(callURL(restURL))
-					.then()
-					.log()
-					.ifValidationFails()
-					.statusCode(200)
-					.extract()
-					.response()
-					.getBody()
-					.asString();
+				.accept(getAccept(fileName))
+				.get(callURL(restURL))
+				.then()
+				.log()
+				.ifValidationFails()
+				.statusCode(200)
+				.extract()
+				.response()
+				.getBody()
+				.asString();
 			if (isXml(fileName)) {
 				org.hamcrest.MatcherAssert.assertThat(receivedStr, CompareMatcher.isIdenticalTo(expectedStr).ignoreWhitespace());
 			} else if (isZip(fileName)) {
