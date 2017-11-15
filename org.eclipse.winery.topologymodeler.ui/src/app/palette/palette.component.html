@@ -1,0 +1,22 @@
+<div class="bootstrap-vertical-nav">
+
+    <button id="palette_root" class="btn btn-primary" type="button" (click)="openPalette()">
+        <div>Palette</div>
+    </button>
+
+    <div [@paletteItemState]="paletteRootState" class="palette-items-wrapper">
+        <accordion [closeOthers]="oneAtATime">
+            <accordion-group *ngFor="let ns of groupedNodeTypes; let i = index;">
+                <div accordion-heading>{{ns.text}}</div>
+                <ul class="nav flex-column nav-tabs">
+                    <li *ngFor="let child of ns.children" class="nav-item">
+                        <div class="btn btn-light btn-sm btn-block"
+                             (mousedown)="publishTitle($event)">{{ child.text }}</div>
+                    </li>
+                </ul>
+            </accordion-group>
+        </accordion>
+
+    </div>
+</div>
+

@@ -1,0 +1,323 @@
+<div id="container" style="height: auto;"
+     (mousedown)="showSelectionRange($event)"
+     (click)="this.repaintJsPlumb()">
+    <div class="watermark" style="color: #929292">TopologyModeler v2.0.0 ~ OpenTOSCA Winery <br> © 2017 University of Stuttgart.</div>
+    <div id="grid"
+         (mousedown)="trackTimeOfMouseDown($event)"
+         (mouseup)="trackTimeOfMouseUp($event)"
+         [class.crosshair]="this.crosshair"
+         [style.width.vw]="gridWidth"
+         [style.height.vh]="gridWidth">
+        <div class="selection" id="selection"
+             [class.selection-active]="selectionActive"
+             [style.left.px]="pageX"
+             [style.top.px]="pageY"
+             [style.width.px]="selectionWidth"
+             [style.height.px]="selectionHeight"
+             #selection>
+            <span></span>
+        </div>
+    </div>
+
+    <div #nodes>
+        <winery-node *ngFor="let node of allNodeTemplates"
+                     [nodeAttributes]="{
+                    properties: node.properties,
+                    id: node.id,
+                    type: node.type,
+                    name: node.name,
+                    minInstances: node.minInstances,
+                    maxInstances: node.maxInstances,
+                    color: node.color,
+                    imageUrl: node.imageUrl,
+                    documentation: node.documentation,
+                    any: node.any,
+                    otherAttributes: node.otherAttributes,
+                    x: node.x,
+                    y: node.y,
+                    capabilities: node.capabilities,
+                    requirements: node.requirements,
+                    deploymentArtifacts: node.deploymentArtifacts,
+                    policies: node.policies,
+                    targetLocations: node.targetLocations
+                   }"
+                     [entityTypes]="this.entityTypes"
+                     [allRelationshipTypesColors]="allRelationshipTypesColors"
+                     [needsToBeFlashed]="needsToBeFlashed"
+                     (sendId)="makeDraggable($event)"
+                     [navbarButtonsState]="navbarButtonsState"
+                     (askForRepaint)="repaintJsPlumb($event)"
+                     (askForRemoval)="removeElement($event)"
+                     (setDragSource)="setDragSource($event)"
+                     (closedEndpoint)="closedEndpoint($event)"
+                     (sendCurrentType)="setCurrentType($event)"
+                     [dragSource]="node.id + 'Endpoint'"
+                     (handleNodeClickedActions)="handleNodeClickedActions($event)"
+                     (updateSelectedNodes)="updateSelectedNodes($event)"
+                     (unmarkConnections)="unmarkConnections($event)"
+                     (saveNodeCapabilities)="saveNodeCapabilities($event)"
+                     (sendNodeData)="toggleModalHandler($event)">
+        </winery-node>
+    </div>
+</div>
+
+<!-- POLICIES MODAL -->
+<winery-modal bsModal #policiesModal="bs-modal" [modalRef]="policiesModal">
+    <winery-modal-header [title]="'Add Policy'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <form #addPolicyForm="ngForm" id="addPolicyForm" enctype="multipart/form-data">
+            <fieldset>
+                <div class="form-group">
+                    <label for="policyName" class="control-label">Name:</label>
+                    <input [(ngModel)]="policyTemplateName" id="policyName" class="form-control" name="Name"
+                           type="text" required="required"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="policyType" class="control-label">Type:</label>
+                    <select [(ngModel)]="policyType"
+                            id="policyType"
+                            name="policyType"
+                            class="form-control"
+                            type="text"
+                            required="required"
+                            (change)="onChangePolicyType($event.target.value)">
+                        <option *ngFor="let policyType of policyTypes" [value]="policyType.id">{{policyType.id}}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="policyTemplate" class="control-label">Policy Template:</label>
+
+                    <select id="policyTemplate"
+                            [(ngModel)]="policyTemplate"
+                            class="form-control"
+                            name="policyTemplate"
+                            (change)="onChangePolicyTemplate($event.target.value)">
+                        <option *ngFor="let policyTemplate of policyTemplates" [value]="policyTemplate.id">
+                            {{policyTemplate.id}}
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <div id="OrionpolicyXML" class="orionxmleditordiv">
+                        <pre></pre>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer [showDefaultButtons]="false">
+        <button type="button" id="cancelPolicies" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button type="button" id="addPolicy" class="btn btn-primary" (click)="savePoliciesToModel($event)">Add</button>
+    </winery-modal-footer>
+</winery-modal>
+
+<!-- CAPABILITIES MODAL -->
+<winery-modal bsModal #capabilitiesModal="bs-modal" [modalRef]="capabilitiesModal">
+    <winery-modal-header [title]="'Add Capability'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <form #addCapForm="ngForm" id="addCapForm" enctype="multipart/form-data">
+            <fieldset>
+
+                <div class="form-group" id="CapIdGroup">
+                    <label for="CapId" class="control-label">Id:</label>
+                    <input [(ngModel)]="capId"
+                           id="CapId"
+                           class="form-control"
+                           name="CapId"
+                           type="text"
+                           required="required"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="CapNameChooser" class="control-label">Definition Name:</label>
+                    <select [(ngModel)]="capDefinitionName"
+                            name="capName"
+                            id="CapNameChooser"
+                            class="form-control"
+                            type="text"
+                            required="required"
+                            (change)="onChangeCapDefinitionName($event.target.value)">
+                        <option *ngFor="let capDefinitionName of capDefinitionNames"
+                                [value]="capDefinitionName.name">{{ capDefinitionName.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="CapTypeDisplay" class="control-label">Cap Type:</label>
+                    <input id="CapTypeDisplay"
+                           class="form-control"
+                           type="text"
+                           required="required"
+                           name="CapTypeDisplay"
+                           disabled="disabled"
+                           [(ngModel)]="capType"/>
+                </div>
+
+                <div id="CapPropertiesContainer">
+                </div>
+            </fieldset>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer [showDefaultButtons]="false">
+        <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button (click)="saveCapabilityToModel($event)" type="button" id="addCapbtn" class="btn btn-primary">Add</button>
+    </winery-modal-footer>
+</winery-modal>
+
+<!-- REQUIREMENTS MODAL -->
+<winery-modal bsModal #requirementsModal="bs-modal" [modalRef]="requirementsModal">
+    <winery-modal-header [title]="'Add Requirement'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <form #addReqForm="ngForm" id="addReqForm" enctype="multipart/form-data">
+            <fieldset>
+
+                <div class="form-group" id="ReqIdGroup">
+                    <label for="ReqId" class="control-label">Id:</label>
+                    <input [(ngModel)]="reqId"
+                           id="ReqId"
+                           class="form-control"
+                           name="ReqId"
+                           type="text"
+                           required="required"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="ReqNameChooser" class="control-label">Definition Name:</label>
+                    <select [(ngModel)]="reqDefinitionName"
+                            id="ReqNameChooser"
+                            name="ReqNameChooser"
+                            class="form-control"
+                            type="text"
+                            required="required"
+                            (change)="onChangeReqDefinitionName($event.target.value)">
+                        <option *ngFor="let reqDefinitionName of reqDefinitionNames" [value]="reqDefinitionName.name">
+                            {{reqDefinitionName.name}}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ReqTypeDisplay" class="control-label">Req Type:</label>
+                    <input [(ngModel)]="reqType"
+                           id="ReqTypeDisplay"
+                           name="ReqTypeDisplay"
+                           class="form-control"
+                           type="text"
+                           required="required"
+                           disabled="disabled"/>
+                </div>
+
+                <div id="ReqPropertiesContainer">
+                </div>
+            </fieldset>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer [showDefaultButtons]="false">
+        <button type="button" id="cancelRequirements" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button (click)="saveRequirementsToModel($event)" type="button" id="addReqbtn" class="btn btn-primary">Add</button>
+    </winery-modal-footer>
+</winery-modal>
+
+<!-- DEPLOYMENT ARTIFACT MODAL -->
+<winery-modal bsModal #deploymentArtifactModal="bs-modal" [modalRef]="deploymentArtifactModal">
+    <winery-modal-header [title]="'Add Deployment Artifact'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <form #addDeploymentArtifactForm="ngForm" id="addDeploymentArtifactForm" enctype="multipart/form-data">
+            <fieldset>
+
+                <div class="form-group">
+                    <label>Name</label>
+                    <input [(ngModel)]="artifactName" class="form-control" name="artifactName"
+                           id="artifactName" type="text" required="required" autocomplete="on"/>
+                </div>
+                <h4>Artifact Template Creation</h4>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="artifactTemplateCreation" value="createArtifactTemplate"
+                               checked="checked" id="createArtifactTemplateInput"/>Create Artifact Template
+                    </label>
+                    <p class="help-block">Check if you want to upload <strong>new</strong> files, you do not want to
+                        reuse existing files and you do not point to an image library.</p>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="artifactTemplateCreation" value="linkArtifactTemplate"/>Link Artifact
+                        Template
+                    </label>
+                    <p class="help-block">Check if you want to reuse existing files.</p>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="artifactTemplateCreation" value="skipArtifactTemplate"/>Do not create
+                        an artifact template
+                    </label>
+                    <p class="help-block">Check if you want to point to an image library.</p>
+                </div>
+            </fieldset>
+            <fieldset id="artifactTypeFieldset">
+                <div class="form-group" id="artifactTypeDiv">
+                    <label for="artifactChooser">Artifact Type</label>
+                    <select [(ngModel)]="artifactType"
+                            name="artifactChooser"
+                            class="form-control"
+                            id="artifactChooser"
+                            type="text"
+                            required="required"
+                            (change)="onChangeDepArtifacts($event.target.value)">
+                        <option *ngFor="let artifactType of artifactTypes" [value]="artifactType.qName">{{artifactType.qName}}
+                        </option>
+                    </select>
+                </div>
+            </fieldset>
+            <fieldset>
+                <div class="form-group-grouping">
+                    <!-- createArtifactTemplate class is required for artifactcreationdialog -->
+                    <div class="form-group createArtifactTemplate">
+                        <label>Artifact Template Name</label>
+                        <!-- name is an NCName -->
+                        <input [(ngModel)]="artifactTemplateName" class="artifactData form-control"
+                               id="artifactTemplateName" name="artifactTemplateName" type="text" required="required"
+                               autocomplete="on" placeholder="Enter name for artifact template"/>
+                        <div id="artifactTemplateNameIsValid" class="invalid">
+                            <span id="artifactTemplateNameIsInvalidReason"></span>
+                        </div>
+                    </div>
+
+                    <!-- createArtifactTemplate class is required for artifactcreationdialog -->
+                    <div class="form-group createArtifactTemplate">
+                        <label for="artifactTemplateNS" class="control-label">Namespace</label>
+                        <input [(ngModel)]="artifactTemplateNS" type="text" class="form-control"
+                               name="artifactTemplateNS" id="artifactTemplateNS"/>
+                    </div>
+                </div>
+
+                <div id="linkArtifactTemplate" class="form-group" style="display:none;">
+                    <label for="divArtifactTemplateToLink">Artifact Template</label>
+                    <div id="divArtifactTemplateToLink">
+
+                        <select id=artifactTemplateToLink name="artifactTemplate" class="form-control"
+                                style="max-width: 90%">
+                            <option *ngFor="let artifactTemplate of artifactTemplates" [value]="artifactTemplate">
+                                {{artifactTemplate}}
+                            </option>
+                        </select>
+
+                        <a href="#" target="_blank" class="btn btn-info btn-sm" id="viewArtifactTemplateToLink">view</a>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer [showDefaultButtons]="false">
+        <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveDeploymentArtifactsToModel($event)">Add</button>
+    </winery-modal-footer>
+</winery-modal>
