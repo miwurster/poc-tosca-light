@@ -12,6 +12,7 @@
 - [GitHub - Change Pull Request](#github---change-pull-request)
 - [GitHub - After Pull Request Got Merged](#github---after-pull-request-got-merged)
 - [Excursus: Git](#excursus-git)
+- [Update copyright header](#Update-copyright-header)
 - [License](#license)
 
 <!-- tocstop -->
@@ -88,7 +89,7 @@ This is required by the Eclipse process for checking for intellectual property (
      Now, Git Gui shows the difference between `upstream/master` and your changes.
   6. Check changes in Git Gui:
      - Each change you wanted: Is it recognized?
-     - At each file: Is the copyright information in the header OK?
+     - At each file: Is the copyright information in the [header](CodeHeaders.md) OK?
      - Are there too much changed lines? 🡒 Do not stage spurious lines to the commit (e.g., tab to spaces, ...)
      - Are there too much changed files? 🡒 Do not stage files you did not intend to change (e.g., `build.gradle` if you did not touch `build.gradle` at all)
      - Check again the style (!)
@@ -139,6 +140,31 @@ This is required by the Eclipse process for checking for intellectual property (
 ![ExcursusGit](graphics/ExcursusGit.png)
 
 Please see also [use gitk to understand git](https://lostechies.com/joshuaflanagan/2010/09/03/use-gitk-to-understand-git/) to understand the settings in git.
+
+## Update copyright header
+Steps to update copyright headers:
+1. Define scopes to apply the copy right header to:
+    - Open properties `ctrl alt s` and search for `Scopes`
+    - Select packages for the scope and click `Include Recursively`
+    ![GitAutoCheck](graphics/SetScopes.png)
+2. Apply copyright settings to Scope:
+    - Open properties `ctrl alt s` and search for `Copyright`
+    - Add copyright entry and apply previously created scope
+    ![GitAutoCheck](graphics/Copyright.png)
+3. Create copyright profile:
+    - Open Settings/Editor/Copyright/'Copyright Profiles'
+    - Add copyright text without borders
+        - Set Copyright year dynamically with `${today.year}` 
+    - Add copyright regex (Acquired by selecting the copyright header in intellij editor and pressing `ctrl shift f`)
+    - Allow replacing old copyright identified by regex seems not to work
+    ![GitAutoCheck](graphics/CopyrightProfiles.png)
+4. Adjust copyright formatting settings
+    - Open Settings/Editor/Copyright/Formatting
+    - Change to `Use block comments` with `Prefix each line`, set `Relative Location` to `Before other comments`and increase `Separator before/after Length` to `81`
+    ![GitAutoCheck](graphics/CopyrightFormat.png)
+5. Delete previous copyright header manually (Replace with empty String)
+6. Right click package and choose `Update Copyright..`
+    - Check files for duplicated copyright header (occurs if copyright regex not set correctly)
 
 ## License
 
