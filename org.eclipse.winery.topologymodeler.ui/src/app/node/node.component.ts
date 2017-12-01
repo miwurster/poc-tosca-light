@@ -71,7 +71,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
     removeZIndex: any;
     @Input() nodeAttributes: any;
     @Input() entityTypes: any;
-    @Input() needsToBeFlashed: boolean;
     @Input() dragSource: string;
     @Input() navbarButtonsState: ButtonsStateModel;
     @Output() sendId: EventEmitter<string>;

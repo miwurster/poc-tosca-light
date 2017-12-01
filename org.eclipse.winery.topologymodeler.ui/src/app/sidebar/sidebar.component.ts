@@ -58,9 +58,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   maxInputEnabled = true;
   min = 1;
 
-  private nodeNameKeyUp: Subject<string> = new Subject<string>();
-  private nodeMinInstancesKeyUp: Subject<string> = new Subject<string>();
-  private nodeMaxInstancesKeyUp: Subject<string> = new Subject<string>();
+    public nodeNameKeyUp: Subject<string> = new Subject<string>();
+    public nodeMinInstancesKeyUp: Subject<string> = new Subject<string>();
+    public nodeMaxInstancesKeyUp: Subject<string> = new Subject<string>();
   subscription: Subscription;
 
   constructor(private $ngRedux: NgRedux<IWineryState>,

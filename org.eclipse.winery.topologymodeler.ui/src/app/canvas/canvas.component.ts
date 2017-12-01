@@ -50,6 +50,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('deploymentArtifactModal') deploymentArtifactModal: ModalDirective;
+    @Input() entityTypes: any;
     allNodeTemplates: Array<TNodeTemplate> = [];
     allRelationshipTemplates: Array<TRelationshipTemplate> = [];
     navbarButtonsState: ButtonsStateModel;
@@ -74,8 +75,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     nodeTemplatesSubscription;
     navBarButtonsStateSubscription;
     currentNodeIdSubscription;
-    sidebarSubscription;
 
+    sidebarSubscription;
     dragSourceActive = false;
     gridWidth = 100;
     gridHeight = 100;
@@ -92,8 +93,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     currentPaletteOpenedState: boolean;
     newNodeData: any;
     allRelationshipTypesColors: Array<any> = [];
-    @Input() entityTypes: any;
-    @Input() visuals;
     indexOfNewNode: number;
     // capabilities
     capId: string;

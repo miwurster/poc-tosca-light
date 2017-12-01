@@ -32,8 +32,6 @@ import { QName } from './qname';
     styleUrls: ['./winery.component.css']
 })
 export class WineryComponent implements OnInit {
-    serviceTemplate: any;
-    visuals: any;
     nodeTemplates: Array<TNodeTemplate> = [];
     relationshipTemplates: Array<TRelationshipTemplate> = [];
     artifactTypes: Array<any> = [];

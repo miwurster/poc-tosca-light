@@ -27,8 +27,6 @@ import { BackendService } from '../backend.service';
 })
 export class TopologyRendererComponent implements OnInit {
     @Input() entityTypes: any;
-    @Input() topologyTemplate: any;
-    @Input() visuals: Visuals[] = [new Visuals('red', 'apple', 'apple', 'abc')];
 
     constructor(vcr: ViewContainerRef, private notify: WineryAlertService,
                 private backendService: BackendService) {

@@ -16,7 +16,6 @@
 <div id="container" style="height: auto;"
      (mousedown)="showSelectionRange($event)"
      (click)="this.repaintJsPlumb()">
-    <div class="watermark" style="color: #929292">TopologyModeler v2.0.0 ~ OpenTOSCA Winery <br> © 2017 University of Stuttgart.</div>
     <div id="grid"
          (mousedown)="trackTimeOfMouseDown($event)"
          (mouseup)="trackTimeOfMouseUp($event)"
@@ -58,7 +57,6 @@
                    }"
                      [entityTypes]="this.entityTypes"
                      [allRelationshipTypesColors]="allRelationshipTypesColors"
-                     [needsToBeFlashed]="needsToBeFlashed"
                      (sendId)="makeDraggable($event)"
                      [navbarButtonsState]="navbarButtonsState"
                      (askForRepaint)="repaintJsPlumb($event)"
