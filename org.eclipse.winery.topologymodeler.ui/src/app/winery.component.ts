@@ -14,7 +14,7 @@
 
 import 'rxjs/add/operator/do';
 import { Component, OnInit } from '@angular/core';
-import { EntityType, TNodeTemplate, TRelationshipTemplate } from './ttopology-template';
+import { EntityType, TNodeTemplate, TRelationshipTemplate } from './models/ttopology-template';
 import { IWineryState } from './redux/store/winery.store';
 import { WineryActions } from './redux/actions/winery.actions';
 import { NgRedux } from '@angular-redux/store';

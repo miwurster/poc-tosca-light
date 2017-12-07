@@ -1,15 +1,17 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/********************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Thommy Zelenik - initial API and implementation
- *     Josip Ledic - API, implementation, styling, refactoring
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ ********************************************************************************/
+
 import {
     AfterViewInit,
     Component,
@@ -25,7 +27,7 @@ import {
     ViewChildren
 } from '@angular/core';
 import { JsPlumbService } from '../jsPlumbService';
-import { TNodeTemplate, TRelationshipTemplate } from '../ttopology-template';
+import { TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
 import { LayoutDirective } from '../layout.directive';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { NgRedux } from '@angular-redux/store';
@@ -35,6 +37,9 @@ import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actio
 import { NodeComponent } from '../node/node.component';
 import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 import { ModalDirective } from 'ngx-bootstrap';
+import {GridTemplate} from 'app/models/gridTemplate';
+import {Subscription} from 'rxjs/Subscription';
+import {CapabilitiesModalData} from "../models/capabilitiesModalData";
 
 @Component({
     selector: 'winery-canvas',
@@ -56,52 +61,36 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     navbarButtonsState: ButtonsStateModel;
     selectedNodes: Array<TNodeTemplate> = [];
     newJsPlumbInstance: any;
-    pageX: Number;
-    pageY: Number;
-    selectionActive: boolean;
-    initialW: number;
-    initialH: number;
-    selectionWidth: number;
-    selectionHeight: number;
+
+    gridTemplate: GridTemplate;
+
+    allNodesIds: Array<string> = [];
+
+    dragSourceInfos: any;
+    longPress: boolean;
     startTime: number;
     endTime: number;
-    longPress: boolean;
-    crosshair = false;
-    dragSourceInfos: any;
-    allNodesIds: Array<string> = [];
-    // subscriptions
-    paletteOpenedSubscription;
-    relationshipTemplatesSubscription;
-    nodeTemplatesSubscription;
-    navBarButtonsStateSubscription;
-    currentNodeIdSubscription;
 
-    sidebarSubscription;
+    // subscriptions
+    subscriptions: Array<Subscription> = [];
+
+    // unbind mouse move and up functions
+    unbindMouseActions: Array<Function> = [];
+
     dragSourceActive = false;
-    gridWidth = 100;
-    gridHeight = 100;
     currentType: string;
     nodeChildrenIdArray: Array<string>;
     nodeChildrenArray: Array<NodeComponent>;
     jsPlumbConnections: Array<any> = [];
     jsPlumbBindConnection = false;
-    unbindMouseMove: Function;
-    unbindMouseUp: Function;
-    unbindNewNodeMouseMove: Function;
-    unbindNewNodeMouseUp: Function;
     newNode: TNodeTemplate;
     currentPaletteOpenedState: boolean;
-    newNodeData: any;
     allRelationshipTypesColors: Array<any> = [];
     indexOfNewNode: number;
+
     // capabilities
-    capId: string;
-    capColor: string;
-    capQName: string;
-    capType: string;
-    capDefinitionName: string;
-    capabilities: any;
-    capDefinitionNames: any;
+    capabilities: CapabilitiesModalData;
+
     // requirements
     reqId: string;
     reqColor: string;
@@ -150,16 +139,16 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 private zone: NgZone,
                 private hotkeysService: HotkeysService,
                 private renderer: Renderer2) {
-        this.nodeTemplatesSubscription = this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
-            .subscribe(currentNodes => this.updateNodes(currentNodes));
-        this.relationshipTemplatesSubscription = this.ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
-            .subscribe(currentRelationships => this.updateRelationships(currentRelationships));
-        this.navBarButtonsStateSubscription = ngRedux.select(state => state.topologyRendererState)
-            .subscribe(currentButtonsState => this.setButtonsState(currentButtonsState));
-        this.paletteOpenedSubscription = this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
-            .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened));
-        this.currentNodeIdSubscription = this.ngRedux.select(state => state.wineryState.currentNodeData)
-            .subscribe(currentNodeData => this.toggleMarkNode(currentNodeData));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
+            .subscribe(currentNodes => this.updateNodes(currentNodes)));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
+            .subscribe(currentRelationships => this.updateRelationships(currentRelationships)));
+        this.subscriptions.push(this.ngRedux.select(state => state.topologyRendererState)
+            .subscribe(currentButtonsState => this.setButtonsState(currentButtonsState)));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
+            .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened)));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentNodeData)
+            .subscribe(currentNodeData => this.toggleMarkNode(currentNodeData)));
         this.hotkeysService.add(new Hotkey('ctrl+a', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             for (const node of this.allNodeTemplates) {
@@ -169,6 +158,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         }));
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
+        this.gridTemplate = new GridTemplate(null, null, false, null, null, null, null, false, 100);
+        this.capabilities = new CapabilitiesModalData(null, null, null, null, null, null, null);
+        console.log(this.gridTemplate);
     }
 
     /**
@@ -215,10 +207,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.handleNodePressActions(this.newNode.id);
             }, 1);
             this.zone.runOutsideAngular(() => {
-                this.unbindNewNodeMouseMove = this.renderer.listen(this._eref.nativeElement, 'mousemove',
-                    (event) => this.moveNewNode(event));
-                this.unbindNewNodeMouseUp = this.renderer.listen(this._eref.nativeElement, 'mouseup',
-                    ($event) => this.positionNewNode($event));
+                this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mousemove',
+                    (event) => this.moveNewNode(event)));
+                this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mouseup',
+                    ($event) => this.positionNewNode($event)));
             });
         }
     }
@@ -251,7 +243,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             if (node) {
                 if (this.allNodeTemplates[i].name !== node.name) {
                     const nodeId = this.nodeChildrenIdArray.indexOf(this.allNodeTemplates[i].id);
-                    this.nodeChildrenArray[nodeId].nodeAttributes.name = node.name;
+                    this.nodeChildrenArray[nodeId].nodeTemplate.name = node.name;
                     this.nodeChildrenArray[nodeId].flash('name');
                     this.allNodeTemplates[i].name = node.name;
                 } else if (this.allNodeTemplates[i].minInstances !== node.minInstances) {
@@ -292,7 +284,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     toggleMarkNode(currentNodeData: any) {
         if (this.nodeChildrenArray) {
             this.nodeChildrenArray.map(node => {
-                if (node.nodeAttributes.id === currentNodeData.id) {
+                if (node.nodeTemplate.id === currentNodeData.id) {
                     if (currentNodeData.focus === true) {
                         node.makeSelectionVisible = true;
                     } else {
@@ -341,10 +333,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             case 'CAPABILITIES':
                 this.capabilitiesModal.show();
                 try {
-                    this.capabilities = currentNodeData.capabilities;
-                    this.capDefinitionNames = this.entityTypes.capabilityTypes;
+                    this.capabilities.capabilities = currentNodeData.capabilities;
+                    this.capabilities.capDefinitionNames = this.entityTypes.capabilityTypes;
                 } catch (e) {
-                    this.capabilities = '';
+                    this.capabilities.capabilities = '';
                 }
                 break;
         }
@@ -356,11 +348,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     saveCapabilityToModel($event): void {
         const capabilities = {
             nodeId: this.currentModalData.id,
-            color: this.capColor,
-            id: this.capId,
-            name: this.capDefinitionName,
-            namespace: this.capType,
-            qName: this.capType
+            color: this.capabilities.capColor,
+            id: this.capabilities.capId,
+            name: this.capabilities.capDefinitionName,
+            namespace: this.capabilities.capType,
+            qName: this.capabilities.capType
         };
         this.ngRedux.dispatch(this.actions.setCapability(capabilities));
         this.cancel('cancelCapabilities');
@@ -372,10 +364,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     onChangeCapDefinitionName(capName: string) {
         this.entityTypes.capabilityTypes.map(ct => {
             if (ct.name === capName) {
-                this.capColor = ct.color;
-                this.capId = ct.id;
-                this.capType = ct.namespace;
-                this.capQName = ct.qName;
+                this.capabilities.capColor = ct.color;
+                this.capabilities.capId = ct.id;
+                this.capabilities.capType = ct.namespace;
+                this.capabilities.capQName = ct.qName;
             }
         });
     }
@@ -516,9 +508,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.requirementsModal.hide();
                 break;
             case 'cancelCapabilities':
-                this.capId = null;
-                this.capDefinitionName = null;
-                this.capType = null;
+                this.capabilities.capId = null;
+                this.capabilities.capDefinitionName = null;
+                this.capabilities.capType = null;
                 this.capabilitiesModal.hide();
                 break;
             case 'cancelDeploymentArtifacts':
@@ -537,15 +529,12 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param event  The html event.
      */
     moveNewNode(event): void {
-        this.newNodeData = {
-            id: this.newNode.id,
-            x: event.clientX - 108,
-            y: event.clientY - 30
-        };
-        this.allNodeTemplates[this.indexOfNewNode].x = this.newNodeData.x;
-        this.allNodeTemplates[this.indexOfNewNode].otherAttributes.x = this.newNodeData.x;
-        this.allNodeTemplates[this.indexOfNewNode].y = this.newNodeData.y;
-        this.allNodeTemplates[this.indexOfNewNode].otherAttributes.y = this.newNodeData.y;
+        const x = (event.clientX - 108).toString();
+        const y = (event.clientY - 30).toString();
+        this.allNodeTemplates[this.indexOfNewNode].x = x;
+        this.allNodeTemplates[this.indexOfNewNode].otherAttributes.x = x;
+        this.allNodeTemplates[this.indexOfNewNode].y = y;
+        this.allNodeTemplates[this.indexOfNewNode].otherAttributes.y = y;
     }
 
     /**
@@ -554,8 +543,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     positionNewNode(event): void {
         this.updateSelectedNodes('Position new Node');
-        this.unbindNewNodeMouseMove();
-        this.unbindNewNodeMouseUp();
+        this.unbindAll();
         setTimeout(() => this.newJsPlumbInstance.revalidate(this.newNode.id), 1);
         this.repaintJsPlumb();
     }
@@ -848,13 +836,13 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param nodeId
      */
     closedEndpoint(nodeId: string): void {
-        const node = this.nodeChildrenArray.find((nodeTemplate => nodeTemplate.nodeAttributes.id === nodeId));
+        const node = this.nodeChildrenArray.find((nodeTemplate => nodeTemplate.nodeTemplate.id === nodeId));
         node.connectorEndpointVisible = !node.connectorEndpointVisible;
         if (node.connectorEndpointVisible === true) {
             this.dragSourceActive = false;
             this.resetDragSource(nodeId);
             for (const currentNode of this.nodeChildrenArray) {
-                if (currentNode.nodeAttributes.id !== nodeId) {
+                if (currentNode.nodeTemplate.id !== nodeId) {
                     if (currentNode.connectorEndpointVisible === true) {
                         currentNode.connectorEndpointVisible = false;
                     }
@@ -897,15 +885,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                         this.hideSidebar();
                     }
                     selectedNodeSideBarVisible = true;
-                    this.newJsPlumbInstance.deleteConnectionsForElement(node.nodeAttributes.id);
-                    this.newJsPlumbInstance.removeAllEndpoints(node.nodeAttributes.id);
-                    this.newJsPlumbInstance.removeFromAllPosses(node.nodeAttributes.id);
+                    this.newJsPlumbInstance.deleteConnectionsForElement(node.nodeTemplate.id);
+                    this.newJsPlumbInstance.removeAllEndpoints(node.nodeTemplate.id);
+                    this.newJsPlumbInstance.removeFromAllPosses(node.nodeTemplate.id);
                     if (node.connectorEndpointVisible === true) {
                         if (this.newJsPlumbInstance.isSource(node.dragSource)) {
                             this.newJsPlumbInstance.unmakeSource(node.dragSource);
                         }
                     }
-                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeAttributes.id));
+                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id));
                 }
             }
             this.selectedNodes.length = 0;
@@ -919,7 +907,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     clearSelectedNodes(): void {
         if (this.selectedNodes.length > 0) {
             for (const node of this.nodeChildrenArray) {
-                if (this.selectedNodes.find(selectedNode => selectedNode.id === node.nodeAttributes.id)) {
+                if (this.selectedNodes.find(selectedNode => selectedNode.id === node.nodeTemplate.id)) {
                     node.makeSelectionVisible = false;
                 }
             }
@@ -933,20 +921,21 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param $event
      */
     showSelectionRange($event: any) {
+        this.gridTemplate.crosshair = true;
         this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
         this.hideSidebar();
         this.clearSelectedNodes();
         for (const node of this.nodeChildrenArray) {
             node.makeSelectionVisible = false;
         }
-        this.selectionActive = true;
-        this.pageX = $event.pageX;
-        this.pageY = $event.pageY;
-        this.initialW = $event.pageX;
-        this.initialH = $event.pageY;
+        this.gridTemplate.selectionActive = true;
+        this.gridTemplate.pageX = $event.pageX;
+        this.gridTemplate.pageY = $event.pageY;
+        this.gridTemplate.initialW = $event.pageX;
+        this.gridTemplate.initialH = $event.pageY;
         this.zone.runOutsideAngular(() => {
-            this.unbindMouseMove = this.renderer.listen(this._eref.nativeElement, 'mousemove', (event) => this.openSelector(event));
-            this.unbindMouseUp = this.renderer.listen(this._eref.nativeElement, 'mouseup', (event) => this.selectElements(event));
+            this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mousemove', (event) => this.openSelector(event)));
+            this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mouseup', (event) => this.selectElements(event)));
         });
     }
 
@@ -955,15 +944,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param $event
      */
     openSelector($event: any) {
-        this.selectionWidth = Math.abs(this.initialW - $event.pageX);
-        this.selectionHeight = Math.abs(this.initialH - $event.pageY);
-        if ($event.pageX <= this.initialW && $event.pageY >= this.initialH) {
-            this.pageX = $event.pageX;
-        } else if ($event.pageY <= this.initialH && $event.pageX >= this.initialW) {
-            this.pageY = $event.pageY;
-        } else if ($event.pageY < this.initialH && $event.pageX < this.initialW) {
-            this.pageX = $event.pageX;
-            this.pageY = $event.pageY;
+        this.gridTemplate.selectionWidth = Math.abs(this.gridTemplate.initialW - $event.pageX);
+        this.gridTemplate.selectionHeight = Math.abs(this.gridTemplate.initialH - $event.pageY);
+        if ($event.pageX <= this.gridTemplate.initialW && $event.pageY >= this.gridTemplate.initialH) {
+            this.gridTemplate.pageX = $event.pageX;
+        } else if ($event.pageY <= this.gridTemplate.initialH && $event.pageX >= this.gridTemplate.initialW) {
+            this.gridTemplate.pageY = $event.pageY;
+        } else if ($event.pageY < this.gridTemplate.initialH && $event.pageX < this.gridTemplate.initialW) {
+            this.gridTemplate.pageX = $event.pageX;
+            this.gridTemplate.pageY = $event.pageY;
         }
     }
 
@@ -977,14 +966,14 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             const bElem = node.firstChild;
             const result = this.isObjectInSelection(aElem, bElem);
             if (result === true) {
-                this.enhanceDragSelection(node.firstChild.id);
+                this.enhanceDragSelection(node.firstChild.nextElementSibling.id);
             }
         }
-        this.unbindMouseMove();
-        this.unbindMouseUp();
-        this.selectionActive = false;
-        this.selectionWidth = 0;
-        this.selectionHeight = 0;
+        this.unbindAll();
+        this.gridTemplate.selectionActive = false;
+        this.gridTemplate.selectionWidth = 0;
+        this.gridTemplate.selectionHeight = 0;
+        this.gridTemplate.crosshair = false;
         // This is just a hack for firefox, the same code is in the click listener
         if (this._eref.nativeElement.contains($event.target) && this.longPress === false) {
             this.newJsPlumbInstance.removeFromAllPosses(this.selectedNodes.map(node => node.id));
@@ -996,14 +985,22 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
+     * Unbind all mouse actions
+     */
+    private unbindAll(): void {
+        for (const unbindMouseAction of this.unbindMouseActions) {
+            unbindMouseAction();
+        }
+    }
+
+    /**
      * If the window gets scrolled, the HTML component where nodes can be
      * placed on gets extended.
      * @param $event
      */
     @HostListener('window:scroll', ['event'])
     adjustGrid($event) {
-        this.gridWidth = window.innerWidth;
-        this.gridHeight = window.innerHeight;
+        this.gridTemplate.gridDimension = window.innerWidth;
     }
 
     /**
@@ -1029,10 +1026,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     private isObjectInSelection(selectionArea, object): boolean {
         const selectionRect = selectionArea.getBoundingClientRect();
         return (
-            ((selectionRect.top + selectionRect.height) > (object.offsetTop + object.offsetHeight)) &&
-            (selectionRect.top < (object.offsetTop)) &&
-            ((selectionRect.left + selectionArea.getBoundingClientRect().width) > (object.offsetLeft + object.offsetWidth)) &&
-            (selectionRect.left < (object.offsetLeft))
+            ((selectionRect.top + selectionRect.height) > (object.nextElementSibling.offsetTop + object.nextElementSibling.offsetHeight)) &&
+            (selectionRect.top < (object.nextElementSibling.offsetTop)) &&
+            ((selectionRect.left + selectionArea.getBoundingClientRect().width) > (object.nextElementSibling.offsetLeft + object.nextElementSibling.offsetWidth)) &&
+            (selectionRect.left < (object.nextElementSibling.offsetLeft))
         );
     }
 
@@ -1063,7 +1060,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         if (!this.arrayContainsNode(this.selectedNodes, nodeId)) {
             this.enhanceDragSelection(nodeId);
             for (const node of this.nodeChildrenArray) {
-                const nodeIndex = this.selectedNodes.map(selectedNode => selectedNode.id).indexOf(node.nodeAttributes.id);
+                const nodeIndex = this.selectedNodes.map(selectedNode => selectedNode.id).indexOf(node.nodeTemplate.id);
                 if (this.selectedNodes[nodeIndex] === undefined) {
                     node.makeSelectionVisible = false;
                     this.unbindConnection();
@@ -1075,7 +1072,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             }
         } else {
             this.newJsPlumbInstance.removeFromAllPosses(nodeId);
-            const nodeIndex = this.nodeChildrenArray.map(node => node.nodeAttributes.id).indexOf(nodeId);
+            const nodeIndex = this.nodeChildrenArray.map(node => node.nodeTemplate.id).indexOf(nodeId);
             this.nodeChildrenArray[nodeIndex].makeSelectionVisible = false;
             const selectedNodeIndex = this.selectedNodes.map(node => node.id).indexOf(nodeId);
             this.selectedNodes.splice(selectedNodeIndex, 1);
@@ -1100,9 +1097,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     private handleNodePressActions(nodeId: string): void {
         for (const node of this.nodeChildrenArray) {
-            if (node.nodeAttributes.id === nodeId) {
+            if (node.nodeTemplate.id === nodeId) {
                 node.makeSelectionVisible = true;
-            } else if (!this.arrayContainsNode(this.selectedNodes, node.nodeAttributes.id)) {
+            } else if (!this.arrayContainsNode(this.selectedNodes, node.nodeTemplate.id)) {
                 node.makeSelectionVisible = false;
                 this.resetDragSource(nodeId);
             }
@@ -1145,7 +1142,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.selectedNodes.push(this.getNodeByID(this.allNodeTemplates, nodeId));
             this.newJsPlumbInstance.addToPosse(nodeId, 'dragSelection');
             for (const node of this.nodeChildrenArray) {
-                if (this.selectedNodes.find(selectedNode => selectedNode.id === node.nodeAttributes.id)) {
+                if (this.selectedNodes.find(selectedNode => selectedNode.id === node.nodeTemplate.id)) {
                     if (node.makeSelectionVisible === false) {
                         node.makeSelectionVisible = true;
                     }
@@ -1232,23 +1229,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     unmarkConnections(unmarkMessage: string) {
         this.newJsPlumbInstance.select().removeType('marked');
-    }
-
-    /**
-     * saves the capabilities to the Tnodetemplate
-     * @param capabilities - contains information about the capabilities
-     */
-    saveNodeCapabilities(capabilities: any) {
-        const node = this.getNodeByID(this.allNodeTemplates, capabilities.nodeId);
-        console.log(node);
-        if (node) {
-            console.log('saves to model');
-            node.capabilities = {
-                id: capabilities.capId,
-                name: capabilities.capName,
-                capType: capabilities.Q
-            };
-        }
     }
 
     /**
@@ -1348,7 +1328,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     trackTimeOfMouseDown(event: any): void {
         this.newJsPlumbInstance.select().removeType('marked');
         this.repaintJsPlumb();
-        this.crosshair = true;
         this.removeDragSource();
         this.clearSelectedNodes();
         this.unbindConnection();
@@ -1361,7 +1340,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param $event  The HTML event.
      */
     trackTimeOfMouseUp(event: any): void {
-        this.crosshair = false;
         this.endTime = new Date().getTime();
         this.testTimeDifference();
     }
@@ -1382,10 +1360,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     ngAfterViewInit() {
         this.nodeChildrenArray = this.nodeComponentChildren.toArray();
-        this.nodeChildrenIdArray = this.nodeChildrenArray.map(node => node.nodeAttributes.id);
+        this.nodeChildrenIdArray = this.nodeChildrenArray.map(node => node.nodeTemplate.id);
         this.nodeComponentChildren.changes.subscribe(children => {
             this.nodeChildrenArray = children.toArray();
-            this.nodeChildrenIdArray = this.nodeChildrenArray.map(node => node.nodeAttributes.id);
+            this.nodeChildrenIdArray = this.nodeChildrenArray.map(node => node.nodeTemplate.id);
         });
     }
 
@@ -1393,10 +1371,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Lifecycle event
      */
     ngOnDestroy() {
-        this.nodeTemplatesSubscription.unsubscribe();
-        this.relationshipTemplatesSubscription.unsubscribe();
-        this.navBarButtonsStateSubscription.unsubscribe();
-        this.paletteOpenedSubscription.unsubscribe();
-        this.currentNodeIdSubscription.unsubscribe();
+        for (const subscription of this.subscriptions) {
+            subscription.unsubscribe();
+        }
     }
 }

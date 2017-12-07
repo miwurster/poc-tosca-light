@@ -27,6 +27,7 @@ import { Subject } from 'rxjs/Subject';
 export class BackendService {
     readonly headers = new Headers({'Accept': 'application/json'});
     readonly options = new RequestOptions({headers: this.headers});
+
     configuration: TopologyModelerConfiguration;
 
     private serviceTemplate = new Subject<any>();
@@ -83,45 +84,59 @@ export class BackendService {
                 this.requestTopologyTemplateAndVisuals().subscribe(data => {
                     this.topologyTemplateAndVisuals.next(data);
                 });
+                // Policy Types
+                this.requestPolicyTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.policyTypes.next(data);
+                });
+                // Policy Templates
+                this.requestPolicyTemplates().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.policyTemplates.next(data);
+                });
+                // Capability Types
+                this.requestCapabilityTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.capabilityTypes.next(data);
+                });
+                // Requirement Types
+                this.requestRequirementTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.requirementTypes.next(data);
+                });
+                // Artifact Types
+                this.requestArtifactTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.artifactTypes.next(data);
+                });
+                // Grouped NodeTypes Types
+                this.requestGroupedNodeTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.groupedNodeTypes.next(data);
+                });
+                // Relationship Types
+                this.requestRelationshipTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.relationshipTypes.next(data);
+                });
             } else {
                 // empty if url params not specified
                 this.serviceTemplate.next({});
+                // Policy Types
+                this.policyTypes.next({});
+                // Policy Templates
+                this.policyTemplates.next({});
+                // Capability Types
+                this.capabilityTypes.next({});
+                // Requirement Types
+                this.requirementTypes.next({});
+                // Artifact Types
+                this.artifactTypes.next({});
+                // Grouped NodeTypes Types
+                this.groupedNodeTypes.next({});
+                // Relationship Types
+                this.relationshipTypes.next({});
             }
-            // Policy Types
-            this.requestPolicyTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.policyTypes.next(data);
-            });
-            // Policy Templates
-            this.requestPolicyTemplates().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.policyTemplates.next(data);
-            });
-            // Capability Types
-            this.requestCapabilityTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.capabilityTypes.next(data);
-            });
-            // Requirement Types
-            this.requestRequirementTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.requirementTypes.next(data);
-            });
-            // Artifact Types
-            this.requestArtifactTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.artifactTypes.next(data);
-            });
-            // Grouped NodeTypes Types
-            this.requestGroupedNodeTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.groupedNodeTypes.next(data);
-            });
-            // Relationship Types
-            this.requestRelationshipTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.relationshipTypes.next(data);
-            });
         });
     }
 
@@ -150,7 +165,7 @@ export class BackendService {
      * Requests data from the server
      * @returns data  The JSON from the server
      */
-    requestServiceTemplate(): Observable<string> {
+    requestServiceTemplate(): Observable<Object> {
         if (this.configuration) {
             const url = this.configuration.repositoryURL + '/servicetemplates/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
@@ -163,7 +178,7 @@ export class BackendService {
      * Returns data that is later used by jsPlumb to render a relationship connector
      * @returns data The JSON from the server
      */
-    requestRelationshipTypeVisualappearance(namespace: string, id: string): Observable<string> {
+    requestRelationshipTypeVisualappearance(namespace: string, id: string): Observable<any> {
         if (this.configuration) {
             const url = this.configuration.repositoryURL + '/relationshiptypes/'
                 + encodeURIComponent(encodeURIComponent(namespace)) + '/'
@@ -176,7 +191,7 @@ export class BackendService {
      * Requests all visual appearances used for the NodeTemplates
      * @returns {Observable<string>}
      */
-    requestAllNodeTemplateVisuals(): Observable<string> {
+    requestAllNodeTemplateVisuals(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/nodetypes/allvisualappearancedata', this.options)
                 .map(res => res.json());
@@ -187,12 +202,10 @@ export class BackendService {
      * Requests all policy types from the backend
      * @returns {Observable<string>}
      */
-    requestPolicyTypes(): Observable<string> {
+    requestPolicyTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/policytypes', this.options)
-                .map(res => {
-                    return res.json();
-                });
+                .map(res => res.json());
         }
     }
 
@@ -200,12 +213,10 @@ export class BackendService {
      * Requests all requirement types from the backend
      * @returns {Observable<string>}
      */
-    requestRequirementTypes(): Observable<string> {
+    requestRequirementTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/requirementtypes', this.options)
-                .map(res => {
-                    return res.json();
-                });
+                .map(res => res.json());
         }
     }
 
@@ -213,12 +224,10 @@ export class BackendService {
      * Requests all capability types from the backend
      * @returns {Observable<string>}
      */
-    requestCapabilityTypes(): Observable<string> {
+    requestCapabilityTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/capabilitytypes', this.options)
-                .map(res => {
-                    return res.json();
-                });
+                .map(res => res.json());
         }
     }
 
@@ -226,12 +235,10 @@ export class BackendService {
      * Requests all capability types from the backend
      * @returns {Observable<string>}
      */
-    requestGroupedNodeTypes(): Observable<string> {
+    requestGroupedNodeTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/nodetypes?grouped&full', this.options)
-                .map(res => {
-                    return res.json();
-                });
+                .map(res => res.json());
         }
     }
 
@@ -239,12 +246,10 @@ export class BackendService {
      * Requests all policy templates from the backend
      * @returns {Observable<string>}
      */
-    requestPolicyTemplates(): Observable<string> {
+    requestPolicyTemplates(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/policytemplates', this.options)
-                .map(res => {
-                    return res.json();
-                });
+                .map(res => res.json());
         }
     }
 
@@ -252,12 +257,10 @@ export class BackendService {
      * Requests all artifact types from the backend
      * @returns {Observable<string>}
      */
-    requestArtifactTypes(): Observable<string> {
+    requestArtifactTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/artifacttypes', this.options)
-                .map(res => {
-                    return res.json();
-                });
+                .map(res => res.json());
         }
     }
 
@@ -265,12 +268,10 @@ export class BackendService {
      * Requests all relationship types from the backend
      * @returns {Observable<string>}
      */
-    requestRelationshipTypes(): Observable<string> {
+    requestRelationshipTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/relationshiptypes', this.options)
-                .map(res => {
-                    return res.json();
-                });
+                .map(res => res.json());
         }
     }
 
@@ -279,15 +280,14 @@ export class BackendService {
      * @returns {Observable<Response>}
      */
     saveTopologyTemplate(topologyTemplate: any): Observable<any> {
-        if (isNullOrUndefined(this.configuration)) {
-            setTimeout(null, 100);
+        if (this.configuration) {
+            const headers = new Headers({'Content-Type': 'application/json'});
+            const options = new RequestOptions({headers: headers});
+            const url = this.configuration.repositoryURL + '/servicetemplates/'
+                + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
+                + this.configuration.id + '/topologytemplate/';
+            return this.http.put(url, JSON.stringify(topologyTemplate), options);
         }
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
-        const url = this.configuration.repositoryURL + '/servicetemplates/'
-            + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
-            + this.configuration.id + '/topologytemplate/';
-        return this.http.put(url, JSON.stringify(topologyTemplate), options);
     }
     /*  saveVisuals(data: any): Observable<Response> {
      const headers = new Headers({ 'Content-Type': 'application/json' });

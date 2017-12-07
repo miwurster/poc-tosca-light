@@ -10,7 +10,6 @@
  * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
-
 -->
 
 <div id="container" style="height: auto;"
@@ -19,42 +18,22 @@
     <div id="grid"
          (mousedown)="trackTimeOfMouseDown($event)"
          (mouseup)="trackTimeOfMouseUp($event)"
-         [class.crosshair]="this.crosshair"
-         [style.width.vw]="gridWidth"
-         [style.height.vh]="gridWidth">
+         [class.crosshair]="this.gridTemplate.crosshair"
+         [style.width.vw]="this.gridTemplate.gridDimension"
+         [style.height.vh]="this.gridTemplate.gridDimension">
         <div class="selection" id="selection"
-             [class.selection-active]="selectionActive"
-             [style.left.px]="pageX"
-             [style.top.px]="pageY"
-             [style.width.px]="selectionWidth"
-             [style.height.px]="selectionHeight"
+             [class.selection-active]="this.gridTemplate.selectionActive"
+             [style.left.px]="this.gridTemplate.pageX"
+             [style.top.px]="this.gridTemplate.pageY"
+             [style.width.px]="this.gridTemplate.selectionWidth"
+             [style.height.px]="this.gridTemplate.selectionHeight"
              #selection>
             <span></span>
         </div>
     </div>
-
     <div #nodes>
-        <winery-node *ngFor="let node of allNodeTemplates"
-                     [nodeAttributes]="{
-                    properties: node.properties,
-                    id: node.id,
-                    type: node.type,
-                    name: node.name,
-                    minInstances: node.minInstances,
-                    maxInstances: node.maxInstances,
-                    color: node.color,
-                    imageUrl: node.imageUrl,
-                    documentation: node.documentation,
-                    any: node.any,
-                    otherAttributes: node.otherAttributes,
-                    x: node.x,
-                    y: node.y,
-                    capabilities: node.capabilities,
-                    requirements: node.requirements,
-                    deploymentArtifacts: node.deploymentArtifacts,
-                    policies: node.policies,
-                    targetLocations: node.targetLocations
-                   }"
+        <winery-node *ngFor="let nodeTemplate of allNodeTemplates"
+                     [nodeTemplate]="nodeTemplate"
                      [entityTypes]="this.entityTypes"
                      [allRelationshipTypesColors]="allRelationshipTypesColors"
                      (sendId)="makeDraggable($event)"
@@ -64,11 +43,10 @@
                      (setDragSource)="setDragSource($event)"
                      (closedEndpoint)="closedEndpoint($event)"
                      (sendCurrentType)="setCurrentType($event)"
-                     [dragSource]="node.id + 'Endpoint'"
+                     [dragSource]="nodeTemplate.id + '_Endpoint'"
                      (handleNodeClickedActions)="handleNodeClickedActions($event)"
                      (updateSelectedNodes)="updateSelectedNodes($event)"
                      (unmarkConnections)="unmarkConnections($event)"
-                     (saveNodeCapabilities)="saveNodeCapabilities($event)"
                      (sendNodeData)="toggleModalHandler($event)">
         </winery-node>
     </div>
@@ -138,7 +116,7 @@
 
                 <div class="form-group" id="CapIdGroup">
                     <label for="CapId" class="control-label">Id:</label>
-                    <input [(ngModel)]="capId"
+                    <input [(ngModel)]="capabilities.capId"
                            id="CapId"
                            class="form-control"
                            name="CapId"
@@ -148,14 +126,14 @@
 
                 <div class="form-group">
                     <label for="CapNameChooser" class="control-label">Definition Name:</label>
-                    <select [(ngModel)]="capDefinitionName"
+                    <select [(ngModel)]="capabilities.capDefinitionName"
                             name="capName"
                             id="CapNameChooser"
                             class="form-control"
                             type="text"
                             required="required"
                             (change)="onChangeCapDefinitionName($event.target.value)">
-                        <option *ngFor="let capDefinitionName of capDefinitionNames"
+                        <option *ngFor="let capDefinitionName of capabilities.capDefinitionNames"
                                 [value]="capDefinitionName.name">{{ capDefinitionName.name }}
                         </option>
                     </select>
@@ -169,7 +147,7 @@
                            required="required"
                            name="CapTypeDisplay"
                            disabled="disabled"
-                           [(ngModel)]="capType"/>
+                           [(ngModel)]="capabilities.capType"/>
                 </div>
 
                 <div id="CapPropertiesContainer">

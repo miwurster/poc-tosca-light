@@ -13,18 +13,17 @@
  ********************************************************************************/
 
 import {
-    AfterContentInit,
     AfterViewInit,
     Component,
-    ComponentRef,
+    ComponentRef, DoCheck,
     ElementRef,
     EventEmitter,
-    Input,
-    NgZone, OnChanges,
+    Input, KeyValueDiffers,
+    NgZone,
     OnDestroy,
     OnInit,
     Output,
-    Renderer2, SimpleChanges,
+    Renderer2
 } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
 import { ButtonsStateModel } from '../models/buttonsState.model';
@@ -33,6 +32,7 @@ import { IWineryState } from '../redux/store/winery.store';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { hostURL } from '../configuration';
 import { QName } from '../qname';
+import {TNodeTemplate} from '../models/ttopology-template';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -52,7 +52,7 @@ import { QName } from '../qname';
     ]),
     ]
 })
-export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterContentInit {
+export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck {
     public items: string[] = ['Item 1', 'Item 2', 'Item 3'];
     public accordionGroupPanel = 'accordionGroupPanel';
     public customClass = 'customClass';
@@ -69,7 +69,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
     policyTemplates: any;
     artifactTypes: any;
     removeZIndex: any;
-    @Input() nodeAttributes: any;
     @Input() entityTypes: any;
     @Input() dragSource: string;
     @Input() navbarButtonsState: ButtonsStateModel;
@@ -82,19 +81,21 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
     @Output() sendCurrentType: EventEmitter<string>;
     @Output() askForRemoval: EventEmitter<string>;
     @Output() unmarkConnections: EventEmitter<string>;
-    @Output() saveNodeCapabilities: EventEmitter<any>;
     @Output() saveNodeRequirements: EventEmitter<any>;
     @Output() sendPaletteStatus: EventEmitter<any>;
     @Output() sendNodeData: EventEmitter<any>;
+    @Input() allRelationshipTypesColors: Array<string>;
+    @Input() nodeTemplate: TNodeTemplate;
     previousPosition: any;
     currentPosition: any;
-    @Input() allRelationshipTypesColors: Array<string>;
     nodeRef: ComponentRef<Component>;
     unbindMouseMove: Function;
     currentNodeId: string;
     hostURL = hostURL;
     flashTimer = 300;
     parentEl: string;
+    // differ object for detecting changes made to the nodeTemplate object for DoCheck
+    differ: any;
 
     public addItem(): void {
         this.items.push(`Items ${this.items.length + 1}`);
@@ -104,7 +105,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
                 private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
                 private elRef: ElementRef,
-                private renderer: Renderer2) {
+                private renderer: Renderer2,
+                private differs: KeyValueDiffers) {
         this.sendId = new EventEmitter();
         this.askForRepaint = new EventEmitter();
         this.setDragSource = new EventEmitter();
@@ -114,7 +116,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
         this.sendCurrentType = new EventEmitter();
         this.askForRemoval = new EventEmitter();
         this.unmarkConnections = new EventEmitter();
-        this.saveNodeCapabilities = new EventEmitter();
         this.saveNodeRequirements = new EventEmitter();
         this.sendPaletteStatus = new EventEmitter();
         this.sendNodeData = new EventEmitter();
@@ -124,22 +125,26 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
      * Angular lifecycle event.
      */
     ngOnInit() {
+        this.differ = this.differs.find(this.nodeTemplate).create(null);
+    }
+
+    ngDoCheck() {
+        const nodeTemplateChanges = this.differ.diff(this.nodeTemplate);
+        if (nodeTemplateChanges) {
+
+        }
     }
 
     sendToggleAction(nodeData: any): void {
-        const currentNodeData = {...this.nodeAttributes, ...nodeData};
+        const currentNodeData = {...this.nodeTemplate, ...nodeData};
         this.sendNodeData.emit(currentNodeData);
-    }
-
-    ngAfterContentInit() {
-
     }
 
     /**
      * Angular lifecycle event.
      */
     ngAfterViewInit(): void {
-        this.sendId.emit(this.nodeAttributes.id);
+        this.sendId.emit(this.nodeTemplate.id);
         this.visibilityState = 'visible';
     }
 
@@ -172,7 +177,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
      *  Parse the localName of the NodeType
      */
     get nodeTypeLocalName() {
-        return this.nodeAttributes.type ? new QName(this.nodeAttributes.type).localName : JSON.stringify({});
+        return this.nodeTemplate.type ? new QName(this.nodeTemplate.type).localName : JSON.stringify({});
     }
 
     /**
@@ -184,7 +189,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
         this.startTime = new Date().getTime();
         this.repaint(new Event('repaint'));
         const focusNodeData = {
-            id: this.nodeAttributes.id,
+            id: this.nodeTemplate.id,
             ctrlKey: $event.ctrlKey
         };
         this.handleNodeClickedActions.emit(focusNodeData);
@@ -214,7 +219,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
         const offsetLeft = this.elRef.nativeElement.firstChild.offsetLeft;
         const offsetTop = this.elRef.nativeElement.firstChild.offsetTop;
         this.currentPosition = {
-            id: this.nodeAttributes.id,
+            id: this.nodeTemplate.id,
             x: offsetLeft,
             y: offsetTop
         };
@@ -263,7 +268,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
     closeConnectorEndpoints($event): void {
         $event.stopPropagation();
         if (!this.longpress && !$event.ctrlKey) {
-            this.closedEndpoint.emit(this.nodeAttributes.id);
+            this.closedEndpoint.emit(this.nodeTemplate.id);
             this.repaint(new Event('repaint'));
         }
     }
@@ -287,7 +292,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
     makeSource($event): void {
         const dragSourceInfo = {
             dragSource: this.dragSource,
-            nodeId: this.nodeAttributes.id
+            nodeId: this.nodeTemplate.id
         };
         this.setDragSource.emit(dragSourceInfo);
     }
@@ -315,7 +320,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
             }));
         } else {
             let type;
-            const id = this.nodeAttributes.id;
+            const id = this.nodeTemplate.id;
             if (id.includes('_')) {
                 type = id.substring(0, id.indexOf('_'));
             } else {
@@ -325,11 +330,11 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
                 sidebarContents: {
                     sidebarVisible: true,
                     nodeClicked: true,
-                    id: this.nodeAttributes.id,
-                    nameTextFieldValue: this.nodeAttributes.name,
+                    id: this.nodeTemplate.id,
+                    nameTextFieldValue: this.nodeTemplate.name,
                     type: type,
-                    minInstances: this.nodeAttributes.minInstances,
-                    maxInstances: this.nodeAttributes.maxInstances
+                    minInstances: this.nodeTemplate.minInstances,
+                    maxInstances: this.nodeTemplate.maxInstances
                 }
             }));
         }
@@ -339,7 +344,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, AfterCon
      * Angular lifecycle event.
      */
     ngOnDestroy(): void {
-        this.askForRemoval.emit(this.nodeAttributes.id);
+        this.askForRemoval.emit(this.nodeTemplate.id);
         if (this.nodeRef) {
             this.nodeRef.destroy();
         }

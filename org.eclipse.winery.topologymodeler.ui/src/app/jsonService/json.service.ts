@@ -13,7 +13,7 @@
  ********************************************************************************/
 
 import { Injectable, OnInit } from '@angular/core';
-import { Visuals } from '../ttopology-template';
+import { Visuals } from '../models/ttopology-template';
 
 /**
  * Distributes the JSON from the server to the app.

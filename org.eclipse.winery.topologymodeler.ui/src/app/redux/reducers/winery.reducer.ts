@@ -37,7 +37,7 @@ import {
     UpdateRelationshipNameAction,
     WineryActions
 } from '../actions/winery.actions';
-import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from 'app/ttopology-template';
+import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from 'app/models/ttopology-template';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;

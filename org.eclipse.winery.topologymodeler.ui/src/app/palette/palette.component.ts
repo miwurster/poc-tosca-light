@@ -18,7 +18,7 @@ import { PaletteService } from '../palette.service';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
-import { TNodeTemplate } from '../ttopology-template';
+import { TNodeTemplate } from '../models/ttopology-template';
 import {BackendService} from '../backend.service';
 
 /**

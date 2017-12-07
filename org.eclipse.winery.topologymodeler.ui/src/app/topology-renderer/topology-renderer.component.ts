@@ -14,7 +14,7 @@
 
 import { Component, Input, OnInit, ViewContainerRef } from '@angular/core';
 import { WineryAlertService } from '../winery-alert/winery-alert.service';
-import { Visuals } from '../ttopology-template';
+import { Visuals } from '../models/ttopology-template';
 import { BackendService } from '../backend.service';
 
 /**

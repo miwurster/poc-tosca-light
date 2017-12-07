@@ -14,7 +14,7 @@
 
 import { AfterViewInit, Directive, ElementRef } from '@angular/core';
 import ELK from 'elkjs/lib/elk.bundled.js';
-import { TNodeTemplate, TRelationshipTemplate } from './ttopology-template';
+import { TNodeTemplate, TRelationshipTemplate } from './models/ttopology-template';
 import { WineryAlertService } from './winery-alert/winery-alert.service';
 import { JsPlumbService } from './jsPlumbService';
 

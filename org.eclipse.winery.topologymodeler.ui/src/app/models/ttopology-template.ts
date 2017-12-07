@@ -82,7 +82,7 @@ export class TRelationshipTemplate extends AbstractTTemplate {
                 public targetElement: { ref: string },
                 public name?: string,
                 public id?: string,
-                public type?: any,
+                public type?: string,
                 documentation?: any,
                 any?: any,
                 otherAttributes?: any) {
