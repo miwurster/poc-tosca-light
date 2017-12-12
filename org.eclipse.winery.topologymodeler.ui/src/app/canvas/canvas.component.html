@@ -61,20 +61,20 @@
             <fieldset>
                 <div class="form-group">
                     <label for="policyName" class="control-label">Name:</label>
-                    <input [(ngModel)]="policyTemplateName" id="policyName" class="form-control" name="Name"
+                    <input [(ngModel)]="policies.policyTemplateName" id="policyName" class="form-control" name="Name"
                            type="text" required="required"/>
                 </div>
 
                 <div class="form-group">
                     <label for="policyType" class="control-label">Type:</label>
-                    <select [(ngModel)]="policyType"
+                    <select [(ngModel)]="policies.policyType"
                             id="policyType"
                             name="policyType"
                             class="form-control"
                             type="text"
                             required="required"
                             (change)="onChangePolicyType($event.target.value)">
-                        <option *ngFor="let policyType of policyTypes" [value]="policyType.id">{{policyType.id}}</option>
+                        <option *ngFor="let policyType of policies.policyTypes" [value]="policyType.id">{{policyType.id}}</option>
                     </select>
                 </div>
 
@@ -82,11 +82,11 @@
                     <label for="policyTemplate" class="control-label">Policy Template:</label>
 
                     <select id="policyTemplate"
-                            [(ngModel)]="policyTemplate"
+                            [(ngModel)]="policies.policyTemplate"
                             class="form-control"
                             name="policyTemplate"
                             (change)="onChangePolicyTemplate($event.target.value)">
-                        <option *ngFor="let policyTemplate of policyTemplates" [value]="policyTemplate.id">
+                        <option *ngFor="let policyTemplate of policies.policyTemplates" [value]="policyTemplate.id">
                             {{policyTemplate.id}}
                         </option>
                     </select>
@@ -101,7 +101,7 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelPolicies" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button type="button" id="cancelPolicies" class="btn btn-default" (click)="resetPolicies($event)">Cancel</button>
         <button type="button" id="addPolicy" class="btn btn-primary" (click)="savePoliciesToModel($event)">Add</button>
     </winery-modal-footer>
 </winery-modal>
@@ -156,7 +156,7 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="resetCapabilities($event)">Cancel</button>
         <button (click)="saveCapabilityToModel($event)" type="button" id="addCapbtn" class="btn btn-primary">Add</button>
     </winery-modal-footer>
 </winery-modal>
@@ -171,7 +171,7 @@
 
                 <div class="form-group" id="ReqIdGroup">
                     <label for="ReqId" class="control-label">Id:</label>
-                    <input [(ngModel)]="reqId"
+                    <input [(ngModel)]="requirements.reqId"
                            id="ReqId"
                            class="form-control"
                            name="ReqId"
@@ -181,14 +181,14 @@
 
                 <div class="form-group">
                     <label for="ReqNameChooser" class="control-label">Definition Name:</label>
-                    <select [(ngModel)]="reqDefinitionName"
+                    <select [(ngModel)]="requirements.reqDefinitionName"
                             id="ReqNameChooser"
                             name="ReqNameChooser"
                             class="form-control"
                             type="text"
                             required="required"
                             (change)="onChangeReqDefinitionName($event.target.value)">
-                        <option *ngFor="let reqDefinitionName of reqDefinitionNames" [value]="reqDefinitionName.name">
+                        <option *ngFor="let reqDefinitionName of requirements.reqDefinitionNames" [value]="reqDefinitionName.name">
                             {{reqDefinitionName.name}}
                         </option>
                     </select>
@@ -196,7 +196,7 @@
 
                 <div class="form-group">
                     <label for="ReqTypeDisplay" class="control-label">Req Type:</label>
-                    <input [(ngModel)]="reqType"
+                    <input [(ngModel)]="requirements.reqType"
                            id="ReqTypeDisplay"
                            name="ReqTypeDisplay"
                            class="form-control"
@@ -211,7 +211,7 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelRequirements" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button type="button" id="cancelRequirements" class="btn btn-default" (click)="resetRequirements($event)">Cancel</button>
         <button (click)="saveRequirementsToModel($event)" type="button" id="addReqbtn" class="btn btn-primary">Add</button>
     </winery-modal-footer>
 </winery-modal>
@@ -226,7 +226,7 @@
 
                 <div class="form-group">
                     <label>Name</label>
-                    <input [(ngModel)]="artifactName" class="form-control" name="artifactName"
+                    <input [(ngModel)]="deploymentArtifacts.artifactName" class="form-control" name="artifactName"
                            id="artifactName" type="text" required="required" autocomplete="on"/>
                 </div>
                 <h4>Artifact Template Creation</h4>
@@ -256,14 +256,14 @@
             <fieldset id="artifactTypeFieldset">
                 <div class="form-group" id="artifactTypeDiv">
                     <label for="artifactChooser">Artifact Type</label>
-                    <select [(ngModel)]="artifactType"
+                    <select [(ngModel)]="deploymentArtifacts.artifactType"
                             name="artifactChooser"
                             class="form-control"
                             id="artifactChooser"
                             type="text"
                             required="required"
                             (change)="onChangeDepArtifacts($event.target.value)">
-                        <option *ngFor="let artifactType of artifactTypes" [value]="artifactType.qName">{{artifactType.qName}}
+                        <option *ngFor="let artifactType of deploymentArtifacts.artifactTypes" [value]="artifactType.qName">{{artifactType.qName}}
                         </option>
                     </select>
                 </div>
@@ -274,7 +274,7 @@
                     <div class="form-group createArtifactTemplate">
                         <label>Artifact Template Name</label>
                         <!-- name is an NCName -->
-                        <input [(ngModel)]="artifactTemplateName" class="artifactData form-control"
+                        <input [(ngModel)]="deploymentArtifacts.artifactTemplateName" class="artifactData form-control"
                                id="artifactTemplateName" name="artifactTemplateName" type="text" required="required"
                                autocomplete="on" placeholder="Enter name for artifact template"/>
                         <div id="artifactTemplateNameIsValid" class="invalid">
@@ -285,7 +285,7 @@
                     <!-- createArtifactTemplate class is required for artifactcreationdialog -->
                     <div class="form-group createArtifactTemplate">
                         <label for="artifactTemplateNS" class="control-label">Namespace</label>
-                        <input [(ngModel)]="artifactTemplateNS" type="text" class="form-control"
+                        <input [(ngModel)]="deploymentArtifacts.artifactTemplateNS" type="text" class="form-control"
                                name="artifactTemplateNS" id="artifactTemplateNS"/>
                     </div>
                 </div>
@@ -296,7 +296,7 @@
 
                         <select id=artifactTemplateToLink name="artifactTemplate" class="form-control"
                                 style="max-width: 90%">
-                            <option *ngFor="let artifactTemplate of artifactTemplates" [value]="artifactTemplate">
+                            <option *ngFor="let artifactTemplate of deploymentArtifacts.artifactTemplates" [value]="artifactTemplate">
                                 {{artifactTemplate}}
                             </option>
                         </select>
@@ -308,7 +308,7 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default" (click)="cancel($event)">Cancel</button>
+        <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default" (click)="resetDeploymentArtifacts($event)">Cancel</button>
         <button type="button" class="btn btn-primary" (click)="saveDeploymentArtifactsToModel($event)">Add</button>
     </winery-modal-footer>
 </winery-modal>

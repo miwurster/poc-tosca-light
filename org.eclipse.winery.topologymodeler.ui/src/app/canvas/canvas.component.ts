@@ -39,7 +39,11 @@ import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 import { ModalDirective } from 'ngx-bootstrap';
 import {GridTemplate} from 'app/models/gridTemplate';
 import {Subscription} from 'rxjs/Subscription';
-import {CapabilitiesModalData} from "../models/capabilitiesModalData";
+import {CapabilitiesModalData} from '../models/capabilitiesModalData';
+import {RequirementsModalData} from '../models/requirementsModalData';
+import {PoliciesModalData} from "../models/policiesModalData";
+import {ArtifactsModalData} from "../models/artifactsModalData";
+import {NodeIdAndFocusModel} from "../models/nodeIdAndFocusModel";
 
 @Component({
     selector: 'winery-canvas',
@@ -60,23 +64,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     allRelationshipTemplates: Array<TRelationshipTemplate> = [];
     navbarButtonsState: ButtonsStateModel;
     selectedNodes: Array<TNodeTemplate> = [];
-    newJsPlumbInstance: any;
-
-    gridTemplate: GridTemplate;
-
-    allNodesIds: Array<string> = [];
-
-    dragSourceInfos: any;
-    longPress: boolean;
-    startTime: number;
-    endTime: number;
-
-    // subscriptions
-    subscriptions: Array<Subscription> = [];
-
-    // unbind mouse move and up functions
-    unbindMouseActions: Array<Function> = [];
-
+    // current data emitted from a node
+    currentModalData: any;
     dragSourceActive = false;
     currentType: string;
     nodeChildrenIdArray: Array<string>;
@@ -86,81 +75,71 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     newNode: TNodeTemplate;
     currentPaletteOpenedState: boolean;
     allRelationshipTypesColors: Array<any> = [];
-    indexOfNewNode: number;
+    newJsPlumbInstance: any;
+
+    gridTemplate: GridTemplate;
+
+    allNodesIds: Array<string> = [];
+    dragSourceInfos: any;
+    longPress: boolean;
+    startTime: number;
+
+    endTime: number;
+
+    // subscriptions
+    subscriptions: Array<Subscription> = [];
+
+    // unbind mouse move and up functions
+    unbindMouseActions: Array<Function> = [];
 
     // capabilities
     capabilities: CapabilitiesModalData;
 
     // requirements
-    reqId: string;
-    reqColor: string;
-    reqQName: string;
-    reqType: string;
-    reqDefinitionName: string;
-    requirements: any;
-    reqDefinitionNames: any;
-    // policies
-    policies: any;
-    // policy templates
-    policyTemplates: any;
-    policyTemplate: string;
-    policyTemplateColor: string;
-    policyTemplateId: string;
-    policyTemplateName: string;
-    policyTemplateNamespace: string;
-    policyTemplateQName: string;
-    // policy types
-    policyTypes: any;
-    policyType: string;
-    policyTypeColor: string;
-    policyTypeId: string;
-    policyTypeName: string;
-    policyTypeNamespace: string;
-    policyTypeQName: string;
-    // artifacts
-    artifactTypes: any;
-    artifactTemplates: any;
-    depArtId: any;
-    depArtColor: string;
-    artifactName: string;
-    artifactType: string;
-    artifactTemplateName: string;
-    artifactTemplateNS: string;
-    deploymentArtifacts: any;
-    // current data emitted from a node
-    currentModalData: any;
+    requirements: RequirementsModalData;
 
-    constructor(private jsPlumbService: JsPlumbService,
+    // policies
+    policies: PoliciesModalData;
+
+    // artifacts and deploymentartifacts
+    deploymentArtifacts: ArtifactsModalData;
+
+    indexOfNewNode: number;
+
+    constructor(private _jsPlumbService: JsPlumbService,
                 private _eref: ElementRef,
                 private _layoutDirective: LayoutDirective,
-                private ngRedux: NgRedux<IWineryState>,
-                private actions: WineryActions,
-                private topologyRendererActions: TopologyRendererActions,
-                private zone: NgZone,
-                private hotkeysService: HotkeysService,
-                private renderer: Renderer2) {
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
+                private _ngRedux: NgRedux<IWineryState>,
+                private _actions: WineryActions,
+                private _topologyRendererActions: TopologyRendererActions,
+                private _zone: NgZone,
+                private _hotkeysService: HotkeysService,
+                private _renderer: Renderer2) {
+        this.subscriptions.push(this._ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
             .subscribe(currentNodes => this.updateNodes(currentNodes)));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
+        this.subscriptions.push(this._ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
             .subscribe(currentRelationships => this.updateRelationships(currentRelationships)));
-        this.subscriptions.push(this.ngRedux.select(state => state.topologyRendererState)
+        this.subscriptions.push(this._ngRedux.select(state => state.topologyRendererState)
             .subscribe(currentButtonsState => this.setButtonsState(currentButtonsState)));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
+        this.subscriptions.push(this._ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened)));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentNodeData)
+        this.subscriptions.push(this._ngRedux.select(state => state.wineryState.currentNodeData)
             .subscribe(currentNodeData => this.toggleMarkNode(currentNodeData)));
-        this.hotkeysService.add(new Hotkey('ctrl+a', (event: KeyboardEvent): boolean => {
+        this._hotkeysService.add(new Hotkey('ctrl+a', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             for (const node of this.allNodeTemplates) {
                 this.enhanceDragSelection(node.id);
             }
             return false; // Prevent bubbling
         }));
-        this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
+        this.newJsPlumbInstance = this._jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
         this.gridTemplate = new GridTemplate(null, null, false, null, null, null, null, false, 100);
         this.capabilities = new CapabilitiesModalData(null, null, null, null, null, null, null);
-        console.log(this.gridTemplate);
+        this.requirements = new RequirementsModalData(null, null, null, null, null, null, null);
+        this.deploymentArtifacts = new ArtifactsModalData(null, null, null, null, null, null, null, null, null);
+        this.policies = new PoliciesModalData(null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -203,13 +182,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         this.allNodeTemplates.push(this.newNode);
         if (this.currentPaletteOpenedState) {
             this.indexOfNewNode = this.allNodeTemplates.map(node => node.id).indexOf(this.newNode.id);
+            // needs timeout because the called method uses @ViewChildren at the nodes and the new node is yet unavailable in that collection,
+            // but after 1ms the new node is available in the @ViewChildren array
             setTimeout(() => {
                 this.handleNodePressActions(this.newNode.id);
             }, 1);
-            this.zone.runOutsideAngular(() => {
-                this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mousemove',
+            this._zone.runOutsideAngular(() => {
+                this.unbindMouseActions.push(this._renderer.listen(this._eref.nativeElement, 'mousemove',
                     (event) => this.moveNewNode(event)));
-                this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mouseup',
+                this.unbindMouseActions.push(this._renderer.listen(this._eref.nativeElement, 'mouseup',
                     ($event) => this.positionNewNode($event)));
             });
         }
@@ -220,17 +201,21 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param currentNodes  List of all displayed nodes.
      */
     private handleDeletedNodes(currentNodes: Array<TNodeTemplate>): void {
-        let deletedNode;
+        // let deletedNode;
         for (const node of this.allNodeTemplates) {
             if (!currentNodes.map(n => n.id).includes(node.id)) {
-                deletedNode = node.id;
-                break;
+                // deletedNode = node.id;
+                const index = this.allNodeTemplates.map(node => node.id).indexOf(node.id);
+                this.allNodeTemplates.splice(index, 1);
+                // break;
             }
         }
+        /*
         if (deletedNode) {
             const index = this.allNodeTemplates.map(node => node.id).indexOf(deletedNode);
             this.allNodeTemplates.splice(index, 1);
         }
+        */
     }
 
     /**
@@ -277,11 +262,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Executed when a node is short clicked on which opens the sidebar, focusing on the name input field and when
-     * bluring away
+     * Executed when a node is short clicked triggering the sidebar, focusing on the name input field and
+     * upon unfocusing the input field bluring away
      * @param currentNodeData - holds the node id and a focus boolean value which determines the marking or unmarking of the node
      */
-    toggleMarkNode(currentNodeData: any) {
+    toggleMarkNode(currentNodeData: NodeIdAndFocusModel) {
         if (this.nodeChildrenArray) {
             this.nodeChildrenArray.map(node => {
                 if (node.nodeTemplate.id === currentNodeData.id) {
@@ -296,8 +281,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * This modal handler gets triggered by the Policies component
-     * @param modalData - this holds the type, which tells the function which modal to open.
+     * This modal handler gets triggered by the node component
+     * @param currentNodeData - this holds the corresponding node template information and the information which modal to show
      */
     public toggleModalHandler(currentNodeData: any) {
         this.currentModalData = currentNodeData;
@@ -306,28 +291,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             case 'POLICIES':
                 this.policiesModal.show();
                 try {
-                    this.policyTemplates = this.entityTypes.policyTemplates;
-                    this.policyTypes = this.entityTypes.policyTypes;
+                    this.policies.policyTemplates = this.entityTypes.policyTemplates;
+                    this.policies.policyTypes = this.entityTypes.policyTypes;
                 } catch (e) {
-                    this.policies = currentNodeData.policies;
+                    this.policies.policies = currentNodeData.policies;
                 }
                 break;
             case 'DEPLOYMENT_ARTIFACTS':
                 this.deploymentArtifactModal.show();
                 try {
-                    this.deploymentArtifacts = currentNodeData.deploymentArtifacts;
-                    this.artifactTypes = this.entityTypes.artifactTypes;
+                    this.deploymentArtifacts.deploymentArtifacts = currentNodeData.deploymentArtifacts;
+                    this.deploymentArtifacts.artifactTypes = this.entityTypes.artifactTypes;
                 } catch (e) {
-                    this.deploymentArtifacts = '';
+                    this.deploymentArtifacts.deploymentArtifacts = '';
                 }
                 break;
             case 'REQUIREMENTS':
                 this.requirementsModal.show();
                 try {
-                    this.requirements = currentNodeData.requirements;
-                    this.reqDefinitionNames = this.entityTypes.requirementTypes;
+                    this.requirements.requirements = currentNodeData.requirements;
+                    this.requirements.reqDefinitionNames = this.entityTypes.requirementTypes;
                 } catch (e) {
-                    this.requirements = '';
+                    this.requirements.requirements = '';
                 }
                 break;
             case 'CAPABILITIES':
@@ -343,7 +328,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Saves a capability template to the model and gets pushed into the Redux state of the application
+     * Saves a capability template to the model and gets pushed into the Redux store of the application
      */
     saveCapabilityToModel($event): void {
         const capabilities = {
@@ -354,8 +339,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             namespace: this.capabilities.capType,
             qName: this.capabilities.capType
         };
-        this.ngRedux.dispatch(this.actions.setCapability(capabilities));
-        this.cancel('cancelCapabilities');
+        this._ngRedux.dispatch(this._actions.setCapability(capabilities));
+        this.resetElementValues('cancelCapabilities');
     }
 
     /**
@@ -373,19 +358,19 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Saves a requirement template to the model and gets pushed into the Redux state of the application
+     * Saves a requirement template to the model and gets pushed into the Redux store of the application
      */
     saveRequirementsToModel($event): void {
         const requirements = {
             nodeId: this.currentModalData.id,
-            color: this.reqColor,
-            id: this.reqId,
-            name: this.reqDefinitionName,
-            namespace: this.reqType,
-            qName: this.reqQName
+            color: this.requirements.reqColor,
+            id: this.requirements.reqId,
+            name: this.requirements.reqDefinitionName,
+            namespace: this.requirements.reqType,
+            qName: this.requirements.reqQName
         };
-        this.ngRedux.dispatch(this.actions.setRequirement(requirements));
-        this.cancel('cancelRequirements');
+        this._ngRedux.dispatch(this._actions.setRequirement(requirements));
+        this.resetElementValues('cancelRequirements');
     }
 
     /**
@@ -394,10 +379,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     onChangeReqDefinitionName(reqName: string): void {
         this.entityTypes.requirementTypes.map(req => {
             if (req.name === reqName) {
-                this.reqColor = req.color;
-                this.reqId = req.id;
-                this.reqType = req.namespace;
-                this.reqQName = req.qName;
+                this.requirements.reqColor = req.color;
+                this.requirements.reqId = req.id;
+                this.requirements.reqType = req.namespace;
+                this.requirements.reqQName = req.qName;
             }
         });
     }
@@ -408,11 +393,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     onChangeDepArtifacts(artType: any): void {
         this.entityTypes.artifactTypes.map(ct => {
             if (ct.qName === artType) {
-                this.depArtColor = ct.color;
-                this.depArtId = ct.id;
-                this.artifactName = ct.id;
-                this.artifactTemplateNS = ct.namespace;
-                this.artifactTemplateName = ct.qName;
+                this.deploymentArtifacts.depArtColor = ct.color;
+                this.deploymentArtifacts.depArtId = ct.id;
+                this.deploymentArtifacts.artifactName = ct.id;
+                this.deploymentArtifacts.artifactTemplateNS = ct.namespace;
+                this.deploymentArtifacts.artifactTemplateName = ct.qName;
             }
         });
     }
@@ -423,14 +408,14 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     saveDeploymentArtifactsToModel($event): void {
         const deploymentArtifacts = {
             nodeId: this.currentModalData.id,
-            color: this.depArtColor,
-            id: this.depArtId,
-            name: this.artifactName,
-            namespace: this.artifactTemplateNS,
-            qName: this.artifactTemplateName
+            color: this.deploymentArtifacts.depArtColor,
+            id: this.deploymentArtifacts.depArtId,
+            name: this.deploymentArtifacts.artifactName,
+            namespace: this.deploymentArtifacts.artifactTemplateNS,
+            qName: this.deploymentArtifacts.artifactTemplateName
         };
-        this.ngRedux.dispatch(this.actions.setDeploymentArtifact(deploymentArtifacts));
-        this.cancel('cancelDeploymentArtifacts');
+        this._ngRedux.dispatch(this._actions.setDeploymentArtifact(deploymentArtifacts));
+        this.resetElementValues('cancelDeploymentArtifacts');
     }
 
     /**
@@ -439,19 +424,19 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     savePoliciesToModel($event): void {
         const policies = {
             nodeId: this.currentModalData.id,
-            templateColor: this.policyTemplateColor,
-            templateId: this.policyTemplateId,
-            templateName: this.policyTemplateName,
-            templateNamespace: this.policyTemplateNamespace,
-            templateQName: this.policyTemplateQName,
-            typeColor: this.policyTypeColor,
-            typeId: this.policyTypeId,
-            typeName: this.policyTypeName,
-            typeNamespace: this.policyTypeNamespace,
-            typeQName: this.policyTypeQName,
+            templateColor: this.policies.policyTemplateColor,
+            templateId: this.policies.policyTemplateId,
+            templateName: this.policies.policyTemplateName,
+            templateNamespace: this.policies.policyTemplateNamespace,
+            templateQName: this.policies.policyTemplateQName,
+            typeColor: this.policies.policyTypeColor,
+            typeId: this.policies.policyTypeId,
+            typeName: this.policies.policyTypeName,
+            typeNamespace: this.policies.policyTypeNamespace,
+            typeQName: this.policies.policyTypeQName,
         };
-        this.ngRedux.dispatch(this.actions.setPolicy(policies));
-        this.cancel('cancelPolicies');
+        this._ngRedux.dispatch(this._actions.setPolicy(policies));
+        this.resetElementValues('cancelPolicies');
     }
 
     /**
@@ -460,11 +445,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     onChangePolicyTemplate(policyTemplate: string): void {
         this.entityTypes.policyTemplates.map(ct => {
             if (ct.id === policyTemplate) {
-                this.policyTemplateColor = ct.color;
-                this.policyTemplateId = ct.id;
-                this.policyTemplateName = ct.name;
-                this.policyTemplateNamespace = ct.namespace;
-                this.policyTemplateQName = ct.qName;
+                this.policies.policyTemplateColor = ct.color;
+                this.policies.policyTemplateId = ct.id;
+                this.policies.policyTemplateName = ct.name;
+                this.policies.policyTemplateNamespace = ct.namespace;
+                this.policies.policyTemplateQName = ct.qName;
             }
         });
     }
@@ -475,52 +460,45 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     onChangePolicyType(policyType: string): void {
         this.entityTypes.policyTypes.map(ct => {
             if (ct.id === policyType) {
-                this.policyTypeColor = ct.color;
-                this.policyTypeId = ct.id;
-                this.policyTypeName = ct.name;
-                this.policyTypeNamespace = ct.namespace;
-                this.policyTypeQName = ct.qName;
+                this.policies.policyTypeColor = ct.color;
+                this.policies.policyTypeId = ct.id;
+                this.policies.policyTypeName = ct.name;
+                this.policies.policyTypeNamespace = ct.namespace;
+                this.policies.policyTypeQName = ct.qName;
             }
         });
     }
 
     /**
-     * Clears the modal values when clicking on the cancel button
+     * Clears the modal values belonging to the corresponding modal type
      */
-    cancel($event): void {
-        let modalType;
-        try {
-            modalType = $event.srcElement.id;
-        } catch (e) {
-            modalType = $event;
-        }
-        switch (modalType) {
-            case 'cancelPolicies':
-                this.policyTemplateName = null;
-                this.policyType = null;
-                this.policyTemplate = null;
-                this.policiesModal.hide();
-                break;
-            case 'cancelRequirements':
-                this.reqId = null;
-                this.reqDefinitionName = null;
-                this.reqType = null;
-                this.requirementsModal.hide();
-                break;
-            case 'cancelCapabilities':
-                this.capabilities.capId = null;
-                this.capabilities.capDefinitionName = null;
-                this.capabilities.capType = null;
-                this.capabilitiesModal.hide();
-                break;
-            case 'cancelDeploymentArtifacts':
-                this.artifactTemplateNS = null;
-                this.artifactTemplateName = null;
-                this.artifactName = null;
-                this.artifactType = null;
-                this.deploymentArtifactModal.hide();
-                break;
-        }
+    private resetPolicies($event): void {
+        this.policies.policyTemplateName = null;
+        this.policies.policyType = null;
+        this.policies.policyTemplate = null;
+        this.policiesModal.hide();
+    }
+
+    private resetRequirements($event): void {
+        this.requirements.reqId = null;
+        this.requirements.reqDefinitionName = null;
+        this.requirements.reqType = null;
+        this.requirementsModal.hide();
+    }
+
+    private resetCapabilities($event): void {
+        this.capabilities.capId = null;
+        this.capabilities.capDefinitionName = null;
+        this.capabilities.capType = null;
+        this.capabilitiesModal.hide();
+    }
+
+    private resetDeploymentArtifacts($event): void {
+        this.deploymentArtifacts.artifactTemplateNS = null;
+        this.deploymentArtifacts.artifactTemplateName = null;
+        this.deploymentArtifacts.artifactName = null;
+        this.deploymentArtifacts.artifactType = null;
+        this.deploymentArtifactModal.hide();
     }
 
     /**
@@ -549,7 +527,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Setter for PaletteState
+     * Setter for PaletteState, triggered by a redux store change and getting latest value
      * @param currentPaletteOpened
      */
     setPaletteState(currentPaletteOpened: boolean): void {
@@ -569,13 +547,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 const difference = currentRelationships.length - this.allRelationshipTemplates.length;
                 if (difference === 1) {
                     this.handleNewRelationship(currentRelationships);
-                } else if (difference < 1) {
+                } else if (difference < 0) {
                     this.handleDeletedRelationships(currentRelationships);
                 } else {
-                    try {
-                        this.handleLoadedRelationships(currentRelationships);
-                    } catch (e) {
-                    }
+                    this.handleLoadedRelationships(currentRelationships);
                 }
             } else {
                 this.updateRelName(currentRelationships);
@@ -590,7 +565,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     handleNewRelationship(currentRelationships: Array<TRelationshipTemplate>): void {
         const newRel = currentRelationships[currentRelationships.length - 1];
         this.allRelationshipTemplates.push(newRel);
-        console.log(newRel);
         this.manageRelationships(newRel);
     }
 
@@ -609,7 +583,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Handles relationships internally (store)
+     * Handles loaded relationships from a json; timeout to assure that the nodes are loaded first,
+     * needed first because of source and target node information.
+     * try and catch for failed relationship fetching from the server
      * @param currentRelationships  List of all displayed relations.
      */
     handleLoadedRelationships(currentRelationships: Array<TRelationshipTemplate>): void {
@@ -651,44 +627,37 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             const alignmentButtonLayout = this.navbarButtonsState.buttonsState.layoutButton;
             const alignmentButtonAlignH = this.navbarButtonsState.buttonsState.alignHButton;
             const alignmentButtonAlignV = this.navbarButtonsState.buttonsState.alignVButton;
+            let selectedNodes;
             if (alignmentButtonLayout) {
                 this._layoutDirective.layoutNodes(this.allNodeTemplates, this.allRelationshipTemplates, this.newJsPlumbInstance);
-                this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
-                setTimeout(() => {
-                    this.updateAllNodes();
-                    this.newJsPlumbInstance.revalidate('Container');
-                }, 1000);
+                this._ngRedux.dispatch(this._topologyRendererActions.executeLayout());
+                selectedNodes = false;
             } else if (alignmentButtonAlignH) {
                 if (this.selectedNodes.length >= 1) {
                     this._layoutDirective.alignHorizontal(this.selectedNodes, this.newJsPlumbInstance);
-                    setTimeout(() => {
-                        this.updateSelectedNodes('Update selected nodes');
-                        this.newJsPlumbInstance.revalidate('Container');
-                    }, 1000);
+                    selectedNodes = true;
                 } else {
                     this._layoutDirective.alignHorizontal(this.allNodeTemplates, this.newJsPlumbInstance);
-                    setTimeout(() => {
-                        this.updateAllNodes();
-                        this.newJsPlumbInstance.revalidate('Container');
-                    }, 1000);
+                    selectedNodes = false;
                 }
-                this.ngRedux.dispatch(this.topologyRendererActions.executeAlignH());
+                this._ngRedux.dispatch(this._topologyRendererActions.executeAlignH());
             } else if (alignmentButtonAlignV) {
                 if (this.selectedNodes.length >= 1) {
                     this._layoutDirective.alignVertical(this.selectedNodes, this.newJsPlumbInstance);
-                    setTimeout(() => {
-                        this.updateSelectedNodes('Update selected nodes');
-                        this.newJsPlumbInstance.revalidate('Container');
-                    }, 1000);
+                    selectedNodes = true;
                 } else {
                     this._layoutDirective.alignVertical(this.allNodeTemplates, this.newJsPlumbInstance);
-                    setTimeout(() => {
-                        this.updateAllNodes();
-                        this.newJsPlumbInstance.revalidate('Container');
-                    }, 1000);
                 }
-                this.ngRedux.dispatch(this.topologyRendererActions.executeAlignV());
+                this._ngRedux.dispatch(this._topologyRendererActions.executeAlignV());
             }
+            if (selectedNodes === true) {
+                this.updateSelectedNodes('Update selected nodes');
+            } else {
+                this.updateAllNodes();
+            }
+            setTimeout(() => {
+                this.newJsPlumbInstance.revalidate('Container');
+            }, 1000);
         }
     }
 
@@ -719,7 +688,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         this.allNodeTemplates[index].y = nodeCoordinates.y;
         this.allNodeTemplates[index].otherAttributes.x = nodeCoordinates.x;
         this.allNodeTemplates[index].otherAttributes.y = nodeCoordinates.y;
-        this.ngRedux.dispatch(this.actions.updateNodeCoordinates(nodeCoordinates));
+        this._ngRedux.dispatch(this._actions.updateNodeCoordinates(nodeCoordinates));
     }
 
     /**
@@ -781,7 +750,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.clearSelectedNodes();
                 this.newJsPlumbInstance.select().removeType('marked');
                 const currentRel = me.allRelationshipTemplates.find(con => con.id === rel.id);
-                me.ngRedux.dispatch(this.actions.openSidebar({
+                me._ngRedux.dispatch(this._actions.openSidebar({
                     sidebarContents: {
                         sidebarVisible: true,
                         nodeClicked: false,
@@ -893,7 +862,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                             this.newJsPlumbInstance.unmakeSource(node.dragSource);
                         }
                     }
-                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id));
+                    this._ngRedux.dispatch(this._actions.deleteNodeTemplate(node.nodeTemplate.id));
                 }
             }
             this.selectedNodes.length = 0;
@@ -922,7 +891,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     showSelectionRange($event: any) {
         this.gridTemplate.crosshair = true;
-        this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
+        this._ngRedux.dispatch(this._actions.sendPaletteOpened(false));
         this.hideSidebar();
         this.clearSelectedNodes();
         for (const node of this.nodeChildrenArray) {
@@ -933,9 +902,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         this.gridTemplate.pageY = $event.pageY;
         this.gridTemplate.initialW = $event.pageX;
         this.gridTemplate.initialH = $event.pageY;
-        this.zone.runOutsideAngular(() => {
-            this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mousemove', (event) => this.openSelector(event)));
-            this.unbindMouseActions.push(this.renderer.listen(this._eref.nativeElement, 'mouseup', (event) => this.selectElements(event)));
+        this._zone.runOutsideAngular(() => {
+            this.unbindMouseActions.push(this._renderer.listen(this._eref.nativeElement, 'mousemove', (event) => this.openSelector(event)));
+            this.unbindMouseActions.push(this._renderer.listen(this._eref.nativeElement, 'mouseup', (event) => this.selectElements(event)));
         });
     }
 
@@ -979,7 +948,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.newJsPlumbInstance.removeFromAllPosses(this.selectedNodes.map(node => node.id));
             this.clearSelectedNodes();
             if ($event.clientX > 200) {
-                this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
+                this._ngRedux.dispatch(this._actions.sendPaletteOpened(false));
             }
         }
     }
@@ -1028,7 +997,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         return (
             ((selectionRect.top + selectionRect.height) > (object.nextElementSibling.offsetTop + object.nextElementSibling.offsetHeight)) &&
             (selectionRect.top < (object.nextElementSibling.offsetTop)) &&
-            ((selectionRect.left + selectionArea.getBoundingClientRect().width) > (object.nextElementSibling.offsetLeft + object.nextElementSibling.offsetWidth)) &&
+            ((selectionRect.left + selectionArea.getBoundingClientRect().width) > (object.nextElementSibling.offsetLeft +
+                object.nextElementSibling.offsetWidth)) &&
             (selectionRect.left < (object.nextElementSibling.offsetLeft))
         );
     }
@@ -1037,7 +1007,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Hides the Sidebar on the right.
      */
     hideSidebar() {
-        this.ngRedux.dispatch(this.actions.openSidebar({
+        this._ngRedux.dispatch(this._actions.openSidebar({
             sidebarContents: {
                 sidebarVisible: false,
                 nodeClicked: false,
@@ -1215,7 +1185,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                         relationshipId,
                         this.currentType
                     );
-                    this.ngRedux.dispatch(this.actions.saveRelationship(newRelationship));
+                    this._ngRedux.dispatch(this._actions.saveRelationship(newRelationship));
                 }
                 this.unbindConnection();
                 this.repaintJsPlumb();

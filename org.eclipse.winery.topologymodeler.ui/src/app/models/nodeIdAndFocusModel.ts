@@ -13,15 +13,9 @@
  ********************************************************************************/
 
 /**
- * Encompasses the capabilities data defined by the user when using the modal
+ * Encompasses the node id and the information if the current node is selected
  */
-export class CapabilitiesModalData {
-
-    constructor(public capId: string,
-                public capColor: string,
-                public capQName: string,
-                public capType: string,
-                public capDefinitionName: string,
-                public capabilities: any,
-                public capDefinitionNames: any) { }
+export interface NodeIdAndFocusModel {
+    id: string,
+    focus: boolean
 }

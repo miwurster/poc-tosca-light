@@ -13,15 +13,17 @@
  ********************************************************************************/
 
 /**
- * Encompasses the capabilities data defined by the user when using the modal
+ * Encompasses the artifacts data defined by the user when using the modal
  */
-export class CapabilitiesModalData {
+export class ArtifactsModalData {
 
-    constructor(public capId: string,
-                public capColor: string,
-                public capQName: string,
-                public capType: string,
-                public capDefinitionName: string,
-                public capabilities: any,
-                public capDefinitionNames: any) { }
+    constructor(public depArtId: string,
+                public artifactName: string,
+                public artifactType: string,
+                public depArtColor: string,
+                public artifactTypes: string,
+                public artifactTemplates: any,
+                public artifactTemplateName: any,
+                public artifactTemplateNS: any,
+                public deploymentArtifacts: any) { }
 }

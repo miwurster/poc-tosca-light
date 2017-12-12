@@ -13,15 +13,15 @@
  ********************************************************************************/
 
 /**
- * Encompasses the capabilities data defined by the user when using the modal
+ * Encompasses the requirements data defined by the user when using the modal
  */
-export class CapabilitiesModalData {
+export class RequirementsModalData {
 
-    constructor(public capId: string,
-                public capColor: string,
-                public capQName: string,
-                public capType: string,
-                public capDefinitionName: string,
-                public capabilities: any,
-                public capDefinitionNames: any) { }
+    constructor(public reqId: string,
+                public reqColor: string,
+                public reqQName: string,
+                public reqType: string,
+                public reqDefinitionName: string,
+                public requirements: any,
+                public reqDefinitionNames: any) { }
 }
