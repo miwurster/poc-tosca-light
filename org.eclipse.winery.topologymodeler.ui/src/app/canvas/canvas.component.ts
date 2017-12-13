@@ -41,9 +41,9 @@ import {GridTemplate} from 'app/models/gridTemplate';
 import {Subscription} from 'rxjs/Subscription';
 import {CapabilitiesModalData} from '../models/capabilitiesModalData';
 import {RequirementsModalData} from '../models/requirementsModalData';
-import {PoliciesModalData} from "../models/policiesModalData";
-import {ArtifactsModalData} from "../models/artifactsModalData";
-import {NodeIdAndFocusModel} from "../models/nodeIdAndFocusModel";
+import {PoliciesModalData} from '../models/policiesModalData';
+import {ArtifactsModalData} from '../models/artifactsModalData';
+import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
 
 @Component({
     selector: 'winery-canvas',
@@ -205,7 +205,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         for (const node of this.allNodeTemplates) {
             if (!currentNodes.map(n => n.id).includes(node.id)) {
                 // deletedNode = node.id;
-                const index = this.allNodeTemplates.map(node => node.id).indexOf(node.id);
+                const index = this.allNodeTemplates.map(nodeTemplate => nodeTemplate.id).indexOf(node.id);
                 this.allNodeTemplates.splice(index, 1);
                 // break;
             }
@@ -472,28 +472,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     /**
      * Clears the modal values belonging to the corresponding modal type
      */
-    private resetPolicies($event): void {
+    public resetPolicies($event): void {
         this.policies.policyTemplateName = null;
         this.policies.policyType = null;
         this.policies.policyTemplate = null;
         this.policiesModal.hide();
     }
 
-    private resetRequirements($event): void {
+    public resetRequirements($event): void {
         this.requirements.reqId = null;
         this.requirements.reqDefinitionName = null;
         this.requirements.reqType = null;
         this.requirementsModal.hide();
     }
 
-    private resetCapabilities($event): void {
+    public resetCapabilities($event): void {
         this.capabilities.capId = null;
         this.capabilities.capDefinitionName = null;
         this.capabilities.capType = null;
         this.capabilitiesModal.hide();
     }
 
-    private resetDeploymentArtifacts($event): void {
+    public resetDeploymentArtifacts($event): void {
         this.deploymentArtifacts.artifactTemplateNS = null;
         this.deploymentArtifacts.artifactTemplateName = null;
         this.deploymentArtifacts.artifactName = null;
