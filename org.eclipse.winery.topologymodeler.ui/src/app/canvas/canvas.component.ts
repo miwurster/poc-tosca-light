@@ -41,9 +41,9 @@ import {GridTemplate} from 'app/models/gridTemplate';
 import {Subscription} from 'rxjs/Subscription';
 import {CapabilitiesModalData} from '../models/capabilitiesModalData';
 import {RequirementsModalData} from '../models/requirementsModalData';
-import {PoliciesModalData} from "../models/policiesModalData";
-import {ArtifactsModalData} from "../models/artifactsModalData";
-import {NodeIdAndFocusModel} from "../models/nodeIdAndFocusModel";
+import {PoliciesModalData} from '../models/policiesModalData';
+import {ArtifactsModalData} from '../models/artifactsModalData';
+import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
 
 @Component({
     selector: 'winery-canvas',
@@ -76,6 +76,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     currentPaletteOpenedState: boolean;
     allRelationshipTypesColors: Array<any> = [];
     newJsPlumbInstance: any;
+    readonly draggingThreshold = 300;
 
     gridTemplate: GridTemplate;
 
@@ -203,9 +204,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     private handleDeletedNodes(currentNodes: Array<TNodeTemplate>): void {
         // let deletedNode;
         for (const node of this.allNodeTemplates) {
-            if (!currentNodes.map(n => n.id).includes(node.id)) {
+            if (!currentNodes.some(n => n.id === node.id)) {
                 // deletedNode = node.id;
-                const index = this.allNodeTemplates.map(node => node.id).indexOf(node.id);
+                const index = this.allNodeTemplates.map(nodeTemplate => nodeTemplate.id).indexOf(node.id);
                 this.allNodeTemplates.splice(index, 1);
                 // break;
             }
@@ -340,7 +341,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             qName: this.capabilities.capType
         };
         this._ngRedux.dispatch(this._actions.setCapability(capabilities));
-        this.resetElementValues('cancelCapabilities');
+        this.resetCapabilities('cancelCapabilities');
     }
 
     /**
@@ -370,7 +371,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             qName: this.requirements.reqQName
         };
         this._ngRedux.dispatch(this._actions.setRequirement(requirements));
-        this.resetElementValues('cancelRequirements');
+        this.resetRequirements('cancelRequirements');
     }
 
     /**
@@ -415,7 +416,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             qName: this.deploymentArtifacts.artifactTemplateName
         };
         this._ngRedux.dispatch(this._actions.setDeploymentArtifact(deploymentArtifacts));
-        this.resetElementValues('cancelDeploymentArtifacts');
+        this.resetDeploymentArtifacts('cancelDeploymentArtifacts');
     }
 
     /**
@@ -436,7 +437,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             typeQName: this.policies.policyTypeQName,
         };
         this._ngRedux.dispatch(this._actions.setPolicy(policies));
-        this.resetElementValues('cancelPolicies');
+        this.resetPolicies('cancelPolicies');
     }
 
     /**
@@ -472,28 +473,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     /**
      * Clears the modal values belonging to the corresponding modal type
      */
-    private resetPolicies($event): void {
+    public resetPolicies($event): void {
         this.policies.policyTemplateName = null;
         this.policies.policyType = null;
         this.policies.policyTemplate = null;
         this.policiesModal.hide();
     }
 
-    private resetRequirements($event): void {
+    public resetRequirements($event): void {
         this.requirements.reqId = null;
         this.requirements.reqDefinitionName = null;
         this.requirements.reqType = null;
         this.requirementsModal.hide();
     }
 
-    private resetCapabilities($event): void {
+    public resetCapabilities($event): void {
         this.capabilities.capId = null;
         this.capabilities.capDefinitionName = null;
         this.capabilities.capType = null;
         this.capabilitiesModal.hide();
     }
 
-    private resetDeploymentArtifacts($event): void {
+    public resetDeploymentArtifacts($event): void {
         this.deploymentArtifacts.artifactTemplateNS = null;
         this.deploymentArtifacts.artifactTemplateName = null;
         this.deploymentArtifacts.artifactName = null;
@@ -571,10 +572,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     /**
      * Handler for deleted relations, removes it from the internal representation
      * @param currentRelationships  List of all displayed relations.
+     * !currentRelationships.map(con => con.id).includes(rel.id)
      */
     handleDeletedRelationships(currentRelationships: Array<TRelationshipTemplate>): void {
         for (const rel of this.allRelationshipTemplates) {
-            if (!currentRelationships.map(con => con.id).includes(rel.id)) {
+            if (!currentRelationships.some(con => con.id === rel.id)) {
                 const deletedRel = rel.id;
                 const index = this.allRelationshipTemplates.map(con => con.id).indexOf(deletedRel);
                 this.allRelationshipTemplates.splice(index, 1);
@@ -593,12 +595,12 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.allRelationshipTemplates = currentRelationships;
             setTimeout(() => {
                 if (this.allRelationshipTemplates.length > 0) {
-                    for (const relationship of this.allRelationshipTemplates) {
-                        this.manageRelationships(relationship);
-                    }
+                    this.allRelationshipTemplates.forEach(rel => this.manageRelationships(rel));
                 }
             }, 1);
-        } catch (e) {}
+        } catch (e) {
+            console.log((<Error>e).message);
+        }
     }
 
     /**
@@ -666,9 +668,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     updateAllNodes(): void {
         if (this.allNodeTemplates.length > 0) {
-            for (const nodeTemplate of this.child.nativeElement.children) {
-                this.setNewCoordinates(nodeTemplate);
-            }
+            this.child.nativeElement.children.forEach(node => this.setNewCoordinates(node));
         }
     }
 
@@ -698,7 +698,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     updateSelectedNodes($event): void {
         if (this.selectedNodes.length > 0) {
             for (const nodeTemplate of this.child.nativeElement.children) {
-                if (this.selectedNodes.map(node => node.id).includes(nodeTemplate.firstChild.id)) {
+                if (this.selectedNodes.some(node => node.id === nodeTemplate.firstChild.id)) {
                     this.setNewCoordinates(nodeTemplate);
                 }
             }
@@ -712,7 +712,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     paintRelationship(newRelationship: TRelationshipTemplate) {
         try {
             const allJsPlumbRelationships = this.newJsPlumbInstance.getAllConnections();
-            if (!allJsPlumbRelationships.map(rel => rel.id).includes(newRelationship.id)) {
+            if (!allJsPlumbRelationships.some(rel => rel.id === newRelationship.id)) {
                 const conn = this.newJsPlumbInstance.connect({
                     source: newRelationship.sourceElement.ref,
                     target: newRelationship.targetElement.ref,
@@ -733,7 +733,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 });
                 setTimeout(() => this.handleRelSideBar(conn, newRelationship), 1);
             }
-        } catch (e) {}
+        } catch (e) {
+            console.log((<Error>e).message);
+        }
     }
 
     /**
@@ -741,7 +743,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param conn            The JSPlumb connection
      * @param newRelationship The new relationship internally
      */
-    private handleRelSideBar(conn, newRelationship: any): void {
+    private handleRelSideBar(conn: any, newRelationship: TRelationshipTemplate): void {
         try {
             conn.id = newRelationship.id;
             conn.setType(newRelationship.type);
@@ -771,9 +773,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     manageRelationships(newRelationship: TRelationshipTemplate): void {
         try {
             this.paintRelationship(newRelationship);
-            this.resetDragSource('reset previous drag source');
+            this.resetDragSource('');
             this.repaintJsPlumb();
-        } catch (e) {}
+        } catch (e) {
+            console.log((<Error>e).message);
+        }
     }
 
     /**
@@ -804,7 +808,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Cleanup after dragging operation - sets the endpoints invisible
      * @param nodeId
      */
-    closedEndpoint(nodeId: string): void {
+    toggleClosedEndpoint(nodeId: string): void {
         const node = this.nodeChildrenArray.find((nodeTemplate => nodeTemplate.nodeTemplate.id === nodeId));
         node.connectorEndpointVisible = !node.connectorEndpointVisible;
         if (node.connectorEndpointVisible === true) {
@@ -881,7 +885,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 }
             }
             this.newJsPlumbInstance.removeFromAllPosses(this.selectedNodes.map(node => node.id));
-            this.selectedNodes.length = 0;
+            this.selectedNodes = null;
         }
     }
 
@@ -934,7 +938,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         for (const node of this.child.nativeElement.children) {
             const bElem = node.firstChild;
             const result = this.isObjectInSelection(aElem, bElem);
-            if (result === true) {
+            if (result) {
                 this.enhanceDragSelection(node.firstChild.nextElementSibling.id);
             }
         }
@@ -976,7 +980,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Getter for the offset of any DOM element.
      * @param el  The DOM element.
      */
-    private getOffset(el: any) {
+    private getOffset(el: any): any {
         let _x = 0;
         let _y = 0;
         while (el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop)) {
@@ -1092,13 +1096,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param id
      * @returns Boolean True if 'Nodes' contains 'id'.
      */
-    public arrayContainsNode(Nodes: any[], id: string): boolean {
-        if (Nodes !== null && Nodes.length > 0) {
-            for (const node of Nodes) {
-                if (node.id === id) {
-                    return true;
-                }
-            }
+    public arrayContainsNode(nodes: any[], id: string): boolean {
+        if (nodes !== null && nodes.length > 0) {
+            return nodes.some((node) => node.id === id);
         }
         return false;
     }
@@ -1126,9 +1126,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param Nodes
      * @param id
      */
-    private getNodeByID(Nodes: Array<TNodeTemplate>, id: string) {
-        if (Nodes !== null && Nodes.length > 0) {
-            for (const node of Nodes) {
+    private getNodeByID(nodes: Array<TNodeTemplate>, id: string): TNodeTemplate {
+        if (nodes !== null && nodes.length > 0) {
+            for (const node of nodes) {
                 if (node.id === id) {
                     return node;
                 }
@@ -1174,9 +1174,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 const sourceElement = info.source.offsetParent.offsetParent.id;
                 const targetElement = info.targetId;
                 const relationshipId = `${sourceElement}_${this.currentType}_${targetElement}`;
-                const relTypeExists = this.allRelationshipTemplates.map(rel => {
-                    return rel.id;
-                }).includes(this.currentType);
+                const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
                 if (relTypeExists === false && this.currentType && sourceElement !== targetElement) {
                     const newRelationship = new TRelationshipTemplate(
                         {ref: sourceElement},
@@ -1195,16 +1193,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
 
     /**
      * Removes the marked-styling from all connections.
-     * @param unmarkMessage
      */
-    unmarkConnections(unmarkMessage: string) {
+    unmarkConnections() {
         this.newJsPlumbInstance.select().removeType('marked');
-    }
-
-    /**
-     * Adds styling to all nodes
-     */
-    assignVisuals() {
     }
 
     /**
@@ -1216,15 +1207,14 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
             for (const rel of this.entityTypes.relationshipTypes) {
                 // const color = '#' + (0x1000000 + Math.floor(Math.random() * 0x1000000)).toString(16).substr(1);
-                const color = rel.color;
                 this.allRelationshipTypesColors.push({
                     type: rel.id,
-                    color: color
+                    color: rel.color
                 });
                 this.newJsPlumbInstance.registerConnectionType(
                     rel.id, {
                         paintStyle: {
-                            stroke: color,
+                            stroke: rel.color,
                             strokeWidth: 2
                         },
                         hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
@@ -1237,10 +1227,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Lifecycle hook
      */
     ngOnInit() {
-        this.assignVisuals();
         try {
             this.assignRelTypes();
-        } catch (e) {}
+        } catch (e) {
+            console.log((<Error>e).message);
+        }
     }
 
     /**
@@ -1295,7 +1286,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * and resets dragSource, clears selectedNodes and unbinds the connection listener.
      * @param $event  The HTML event.
      */
-    trackTimeOfMouseDown(event: any): void {
+    trackTimeOfMouseDown(): void {
         this.newJsPlumbInstance.select().removeType('marked');
         this.repaintJsPlumb();
         this.removeDragSource();
@@ -1309,18 +1300,18 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * to decide whether a drag or a click is initiated.
      * @param $event  The HTML event.
      */
-    trackTimeOfMouseUp(event: any): void {
+    trackTimeOfMouseUp(): void {
         this.endTime = new Date().getTime();
-        this.testTimeDifference();
+        this.determineDragOrClick();
     }
 
     /**
      * Checks whether it was a drag or a click.
      */
-    private testTimeDifference(): void {
-        if ((this.endTime - this.startTime) < 300) {
+    private determineDragOrClick(): void {
+        if ((this.endTime - this.startTime) < this.draggingThreshold) {
             this.longPress = false;
-        } else if (this.endTime - this.startTime >= 300) {
+        } else if (this.endTime - this.startTime >= this.draggingThreshold) {
             this.longPress = true;
         }
     }

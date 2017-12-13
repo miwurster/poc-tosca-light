@@ -21,21 +21,24 @@ declare const jsPlumb: any;
  */
 @Injectable()
 export class JsPlumbService {
-  getJsPlumbInstance(): any {
-    jsPlumb.ready(() => {
-    });
-    return jsPlumb.getInstance({
-      PaintStyle: {
-        strokeWidth: 1,
-        stroke: '#212121',
-      },
-      Connector: ['Bezier', {curviness: 1, stub: 200}],
-      Endpoint: 'Blank',
-      connectorOverlays: [
-        ['Arrow', {location: 1}],
-      ],
-      ConnectionsDetachable: false,
-      Anchor: 'Continuous'
-    });
-  }
+    jsPlumbInstance: any;
+    getJsPlumbInstance(): any {
+        jsPlumb.ready(() => {});
+        if (this.jsPlumbInstance !== null) {
+            this.jsPlumbInstance = jsPlumb.getInstance({
+                PaintStyle: {
+                    strokeWidth: 1,
+                    stroke: '#212121',
+                },
+                Connector: ['Bezier', {curviness: 1, stub: 200}],
+                Endpoint: 'Blank',
+                connectorOverlays: [
+                    ['Arrow', {location: 1}],
+                ],
+                ConnectionsDetachable: false,
+                Anchor: 'Continuous'
+            });
+        }
+        return this.jsPlumbInstance;
+    }
 }

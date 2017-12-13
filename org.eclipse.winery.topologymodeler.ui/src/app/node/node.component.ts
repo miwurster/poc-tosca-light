@@ -185,7 +185,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * @param $event
      */
     mouseDownHandler($event): void {
-        this.unmarkConnections.emit('unmark');
+        this.unmarkConnections.emit();
         this.startTime = new Date().getTime();
         this.repaint(new Event('repaint'));
         const focusNodeData = {

@@ -16,6 +16,6 @@
  * Encompasses the node id and the information if the current node is selected
  */
 export interface NodeIdAndFocusModel {
-    id: string,
-    focus: boolean
+    id: string;
+    focus: boolean;
 }

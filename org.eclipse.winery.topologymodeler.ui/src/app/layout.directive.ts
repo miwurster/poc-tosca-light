@@ -19,13 +19,13 @@ import { WineryAlertService } from './winery-alert/winery-alert.service';
 import { JsPlumbService } from './jsPlumbService';
 
 @Directive({
-  selector: '[wineryLayout]'
+  selector: 'wineryLayout'
 })
 /**
  * Manages all layouting operations besides drag and drop (this is in canvas.ts)
  */
 export class LayoutDirective implements AfterViewInit {
-    jsPlumbInstance: any;
+    private jsPlumbInstance: any;
 
   constructor(private alert: WineryAlertService,
               private elRef: ElementRef,
@@ -34,7 +34,7 @@ export class LayoutDirective implements AfterViewInit {
       this.jsPlumbInstance.setContainer('container');
 
   }
-  /** TODO YANNIC jsplumb als service injecten
+
   /**
    * Layouts all nodes (not just the selected ones).
    * Uses ELK.Js which implements sugiyama to layout nodes.

@@ -16,8 +16,8 @@
      (mousedown)="showSelectionRange($event)"
      (click)="this.repaintJsPlumb()">
     <div id="grid"
-         (mousedown)="trackTimeOfMouseDown($event)"
-         (mouseup)="trackTimeOfMouseUp($event)"
+         (mousedown)="trackTimeOfMouseDown()"
+         (mouseup)="trackTimeOfMouseUp()"
          [class.crosshair]="this.gridTemplate.crosshair"
          [style.width.vw]="this.gridTemplate.gridDimension"
          [style.height.vh]="this.gridTemplate.gridDimension">
@@ -41,12 +41,12 @@
                      (askForRepaint)="repaintJsPlumb($event)"
                      (askForRemoval)="removeElement($event)"
                      (setDragSource)="setDragSource($event)"
-                     (closedEndpoint)="closedEndpoint($event)"
+                     (closedEndpoint)="toggleClosedEndpoint($event)"
                      (sendCurrentType)="setCurrentType($event)"
                      [dragSource]="nodeTemplate.id + '_Endpoint'"
                      (handleNodeClickedActions)="handleNodeClickedActions($event)"
                      (updateSelectedNodes)="updateSelectedNodes($event)"
-                     (unmarkConnections)="unmarkConnections($event)"
+                     (unmarkConnections)="unmarkConnections()"
                      (sendNodeData)="toggleModalHandler($event)">
         </winery-node>
     </div>
