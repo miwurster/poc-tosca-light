@@ -13,6 +13,7 @@
  ********************************************************************************/
 
 import {Injectable} from '@angular/core';
+import {isNullOrUndefined} from 'util';
 
 declare const jsPlumb: any;
 
@@ -26,7 +27,7 @@ export class JsPlumbService {
     getJsPlumbInstance (): any {
         jsPlumb.ready(() => {
         });
-        if (this.jsPlumbInstance === null) {
+        if (isNullOrUndefined(this.jsPlumbInstance)) {
             this.jsPlumbInstance = jsPlumb.getInstance({
                 PaintStyle: {
                     strokeWidth: 1,
