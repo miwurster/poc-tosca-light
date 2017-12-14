@@ -27,7 +27,6 @@ import { ToastModule, ToastOptions } from 'ng2-toastr/ng2-toastr';
 import { WineryCustomOption } from './winery-alert/winery-alert-options';
 import { PaletteComponent } from './palette/palette.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
-import { JsonService } from './jsonService/json.service';
 import { TopologyRendererModule } from './topology-renderer/topology-renderer.module';
 import { PrintViewComponent } from './print-view/print-view.component';
 import { DevToolsExtension, NgRedux, NgReduxModule } from '@angular-redux/store';
@@ -65,7 +64,6 @@ import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule
   providers: [
     {provide: ToastOptions, useClass: WineryCustomOption},
     JsPlumbService,
-    JsonService,
     WineryActions,
     TopologyRendererActions,
     LoadedService,

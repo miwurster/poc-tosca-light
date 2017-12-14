@@ -26,7 +26,6 @@ import { LayoutDirective } from '../layout.directive';
 import { WineryAlertModule } from '../winery-alert/winery-alert.module';
 import { ToastModule, ToastOptions } from 'ng2-toastr/ng2-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { JsonService } from '../jsonService/json.service';
 import { JsPlumbService } from '../jsPlumbService';
 import { WineryCustomOption } from '../winery-alert/winery-alert-options';
 import { TopologyRendererComponent } from './topology-renderer.component';
@@ -80,7 +79,6 @@ export class TopologyRendererModule {
             providers: [
                 {provide: ToastOptions, useClass: WineryCustomOption},
                 JsPlumbService,
-                JsonService
             ]
         };
     }

@@ -77,6 +77,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     allRelationshipTypesColors: Array<any> = [];
     newJsPlumbInstance: any;
     readonly draggingThreshold = 300;
+    readonly newNodePositionOffsetX = 108;
+    readonly newNodePositionOffsetY = 30;
 
     gridTemplate: GridTemplate;
 
@@ -192,7 +194,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.unbindMouseActions.push(this._renderer.listen(this._eref.nativeElement, 'mousemove',
                     (event) => this.moveNewNode(event)));
                 this.unbindMouseActions.push(this._renderer.listen(this._eref.nativeElement, 'mouseup',
-                    ($event) => this.positionNewNode($event)));
+                    ($event) => this.positionNewNode()));
             });
         }
     }
@@ -341,7 +343,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             qName: this.capabilities.capType
         };
         this._ngRedux.dispatch(this._actions.setCapability(capabilities));
-        this.resetCapabilities('cancelCapabilities');
+        this.resetCapabilities();
     }
 
     /**
@@ -371,7 +373,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             qName: this.requirements.reqQName
         };
         this._ngRedux.dispatch(this._actions.setRequirement(requirements));
-        this.resetRequirements('cancelRequirements');
+        this.resetRequirements();
     }
 
     /**
@@ -416,7 +418,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             qName: this.deploymentArtifacts.artifactTemplateName
         };
         this._ngRedux.dispatch(this._actions.setDeploymentArtifact(deploymentArtifacts));
-        this.resetDeploymentArtifacts('cancelDeploymentArtifacts');
+        this.resetDeploymentArtifacts();
     }
 
     /**
@@ -437,7 +439,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             typeQName: this.policies.policyTypeQName,
         };
         this._ngRedux.dispatch(this._actions.setPolicy(policies));
-        this.resetPolicies('cancelPolicies');
+        this.resetPolicies();
     }
 
     /**
@@ -473,28 +475,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     /**
      * Clears the modal values belonging to the corresponding modal type
      */
-    public resetPolicies($event): void {
+    public resetPolicies(): void {
         this.policies.policyTemplateName = null;
         this.policies.policyType = null;
         this.policies.policyTemplate = null;
         this.policiesModal.hide();
     }
 
-    public resetRequirements($event): void {
+    public resetRequirements(): void {
         this.requirements.reqId = null;
         this.requirements.reqDefinitionName = null;
         this.requirements.reqType = null;
         this.requirementsModal.hide();
     }
 
-    public resetCapabilities($event): void {
+    public resetCapabilities(): void {
         this.capabilities.capId = null;
         this.capabilities.capDefinitionName = null;
         this.capabilities.capType = null;
         this.capabilitiesModal.hide();
     }
 
-    public resetDeploymentArtifacts($event): void {
+    public resetDeploymentArtifacts(): void {
         this.deploymentArtifacts.artifactTemplateNS = null;
         this.deploymentArtifacts.artifactTemplateName = null;
         this.deploymentArtifacts.artifactName = null;
@@ -508,8 +510,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param event  The html event.
      */
     moveNewNode(event): void {
-        const x = (event.clientX - 108).toString();
-        const y = (event.clientY - 30).toString();
+        const x = (event.clientX - this.newNodePositionOffsetX).toString();
+        const y = (event.clientY - this.newNodePositionOffsetY).toString();
         this.allNodeTemplates[this.indexOfNewNode].x = x;
         this.allNodeTemplates[this.indexOfNewNode].otherAttributes.x = x;
         this.allNodeTemplates[this.indexOfNewNode].y = y;
@@ -520,7 +522,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Repositions the new node and repaints the screen
      * @param $event  The html event.
      */
-    positionNewNode(event): void {
+    positionNewNode(): void {
         this.updateSelectedNodes('Position new Node');
         this.unbindAll();
         setTimeout(() => this.newJsPlumbInstance.revalidate(this.newNode.id), 1);
