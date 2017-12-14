@@ -20,7 +20,7 @@ import { JsPlumbService } from './jsPlumbService';
 import {LayoutChildNodeModel} from './models/layoutChildNodeModel';
 
 @Directive({
-  selector: 'wineryLayout'
+  selector: '[wineryLayout]'
 })
 /**
  * Manages all layouting operations besides drag and drop (this is in canvas.ts)

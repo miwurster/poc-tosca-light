@@ -78,7 +78,7 @@ export class TopologyRendererModule {
             ngModule: TopologyRendererModule,
             providers: [
                 {provide: ToastOptions, useClass: WineryCustomOption},
-                JsPlumbService,
+                JsPlumbService
             ]
         };
     }
