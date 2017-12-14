@@ -12,30 +12,30 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { NodeComponent } from './node.component';
-import { AccordionModule } from 'ngx-bootstrap';
+import {NodeComponent} from './node.component';
+import {AccordionModule} from 'ngx-bootstrap';
 
 describe('NodeComponent', () => {
-  let component: NodeComponent;
-  let fixture: ComponentFixture<NodeComponent>;
+    let component: NodeComponent;
+    let fixture: ComponentFixture<NodeComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [NodeComponent],
-      imports: [AccordionModule.forRoot()]
-    })
-    .compileComponents();
-  }));
+    beforeEach(async(() => {
+        TestBed.configureTestingModule({
+            declarations: [NodeComponent],
+            imports: [AccordionModule.forRoot()]
+        })
+            .compileComponents();
+    }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(NodeComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(() => {
+        fixture = TestBed.createComponent(NodeComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 });

@@ -15,9 +15,9 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 
 @Component({
-  selector: 'winery-capabilities',
-  templateUrl: './capabilities.component.html',
-  styleUrls: ['./capabilities.component.css']
+    selector: 'winery-capabilities',
+    templateUrl: './capabilities.component.html',
+    styleUrls: ['./capabilities.component.css']
 })
 /**
  * This Handles Information about the nodes capabilities
@@ -26,7 +26,7 @@ export class CapabilitiesComponent implements OnInit {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
 
-    constructor() {
+    constructor () {
         this.toggleModalHandler = new EventEmitter();
     }
 
@@ -34,10 +34,10 @@ export class CapabilitiesComponent implements OnInit {
      * Propagates the click event to node.component, where capabilities modal gets opened.
      * @param $event
      */
-    public toggleModal($event) {
+    public toggleModal ($event) {
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 
-    ngOnInit() {
+    ngOnInit () {
     }
 }

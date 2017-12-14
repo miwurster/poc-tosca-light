@@ -12,18 +12,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { TestBed, inject } from '@angular/core/testing';
+import {TestBed, inject} from '@angular/core/testing';
 
-import { LoadedService } from './loaded.service';
+import {LoadedService} from './loaded.service';
 
 describe('LoadedService', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [LoadedService]
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            providers: [LoadedService]
+        });
     });
-  });
 
-  it('should be created', inject([LoadedService], (service: LoadedService) => {
-    expect(service).toBeTruthy();
-  }));
+    it('should be created', inject([LoadedService], (service: LoadedService) => {
+        expect(service).toBeTruthy();
+    }));
 });

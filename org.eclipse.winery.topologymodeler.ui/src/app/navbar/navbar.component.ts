@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, OnDestroy } from '@angular/core';
-import { WineryAlertService } from '../winery-alert/winery-alert.service';
-import { NgRedux } from '@angular-redux/store';
-import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
-import { ButtonsStateModel } from '../models/buttonsState.model';
-import { IWineryState } from '../redux/store/winery.store';
-import { BackendService } from '../backend.service';
+import {Component, OnDestroy} from '@angular/core';
+import {WineryAlertService} from '../winery-alert/winery-alert.service';
+import {NgRedux} from '@angular-redux/store';
+import {TopologyRendererActions} from '../redux/actions/topologyRenderer.actions';
+import {ButtonsStateModel} from '../models/buttonsState.model';
+import {IWineryState} from '../redux/store/winery.store';
+import {BackendService} from '../backend.service';
 
 /**
  * The navbar of the topologymodeler.
@@ -39,10 +39,10 @@ export class NavbarComponent implements OnDestroy {
     unformattedTopologyTemplate;
     topologyTemplateSubscription;
 
-    constructor(private alert: WineryAlertService,
-                private ngRedux: NgRedux<IWineryState>,
-                private actions: TopologyRendererActions,
-                private backendService: BackendService) {
+    constructor (private alert: WineryAlertService,
+                 private ngRedux: NgRedux<IWineryState>,
+                 private actions: TopologyRendererActions,
+                 private backendService: BackendService) {
         this.navBarButtonsStateSubscription = ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState));
         this.topologyTemplateSubscription = ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
@@ -53,7 +53,7 @@ export class NavbarComponent implements OnDestroy {
      * Setter for buttonstate
      * @param newButtonsState
      */
-    setButtonsState(newButtonsState: ButtonsStateModel): void {
+    setButtonsState (newButtonsState: ButtonsStateModel): void {
         this.navbarButtonsState = newButtonsState;
     }
 
@@ -61,7 +61,7 @@ export class NavbarComponent implements OnDestroy {
      * Getter for the style of a pressed button.
      * @param buttonPressed
      */
-    getStyle(buttonPressed: boolean): string {
+    getStyle (buttonPressed: boolean): string {
         if (buttonPressed) {
             return '#929292';
         }
@@ -75,7 +75,7 @@ export class NavbarComponent implements OnDestroy {
      * SharedNodeNavbarService.
      * @param event -- The click event of a button.
      */
-    toggleButton(event) {
+    toggleButton (event) {
         switch (event.target.id) {
             case 'targetLocations': {
                 this.ngRedux.dispatch(this.actions.toggleTargetLocations());
@@ -122,7 +122,7 @@ export class NavbarComponent implements OnDestroy {
     /**
      * Calls the BackendService's saveTopologyTemplate method and displays a success message if successful.
      */
-    saveTopologyTemplateToRepository() {
+    saveTopologyTemplateToRepository () {
         // Initialization
         let currentTopologyTemplateFromTheRepository = {
             nodeTemplates: [],
@@ -151,7 +151,7 @@ export class NavbarComponent implements OnDestroy {
     /**
      * Angular lifecycle event.
      */
-    ngOnDestroy() {
+    ngOnDestroy () {
         this.navBarButtonsStateSubscription.unsubscribe();
     }
 }

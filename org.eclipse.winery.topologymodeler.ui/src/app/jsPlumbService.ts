@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 declare const jsPlumb: any;
 
@@ -22,9 +22,11 @@ declare const jsPlumb: any;
 @Injectable()
 export class JsPlumbService {
     jsPlumbInstance: any;
-    getJsPlumbInstance(): any {
-        jsPlumb.ready(() => {});
-        if (this.jsPlumbInstance !== null) {
+
+    getJsPlumbInstance (): any {
+        jsPlumb.ready(() => {
+        });
+        if (this.jsPlumbInstance === null) {
             this.jsPlumbInstance = jsPlumb.getInstance({
                 PaintStyle: {
                     strokeWidth: 1,

@@ -12,20 +12,20 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { TestBed, inject } from '@angular/core/testing';
+import {TestBed, inject} from '@angular/core/testing';
 
-import { PaletteService } from './palette.service';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {PaletteService} from './palette.service';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 describe('PaletteService', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [PaletteService],
-      imports: [BrowserAnimationsModule]
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            providers: [PaletteService],
+            imports: [BrowserAnimationsModule]
+        });
     });
-  });
 
-  it('should ...', inject([PaletteService], (service: PaletteService) => {
-    expect(service).toBeTruthy();
-  }));
+    it('should ...', inject([PaletteService], (service: PaletteService) => {
+        expect(service).toBeTruthy();
+    }));
 });

@@ -12,9 +12,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Injectable, ViewContainerRef } from '@angular/core';
-import { ToastsManager } from 'ng2-toastr/ng2-toastr';
-import { DatePipe } from '@angular/common';
+import {Injectable, ViewContainerRef} from '@angular/core';
+import {ToastsManager} from 'ng2-toastr/ng2-toastr';
+import {DatePipe} from '@angular/common';
 
 /**
  * This is the own internal notify service of the topology renderer - may be replaced by the winery one.
@@ -23,59 +23,59 @@ import { DatePipe } from '@angular/common';
 @Injectable()
 export class WineryAlertService {
 
-  toastr: ToastsManager;
-  alerts: Array<WineryAlert> = [];
+    toastr: ToastsManager;
+    alerts: Array<WineryAlert> = [];
 
-  constructor(private pToastr: ToastsManager,
-              private datePipe: DatePipe) {
-    this.toastr = pToastr;
-  }
+    constructor (private pToastr: ToastsManager,
+                 private datePipe: DatePipe) {
+        this.toastr = pToastr;
+    }
 
-  /**
-   * Initializes the Notification Service
-   * Important: this function must be called before using the the service
-   *
-   * @param rootVcr - View Container Reference of the root component
-   */
-  init(rootVcr: ViewContainerRef) {
-    this.toastr.setRootViewContainerRef(rootVcr);
+    /**
+     * Initializes the Notification Service
+     * Important: this function must be called before using the the service
+     *
+     * @param rootVcr - View Container Reference of the root component
+     */
+    init (rootVcr: ViewContainerRef) {
+        this.toastr.setRootViewContainerRef(rootVcr);
 
-  }
+    }
 
-  /**
-   *
-   * @param message
-   * @param title
-   */
-  success(message: string, title = 'Success') {
-    this.toastr.success(message, title);
-    this.alerts.push({title: title, message: message, type: 'success', createdOn: this.getCurrentDate()});
+    /**
+     *
+     * @param message
+     * @param title
+     */
+    success (message: string, title = 'Success') {
+        this.toastr.success(message, title);
+        this.alerts.push({title: title, message: message, type: 'success', createdOn: this.getCurrentDate()});
 
-  }
+    }
 
-  /**
-   *
-   * @param message
-   * @param title
-   */
-  info(message: string, title = 'Information') {
-    this.toastr.info(message, title);
-    this.alerts.push({title: title, message: message, type: 'info', createdOn: this.getCurrentDate()});
+    /**
+     *
+     * @param message
+     * @param title
+     */
+    info (message: string, title = 'Information') {
+        this.toastr.info(message, title);
+        this.alerts.push({title: title, message: message, type: 'info', createdOn: this.getCurrentDate()});
 
-  }
+    }
 
-  /**
-   * returns the current date
-   * @returns {string}
-   */
-  getCurrentDate() {
-    return this.datePipe.transform(Date.now(), 'short');
-  }
+    /**
+     * returns the current date
+     * @returns {string}
+     */
+    getCurrentDate () {
+        return this.datePipe.transform(Date.now(), 'short');
+    }
 }
 
 interface WineryAlert {
-  title: string;
-  type: string;
-  message: string;
-  createdOn: string;
+    title: string;
+    type: string;
+    message: string;
+    createdOn: string;
 }
