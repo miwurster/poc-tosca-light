@@ -17,6 +17,7 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import { TNodeTemplate, TRelationshipTemplate } from './models/ttopology-template';
 import { WineryAlertService } from './winery-alert/winery-alert.service';
 import { JsPlumbService } from './jsPlumbService';
+import {LayoutChildNodeModel} from './models/layoutChildNodeModel';
 
 @Directive({
   selector: '[wineryLayout]'
@@ -26,6 +27,8 @@ import { JsPlumbService } from './jsPlumbService';
  */
 export class LayoutDirective implements AfterViewInit {
     private jsPlumbInstance: any;
+    readonly nodeXOffset = 40;
+    readonly nodeYOffset = 50;
 
   constructor(private alert: WineryAlertService,
               private elRef: ElementRef,
@@ -46,20 +49,17 @@ export class LayoutDirective implements AfterViewInit {
                      relationshipTemplates: Array<TRelationshipTemplate>,
                      jsPlumbInstance: any): void {
     // These are the input arrays for eclipse layout kernel (ELK).
-    const children: any[] = [];
+    const children: LayoutChildNodeModel[] = [];
     const edges: any[] = [];
 
     // get width and height of nodes
     nodeTemplates.forEach((node) => {
       const width = this.elRef.nativeElement.querySelector('#' + node.id).offsetWidth;
       const height = this.elRef.nativeElement.querySelector('#' + node.id).offsetHeight;
-      children.push({id: node.id, width: width, height: height});
+      children.push(new LayoutChildNodeModel(node.id, width, height));
       // also get their current positions and apply them to the internal list
       const left = this.elRef.nativeElement.querySelector('#' + node.id).offsetLeft;
       const top = this.elRef.nativeElement.querySelector('#' + node.id).offsetTop;
-      // apply the old positions to the nodeslist
-      // node.otherAttributes['x'] = left;
-      // node.otherAttributes['y'] = top;
       node.x = left;
       node.y = top;
     });
@@ -103,7 +103,7 @@ export class LayoutDirective implements AfterViewInit {
                          jsPlumbInstance: any): void {
     nodeTemplates.forEach((node, index) => {
       // apply the new positions to the nodes
-      node.x = data.children[index].x + 40;
+      node.x = data.children[index].x + this.nodeXOffset;
       node.y = data.children[index].y + 50;
     });
 
