@@ -19,7 +19,7 @@ import { WineryAlertService } from './winery-alert/winery-alert.service';
 import { JsPlumbService } from './jsPlumbService';
 
 @Directive({
-  selector: 'wineryLayout'
+  selector: '[wineryLayout]'
 })
 /**
  * Manages all layouting operations besides drag and drop (this is in canvas.ts)
