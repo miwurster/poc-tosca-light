@@ -12,35 +12,35 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 @Injectable()
 export class PaletteService {
-  paletteData =
-    [{
-        nodeTitle: 'AWS',
-        imgUrl: 'http://google.de',
-      },
-      {
-        nodeTitle: 'AWS2',
-        imgUrl: 'http://google.de'
-      }
-      ,
-      {
-        nodeTitle: 'AWS3',
-        imgUrl: 'http://google.de'
-      }
-      ,
-      {
-        nodeTitle: 'AWS4',
-        imgUrl: 'http://google.de'
-      }];
+    paletteData =
+        [{
+            nodeTitle: 'AWS',
+            imgUrl: 'http://google.de',
+        },
+            {
+                nodeTitle: 'AWS2',
+                imgUrl: 'http://google.de'
+            }
+            ,
+            {
+                nodeTitle: 'AWS3',
+                imgUrl: 'http://google.de'
+            }
+            ,
+            {
+                nodeTitle: 'AWS4',
+                imgUrl: 'http://google.de'
+            }];
 
-  constructor() {
-  }
+    constructor () {
+    }
 
-  public getPaletteData(): any {
-    return this.paletteData;
-  }
+    public getPaletteData (): any {
+        return this.paletteData;
+    }
 
 }

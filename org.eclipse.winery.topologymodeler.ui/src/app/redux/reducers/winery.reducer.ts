@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Action } from 'redux';
+import {Action} from 'redux';
 import {
     DecMaxInstances,
     DecMinInstances,
@@ -37,7 +37,7 @@ import {
     UpdateRelationshipNameAction,
     WineryActions
 } from '../actions/winery.actions';
-import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from 'app/models/ttopology-template';
+import {TNodeTemplate, TRelationshipTemplate, TTopologyTemplate} from 'app/models/ttopology-template';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;
@@ -130,30 +130,30 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === sideBarNodeId2 ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].properties,
-                                // id
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].id,
-                                // type
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].type,
-                                // name
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].minInstances,
-                                maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].properties,
+                                    // id
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].id,
+                                    // type
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].type,
+                                    // name
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].minInstances,
+                                    maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.INC_MIN_INSTANCES:
@@ -166,31 +166,31 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_incMinInstances ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].properties,
-                                // id
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].id,
-                                // type
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].type,
-                                // name
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].name,
-                                Number(lastState.currentJsonTopology
-                                    .nodeTemplates[indexIncMinInstances].minInstances) + 1,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].properties,
+                                    // id
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].id,
+                                    // type
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].type,
+                                    // name
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].name,
+                                    Number(lastState.currentJsonTopology
+                                        .nodeTemplates[indexIncMinInstances].minInstances) + 1,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.DEC_MIN_INSTANCES:
@@ -203,31 +203,31 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_decMinInstances ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].properties,
-                                // id
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].id,
-                                // type
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].type,
-                                // name
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].name,
-                                Number(lastState.currentJsonTopology
-                                    .nodeTemplates[indexDecMinInstances].minInstances) - 1,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].properties,
+                                    // id
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].id,
+                                    // type
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].type,
+                                    // name
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].name,
+                                    Number(lastState.currentJsonTopology
+                                        .nodeTemplates[indexDecMinInstances].minInstances) - 1,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.INC_MAX_INSTANCES:
@@ -240,31 +240,31 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_incMaxInstances ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].properties,
-                                // id
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].id,
-                                // type
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].type,
-                                // name
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].minInstances,
-                                Number(lastState.currentJsonTopology
-                                    .nodeTemplates[indexIncMaxInstances].maxInstances) + 1,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].properties,
+                                    // id
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].id,
+                                    // type
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].type,
+                                    // name
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].minInstances,
+                                    Number(lastState.currentJsonTopology
+                                        .nodeTemplates[indexIncMaxInstances].maxInstances) + 1,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.DEC_MAX_INSTANCES:
@@ -277,31 +277,31 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_decMaxInstances ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].properties,
-                                // id
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].id,
-                                // type
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].type,
-                                // name
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].minInstances,
-                                Number(lastState.currentJsonTopology
-                                    .nodeTemplates[indexDecMaxInstances].maxInstances) - 1,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].properties,
+                                    // id
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].id,
+                                    // type
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].type,
+                                    // name
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].minInstances,
+                                    Number(lastState.currentJsonTopology
+                                        .nodeTemplates[indexDecMaxInstances].maxInstances) - 1,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_DEPLOYMENT_ARTIFACTS_PROPERTY:
@@ -343,31 +343,35 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPropertyDepArt.nodeId ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].requirements,
-                                depArtPropertyType === 'KV' ?
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
-                                        properties: {kvproperties: newDepArtProperties}} :
-                                {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
-                                    properties: {any: newXMLDepArtProperty}},
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].requirements,
+                                    depArtPropertyType === 'KV' ?
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
+                                            properties: {kvproperties: newDepArtProperties}
+                                        } :
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
+                                            properties: {any: newXMLDepArtProperty}
+                                        },
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_REQUIREMENT_PROPERTY:
@@ -408,31 +412,35 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newReqProperty.nodeId ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].capabilities,
-                                reqPropertyType === 'KV' ?
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
-                                        properties: {kvproperties: newReqProperties}} :
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
-                                        properties: {any: newXMLReqProperty}},
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].capabilities,
+                                    reqPropertyType === 'KV' ?
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
+                                            properties: {kvproperties: newReqProperties}
+                                        } :
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
+                                            properties: {any: newXMLReqProperty}
+                                        },
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_CAPABILITY_PROPERTY:
@@ -473,31 +481,35 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapProperty.nodeId ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].y,
-                                capPropertyType === 'KV' ?
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
-                                        properties: {kvproperties: newCapProperties}} :
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
-                                        properties: {any: newXMLCapProperty}},
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].y,
+                                    capPropertyType === 'KV' ?
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
+                                            properties: {kvproperties: newCapProperties}
+                                        } :
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
+                                            properties: {any: newXMLCapProperty}
+                                        },
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_POLICIES_PROPERTY:
@@ -538,31 +550,35 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPoliciesProperty.nodeId ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].deploymentArtifacts,
-                                policiesPropertyType === 'KV' ?
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
-                                        properties: {kvproperties: newPolicyProperties}} :
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
-                                        properties: {any: newXMLPolicyProperty}},
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].deploymentArtifacts,
+                                    policiesPropertyType === 'KV' ?
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
+                                            properties: {kvproperties: newPolicyProperties}
+                                        } :
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
+                                            properties: {any: newXMLPolicyProperty}
+                                        },
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_TARGET_LOCATIONS_PROPERTY:
@@ -603,32 +619,36 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newTargetLocProperty.nodeId ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].requirements,
-                                lastState.currentJsonTopology
-                                    .nodeTemplates[indexOfNodeTargetLocProp].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].policies,
-                                targetLocationsPropertyType === 'KV' ?
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
-                                        properties: {kvproperties: newTarLocProperties}} :
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
-                                        properties: {any: newXMLTarLocProperty}},
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].requirements,
+                                    lastState.currentJsonTopology
+                                        .nodeTemplates[indexOfNodeTargetLocProp].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].policies,
+                                    targetLocationsPropertyType === 'KV' ?
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
+                                            properties: {kvproperties: newTarLocProperties}
+                                        } :
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
+                                            properties: {any: newXMLTarLocProperty}
+                                        },
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_PROPERTY:
@@ -674,7 +694,7 @@ export const WineryReducer =
                                 new TNodeTemplate(
                                     // new Property
                                     propertyType === 'KV' ?
-                                    {kvproperties: newProperties} : {any: newXMLProperty},
+                                        {kvproperties: newProperties} : {any: newXMLProperty},
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].id,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].type,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].name,
@@ -719,30 +739,32 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapability.nodeId ?
-                            new TNodeTemplate(
-                                // new Property
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].y,
-                                capabilitiesExist ?
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].capabilities,
-                                    ...capability} : capability,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    // new Property
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].y,
+                                    capabilitiesExist ?
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].capabilities,
+                                            ...capability
+                                        } : capability,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_REQUIREMENT:
@@ -768,30 +790,32 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newRequirement.nodeId ?
-                            new TNodeTemplate(
-                                // new Property
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].capabilities,
-                                requirementsExist ?
-                                    {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].requirements,
-                                        ...requirement} : requirement,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    // new Property
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].capabilities,
+                                    requirementsExist ?
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].requirements,
+                                            ...requirement
+                                        } : requirement,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SET_DEPLOYMENT_ARTIFACT:
@@ -834,8 +858,10 @@ export const WineryReducer =
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].capabilities,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].requirements,
                                     depArtExist ?
-                                        {...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].deploymentArtifacts,
-                                        ...deploymentArtifact} : deploymentArtifact,
+                                        {
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].deploymentArtifacts,
+                                            ...deploymentArtifact
+                                        } : deploymentArtifact,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].policies,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].targetLocations,
                                 ) : nodeTemplate
@@ -892,8 +918,10 @@ export const WineryReducer =
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].capabilities,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].requirements,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].deploymentArtifacts,
-                                    policyExist ? {...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies,
-                                        ...policy} : policy,
+                                    policyExist ? {
+                                        ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies,
+                                        ...policy
+                                    } : policy,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].targetLocations,
                                 ) : nodeTemplate
                             )
@@ -909,27 +937,27 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newNodeName.id ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].type,
-                                newNodeName.newNodeName,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].type,
+                                    newNodeName.newNodeName,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].documentation,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].otherAttributes,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].x,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].requirements,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.UPDATE_NODE_COORDINATES:
@@ -948,28 +976,28 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === nodeId ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].properties,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].id,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].type,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].name,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].documentation,
-                                otherAttributes,
-                                currentNodeCoordinates.x,
-                                currentNodeCoordinates.y,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].requirements,
-                                lastState.currentJsonTopology
-                                    .nodeTemplates[indexUpdateNodeCoordinates].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].targetLocations,
-                            ) : nodeTemplate
-                        )
+                                new TNodeTemplate(
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].properties,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].id,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].type,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].name,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].minInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].maxInstances,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].color,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].imageUrl,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].any,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].documentation,
+                                    otherAttributes,
+                                    currentNodeCoordinates.x,
+                                    currentNodeCoordinates.y,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].capabilities,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].requirements,
+                                    lastState.currentJsonTopology
+                                        .nodeTemplates[indexUpdateNodeCoordinates].deploymentArtifacts,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].policies,
+                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].targetLocations,
+                                ) : nodeTemplate
+                            )
                     }
                 };
             case WineryActions.SAVE_NODE_TEMPLATE :
@@ -1012,14 +1040,14 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates
                             .map(relTemplate => relTemplate.id === relData.id ?
-                            new TRelationshipTemplate(
-                                lastState.currentJsonTopology.relationshipTemplates[indexRel].sourceElement,
-                                lastState.currentJsonTopology.relationshipTemplates[indexRel].targetElement,
-                                relData.newRelName,
-                                lastState.currentJsonTopology.relationshipTemplates[indexRel].id,
-                                lastState.currentJsonTopology.relationshipTemplates[indexRel].type,
-                            ) : relTemplate
-                        )
+                                new TRelationshipTemplate(
+                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].sourceElement,
+                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].targetElement,
+                                    relData.newRelName,
+                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].id,
+                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].type,
+                                ) : relTemplate
+                            )
                     }
                 };
             case WineryActions.SEND_CURRENT_NODE_ID :

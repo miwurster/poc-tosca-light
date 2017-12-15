@@ -12,18 +12,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { TestBed, inject } from '@angular/core/testing';
+import {TestBed, inject} from '@angular/core/testing';
 
-import { AppReadyEventService } from './app-ready-event.service';
+import {AppReadyEventService} from './app-ready-event.service';
 
 describe('AppReadyEventService', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [AppReadyEventService]
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            providers: [AppReadyEventService]
+        });
     });
-  });
 
-  it('should be created', inject([AppReadyEventService], (service: AppReadyEventService) => {
-    expect(service).toBeTruthy();
-  }));
+    it('should be created', inject([AppReadyEventService], (service: AppReadyEventService) => {
+        expect(service).toBeTruthy();
+    }));
 });

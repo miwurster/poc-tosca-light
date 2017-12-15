@@ -12,18 +12,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
 @Component({
-  selector: 'winery-print-view',
-  templateUrl: './print-view.component.html',
-  styleUrls: ['./print-view.component.css']
+    selector: 'winery-print-view',
+    templateUrl: './print-view.component.html',
+    styleUrls: ['./print-view.component.css']
 })
 export class PrintViewComponent implements OnInit {
 
-  constructor() { }
+    constructor () {
+    }
 
-  ngOnInit() {
-  }
+    ngOnInit () {
+    }
 
 }

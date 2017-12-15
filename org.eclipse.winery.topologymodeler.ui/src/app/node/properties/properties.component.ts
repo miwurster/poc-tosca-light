@@ -18,15 +18,16 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'winery-properties',
-  templateUrl: './properties.component.html',
-  styleUrls: ['./properties.component.css']
+    selector: 'winery-properties',
+    templateUrl: './properties.component.html',
+    styleUrls: ['./properties.component.css']
 })
 export class PropertiesComponent {
     @Input() currentNodeData: any;
     @Input() groupedNodeTypes: any;
     @Input() currentProperties: any;
 
-  constructor() { }
+    constructor () {
+    }
 
 }

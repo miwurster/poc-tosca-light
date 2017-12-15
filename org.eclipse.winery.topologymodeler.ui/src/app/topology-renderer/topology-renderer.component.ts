@@ -12,10 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, Input, OnInit, ViewContainerRef } from '@angular/core';
-import { WineryAlertService } from '../winery-alert/winery-alert.service';
-import { Visuals } from '../models/ttopology-template';
-import { BackendService } from '../backend.service';
+import {Component, Input, OnInit, ViewContainerRef} from '@angular/core';
+import {WineryAlertService} from '../winery-alert/winery-alert.service';
 
 /**
  * This is the parent component of the canvas and navbar component.
@@ -28,11 +26,10 @@ import { BackendService } from '../backend.service';
 export class TopologyRendererComponent implements OnInit {
     @Input() entityTypes: any;
 
-    constructor(vcr: ViewContainerRef, private notify: WineryAlertService,
-                private backendService: BackendService) {
+    constructor (vcr: ViewContainerRef, private notify: WineryAlertService) {
         this.notify.init(vcr);
     }
 
-    ngOnInit() {
+    ngOnInit () {
     }
 }

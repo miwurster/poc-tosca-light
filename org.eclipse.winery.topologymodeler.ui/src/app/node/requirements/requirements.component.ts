@@ -26,7 +26,7 @@ export class RequirementsComponent implements OnInit {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
 
-    constructor() {
+    constructor () {
         this.toggleModalHandler = new EventEmitter();
     }
 
@@ -34,11 +34,11 @@ export class RequirementsComponent implements OnInit {
      * Propagates the click event to node.component, where requirements modal gets opened.
      * @param $event
      */
-    public toggleModal($event) {
+    public toggleModal ($event) {
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 
-    ngOnInit() {
+    ngOnInit () {
     }
 
 }

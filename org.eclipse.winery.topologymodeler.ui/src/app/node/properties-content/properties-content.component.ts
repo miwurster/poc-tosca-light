@@ -16,11 +16,11 @@ import {
     Component, Input, KeyValueDiffers, OnChanges, OnDestroy, OnInit,
     SimpleChanges
 } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-import { NgRedux } from '@angular-redux/store';
-import { IWineryState } from '../../redux/store/winery.store';
-import { WineryActions } from '../../redux/actions/winery.actions';
-import { Subscription } from 'rxjs/Subscription';
+import {Subject} from 'rxjs/Subject';
+import {NgRedux} from '@angular-redux/store';
+import {IWineryState} from '../../redux/store/winery.store';
+import {WineryActions} from '../../redux/actions/winery.actions';
+import {Subscription} from 'rxjs/Subscription';
 
 @Component({
     selector: 'winery-properties-content',
@@ -48,13 +48,13 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     subscriptionProperties: Subscription;
     subscriptionKvPropertiesIndex: Subscription;
 
-    constructor(private $ngRedux: NgRedux<IWineryState>,
-                private actions: WineryActions,
-                differs: KeyValueDiffers) {
-            this.differ = differs.find([]).create(null);
+    constructor (private $ngRedux: NgRedux<IWineryState>,
+                 private actions: WineryActions,
+                 differs: KeyValueDiffers) {
+        this.differ = differs.find([]).create(null);
     }
 
-    ngOnChanges(changes: SimpleChanges) {
+    ngOnChanges (changes: SimpleChanges) {
         setTimeout(() => {
             if (changes.currentProperties) {
                 try {
@@ -108,7 +108,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
         }, 1);
     }
 
-    ngOnInit() {
+    ngOnInit () {
         // find out which type of properties shall be displayed
         this.findOutPropertyDefinitionTypeForThisInstance(this.currentNodeData.currentNodeType);
 
@@ -210,7 +210,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
      * @param nodeType
      * @param {any[]} groupedNodeTypes
      */
-    findOutPropertyDefinitionTypeForThisInstance(nodeType: any): void {
+    findOutPropertyDefinitionTypeForThisInstance (nodeType: any): void {
         if (this.groupedNodeTypes) {
             for (const nameSpace of this.groupedNodeTypes) {
                 for (const nodeTypeVar of nameSpace.children) {
@@ -234,7 +234,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
         }
     }
 
-    ngOnDestroy() {
+    ngOnDestroy () {
         this.subscriptionProperties.unsubscribe();
         this.subscriptionKvPropertiesIndex.unsubscribe();
     }

@@ -12,92 +12,92 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Action, ActionCreator } from 'redux';
-import { Injectable } from '@angular/core';
-import { TNodeTemplate, TRelationshipTemplate } from '../../models/ttopology-template';
+import {Action, ActionCreator} from 'redux';
+import {Injectable} from '@angular/core';
+import {TNodeTemplate, TRelationshipTemplate} from '../../models/ttopology-template';
 
 export interface SendPaletteOpenedAction extends Action {
-  paletteOpened: boolean;
+    paletteOpened: boolean;
 }
 
 export interface SidebarStateAction extends Action {
-  sidebarContents: {
-    sidebarVisible: boolean,
-    nodeClicked: boolean,
-    id: string,
-    nameTextFieldValue: string,
-    type: string,
-    minInstances: string,
-    maxInstances: string
-  };
+    sidebarContents: {
+        sidebarVisible: boolean,
+        nodeClicked: boolean,
+        id: string,
+        nameTextFieldValue: string,
+        type: string,
+        minInstances: string,
+        maxInstances: string
+    };
 }
 
 export interface SidebarNodeNamechange extends Action {
-  nodeNames: {
-    newNodeName: string,
-    id: string
-  };
+    nodeNames: {
+        newNodeName: string,
+        id: string
+    };
 }
 
 export interface SidebarMinInstanceChanges extends Action {
-  minInstances: {
-    id: string,
-    count: number
-  };
+    minInstances: {
+        id: string,
+        count: number
+    };
 }
 
 export interface SidebarMaxInstanceChanges extends Action {
-  maxInstances: {
-    id: string,
-    count: number
-  };
+    maxInstances: {
+        id: string,
+        count: number
+    };
 }
 
 export interface IncMaxInstances extends Action {
-  maxInstances: {
-    id: string
-  };
+    maxInstances: {
+        id: string
+    };
 }
 
 export interface DecMaxInstances extends Action {
-  maxInstances: {
-    id: string
-  };
+    maxInstances: {
+        id: string
+    };
 }
 
 export interface IncMinInstances extends Action {
-  minInstances: {
-    id: string
-  };
+    minInstances: {
+        id: string
+    };
 }
 
 export interface DecMinInstances extends Action {
-  minInstances: {
-    id: string
-  };
+    minInstances: {
+        id: string
+    };
 }
 
 export interface SaveNodeTemplateAction extends Action {
-  nodeTemplate: TNodeTemplate;
+    nodeTemplate: TNodeTemplate;
 }
 
 export interface UpdateNodeCoordinatesAction extends Action {
-  otherAttributes: any;
+    otherAttributes: any;
 }
 
 export interface SaveRelationshipAction extends Action {
-  relationshipTemplate: TRelationshipTemplate;
+    relationshipTemplate: TRelationshipTemplate;
 }
 
 export interface DeleteNodeAction extends Action {
-  nodeTemplateId: string;
+    nodeTemplateId: string;
 }
 
 export interface UpdateRelationshipNameAction extends Action {
-  relData: {
-    newRelName: string,
-    id: string
-  };
+    relData: {
+        newRelName: string,
+        id: string
+    };
 }
 
 export interface SetPropertyAction extends Action {
@@ -234,75 +234,75 @@ export class WineryActions {
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
-      ((paletteOpened) => ({
-        type: WineryActions.SEND_PALETTE_OPENED,
-        paletteOpened: paletteOpened
-      }));
+        ((paletteOpened) => ({
+            type: WineryActions.SEND_PALETTE_OPENED,
+            paletteOpened: paletteOpened
+        }));
     openSidebar: ActionCreator<SidebarStateAction> =
-      ((newSidebarData) => ({
-        type: WineryActions.OPEN_SIDEBAR,
-        sidebarContents: newSidebarData.sidebarContents
-      }));
+        ((newSidebarData) => ({
+            type: WineryActions.OPEN_SIDEBAR,
+            sidebarContents: newSidebarData.sidebarContents
+        }));
     changeNodeName: ActionCreator<SidebarNodeNamechange> =
-      ((nodeNames) => ({
-        type: WineryActions.CHANGE_NODE_NAME,
-        nodeNames: nodeNames.nodeNames
-      }));
+        ((nodeNames) => ({
+            type: WineryActions.CHANGE_NODE_NAME,
+            nodeNames: nodeNames.nodeNames
+        }));
     changeMinInstances: ActionCreator<SidebarMinInstanceChanges> =
-      ((minInstances) => ({
-        type: WineryActions.CHANGE_MIN_INSTANCES,
-        minInstances: minInstances.minInstances
-      }));
+        ((minInstances) => ({
+            type: WineryActions.CHANGE_MIN_INSTANCES,
+            minInstances: minInstances.minInstances
+        }));
     changeMaxInstances: ActionCreator<SidebarMaxInstanceChanges> =
-      ((maxInstances) => ({
-        type: WineryActions.CHANGE_MAX_INSTANCES,
-        maxInstances: maxInstances.maxInstances
-    }));
+        ((maxInstances) => ({
+            type: WineryActions.CHANGE_MAX_INSTANCES,
+            maxInstances: maxInstances.maxInstances
+        }));
     incMinInstances: ActionCreator<IncMinInstances> =
-      ((minInstances) => ({
-        type: WineryActions.INC_MIN_INSTANCES,
-        minInstances: minInstances.minInstances
-      }));
+        ((minInstances) => ({
+            type: WineryActions.INC_MIN_INSTANCES,
+            minInstances: minInstances.minInstances
+        }));
     incMaxInstances: ActionCreator<IncMaxInstances> =
-      ((maxInstances) => ({
-        type: WineryActions.INC_MAX_INSTANCES,
-        maxInstances: maxInstances.maxInstances
-      }));
+        ((maxInstances) => ({
+            type: WineryActions.INC_MAX_INSTANCES,
+            maxInstances: maxInstances.maxInstances
+        }));
     decMinInstances: ActionCreator<DecMinInstances> =
-      ((minInstances) => ({
-        type: WineryActions.DEC_MIN_INSTANCES,
-        minInstances: minInstances.minInstances
-      }));
+        ((minInstances) => ({
+            type: WineryActions.DEC_MIN_INSTANCES,
+            minInstances: minInstances.minInstances
+        }));
     decMaxInstances: ActionCreator<DecMaxInstances> =
-      ((maxInstances) => ({
-        type: WineryActions.DEC_MAX_INSTANCES,
-        maxInstances: maxInstances.maxInstances
-      }));
+        ((maxInstances) => ({
+            type: WineryActions.DEC_MAX_INSTANCES,
+            maxInstances: maxInstances.maxInstances
+        }));
     saveNodeTemplate: ActionCreator<SaveNodeTemplateAction> =
-      ((newNode) => ({
-        type: WineryActions.SAVE_NODE_TEMPLATE,
-        nodeTemplate: newNode
-      }));
+        ((newNode) => ({
+            type: WineryActions.SAVE_NODE_TEMPLATE,
+            nodeTemplate: newNode
+        }));
     saveRelationship: ActionCreator<SaveRelationshipAction> =
-      ((newRelationship) => ({
-        type: WineryActions.SAVE_RELATIONSHIP,
-        relationshipTemplate: newRelationship
-      }));
+        ((newRelationship) => ({
+            type: WineryActions.SAVE_RELATIONSHIP,
+            relationshipTemplate: newRelationship
+        }));
     deleteNodeTemplate: ActionCreator<DeleteNodeAction> =
-      ((deletedNodeId) => ({
-        type: WineryActions.DELETE_NODE_TEMPLATE,
-        nodeTemplateId: deletedNodeId
-      }));
+        ((deletedNodeId) => ({
+            type: WineryActions.DELETE_NODE_TEMPLATE,
+            nodeTemplateId: deletedNodeId
+        }));
     updateNodeCoordinates: ActionCreator<UpdateNodeCoordinatesAction> =
-      ((currentNodeCoordinates) => ({
-        type: WineryActions.UPDATE_NODE_COORDINATES,
-        otherAttributes: currentNodeCoordinates
-      }));
+        ((currentNodeCoordinates) => ({
+            type: WineryActions.UPDATE_NODE_COORDINATES,
+            otherAttributes: currentNodeCoordinates
+        }));
     updateRelationshipName: ActionCreator<UpdateRelationshipNameAction> =
-      ((currentRelData) => ({
-        type: WineryActions.UPDATE_REL_DATA,
-        relData: currentRelData.relData
-      }));
+        ((currentRelData) => ({
+            type: WineryActions.UPDATE_REL_DATA,
+            relData: currentRelData.relData
+        }));
     setProperty: ActionCreator<SetPropertyAction> =
         ((newProperty) => ({
             type: WineryActions.SET_PROPERTY,

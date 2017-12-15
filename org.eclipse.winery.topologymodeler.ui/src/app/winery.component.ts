@@ -13,15 +13,15 @@
  ********************************************************************************/
 
 import 'rxjs/add/operator/do';
-import { Component, OnInit } from '@angular/core';
-import { EntityType, TNodeTemplate, TRelationshipTemplate } from './models/ttopology-template';
-import { IWineryState } from './redux/store/winery.store';
-import { WineryActions } from './redux/actions/winery.actions';
-import { NgRedux } from '@angular-redux/store';
-import { ILoaded, LoadedService } from './loaded.service';
-import { AppReadyEventService } from './app-ready-event.service';
-import { BackendService } from './backend.service';
-import { QName } from './qname';
+import {Component, OnInit} from '@angular/core';
+import {EntityType, TNodeTemplate, TRelationshipTemplate} from './models/ttopology-template';
+import {IWineryState} from './redux/store/winery.store';
+import {WineryActions} from './redux/actions/winery.actions';
+import {NgRedux} from '@angular-redux/store';
+import {ILoaded, LoadedService} from './loaded.service';
+import {AppReadyEventService} from './app-ready-event.service';
+import {BackendService} from './backend.service';
+import {QName} from './qname';
 
 /**
  * This is the root component of the topology modeler.
@@ -55,11 +55,11 @@ export class WineryComponent implements OnInit {
 
     public loaded: ILoaded;
 
-    constructor(private ngRedux: NgRedux<IWineryState>,
-                private actions: WineryActions,
-                private loadedService: LoadedService,
-                private appReadyEvent: AppReadyEventService,
-                private backendService: BackendService) {
+    constructor (private ngRedux: NgRedux<IWineryState>,
+                 private actions: WineryActions,
+                 private loadedService: LoadedService,
+                 private appReadyEvent: AppReadyEventService,
+                 private backendService: BackendService) {
         // Loading Animation
         this.loaded = null;
         this.loadedService.getLoadingState()
@@ -76,7 +76,7 @@ export class WineryComponent implements OnInit {
      * The data is passed to various init...() functions that parse the received JSON data into Objects that get stored
      * inside the Redux store of this application.
      */
-    ngOnInit() {
+    ngOnInit () {
         /**
          * This subscriptionProperties receives an Observable of [string, string], the former value being
          * the JSON representation of the topologyTemplate and the latter value being the JSON
@@ -130,7 +130,7 @@ export class WineryComponent implements OnInit {
      * @param {Array<any>} entityTypeJSON
      * @param {string} entityType
      */
-    initEntityType(entityTypeJSON: Array<any>, entityType: string): void {
+    initEntityType (entityTypeJSON: Array<any>, entityType: string): void {
         switch (entityType) {
             case 'artifactTypes': {
                 for (const artifactType of entityTypeJSON) {
@@ -207,7 +207,7 @@ export class WineryComponent implements OnInit {
                     // get relationship type visualappearances
                     let visualAppearance;
                     this.backendService
-                        // returns Observable
+                    // returns Observable
                         .requestRelationshipTypeVisualappearance(
                             relationshipType.namespace,
                             relationshipType.id)
@@ -231,7 +231,7 @@ export class WineryComponent implements OnInit {
 
     }
 
-    initTopologyTemplate(nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
+    initTopologyTemplate (nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
         // init node templates
         for (const node of nodeTemplateArray) {
             let color;
