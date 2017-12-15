@@ -102,7 +102,7 @@
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
         <button type="button" id="cancelPolicies" class="btn btn-default" (click)="resetPolicies()">Cancel</button>
-        <button type="button" id="addPolicy" class="btn btn-primary" (click)="savePoliciesToModel($event)">Add</button>
+        <button type="button" id="addPolicy" class="btn btn-primary" (click)="savePoliciesToModel()">Add</button>
     </winery-modal-footer>
 </winery-modal>
 
@@ -157,7 +157,7 @@
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
         <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="resetCapabilities()">Cancel</button>
-        <button (click)="saveCapabilityToModel($event)" type="button" id="addCapbtn" class="btn btn-primary">Add</button>
+        <button (click)="saveCapabilityToModel()" type="button" id="addCapbtn" class="btn btn-primary">Add</button>
     </winery-modal-footer>
 </winery-modal>
 
@@ -212,7 +212,7 @@
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
         <button type="button" id="cancelRequirements" class="btn btn-default" (click)="resetRequirements()">Cancel</button>
-        <button (click)="saveRequirementsToModel($event)" type="button" id="addReqbtn" class="btn btn-primary">Add</button>
+        <button (click)="saveRequirementsToModel()" type="button" id="addReqbtn" class="btn btn-primary">Add</button>
     </winery-modal-footer>
 </winery-modal>
 
@@ -309,6 +309,6 @@
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
         <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default" (click)="resetDeploymentArtifacts()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="saveDeploymentArtifactsToModel($event)">Add</button>
+        <button type="button" class="btn btn-primary" (click)="saveDeploymentArtifactsToModel()">Add</button>
     </winery-modal-footer>
 </winery-modal>
