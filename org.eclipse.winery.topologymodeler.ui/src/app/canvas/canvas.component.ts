@@ -143,6 +143,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         this.deploymentArtifacts = new ArtifactsModalData(null, null, null, null, null, null, null, null, null);
         this.policies = new PoliciesModalData(null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null);
+        console.log(this.newJsPlumbInstance);
     }
 
     /**
@@ -660,7 +661,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 this.updateAllNodes();
             }
             setTimeout(() => {
-                this.newJsPlumbInstance.revalidate('Container');
+                this.newJsPlumbInstance.revalidate('container');
             }, 1000);
         }
     }
