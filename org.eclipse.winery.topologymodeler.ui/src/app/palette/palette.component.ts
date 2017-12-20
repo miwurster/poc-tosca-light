@@ -49,21 +49,28 @@ import {BackendService} from '../backend.service';
 export class PaletteComponent implements OnInit, OnDestroy {
     @Input() entityTypes;
     paletteRootState = 'extended';
-    allNodeTemplates: Array<TNodeTemplate> = [];
     nodeTemplatesSubscription;
     paletteOpenedSubscription;
     public oneAtATime = true;
+    allNodeTemplates: TNodeTemplate[] = [];
     // All Node Types grouped by their namespaces
     groupedNodeTypes = [];
+    ungroupedNodeTypes = [];
 
     constructor (private ngRedux: NgRedux<IWineryState>,
                  private actions: WineryActions,
                  private backendService: BackendService) {
+        this.nodeTemplatesSubscription = ngRedux.select(wineryState => wineryState.wineryState.currentJsonTopology.nodeTemplates)
+            .subscribe(currentNodes => this.updateNodes(currentNodes));
         this.paletteOpenedSubscription = ngRedux.select(wineryState => wineryState.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.updateState(currentPaletteOpened));
         backendService.requestGroupedNodeTypes();
         backendService.groupedNodeTypes$.subscribe(data => {
             this.groupedNodeTypes = data;
+        });
+        backendService.requestNodeTypes();
+        backendService.nodeTypes$.subscribe(data => {
+            this.ungroupedNodeTypes = data;
         });
     }
 
@@ -93,6 +100,17 @@ export class PaletteComponent implements OnInit, OnDestroy {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(true));
         } else {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
+        }
+    }
+
+    /**
+     * Gets called if nodes get deleted or created and calls the
+     * correct handler.
+     * @param currentNodes  List of all displayed nodes.
+     */
+    updateNodes(currentNodes: Array<TNodeTemplate>): void {
+        if (currentNodes.length > 0) {
+            this.allNodeTemplates = currentNodes;
         }
     }
 
