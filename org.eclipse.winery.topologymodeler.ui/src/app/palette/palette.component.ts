@@ -48,9 +48,7 @@ import {BackendService} from '../backend.service';
 })
 export class PaletteComponent implements OnInit, OnDestroy {
     @Input() entityTypes;
-    detailsAreHidden = true;
     paletteRootState = 'extended';
-    paletteItems = [];
     allNodeTemplates: Array<TNodeTemplate> = [];
     nodeTemplatesSubscription;
     paletteOpenedSubscription;
@@ -58,29 +56,15 @@ export class PaletteComponent implements OnInit, OnDestroy {
     // All Node Types grouped by their namespaces
     groupedNodeTypes = [];
 
-    constructor (private paletteService: PaletteService,
-                 private ngRedux: NgRedux<IWineryState>,
+    constructor (private ngRedux: NgRedux<IWineryState>,
                  private actions: WineryActions,
                  private backendService: BackendService) {
-        this.nodeTemplatesSubscription = ngRedux.select(wineryState => wineryState.wineryState.currentJsonTopology.nodeTemplates)
-            .subscribe(currentNodes => this.updateNodes(currentNodes));
-        this.paletteOpenedSubscription = this.ngRedux.select(wineryState => wineryState.wineryState.currentPaletteOpenedState)
+        this.paletteOpenedSubscription = ngRedux.select(wineryState => wineryState.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.updateState(currentPaletteOpened));
-        this.paletteItems = paletteService.getPaletteData();
-        this.backendService.groupedNodeTypes$.subscribe(data => {
+        backendService.requestGroupedNodeTypes();
+        backendService.groupedNodeTypes$.subscribe(data => {
             this.groupedNodeTypes = data;
         });
-    }
-
-    /**
-     * Gets called if nodes get deleted or created and calls the
-     * correct handler.
-     * @param currentNodes  List of all displayed nodes.
-     */
-    updateNodes (currentNodes: Array<TNodeTemplate>): void {
-        if (currentNodes.length > 0) {
-            this.allNodeTemplates = currentNodes;
-        }
     }
 
     /**
@@ -102,17 +86,9 @@ export class PaletteComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * opens the palette if its closed.
-     */
-    public openPalette (): void {
-        this.detailsAreHidden = false;
-        this.toggleRootState();
-    }
-
-    /**
      * opens the palette if its closed and vice versa.
      */
-    private toggleRootState (): void {
+    private toggleRootState(): void {
         if (this.paletteRootState === 'shrunk') {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(true));
         } else {

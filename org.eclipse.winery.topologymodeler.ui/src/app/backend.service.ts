@@ -64,12 +64,7 @@ export class BackendService {
                  private activatedRoute: ActivatedRoute) {
 
         this.activatedRoute.queryParams.subscribe((params: TopologyModelerConfiguration) => {
-            // Only works if url parameters are legit
-            if (!(isNullOrUndefined(params.id) &&
-                    isNullOrUndefined(params.ns) &&
-                    isNullOrUndefined(params.repositoryURL) &&
-                    isNullOrUndefined(params.uiURL))) {
-                this.configuration = params;
+            this.configuration = params;
                 // ServiceTemplate / TopologyTemplate
                 this.requestServiceTemplate().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
@@ -119,24 +114,6 @@ export class BackendService {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
                     this.relationshipTypes.next(data);
                 });
-            } else {
-                // empty if url params not specified
-                this.serviceTemplate.next({});
-                // Policy Types
-                this.policyTypes.next({});
-                // Policy Templates
-                this.policyTemplates.next({});
-                // Capability Types
-                this.capabilityTypes.next({});
-                // Requirement Types
-                this.requirementTypes.next({});
-                // Artifact Types
-                this.artifactTypes.next({});
-                // Grouped NodeTypes Types
-                this.groupedNodeTypes.next({});
-                // Relationship Types
-                this.relationshipTypes.next({});
-            }
         });
     }
 

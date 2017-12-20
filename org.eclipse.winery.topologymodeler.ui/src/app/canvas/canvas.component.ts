@@ -670,9 +670,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Updates the internal representation of all nodes with the actual dom information.
      */
     updateAllNodes (): void {
-        if (this.allNodeTemplates.length > 0) {
+        /*if (this.allNodeTemplates.length > 0) {
             this.child.nativeElement.children.forEach(node => this.setNewCoordinates(node));
-        }
+        }*/
     }
 
     /**
@@ -889,7 +889,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 }
             }
             this.newJsPlumbInstance.removeFromAllPosses(this.selectedNodes.map(node => node.id));
-            this.selectedNodes = null;
+            this.selectedNodes = [];
         }
     }
 
