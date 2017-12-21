@@ -55,11 +55,11 @@ export class WineryComponent implements OnInit {
 
     public loaded: ILoaded;
 
-    constructor (private ngRedux: NgRedux<IWineryState>,
-                 private actions: WineryActions,
-                 private loadedService: LoadedService,
-                 private appReadyEvent: AppReadyEventService,
-                 private backendService: BackendService) {
+    constructor(private ngRedux: NgRedux<IWineryState>,
+                private actions: WineryActions,
+                private loadedService: LoadedService,
+                private appReadyEvent: AppReadyEventService,
+                private backendService: BackendService) {
         // Loading Animation
         this.loaded = null;
         this.loadedService.getLoadingState()
@@ -76,7 +76,7 @@ export class WineryComponent implements OnInit {
      * The data is passed to various init...() functions that parse the received JSON data into Objects that get stored
      * inside the Redux store of this application.
      */
-    ngOnInit () {
+    ngOnInit() {
         /**
          * This subscriptionProperties receives an Observable of [string, string], the former value being
          * the JSON representation of the topologyTemplate and the latter value being the JSON
@@ -86,6 +86,7 @@ export class WineryComponent implements OnInit {
          */
         this.backendService.topologyTemplateAndVisuals$.subscribe(JSON => {
             // topologyTemplate JSON[0]
+            console.log("hi", JSON);
             const topologyTemplate = JSON[0];
             // visuals JSON[1]
             const visuals = JSON[1];
@@ -130,7 +131,7 @@ export class WineryComponent implements OnInit {
      * @param {Array<any>} entityTypeJSON
      * @param {string} entityType
      */
-    initEntityType (entityTypeJSON: Array<any>, entityType: string): void {
+    initEntityType(entityTypeJSON: Array<any>, entityType: string): void {
         switch (entityType) {
             case 'artifactTypes': {
                 for (const artifactType of entityTypeJSON) {
@@ -212,7 +213,6 @@ export class WineryComponent implements OnInit {
                             relationshipType.namespace,
                             relationshipType.id)
                         .subscribe((JSON) => {
-                            // console.log(JSON);
                             visualAppearance = JSON;
                             this.relationshipTypes
                                 .push(new EntityType(
@@ -231,7 +231,7 @@ export class WineryComponent implements OnInit {
 
     }
 
-    initTopologyTemplate (nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
+    initTopologyTemplate(nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
         // init node templates
         for (const node of nodeTemplateArray) {
             let color;
@@ -249,11 +249,8 @@ export class WineryComponent implements OnInit {
             }
             let properties;
             if (node.properties) {
-                if (node.properties.any) {
-                    properties = node.properties.any;
-                } else if (node.properties.kvproperties) {
-                    properties = node.properties.kvproperties;
-                }
+                properties = node.properties;
+
             }
             this.nodeTemplates.push(
                 new TNodeTemplate(
@@ -283,7 +280,7 @@ export class WineryComponent implements OnInit {
         }
         // init relationship templates
         for (const relationship of relationshipTemplateArray) {
-            const relationshipType = new QName(relationship.type).localName;
+            const relationshipType = relationship.type;
             this.relationshipTemplates.push(
                 new TRelationshipTemplate(
                     relationship.sourceElement,
