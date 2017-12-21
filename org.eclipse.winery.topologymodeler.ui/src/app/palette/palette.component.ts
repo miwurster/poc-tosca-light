@@ -171,8 +171,8 @@ export class PaletteComponent implements OnInit, OnDestroy {
                 // split it to get a string like "NodeTypeWithTwoProperties"
                 let typeOfCurrentNode = type.split('}').pop();
                 // eliminate whitespaces from both strings, important for string comparison
-                typeOfCurrentNode = typeOfCurrentNode.replace(/\s+/g, "");
-                name = name.replace(/\s+/g, "");
+                typeOfCurrentNode = typeOfCurrentNode.replace(/\s+/g, '');
+                name = name.replace(/\s+/g, '');
                 if (name === typeOfCurrentNode) {
                     const idOfCurrentNode = this.allNodeTemplates[i].id;
                     const numberOfNewInstance = parseInt(idOfCurrentNode.substring(idOfCurrentNode.indexOf('_') + 1), 10) + 1;

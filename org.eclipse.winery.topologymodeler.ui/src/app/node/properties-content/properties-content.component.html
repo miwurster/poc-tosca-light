@@ -10,7 +10,6 @@
  * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
-
 -->
 
 <table *ngIf="propertyDefinitionType == 'KV'" class="table table-border--grey table-sm body-table">
@@ -42,12 +41,13 @@
 
 <div *ngIf="propertyDefinitionType == 'XML'">
     <textarea
-                rows="3"
-                placeholder="Edit your XML here."
-                required
-                value="{{xmlProperty}}"
-                (keyup)="properties.next($event.target.value)">
+        rows="3"
+        placeholder="Edit your XML here."
+        required
+        value="{{xmlProperty}}"
+        (keyup)="properties.next($event.target.value)">
             </textarea>
 </div>
 
-<div *ngIf="propertyDefinitionType == 'NONE'" style="color: dimgray; text-align: center"><span>No properties defined <br> at the NodeType.</span></div>
+<div *ngIf="propertyDefinitionType == 'NONE'" style="color: dimgray; text-align: center">
+    <span>No properties defined <br> at the NodeType.</span></div>

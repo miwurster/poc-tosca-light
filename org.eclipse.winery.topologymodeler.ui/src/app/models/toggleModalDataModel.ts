@@ -16,25 +16,25 @@
  * Encompasses all node information emitted from a node needed for showing the correct modal
  */
 export interface ToggleModalDataModel {
-    any: any,
-    capabilities: any,
-    color: string,
-    currentNodeId: string,
-    currentNodePart: string,
-    currentProperties: any,
-    deploymentArtifacts: any,
-    documentation: any,
-    id: string,
-    imageUrl: string,
-    maxInstances: string,
-    minInstances: string,
-    name: string,
-    otherAttributes: any,
-    policies: any,
-    properties: any,
-    requirements: any,
-    targetLocations: any,
-    type: string,
-    x: number,
-    y: number
+    any: any;
+    capabilities: any;
+    color: string;
+    currentNodeId: string;
+    currentNodePart: string;
+    currentProperties: any;
+    deploymentArtifacts: any;
+    documentation: any;
+    id: string;
+    imageUrl: string;
+    maxInstances: string;
+    minInstances: string;
+    name: string;
+    otherAttributes: any;
+    policies: any;
+    properties: any;
+    requirements: any;
+    targetLocations: any;
+    type: string;
+    x: number;
+    y: number;
 }

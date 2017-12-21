@@ -184,7 +184,12 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         this.newNode = currentNodes[currentNodes.length - 1];
         this.allNodeTemplates.push(this.newNode);
         if (this.currentPaletteOpenedState) {
-            this.indexOfNewNode = this.allNodeTemplates.map(node => node.id).indexOf(this.newNode.id);
+            this.allNodeTemplates.some((node, index) => {
+               if (node.id === this.newNode.id) {
+                   this.indexOfNewNode = index;
+                   return true;
+               }
+            });
             // needs timeout because the called method uses @ViewChildren at the nodes and the new node is yet unavailable in that collection,
             // but after 1ms the new node is available in the @ViewChildren array
             setTimeout(() => {
@@ -718,6 +723,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                         ['Label', {
                             label: newRelationship.type,
                             id: 'label',
+                            // jsplumb doku nachgucken wie man css class einbindet
                             labelStyle: {
                                 font: '11px Roboto, sans-serif',
                                 color: '#212121',
@@ -732,6 +738,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 setTimeout(() => this.handleRelSideBar(conn, newRelationship), 1);
             }
         } catch (e) {
+            // alterts benutzen, rechts oben!
             console.log((<Error>e).message);
         }
     }
@@ -1167,7 +1174,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                     const newRelationship = new TRelationshipTemplate(
                         {ref: sourceElement},
                         {ref: targetElement},
-                        undefined,
+                        relationshipId,
                         relationshipId,
                         this.currentType
                     );
@@ -1194,7 +1201,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         if (this.entityTypes.relationshipTypes) {
             this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
             for (const rel of this.entityTypes.relationshipTypes) {
-                // const color = '#' + (0x1000000 + Math.floor(Math.random() * 0x1000000)).toString(16).substr(1);
                 this.allRelationshipTypesColors.push({
                     type: rel.id,
                     color: rel.color
@@ -1314,6 +1320,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.nodeChildrenArray = children.toArray();
             this.nodeChildrenIdArray = this.nodeChildrenArray.map(node => node.nodeTemplate.id);
         });
+        console.log(this.nodeComponentChildren);
     }
 
     /**

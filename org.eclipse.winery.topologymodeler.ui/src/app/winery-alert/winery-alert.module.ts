@@ -12,19 +12,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { ModuleWithProviders, NgModule } from '@angular/core';
-import { WineryAlertService } from './winery-alert.service';
-import { DatePipe } from '@angular/common';
+import {ModuleWithProviders, NgModule} from '@angular/core';
+import {WineryAlertService} from './winery-alert.service';
+import {DatePipe} from '@angular/common';
 
 @NgModule({
-  providers: [DatePipe],
+    providers: [DatePipe],
 })
 export class WineryAlertModule {
-  static forRoot(): ModuleWithProviders {
-    return {
-      ngModule: WineryAlertModule,
-      providers: [WineryAlertService]
-    };
-  }
+    static forRoot (): ModuleWithProviders {
+        return {
+            ngModule: WineryAlertModule,
+            providers: [WineryAlertService]
+        };
+    }
 }
 
