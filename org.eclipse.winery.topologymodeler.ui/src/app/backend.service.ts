@@ -66,61 +66,69 @@ export class BackendService {
                  private activatedRoute: ActivatedRoute) {
 
         this.activatedRoute.queryParams.subscribe((params: TopologyModelerConfiguration) => {
-            this.configuration = params;
-            // ServiceTemplate / TopologyTemplate
-            this.requestServiceTemplate().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.serviceTemplate.next(data);
-            });
-            // NodeType Visuals
-            this.requestAllNodeTemplateVisuals().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.visuals.next(data);
-            });
-            // TopologyTemplate and Visuals together
-            this.requestTopologyTemplateAndVisuals().subscribe(data => {
-                this.topologyTemplateAndVisuals.next(data);
-            });
-            // Policy Types
-            this.requestPolicyTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.policyTypes.next(data);
-            });
-            // Policy Templates
-            this.requestPolicyTemplates().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.policyTemplates.next(data);
-            });
-            // Capability Types
-            this.requestCapabilityTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.capabilityTypes.next(data);
-            });
-            // Requirement Types
-            this.requestRequirementTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.requirementTypes.next(data);
-            });
-            // Artifact Types
-            this.requestArtifactTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.artifactTypes.next(data);
-            });
-            // Grouped NodeTypes
-            this.requestGroupedNodeTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.groupedNodeTypes.next(data);
-            });
-            // NodeTypes
-            this.requestNodeTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.nodeTypes.next(data);
-            });
-            // Relationship Types
-            this.requestRelationshipTypes().subscribe(data => {
-                // add JSON to Promise, WineryComponent will subscribe to its Observable
-                this.relationshipTypes.next(data);
-            });
+            if (!(isNullOrUndefined(params.id) &&
+                    isNullOrUndefined(params.ns) &&
+                    isNullOrUndefined(params.repositoryURL) &&
+                    isNullOrUndefined(params.uiURL))) {
+                this.configuration = params;
+                console.log(this.configuration);
+                // ServiceTemplate / TopologyTemplate
+                this.requestServiceTemplate().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.serviceTemplate.next(data);
+                });
+                // NodeType Visuals
+                this.requestAllNodeTemplateVisuals().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.visuals.next(data);
+                });
+                // TopologyTemplate and Visuals together
+                this.requestTopologyTemplateAndVisuals().subscribe(data => {
+                    this.topologyTemplateAndVisuals.next(data);
+                });
+                // Policy Types
+                this.requestPolicyTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.policyTypes.next(data);
+                });
+                // Policy Templates
+                this.requestPolicyTemplates().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.policyTemplates.next(data);
+                });
+                // Capability Types
+                this.requestCapabilityTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.capabilityTypes.next(data);
+                });
+                // Requirement Types
+                this.requestRequirementTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.requirementTypes.next(data);
+                });
+                // Artifact Types
+                this.requestArtifactTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.artifactTypes.next(data);
+                });
+                // Grouped NodeTypes
+                this.requestGroupedNodeTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.groupedNodeTypes.next(data);
+                });
+                // NodeTypes
+                this.requestNodeTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.nodeTypes.next(data);
+                });
+                // Relationship Types
+                this.requestRelationshipTypes().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.relationshipTypes.next(data);
+                });
+            } else {
+                // TODO: how does it have to behave when no params are specified?
+            }
         });
     }
 
@@ -135,7 +143,7 @@ export class BackendService {
             const url = this.configuration.repositoryURL + '/servicetemplates/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
                 + this.configuration.id + '/topologytemplate/';
-
+            // This is required because the information has to be returned together
             return Observable.forkJoin(
                 this.http.get(url, this.options)
                     .map(res => res.json()),
@@ -281,6 +289,7 @@ export class BackendService {
             const url = this.configuration.repositoryURL + '/servicetemplates/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
                 + this.configuration.id + '/topologytemplate/';
+            console.log(url);
             return this.http.put(url, JSON.stringify(topologyTemplate), options);
         }
     }

@@ -39,10 +39,10 @@ export class NavbarComponent implements OnDestroy {
     unformattedTopologyTemplate;
     topologyTemplateSubscription;
 
-    constructor (private alert: WineryAlertService,
-                 private ngRedux: NgRedux<IWineryState>,
-                 private actions: TopologyRendererActions,
-                 private backendService: BackendService) {
+    constructor(private alert: WineryAlertService,
+                private ngRedux: NgRedux<IWineryState>,
+                private actions: TopologyRendererActions,
+                private backendService: BackendService) {
         this.navBarButtonsStateSubscription = ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState));
         this.topologyTemplateSubscription = ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
@@ -53,7 +53,7 @@ export class NavbarComponent implements OnDestroy {
      * Setter for buttonstate
      * @param newButtonsState
      */
-    setButtonsState (newButtonsState: ButtonsStateModel): void {
+    setButtonsState(newButtonsState: ButtonsStateModel): void {
         this.navbarButtonsState = newButtonsState;
     }
 
@@ -61,7 +61,7 @@ export class NavbarComponent implements OnDestroy {
      * Getter for the style of a pressed button.
      * @param buttonPressed
      */
-    getStyle (buttonPressed: boolean): string {
+    getStyle(buttonPressed: boolean): string {
         if (buttonPressed) {
             return '#929292';
         }
@@ -75,7 +75,7 @@ export class NavbarComponent implements OnDestroy {
      * SharedNodeNavbarService.
      * @param event -- The click event of a button.
      */
-    toggleButton (event) {
+    toggleButton(event) {
         switch (event.target.id) {
             case 'targetLocations': {
                 this.ngRedux.dispatch(this.actions.toggleTargetLocations());
@@ -122,36 +122,36 @@ export class NavbarComponent implements OnDestroy {
     /**
      * Calls the BackendService's saveTopologyTemplate method and displays a success message if successful.
      */
-    saveTopologyTemplateToRepository () {
+    saveTopologyTemplateToRepository() {
         // Initialization
-        let currentTopologyTemplateFromTheRepository = {
-            nodeTemplates: [],
-            relationshipTemplates: []
+        let topologySkeleton = {
+            'documentation': [],
+            'any': [],
+            'otherAttributes': {},
+            'relationshipTemplates': [],
+            'nodeTemplates': []
         };
         // subsciption first
         this.backendService.serviceTemplate$.subscribe(data => {
-            currentTopologyTemplateFromTheRepository = data;
-            console.log(currentTopologyTemplateFromTheRepository);
+            topologySkeleton = data;
         });
-        // call second
-        this.backendService.requestServiceTemplate();
         // Prepare for saving by updating the existing topology with the current topology state inside the Redux store
-        currentTopologyTemplateFromTheRepository.nodeTemplates = this.unformattedTopologyTemplate.nodeTemplates;
-        currentTopologyTemplateFromTheRepository.relationshipTemplates = this.unformattedTopologyTemplate.relationshipTemplates;
-        // remove the "Color" field from all nodeTemplates as the REST Api does not recognize it.
-        currentTopologyTemplateFromTheRepository.nodeTemplates.map(nodeTemplate => delete nodeTemplate.color);
-        const topologyToBeSaved = currentTopologyTemplateFromTheRepository;
-
-        const response = null;
+        topologySkeleton.nodeTemplates = this.unformattedTopologyTemplate.nodeTemplates;
+        topologySkeleton.relationshipTemplates = this.unformattedTopologyTemplate.relationshipTemplates;
+        // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
+        topologySkeleton.nodeTemplates.map(nodeTemplate => delete nodeTemplate.color);
+        const topologyToBeSaved = topologySkeleton;
+        console.log(topologyToBeSaved);
         this.backendService.saveTopologyTemplate(topologyToBeSaved)
             .subscribe(res => window.alert(res));
-        response ? this.alert.success('Successfully saved!') : this.alert.info('Something went wrong!');
+
+        // response ? this.alert.success('Successfully saved!') : this.alert.info('Something went wrong!');
     }
 
     /**
      * Angular lifecycle event.
      */
-    ngOnDestroy () {
+    ngOnDestroy() {
         this.navBarButtonsStateSubscription.unsubscribe();
     }
 }
