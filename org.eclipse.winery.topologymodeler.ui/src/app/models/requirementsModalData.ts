@@ -17,11 +17,11 @@
  */
 export class RequirementsModalData {
 
-    constructor(public reqId: string,
-                public reqColor: string,
-                public reqQName: string,
-                public reqType: string,
-                public reqDefinitionName: string,
-                public requirements: any,
-                public reqDefinitionNames: any) { }
+    constructor(public reqId?: string,
+                public reqColor?: string,
+                public reqQName?: string,
+                public reqType?: string,
+                public reqDefinitionName?: string,
+                public requirements?: any,
+                public reqDefinitionNames?: any) { }
 }

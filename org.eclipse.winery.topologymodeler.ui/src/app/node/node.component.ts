@@ -31,7 +31,6 @@ import {NgRedux} from '@angular-redux/store';
 import {IWineryState} from '../redux/store/winery.store';
 import {WineryActions} from '../redux/actions/winery.actions';
 import {hostURL} from '../configuration';
-import {QName} from '../qname';
 import {TNodeTemplate} from '../models/ttopology-template';
 
 /**
@@ -177,7 +176,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      *  Parse the localName of the NodeType
      */
     get nodeTypeLocalName () {
-        return this.nodeTemplate.type ? new QName(this.nodeTemplate.type).localName : JSON.stringify({});
+        return this.nodeTemplate.type.split('}').pop();
+        // return this.nodeTemplate.type ? new QName(this.nodeTemplate.type).localName : JSON.stringify({});
     }
 
     /**

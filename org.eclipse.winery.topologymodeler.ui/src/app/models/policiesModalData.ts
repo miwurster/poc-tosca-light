@@ -17,19 +17,19 @@
  */
 export class PoliciesModalData {
 
-    constructor(public policyTemplates: string,
-                public policyTemplate: string,
-                public policyTemplateColor: string,
-                public policyTemplateId: string,
-                public policyTemplateName: string,
-                public policyTemplateNamespace: any,
-                public policyTemplateQName: any,
-                public policyTypes: string,
-                public policyType: string,
-                public policyTypeColor: string,
-                public policyTypeId: string,
-                public policyTypeName: string,
-                public policyTypeNamespace: any,
-                public policyTypeQName: any,
-                public policies: any) { }
+    constructor(public policyTemplates?: string,
+                public policyTemplate?: string,
+                public policyTemplateColor?: string,
+                public policyTemplateId?: string,
+                public policyTemplateName?: string,
+                public policyTemplateNamespace?: any,
+                public policyTemplateQName?: any,
+                public policyTypes?: string,
+                public policyType?: string,
+                public policyTypeColor?: string,
+                public policyTypeId?: string,
+                public policyTypeName?: string,
+                public policyTypeNamespace?: any,
+                public policyTypeQName?: any,
+                public policies?: any) { }
 }

@@ -44,6 +44,7 @@ import {RequirementsModalData} from '../models/requirementsModalData';
 import {PoliciesModalData} from '../models/policiesModalData';
 import {ArtifactsModalData} from '../models/artifactsModalData';
 import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
+import {ToggleModalDataModel} from '../models/toggleModalDataModel';
 
 @Component({
     selector: 'winery-canvas',
@@ -137,13 +138,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         }));
         this.newJsPlumbInstance = this._jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
-        this.gridTemplate = new GridTemplate(null, null, false, null, null, null, null, false, 100);
-        this.capabilities = new CapabilitiesModalData(null, null, null, null, null, null, null);
-        this.requirements = new RequirementsModalData(null, null, null, null, null, null, null);
-        this.deploymentArtifacts = new ArtifactsModalData(null, null, null, null, null, null, null, null, null);
-        this.policies = new PoliciesModalData(null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null);
-        console.log(this.newJsPlumbInstance);
+        this.gridTemplate = new GridTemplate(100, false, false);
+        this.capabilities = new CapabilitiesModalData();
+        this.requirements = new RequirementsModalData();
+        this.deploymentArtifacts = new ArtifactsModalData();
+        this.policies = new PoliciesModalData();
     }
 
     /**
@@ -214,12 +213,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 // break;
             }
         }
-        /*
-        if (deletedNode) {
-            const index = this.allNodeTemplates.map(node => node.id).indexOf(deletedNode);
-            this.allNodeTemplates.splice(index, 1);
-        }
-        */
     }
 
     /**
@@ -288,9 +281,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * This modal handler gets triggered by the node component
      * @param currentNodeData - this holds the corresponding node template information and the information which modal to show
      */
-    public toggleModalHandler (currentNodeData: any) {
+    public toggleModalHandler (currentNodeData: ToggleModalDataModel) {
         this.currentModalData = currentNodeData;
-        console.log(currentNodeData);
         switch (currentNodeData.currentNodePart) {
             case 'POLICIES':
                 this.policiesModal.show();
@@ -578,13 +570,14 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * !currentRelationships.map(con => con.id).includes(rel.id)
      */
     handleDeletedRelationships (currentRelationships: Array<TRelationshipTemplate>): void {
-        for (const rel of this.allRelationshipTemplates) {
+        console.log(currentRelationships);
+        this.allRelationshipTemplates.forEach(rel => {
             if (!currentRelationships.some(con => con.id === rel.id)) {
                 const deletedRel = rel.id;
                 const index = this.allRelationshipTemplates.map(con => con.id).indexOf(deletedRel);
                 this.allRelationshipTemplates.splice(index, 1);
             }
-        }
+        });
     }
 
     /**
@@ -670,9 +663,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Updates the internal representation of all nodes with the actual dom information.
      */
     updateAllNodes (): void {
-        /*if (this.allNodeTemplates.length > 0) {
-            this.child.nativeElement.children.forEach(node => this.setNewCoordinates(node));
-        }*/
+        if (this.allNodeTemplates.length > 0 && this.child) {
+            for (const nodeTemplate of this.child.nativeElement.children) {
+                this.setNewCoordinates(nodeTemplate);
+            }
+        }
     }
 
     /**
@@ -680,12 +675,12 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param nodeTemplate  Node Element (DOM).
      */
     setNewCoordinates (nodeTemplate: any): void {
-        const index = this.allNodeTemplates.map(node => node.id).indexOf(nodeTemplate.firstChild.id);
+        const index = this.allNodeTemplates.map(node => node.id).indexOf(nodeTemplate.firstChild.nextElementSibling.id);
         const nodeCoordinates = {
-            id: nodeTemplate.firstChild.id,
+            id: nodeTemplate.firstChild.nextElementSibling.id,
             location: '',
-            x: nodeTemplate.firstChild.offsetLeft,
-            y: nodeTemplate.firstChild.offsetTop
+            x: nodeTemplate.firstChild.nextElementSibling.offsetLeft,
+            y: nodeTemplate.firstChild.nextElementSibling.offsetTop
         };
         this.allNodeTemplates[index].x = nodeCoordinates.x;
         this.allNodeTemplates[index].y = nodeCoordinates.y;
@@ -699,9 +694,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param $event  The HTML event.
      */
     updateSelectedNodes ($event): void {
-        if (this.selectedNodes.length > 0) {
+        if (this.selectedNodes.length > 0 && this.child) {
             for (const nodeTemplate of this.child.nativeElement.children) {
-                if (this.selectedNodes.some(node => node.id === nodeTemplate.firstChild.id)) {
+                if (this.selectedNodes.some(node => node.id === nodeTemplate.firstChild.nextElementSibling.id)) {
                     this.setNewCoordinates(nodeTemplate);
                 }
             }
@@ -981,21 +976,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Getter for the offset of any DOM element.
-     * @param el  The DOM element.
-     */
-    private getOffset (el: any): any {
-        let _x = 0;
-        let _y = 0;
-        while (el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop)) {
-            _x += el.offsetLeft - el.scrollLeft;
-            _y += el.offsetTop - el.scrollTop;
-            el = el.offsetParent;
-        }
-        return {top: _y, left: _x};
-    }
-
-    /**
      * Checks if DOM element is completely in the selection box.
      * @param selectionArea The selection box
      * @param object        The DOM element.
@@ -1102,7 +1082,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     public arrayContainsNode (nodes: any[], id: string): boolean {
         if (nodes !== null && nodes.length > 0) {
-            return nodes.some((node) => node.id === id);
+            return nodes.some(node => node.id === id);
         }
         return false;
     }
@@ -1178,7 +1158,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 const sourceElement = info.source.offsetParent.offsetParent.id;
                 const targetElement = info.targetId;
                 const relationshipId = `${sourceElement}_${this.currentType}_${targetElement}`;
+                console.log(relationshipId);
+                console.log(this.jsPlumbConnections);
+                console.log(this.allRelationshipTemplates);
                 const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
+                console.log(relTypeExists);
                 if (relTypeExists === false && this.currentType && sourceElement !== targetElement) {
                     const newRelationship = new TRelationshipTemplate(
                         {ref: sourceElement},
