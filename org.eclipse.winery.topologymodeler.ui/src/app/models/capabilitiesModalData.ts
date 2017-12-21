@@ -17,11 +17,11 @@
  */
 export class CapabilitiesModalData {
 
-    constructor(public capId: string,
-                public capColor: string,
-                public capQName: string,
-                public capType: string,
-                public capDefinitionName: string,
-                public capabilities: any,
-                public capDefinitionNames: any) { }
+    constructor(public capId?: string,
+                public capColor?: string,
+                public capQName?: string,
+                public capType?: string,
+                public capDefinitionName?: string,
+                public capabilities?: any,
+                public capDefinitionNames?: any) { }
 }

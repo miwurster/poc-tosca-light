@@ -11,30 +11,32 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
-
 @import url('https://fonts.googleapis.com/css?family=Roboto:900');
+
 .selection {
-  position: absolute !important;
-  border: 1px dashed #8B9;
-  background-color: #BEC;
-  opacity: 0.2;
-  z-index: 9000;
-  display: none;
-  cursor: default !important;
+    position: absolute !important;
+    border: 1px dashed #8B9;
+    background-color: #BEC;
+    opacity: 0.2;
+    z-index: 9000;
+    display: none;
+    cursor: default !important;
 }
+
 .crosshair {
-  cursor: crosshair;
+    cursor: crosshair;
 }
+
 .selection-active {
-  display: block !important;
+    display: block !important;
 }
 
 .selection > span {
-  background-color: rgba(239, 28, 190, 0.2);
-  border: 1px dashed #b20e8c;
-  position: absolute;
-  height: 100%;
-  width: 100%;
+    background-color: rgba(239, 28, 190, 0.2);
+    border: 1px dashed #b20e8c;
+    position: absolute;
+    height: 100%;
+    width: 100%;
 }
 
 .watermark {
@@ -46,5 +48,5 @@
 }
 
 #grid {
-  position: absolute;
+    position: absolute;
 }

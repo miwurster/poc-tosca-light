@@ -74,7 +74,9 @@
                             type="text"
                             required="required"
                             (change)="onChangePolicyType($event.target.value)">
-                        <option *ngFor="let policyType of policies.policyTypes" [value]="policyType.id">{{policyType.id}}</option>
+                        <option *ngFor="let policyType of policies.policyTypes" [value]="policyType.id">
+                            {{policyType.id}}
+                        </option>
                     </select>
                 </div>
 
@@ -156,7 +158,8 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="resetCapabilities()">Cancel</button>
+        <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="resetCapabilities()">Cancel
+        </button>
         <button (click)="saveCapabilityToModel()" type="button" id="addCapbtn" class="btn btn-primary">Add</button>
     </winery-modal-footer>
 </winery-modal>
@@ -188,7 +191,8 @@
                             type="text"
                             required="required"
                             (change)="onChangeReqDefinitionName($event.target.value)">
-                        <option *ngFor="let reqDefinitionName of requirements.reqDefinitionNames" [value]="reqDefinitionName.name">
+                        <option *ngFor="let reqDefinitionName of requirements.reqDefinitionNames"
+                                [value]="reqDefinitionName.name">
                             {{reqDefinitionName.name}}
                         </option>
                     </select>
@@ -211,7 +215,8 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelRequirements" class="btn btn-default" (click)="resetRequirements()">Cancel</button>
+        <button type="button" id="cancelRequirements" class="btn btn-default" (click)="resetRequirements()">Cancel
+        </button>
         <button (click)="saveRequirementsToModel()" type="button" id="addReqbtn" class="btn btn-primary">Add</button>
     </winery-modal-footer>
 </winery-modal>
@@ -263,7 +268,8 @@
                             type="text"
                             required="required"
                             (change)="onChangeDepArtifacts($event.target.value)">
-                        <option *ngFor="let artifactType of deploymentArtifacts.artifactTypes" [value]="artifactType.qName">{{artifactType.qName}}
+                        <option *ngFor="let artifactType of deploymentArtifacts.artifactTypes"
+                                [value]="artifactType.qName">{{artifactType.qName}}
                         </option>
                     </select>
                 </div>
@@ -296,7 +302,8 @@
 
                         <select id=artifactTemplateToLink name="artifactTemplate" class="form-control"
                                 style="max-width: 90%">
-                            <option *ngFor="let artifactTemplate of deploymentArtifacts.artifactTemplates" [value]="artifactTemplate">
+                            <option *ngFor="let artifactTemplate of deploymentArtifacts.artifactTemplates"
+                                    [value]="artifactTemplate">
                                 {{artifactTemplate}}
                             </option>
                         </select>
@@ -308,7 +315,9 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default" (click)="resetDeploymentArtifacts()">Cancel</button>
+        <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default"
+                (click)="resetDeploymentArtifacts()">Cancel
+        </button>
         <button type="button" class="btn btn-primary" (click)="saveDeploymentArtifactsToModel()">Add</button>
     </winery-modal-footer>
 </winery-modal>

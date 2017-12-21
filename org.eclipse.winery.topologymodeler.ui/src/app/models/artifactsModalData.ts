@@ -17,13 +17,13 @@
  */
 export class ArtifactsModalData {
 
-    constructor(public depArtId: string,
-                public artifactName: string,
-                public artifactType: string,
-                public depArtColor: string,
-                public artifactTypes: string,
-                public artifactTemplates: any,
-                public artifactTemplateName: any,
-                public artifactTemplateNS: any,
-                public deploymentArtifacts: any) { }
+    constructor(public depArtId?: string,
+                public artifactName?: string,
+                public artifactType?: string,
+                public depArtColor?: string,
+                public artifactTypes?: string,
+                public artifactTemplates?: any,
+                public artifactTemplateName?: any,
+                public artifactTemplateNS?: any,
+                public deploymentArtifacts?: any) { }
 }

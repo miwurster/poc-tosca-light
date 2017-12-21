@@ -13,16 +13,28 @@
  ********************************************************************************/
 
 /**
- * Attributes of the grid, which includes the selection box
+ * Encompasses all node information emitted from a node needed for showing the correct modal
  */
-export class GridTemplate {
-    constructor(public gridDimension: number,
-                public selectionActive?: boolean,
-                public crosshair?: boolean,
-                public pageX?: number,
-                public pageY?: number,
-                public initialW?: number,
-                public initialH?: number,
-                public selectionWidth?: number,
-                public selectionHeight?: number) { }
+export interface ToggleModalDataModel {
+    any: any,
+    capabilities: any,
+    color: string,
+    currentNodeId: string,
+    currentNodePart: string,
+    currentProperties: any,
+    deploymentArtifacts: any,
+    documentation: any,
+    id: string,
+    imageUrl: string,
+    maxInstances: string,
+    minInstances: string,
+    name: string,
+    otherAttributes: any,
+    policies: any,
+    properties: any,
+    requirements: any,
+    targetLocations: any,
+    type: string,
+    x: number,
+    y: number
 }

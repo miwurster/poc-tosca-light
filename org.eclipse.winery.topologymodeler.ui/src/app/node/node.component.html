@@ -10,7 +10,6 @@
  * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
-
 -->
 
 <div class="container rounded"
@@ -54,7 +53,8 @@
                     <td class="text-right td-value col-sm-12">{{nodeTemplate.name}}</td>
                 </tr>
                 <tr *ngIf="navbarButtonsState.buttonsState.idsButton" class="row col-sm-12">
-                    <td class="text-right td-value col-sm-12" style="text-decoration: underline;">{{nodeTemplate.id}}</td>
+                    <td class="text-right td-value col-sm-12" style="text-decoration: underline;">{{nodeTemplate.id}}
+                    </td>
                 </tr>
                 <tr *ngIf="navbarButtonsState.buttonsState.typesButton" class="row col-sm-12">
                     <td class="text-right btn-link td-value col-sm-12">({{nodeTypeLocalName}})</td>

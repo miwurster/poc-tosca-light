@@ -95,7 +95,7 @@ export class PaletteComponent implements OnInit, OnDestroy {
     /**
      * opens the palette if its closed and vice versa.
      */
-    private toggleRootState(): void {
+    public toggleRootState (): void {
         if (this.paletteRootState === 'shrunk') {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(true));
         } else {
@@ -108,7 +108,7 @@ export class PaletteComponent implements OnInit, OnDestroy {
      * correct handler.
      * @param currentNodes  List of all displayed nodes.
      */
-    updateNodes(currentNodes: Array<TNodeTemplate>): void {
+    updateNodes (currentNodes: Array<TNodeTemplate>): void {
         if (currentNodes.length > 0) {
             this.allNodeTemplates = currentNodes;
         }
@@ -132,7 +132,6 @@ export class PaletteComponent implements OnInit, OnDestroy {
         const newIdType = this.generateId(name);
         const newId = newIdType.newId;
         const newType = newIdType.type;
-        console.log(newId);
         const paletteItem: TNodeTemplate = new TNodeTemplate(
             undefined,
             newId,
@@ -160,12 +159,20 @@ export class PaletteComponent implements OnInit, OnDestroy {
     /**
      * Generates a new node id, which must be unique.
      * @param name
+     * @return
      */
     generateId (name: string): any {
         if (this.allNodeTemplates.length > 0) {
+            // iterate from back to front because only the last added instance of a node type is important
+            // e.g. Node_8 so to increase to Node_9 only the 8 is important which is in the end of the array
             for (let i = this.allNodeTemplates.length - 1; i >= 0; i--) {
+                // get type of node Template
                 const type = this.allNodeTemplates[i].type;
-                const typeOfCurrentNode = type.split('}').pop();
+                // split it to get a string like "NodeTypeWithTwoProperties"
+                let typeOfCurrentNode = type.split('}').pop();
+                // eliminate whitespaces from both strings, important for string comparison
+                typeOfCurrentNode = typeOfCurrentNode.replace(/\s+/g, "");
+                name = name.replace(/\s+/g, "");
                 if (name === typeOfCurrentNode) {
                     const idOfCurrentNode = this.allNodeTemplates[i].id;
                     const numberOfNewInstance = parseInt(idOfCurrentNode.substring(idOfCurrentNode.indexOf('_') + 1), 10) + 1;
@@ -182,9 +189,17 @@ export class PaletteComponent implements OnInit, OnDestroy {
                     return result;
                 }
             }
-            return name;
-        } else {
-            return name;
+            // case that the node name is not in the array which contains a local copy of all node templates visible in the DOM,
+            // then search in ungroupedNodeTypes where all possible node information is available
+            for (const node of this.ungroupedNodeTypes) {
+                if (node.id === name) {
+                    const result = {
+                        newId: name,
+                        type: name
+                    };
+                    return result;
+                }
+            }
         }
     }
 

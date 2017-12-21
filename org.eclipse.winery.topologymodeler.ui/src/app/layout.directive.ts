@@ -16,7 +16,6 @@ import {AfterViewInit, Directive, ElementRef} from '@angular/core';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import {TNodeTemplate, TRelationshipTemplate} from './models/ttopology-template';
 import {WineryAlertService} from './winery-alert/winery-alert.service';
-import {JsPlumbService} from './jsPlumbService';
 import {LayoutChildNodeModel} from './models/layoutChildNodeModel';
 
 @Directive({
@@ -31,11 +30,7 @@ export class LayoutDirective implements AfterViewInit {
     readonly nodeYOffset = 50;
 
     constructor (private alert: WineryAlertService,
-                 private elRef: ElementRef,
-                 private jsPlumbService: JsPlumbService) {
-        this.jsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
-        this.jsPlumbInstance.setContainer('container');
-
+                 private elRef: ElementRef) {
     }
 
     /**
@@ -107,7 +102,7 @@ export class LayoutDirective implements AfterViewInit {
             node.y = data.children[index].y + this.nodeYOffset;
         });
 
-        this.repaintEverything(this.jsPlumbInstance);
+        this.repaintEverything(jsPlumbInstance);
     }
 
     /**
@@ -130,7 +125,7 @@ export class LayoutDirective implements AfterViewInit {
             selectedNodes.forEach((node) => {
                 node.y = result;
             });
-            this.repaintEverything(this.jsPlumbInstance);
+            this.repaintEverything(jsPlumbInstance);
         } else {
             this.showWarningAlert('You have only one node selected.');
         }
@@ -156,7 +151,7 @@ export class LayoutDirective implements AfterViewInit {
             selectedNodes.forEach((node) => {
                 node.x = result;
             });
-            this.repaintEverything(this.jsPlumbInstance);
+            this.repaintEverything(jsPlumbInstance);
         } else {
             this.showWarningAlert('You have only one node selected.');
         }
@@ -167,7 +162,7 @@ export class LayoutDirective implements AfterViewInit {
      * @param jsPlumbInstance
      */
     private repaintEverything (jsPlumbInstance: any): void {
-        setTimeout(() => this.jsPlumbInstance.repaintEverything(), 1);
+        setTimeout(() => jsPlumbInstance.repaintEverything(), 1);
     }
 
     /**
