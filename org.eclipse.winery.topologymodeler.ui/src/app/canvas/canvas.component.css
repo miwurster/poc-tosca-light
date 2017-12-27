@@ -51,7 +51,7 @@
     position: absolute;
 }
 
-.labelStyle {
+.labelStyle path {
     font: 11px Roboto, sans-serif;
     color: #212121;
     fill: #efefef;

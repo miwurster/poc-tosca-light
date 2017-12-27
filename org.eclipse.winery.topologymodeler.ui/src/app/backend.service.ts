@@ -12,12 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Injectable} from '@angular/core';
-import {Headers, Http, RequestOptions} from '@angular/http';
-import {Observable} from 'rxjs/Rx';
-import {ActivatedRoute} from '@angular/router';
-import {backendBaseURL} from './configuration';
-import {Subject} from 'rxjs/Subject';
+import { Injectable } from '@angular/core';
+import { Headers, Http, RequestOptions } from '@angular/http';
+import { Observable } from 'rxjs/Rx';
+import { ActivatedRoute } from '@angular/router';
+import { backendBaseURL } from './configuration';
+import { Subject } from 'rxjs/Subject';
+import { isNullOrUndefined } from 'util';
 
 /**
  * Responsible for interchanging data between the app and the server.
