@@ -237,71 +237,74 @@ export class WineryComponent implements OnInit {
 
     initTopologyTemplate(nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
         // init node templates
-        nodeTemplateArray.forEach(node => {
-            let color;
-            let imageUrl;
-            for (const visual of visuals) {
-                const qName = new QName(visual.nodeTypeId);
-                const localName = qName.localName;
-                if (localName === new QName(node.type).localName) {
-                    color = visual.color;
-                    imageUrl = visual.imageUrl;
-                    if (imageUrl) {
-                        imageUrl = imageUrl.replace('appearance', 'visualappearance');
+        if (nodeTemplateArray.length > 0) {
+            nodeTemplateArray.forEach(node => {
+                let color;
+                let imageUrl;
+                for (const visual of visuals) {
+                    const qName = new QName(visual.nodeTypeId);
+                    const localName = qName.localName;
+                    if (localName === new QName(node.type).localName) {
+                        color = visual.color;
+                        imageUrl = visual.imageUrl;
+                        if (imageUrl) {
+                            imageUrl = imageUrl.replace('appearance', 'visualappearance');
+                        }
+                        break;
                     }
-                    break;
                 }
-            }
-            let properties;
-            if (node.properties) {
-                properties = node.properties;
-
-            }
-            this.nodeTemplates.push(
-                new TNodeTemplate(
-                    properties,
-                    node.id,
-                    node.type,
-                    node.name,
-                    node.minInstances,
-                    node.maxInstances,
-                    color,
-                    imageUrl,
-                    node.documentation,
-                    node.any,
-                    node.otherAttributes,
-                    node.x,
-                    node.y,
-                    node.capabilities,
-                    node.requirements,
-                    node.deploymentArtifacts,
-                    node.policies,
-                    node.targetLocations
-                )
-            );
-        });
-        this.nodeTemplates.forEach(nodeTemplate => {
-            this.ngRedux.dispatch(this.actions.saveNodeTemplate(nodeTemplate));
-        });
+                let properties;
+                if (node.properties) {
+                    properties = node.properties;
+                }
+                this.nodeTemplates.push(
+                    new TNodeTemplate(
+                        properties,
+                        node.id,
+                        node.type,
+                        node.name,
+                        node.minInstances,
+                        node.maxInstances,
+                        color,
+                        imageUrl,
+                        node.documentation,
+                        node.any,
+                        node.otherAttributes,
+                        node.x,
+                        node.y,
+                        node.capabilities,
+                        node.requirements,
+                        node.deploymentArtifacts,
+                        node.policies,
+                        node.targetLocations
+                    )
+                );
+            });
+            this.nodeTemplates.forEach(nodeTemplate => {
+                this.ngRedux.dispatch(this.actions.saveNodeTemplate(nodeTemplate));
+            });
+        }
         // init relationship templates
-        relationshipTemplateArray.forEach(relationship => {
-            const relationshipType = relationship.type;
-            this.relationshipTemplates.push(
-                new TRelationshipTemplate(
-                    relationship.sourceElement,
-                    relationship.targetElement,
-                    relationship.name,
-                    `${relationship.sourceElement.ref}_${relationshipType.substring(relationshipType.indexOf('}') + 1)}_${relationship.targetElement.ref}`,
-                    relationshipType,
-                    relationship.documentation,
-                    relationship.any,
-                    relationship.otherAttributes
-                )
-            );
-        });
-        this.relationshipTemplates.forEach(relationshipTemplate => {
-            this.ngRedux.dispatch(this.actions.saveRelationship(relationshipTemplate));
-        });
+        if (relationshipTemplateArray.length > 0) {
+            relationshipTemplateArray.forEach(relationship => {
+                const relationshipType = relationship.type;
+                this.relationshipTemplates.push(
+                    new TRelationshipTemplate(
+                        relationship.sourceElement,
+                        relationship.targetElement,
+                        relationship.name,
+                        `${relationship.sourceElement.ref}_${relationshipType.substring(relationshipType.indexOf('}') + 1)}_${relationship.targetElement.ref}`,
+                        relationshipType,
+                        relationship.documentation,
+                        relationship.any,
+                        relationship.otherAttributes
+                    )
+                );
+            });
+            this.relationshipTemplates.forEach(relationshipTemplate => {
+                this.ngRedux.dispatch(this.actions.saveRelationship(relationshipTemplate));
+            });
+        }
     }
 }
 

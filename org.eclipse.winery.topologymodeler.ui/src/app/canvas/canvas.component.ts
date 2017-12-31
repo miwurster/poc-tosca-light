@@ -26,25 +26,25 @@ import {
     ViewChild,
     ViewChildren
 } from '@angular/core';
-import { JsPlumbService } from '../jsPlumbService';
-import { TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
-import { LayoutDirective } from '../layout.directive';
-import { WineryActions } from '../redux/actions/winery.actions';
-import { NgRedux } from '@angular-redux/store';
-import { IWineryState } from '../redux/store/winery.store';
-import { ButtonsStateModel } from '../models/buttonsState.model';
-import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
-import { NodeComponent } from '../node/node.component';
-import { Hotkey, HotkeysService } from 'angular2-hotkeys';
-import { ModalDirective } from 'ngx-bootstrap';
-import { GridTemplate } from 'app/models/gridTemplate';
-import { Subscription } from 'rxjs/Subscription';
-import { CapabilitiesModalData } from '../models/capabilitiesModalData';
-import { RequirementsModalData } from '../models/requirementsModalData';
-import { PoliciesModalData } from '../models/policiesModalData';
-import { ArtifactsModalData } from '../models/artifactsModalData';
-import { NodeIdAndFocusModel } from '../models/nodeIdAndFocusModel';
-import { ToggleModalDataModel } from '../models/toggleModalDataModel';
+import {JsPlumbService} from '../jsPlumbService';
+import {TNodeTemplate, TRelationshipTemplate} from '../models/ttopology-template';
+import {LayoutDirective} from '../layout.directive';
+import {WineryActions} from '../redux/actions/winery.actions';
+import {NgRedux} from '@angular-redux/store';
+import {IWineryState} from '../redux/store/winery.store';
+import {ButtonsStateModel} from '../models/buttonsState.model';
+import {TopologyRendererActions} from '../redux/actions/topologyRenderer.actions';
+import {NodeComponent} from '../node/node.component';
+import {Hotkey, HotkeysService} from 'angular2-hotkeys';
+import {ModalDirective} from 'ngx-bootstrap';
+import {GridTemplate} from 'app/models/gridTemplate';
+import {Subscription} from 'rxjs/Subscription';
+import {CapabilitiesModalData} from '../models/capabilitiesModalData';
+import {RequirementsModalData} from '../models/requirementsModalData';
+import {PoliciesModalData} from '../models/policiesModalData';
+import {ArtifactsModalData} from '../models/artifactsModalData';
+import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
+import {ToggleModalDataModel} from '../models/toggleModalDataModel';
 
 @Component({
     selector: 'winery-canvas',
@@ -104,6 +104,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                  private zone: NgZone,
                  private hotkeysService: HotkeysService,
                  private renderer: Renderer2) {
+        this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
+        this.newJsPlumbInstance.setContainer('container');
+        console.log(this.newJsPlumbInstance);
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
             .subscribe(currentNodes => this.updateNodes(currentNodes)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
@@ -112,19 +115,18 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             .subscribe(currentButtonsState => this.setButtonsState(currentButtonsState)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentNodeData)
             .subscribe(currentNodeData => this.toggleMarkNode(currentNodeData)));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
+            .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened)));
         this.hotkeysService.add(new Hotkey('ctrl+a', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             this.allNodeTemplates.forEach(node => this.enhanceDragSelection(node.id));
             return false; // Prevent bubbling
         }));
-        this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
-        this.newJsPlumbInstance.setContainer('container');
         this.gridTemplate = new GridTemplate(100, false, false);
         this.capabilities = new CapabilitiesModalData();
         this.requirements = new RequirementsModalData();
         this.deploymentArtifacts = new ArtifactsModalData();
         this.policies = new PoliciesModalData();
-        console.log(this.allRelationshipTemplates);
     }
 
     /**
@@ -136,7 +138,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         if (currentNodes.length > 0) {
             if (currentNodes.length !== this.allNodeTemplates.length) {
                 const difference = currentNodes.length - this.allNodeTemplates.length;
-                if (difference === 1) {
+                if (difference === 1 && this.currentPaletteOpenedState) {
                     this.handleNewNode(currentNodes);
                 } else if (difference < 0) {
                     this.handleDeletedNodes(currentNodes);
@@ -176,7 +178,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         setTimeout(() => {
             this.handleNodePressActions(this.newNode.id);
         }, 1);
-        this.zone.runOutsideAngular(() => {
+        this.zone.run(() => {
             this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mousemove',
                 (event) => this.moveNewNode(event)));
             this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mouseup',
@@ -195,10 +197,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                 // deletedNode = node.id;
                 let indexOfNode;
                 this.allNodeTemplates.some((nodeTemplate, index) => {
-                   if (nodeTemplate.id === node.id) {
-                       indexOfNode = index;
-                       return true;
-                   }
+                    if (nodeTemplate.id === node.id) {
+                        indexOfNode = index;
+                        return true;
+                    }
                 });
                 this.allNodeTemplates.splice(indexOfNode, 1);
             }
@@ -264,6 +266,16 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * Setter for PaletteState, triggered by a redux store change and getting latest value
+     * @param currentPaletteOpened
+     */
+    setPaletteState (currentPaletteOpened: boolean): void {
+        if (currentPaletteOpened) {
+            this.currentPaletteOpenedState = currentPaletteOpened;
         }
     }
 
@@ -464,28 +476,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     /**
      * Clears the modal values of the corresponding modal type
      */
-    public resetPolicies (): void {
+    resetPolicies (): void {
         this.policies.policyTemplateName = null;
         this.policies.policyType = null;
         this.policies.policyTemplate = null;
         this.policiesModal.hide();
     }
 
-    public resetRequirements (): void {
+    resetRequirements (): void {
         this.requirements.reqId = null;
         this.requirements.reqDefinitionName = null;
         this.requirements.reqType = null;
         this.requirementsModal.hide();
     }
 
-    public resetCapabilities (): void {
+    resetCapabilities (): void {
         this.capabilities.capId = null;
         this.capabilities.capDefinitionName = null;
         this.capabilities.capType = null;
         this.capabilitiesModal.hide();
     }
 
-    public resetDeploymentArtifacts (): void {
+    resetDeploymentArtifacts (): void {
         this.deploymentArtifacts.artifactTemplateNS = null;
         this.deploymentArtifacts.artifactTemplateName = null;
         this.deploymentArtifacts.artifactName = null;
@@ -523,11 +535,14 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param currentRelationships  List of all displayed relationships.
      */
     updateRelationships (currentRelationships: Array<TRelationshipTemplate>): void {
+        const currentJsPlumbManagedRels = this.newJsPlumbInstance.getAllConnections();
+        setTimeout(() => {
         if (currentRelationships.length > 0) {
-            console.log(currentRelationships);
-            console.log(this.allRelationshipTemplates);
-            if (currentRelationships.length !== this.allRelationshipTemplates.length) {
-                const difference = currentRelationships.length - this.allRelationshipTemplates.length;
+            console.log(currentRelationships.length);
+            console.log(currentJsPlumbManagedRels.length);
+            if (currentRelationships.length !== currentJsPlumbManagedRels.length) {
+                const difference = currentRelationships.length - currentJsPlumbManagedRels.length;
+                console.log(difference);
                 if (difference === 1) {
                     this.handleNewRelationship(currentRelationships);
                 } else if (difference < 0) {
@@ -541,6 +556,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         } else {
             this.allRelationshipTemplates = currentRelationships;
         }
+    }, 1);
     }
 
     /**
@@ -549,8 +565,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     handleNewRelationship (currentRelationships: Array<TRelationshipTemplate>): void {
         const newRel = currentRelationships[currentRelationships.length - 1];
+        console.log(newRel);
         this.allRelationshipTemplates.push(newRel);
-        this.manageRelationships(newRel);
+        console.log(this.allRelationshipTemplates);
+        setTimeout(() => this.manageRelationships(newRel), 1);
     }
 
     /**
@@ -584,10 +602,12 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.allRelationshipTemplates = currentRelationships;
             setTimeout(() => {
                 if (this.allRelationshipTemplates.length > 0) {
+                    console.log(this.allRelationshipTemplates);
                     this.allRelationshipTemplates.forEach(rel => this.manageRelationships(rel));
                 }
             }, 1);
-        } catch (e) {
+        } catch
+            (e) {
             console.log((<Error>e).message);
         }
     }
@@ -657,7 +677,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Updates the internal representation of all nodes with the actual dom information.
      */
     updateAllNodes (): void {
-        if (this.allNodeTemplates.length > 0 && this.child) {
+        if (this.allNodeTemplates.length > 0 && this.child
+        ) {
             for (const nodeTemplate of this.child.nativeElement.children) {
                 this.setNewCoordinates(nodeTemplate);
             }
@@ -674,10 +695,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     setNewCoordinates (nodeTemplate: any): void {
         let nodeIndex;
         this.allNodeTemplates.some((node, index) => {
-           if (node.id === nodeTemplate.firstChild.nextElementSibling.id) {
-               nodeIndex = index;
-               return true;
-           }
+            if (node.id === nodeTemplate.firstChild.nextElementSibling.id) {
+                nodeIndex = index;
+                return true;
+            }
         });
         const nodeCoordinates = {
             id: nodeTemplate.firstChild.nextElementSibling.id,
@@ -694,7 +715,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Updates the internal representation of the selected nodes with the actual dom information
      */
     updateSelectedNodes (): void {
-        if (this.selectedNodes.length > 0 && this.child) {
+        if (this.selectedNodes.length > 0 && this.child
+        ) {
             for (const nodeTemplate of this.child.nativeElement.children) {
                 if (this.selectedNodes.some(node => node.id === nodeTemplate.firstChild.nextElementSibling.id)) {
                     this.setNewCoordinates(nodeTemplate);
@@ -711,12 +733,13 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param newRelationship
      */
     paintRelationship (newRelationship: TRelationshipTemplate) {
-        console.log(newRelationship);
-        console.log(this.newJsPlumbInstance.getAllConnections());
         try {
             const allJsPlumbRelationships = this.newJsPlumbInstance.getAllConnections();
             if (!allJsPlumbRelationships.some(rel => rel.id === newRelationship.id)) {
+                console.log(allJsPlumbRelationships);
                 const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
+                console.log(newRelationship);
+                console.log(this.allNodeTemplates);
                 const conn = this.newJsPlumbInstance.connect({
                     source: newRelationship.sourceElement.ref,
                     target: newRelationship.targetElement.ref,
@@ -736,7 +759,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                         }]
                     ],
                 });
-                console.log(conn);
                 setTimeout(() => this.handleRelSideBar(conn, newRelationship), 1);
             }
         } catch (e) {
@@ -755,22 +777,29 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
             conn.setType(type);
             const me = this;
+            console.log(conn);
+            console.log(type);
             conn.bind('click', rel => {
                 this.clearSelectedNodes();
                 this.newJsPlumbInstance.select().removeType('marked');
                 const currentRel = me.allRelationshipTemplates.find(con => con.id === rel.id);
-                me.ngRedux.dispatch(this.actions.openSidebar({
-                    sidebarContents: {
-                        sidebarVisible: true,
-                        nodeClicked: false,
-                        id: currentRel.id,
-                        nameTextFieldValue: currentRel.name,
-                        type: currentRel.type
-                    }
-                }));
-                conn.addType('marked');
+                if (currentRel) {
+                    me.ngRedux.dispatch(this.actions.openSidebar({
+                        sidebarContents: {
+                            sidebarVisible: true,
+                            nodeClicked: false,
+                            id: currentRel.id,
+                            nameTextFieldValue: currentRel.name,
+                            type: currentRel.type
+                        }
+                    }));
+                    conn.addType('marked');
+                    console.log(conn);
+                }
             });
-        } catch (e) {
+            console.log(this.newJsPlumbInstance.getAllConnections());
+        } catch
+            (e) {
         }
     }
 
@@ -783,8 +812,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.paintRelationship(newRelationship);
             this.resetDragSource('');
             this.repaintJsPlumb();
+            console.log(this.newJsPlumbInstance.getManagedElements());
         } catch (e) {
-            console.log((<Error>e).message);
         }
     }
 
@@ -838,16 +867,23 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param dragSourceInfo
      */
     setDragSource (dragSourceInfo: any): void {
-        if (!this.dragSourceActive) {
+        const nodeArrayLength = this.allNodeTemplates.length;
+        const currentNodeDragSourceActive = this.newJsPlumbInstance.isSource(dragSourceInfo.dragSource);
+        if (!this.dragSourceActive && !currentNodeDragSourceActive && nodeArrayLength > 1) {
+            console.log(nodeArrayLength);
+            console.log(dragSourceInfo.dragSource);
             this.newJsPlumbInstance.makeSource(dragSourceInfo.dragSource, {
                 connectorOverlays: [
                     ['Arrow', {location: 1}],
                 ],
             });
             this.dragSourceInfos = dragSourceInfo;
-            this.newJsPlumbInstance.makeTarget(this.allNodesIds);
-            this.dragSourceActive = true;
-            this.bindConnection();
+            const targets = this.allNodesIds.filter(nodeId => nodeId !== this.dragSourceInfos.nodeId);
+            if (targets.length > 0) {
+                this.newJsPlumbInstance.makeTarget(targets);
+                this.dragSourceActive = true;
+                this.bindConnection();
+            }
         }
     }
 
@@ -908,14 +944,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         this.hideSidebar();
         this.clearSelectedNodes();
         this.nodeChildrenArray.forEach(node => node.makeSelectionVisible = false);
-        this.gridTemplate.selectionActive = true;
         this.gridTemplate.pageX = $event.pageX;
         this.gridTemplate.pageY = $event.pageY;
         this.gridTemplate.initialW = $event.pageX;
         this.gridTemplate.initialH = $event.pageY;
-        this.zone.runOutsideAngular(() => {
-            this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mousemove', (event) => this.openSelector(event)));
-            this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mouseup', (event) => this.selectElements(event)));
+        this.zone.run(() => {
+            this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mousemove', (event) =>
+                this.openSelector(event)));
+            this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mouseup', (event) =>
+                this.selectElements(event)));
         });
     }
 
@@ -924,6 +961,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param $event
      */
     openSelector ($event: any) {
+        this.gridTemplate.selectionActive = true;
         this.gridTemplate.selectionWidth = Math.abs(this.gridTemplate.initialW - $event.pageX);
         this.gridTemplate.selectionHeight = Math.abs(this.gridTemplate.initialH - $event.pageY);
         if ($event.pageX <= this.gridTemplate.initialW && $event.pageY >= this.gridTemplate.initialH) {
@@ -1026,10 +1064,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.nodeChildrenArray.forEach(node => {
                 let nodeIndex;
                 this.selectedNodes.some((selectedNode, index) => {
-                   if (selectedNode.id === node.nodeTemplate.id) {
-                       nodeIndex = index;
-                       return true;
-                   }
+                    if (selectedNode.id === node.nodeTemplate.id) {
+                        nodeIndex = index;
+                        return true;
+                    }
                 });
                 if (this.selectedNodes[nodeIndex] === undefined) {
                     node.makeSelectionVisible = false;
@@ -1044,10 +1082,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.newJsPlumbInstance.removeFromAllPosses(nodeId);
             let nodeIndex;
             this.nodeChildrenArray.some((node, index) => {
-               if (node.nodeTemplate.id === nodeId) {
-                   nodeIndex = index;
-                   return true;
-               }
+                if (node.nodeTemplate.id === nodeId) {
+                    nodeIndex = index;
+                    return true;
+                }
             });
             this.nodeChildrenArray[nodeIndex].makeSelectionVisible = false;
             let selectedNodeIndex;
@@ -1104,7 +1142,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param id
      * @returns Boolean True if 'Nodes' contains 'id'.
      */
-    public arrayContainsNode (nodes: any[], id: string): boolean {
+    arrayContainsNode (nodes: any[], id: string): boolean {
         if (nodes !== null && nodes.length > 0) {
             return nodes.some(node => node.id === id);
         }
@@ -1174,7 +1212,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * Binds to the JsPlumb connections listener which triggers every time a relationship is dragged from the dragSource
      * and pushes the new connection to the redux store
      */
-    bindConnection (): void {
+    private bindConnection (): void {
         if (this.jsPlumbBindConnection === false) {
             this.jsPlumbBindConnection = true;
             this.newJsPlumbInstance.bind('connection', info => {
@@ -1186,7 +1224,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                     const targetElement = info.targetId;
                     const relationshipId = `${sourceElement}_${this.currentType}_${targetElement}`;
                     const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
-                    if (relTypeExists === false && sourceElement !== targetElement) {
+                    if (relTypeExists === false) {
                         const newRelationship = new TRelationshipTemplate(
                             {ref: sourceElement},
                             {ref: targetElement},
@@ -1216,6 +1254,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     assignRelTypes (): void {
         if (this.entityTypes.relationshipTypes) {
+            console.log(this.entityTypes.relationshipTypes);
             this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
             this.entityTypes.relationshipTypes.forEach(rel => {
                 this.allRelationshipTypesColors.push({
@@ -1239,7 +1278,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     ngOnInit () {
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
-        console.log(this.allRelationshipTemplates);
         try {
             this.assignRelTypes();
         } catch (e) {

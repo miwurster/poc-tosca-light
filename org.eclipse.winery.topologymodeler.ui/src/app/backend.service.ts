@@ -72,7 +72,6 @@ export class BackendService {
                     isNullOrUndefined(params.repositoryURL) &&
                     isNullOrUndefined(params.uiURL))) {
                 this.configuration = params;
-                console.log(this.configuration);
                 // ServiceTemplate / TopologyTemplate
                 this.requestServiceTemplate().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
@@ -85,6 +84,7 @@ export class BackendService {
                 });
                 // TopologyTemplate and Visuals together
                 this.requestTopologyTemplateAndVisuals().subscribe(data => {
+                    console.log(data);
                     this.topologyTemplateAndVisuals.next(data);
                 });
                 // Policy Types

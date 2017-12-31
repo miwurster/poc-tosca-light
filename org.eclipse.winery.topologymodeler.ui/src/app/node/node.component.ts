@@ -128,7 +128,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     }
 
     ngDoCheck () {
-        const nodeTemplateChanges = this.differ.diff(this.nodeTemplate);
+        const nodeTemplateChanges = this.differ.diff(this.allRelationshipTypesColors);
         if (nodeTemplateChanges) {
         }
     }
