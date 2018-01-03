@@ -115,6 +115,11 @@ export class WineryComponent implements OnInit {
         this.backendService.nodeTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'unGroupedNodeTypes');
         });
+
+        this.backendService.loadDataFromBackend().subscribe(() => {
+            this.loaded = {isLoaded: true};
+            this.appReadyEvent.trigger();
+        });
     }
 
     /**

@@ -28,7 +28,7 @@
                 rows="1"
                 placeholder="Edit your value here."
                 required
-                value="{{currentValues[index]}}"
+                value="{{JSON.stringify(currentValues[index])}}"
                 (keyup)="properties.next($event.target.value)"
                 (keyup)="kvPropertiesIndex.next(index)">
             </textarea>

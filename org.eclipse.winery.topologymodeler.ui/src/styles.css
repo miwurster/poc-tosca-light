@@ -39,7 +39,7 @@ body {
     user-select: none;
     scroll-padding-top: 1px;
     margin-bottom: 0 !important;
-    color: white;
+    color: #212121;
 }
 
 .card-header {
