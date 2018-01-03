@@ -12,14 +12,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { PaletteService } from '../palette.service';
-import { WineryActions } from '../redux/actions/winery.actions';
-import { NgRedux } from '@angular-redux/store';
-import { IWineryState } from '../redux/store/winery.store';
-import { TNodeTemplate } from '../models/ttopology-template';
-import { BackendService } from '../backend.service';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {animate, state, style, transition, trigger} from '@angular/animations';
+import {PaletteService} from '../palette.service';
+import {WineryActions} from '../redux/actions/winery.actions';
+import {NgRedux} from '@angular-redux/store';
+import {IWineryState} from '../redux/store/winery.store';
+import {TNodeTemplate} from '../models/ttopology-template';
+import {BackendService} from '../backend.service';
 import {NewNodeIdTypeColorModel} from '../models/newNodeIdTypeColorModel';
 
 /**
@@ -182,17 +182,23 @@ export class PaletteComponent implements OnInit, OnDestroy {
                     return result;
                 }
             }
-            // case that the node name is not in the array which contains a local copy of all node templates visible in the DOM,
-            // then search in ungroupedNodeTypes where all possible node information is available
-            for (const node of this.entityTypes.unGroupedNodeTypes) {
-                if (node.id === name) {
-                    const result = {
-                        id: name,
-                        type: name,
-                        color: node.color
-                    };
-                    return result;
-                }
+            return this.getNewNodeDataFromNodeTypes(name);
+        } else {
+            return this.getNewNodeDataFromNodeTypes(name);
+        }
+    }
+
+    private getNewNodeDataFromNodeTypes (name: string): any {
+        // case that the node name is not in the array which contains a local copy of all node templates visible in the DOM,
+        // then search in ungroupedNodeTypes where all possible node information is available
+        for (const node of this.entityTypes.unGroupedNodeTypes) {
+            if (node.id === name) {
+                const result = {
+                    id: name,
+                    type: name,
+                    color: node.color
+                };
+                return result;
             }
         }
     }

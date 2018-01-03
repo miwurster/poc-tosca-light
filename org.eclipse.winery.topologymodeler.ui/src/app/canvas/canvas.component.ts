@@ -71,10 +71,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     currentType: string;
     nodeChildrenIdArray: Array<string>;
     nodeChildrenArray: Array<NodeComponent>;
-    jsPlumbConnections: Array<any> = [];
     jsPlumbBindConnection = false;
     newNode: TNodeTemplate;
-    currentPaletteOpenedState: boolean;
+    paletteOpened: boolean;
     allRelationshipTypesColors: Array<any> = [];
     newJsPlumbInstance: any;
     readonly draggingThreshold = 300;
@@ -135,23 +134,21 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param currentNodes  List of all displayed nodes.
      */
     updateNodes (currentNodes: Array<TNodeTemplate>): void {
-        if (currentNodes.length > 0) {
-            if (currentNodes.length !== this.allNodeTemplates.length) {
-                const difference = currentNodes.length - this.allNodeTemplates.length;
-                if (difference === 1 && this.currentPaletteOpenedState) {
-                    this.handleNewNode(currentNodes);
-                } else if (difference < 0) {
-                    this.handleDeletedNodes(currentNodes);
-                } else {
-                    this.allNodeTemplates = currentNodes;
-                }
+        const storeNodesLength = currentNodes.length;
+        const localCopyNodesLength = this.allNodeTemplates.length;
+        if (storeNodesLength !== localCopyNodesLength) {
+            const difference = currentNodes.length - this.allNodeTemplates.length;
+            if (difference === 1 && this.paletteOpened) {
+                this.handleNewNode(currentNodes);
+            } else if (difference < 0) {
+                this.handleDeletedNodes(currentNodes);
             } else {
-                this.updateNodeAttributes(currentNodes);
+                this.allNodeTemplates = currentNodes;
             }
-            this.allNodesIds = this.allNodeTemplates.map(node => node.id);
-        } else {
-            this.allNodeTemplates = currentNodes;
+        } else if (storeNodesLength !== 0 && localCopyNodesLength !== 0) {
+            this.updateNodeAttributes(currentNodes);
         }
+        this.allNodesIds = this.allNodeTemplates.map(node => node.id);
     }
 
     /**
@@ -161,7 +158,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     private handleNewNode (currentNodes: Array<TNodeTemplate>): void {
         this.unbindConnection();
         this.clearSelectedNodes();
-
         if (this.newNode) {
             this.resetDragSource(this.newNode.id);
         }
@@ -230,10 +226,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                     this.nodeChildrenArray[nodeId].flash('max');
                 } else if (nodeTemplate.properties !== node.properties) {
                     if (node.properties.kvproperties) {
-                        nodeTemplate.properties = node.properties.kvproperties;
+                        nodeTemplate.properties.kvproperties = node.properties.kvproperties;
                     }
                     if (node.properties.any) {
-                        nodeTemplate.properties = node.properties.any;
+                        nodeTemplate.properties.any = node.properties.any;
                     }
                 } else if (nodeTemplate.capabilities !== node.capabilities) {
                     nodeTemplate.capabilities = node.capabilities;
@@ -275,7 +271,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     setPaletteState (currentPaletteOpened: boolean): void {
         if (currentPaletteOpened) {
-            this.currentPaletteOpenedState = currentPaletteOpened;
+            this.paletteOpened = currentPaletteOpened;
         }
     }
 
@@ -535,28 +531,22 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param currentRelationships  List of all displayed relationships.
      */
     updateRelationships (currentRelationships: Array<TRelationshipTemplate>): void {
-        const currentJsPlumbManagedRels = this.newJsPlumbInstance.getAllConnections();
         setTimeout(() => {
-        if (currentRelationships.length > 0) {
-            console.log(currentRelationships.length);
-            console.log(currentJsPlumbManagedRels.length);
-            if (currentRelationships.length !== currentJsPlumbManagedRels.length) {
-                const difference = currentRelationships.length - currentJsPlumbManagedRels.length;
-                console.log(difference);
+            const localRelationshipsCopyLength = this.allRelationshipTemplates.length;
+            const storeRelationshipsLength = currentRelationships.length;
+            if (storeRelationshipsLength !== localRelationshipsCopyLength) {
+                const difference = storeRelationshipsLength - localRelationshipsCopyLength;
                 if (difference === 1) {
                     this.handleNewRelationship(currentRelationships);
                 } else if (difference < 0) {
                     this.handleDeletedRelationships(currentRelationships);
-                } else {
+                } else if (difference > 0) {
                     this.handleLoadedRelationships(currentRelationships);
                 }
-            } else {
+            } else if (storeRelationshipsLength !== 0 && localRelationshipsCopyLength !== 0) {
                 this.updateRelName(currentRelationships);
             }
-        } else {
-            this.allRelationshipTemplates = currentRelationships;
-        }
-    }, 1);
+        }, 1);
     }
 
     /**
@@ -565,9 +555,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     handleNewRelationship (currentRelationships: Array<TRelationshipTemplate>): void {
         const newRel = currentRelationships[currentRelationships.length - 1];
-        console.log(newRel);
         this.allRelationshipTemplates.push(newRel);
-        console.log(this.allRelationshipTemplates);
         setTimeout(() => this.manageRelationships(newRel), 1);
     }
 
@@ -602,7 +590,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.allRelationshipTemplates = currentRelationships;
             setTimeout(() => {
                 if (this.allRelationshipTemplates.length > 0) {
-                    console.log(this.allRelationshipTemplates);
                     this.allRelationshipTemplates.forEach(rel => this.manageRelationships(rel));
                 }
             }, 1);
@@ -736,10 +723,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         try {
             const allJsPlumbRelationships = this.newJsPlumbInstance.getAllConnections();
             if (!allJsPlumbRelationships.some(rel => rel.id === newRelationship.id)) {
-                console.log(allJsPlumbRelationships);
                 const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
-                console.log(newRelationship);
-                console.log(this.allNodeTemplates);
                 const conn = this.newJsPlumbInstance.connect({
                     source: newRelationship.sourceElement.ref,
                     target: newRelationship.targetElement.ref,
@@ -777,8 +761,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
             conn.setType(type);
             const me = this;
-            console.log(conn);
-            console.log(type);
             conn.bind('click', rel => {
                 this.clearSelectedNodes();
                 this.newJsPlumbInstance.select().removeType('marked');
@@ -794,10 +776,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                         }
                     }));
                     conn.addType('marked');
-                    console.log(conn);
                 }
             });
-            console.log(this.newJsPlumbInstance.getAllConnections());
         } catch
             (e) {
         }
@@ -812,7 +792,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
             this.paintRelationship(newRelationship);
             this.resetDragSource('');
             this.repaintJsPlumb();
-            console.log(this.newJsPlumbInstance.getManagedElements());
         } catch (e) {
         }
     }
@@ -868,15 +847,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     setDragSource (dragSourceInfo: any): void {
         const nodeArrayLength = this.allNodeTemplates.length;
-        const currentNodeDragSourceActive = this.newJsPlumbInstance.isSource(dragSourceInfo.dragSource);
-        if (!this.dragSourceActive && !currentNodeDragSourceActive && nodeArrayLength > 1) {
-            console.log(nodeArrayLength);
-            console.log(dragSourceInfo.dragSource);
+        const currentNodeIsSource = this.newJsPlumbInstance.isSource(dragSourceInfo.dragSource);
+        if (!this.dragSourceActive && !currentNodeIsSource && nodeArrayLength > 1) {
             this.newJsPlumbInstance.makeSource(dragSourceInfo.dragSource, {
                 connectorOverlays: [
                     ['Arrow', {location: 1}],
                 ],
             });
+            console.log(this.newJsPlumbInstance.isSource(dragSourceInfo.dragSource));
+            console.log(this.newJsPlumbInstance.isSource(dragSourceInfo.nodeId));
             this.dragSourceInfos = dragSourceInfo;
             const targets = this.allNodesIds.filter(nodeId => nodeId !== this.dragSourceInfos.nodeId);
             if (targets.length > 0) {
@@ -1216,7 +1195,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         if (this.jsPlumbBindConnection === false) {
             this.jsPlumbBindConnection = true;
             this.newJsPlumbInstance.bind('connection', info => {
-                this.jsPlumbConnections.push(info.connection);
                 const sourceElement = info.sourceId.substring(0, info.sourceId.indexOf('_E'));
                 const currentTypeValid = this.entityTypes.relationshipTypes.some(relType => relType.id === this.currentType);
                 const currentSourceIdValid = this.allNodeTemplates.some(node => node.id === sourceElement);
@@ -1254,7 +1232,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     assignRelTypes (): void {
         if (this.entityTypes.relationshipTypes) {
-            console.log(this.entityTypes.relationshipTypes);
             this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
             this.entityTypes.relationshipTypes.forEach(rel => {
                 this.allRelationshipTypesColors.push({

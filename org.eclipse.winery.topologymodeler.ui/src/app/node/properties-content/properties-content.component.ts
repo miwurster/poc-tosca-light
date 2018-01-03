@@ -13,7 +13,12 @@
  ********************************************************************************/
 
 import {
-    Component, Input, KeyValueDiffers, OnChanges, OnDestroy, OnInit,
+    Component,
+    Input,
+    KeyValueDiffers,
+    OnChanges,
+    OnDestroy,
+    OnInit,
     SimpleChanges
 } from '@angular/core';
 import {Subject} from 'rxjs/Subject';
@@ -38,69 +43,42 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     @Input() currentNodeData: any;
     @Input() currentProperties: string;
     @Input() groupedNodeTypes: any[];
-    key: string;
     index: number;
     currentValues: Array<any> = [];
-    differ: any;
     xmlProperty: string;
+
+    nodeProperties: Array<any> = [];
 
     property: Array<any> = [];
     subscriptionProperties: Subscription;
     subscriptionKvPropertiesIndex: Subscription;
 
     constructor (private $ngRedux: NgRedux<IWineryState>,
-                 private actions: WineryActions,
-                 differs: KeyValueDiffers) {
-        this.differ = differs.find([]).create(null);
+                 private actions: WineryActions) {
     }
 
     ngOnChanges (changes: SimpleChanges) {
         setTimeout(() => {
             if (changes.currentProperties) {
                 try {
-                    const currentProperties = changes.currentProperties.currentValue;
+                    let currentProperties = changes.currentProperties.currentValue;
                     if (this.propertyDefinitionType === 'KV') {
-                        // checks if incoming key value properties are in different order than the ones in the keys array
-                        if (currentProperties.length > 0) {
-                            for (const key of this.keys) {
-                                currentProperties.map(k => {
-                                    if (k.key === key.key) {
-                                        const indexProperty = currentProperties.map(kv => kv.key).indexOf(k.key);
-                                        const indexKeys = this.keys.map(kv => kv.key).indexOf(k.key);
-                                        if (indexProperty !== indexKeys) {
-                                            const tmp = currentProperties[indexKeys];
-                                            currentProperties[indexKeys] = currentProperties[indexProperty];
-                                            currentProperties[indexProperty] = tmp;
-                                        }
-                                    }
-                                });
+                        // checks if the incoming properties are an object or an array,
+                        // if not an array, it gets converted to one for iterating over
+                        // the keys and values in the template via ngFor
+                        if (!currentProperties.kvproperties.length) {
+                            for (const obj in currentProperties.kvproperties) {
+                                const keyValuePair = {
+                                    key: obj,
+                                    value: currentProperties.kvproperties[obj]
+                                };
+                                this.nodeProperties.push(keyValuePair);
                             }
-                        }
-                        // adds the new properties to the array
-                        for (const currentProp of currentProperties) {
-                            if (!this.property.find(obj => obj.key === currentProp.key)) {
-                                this.property.push(currentProp);
-                                this.currentValues.push(currentProp.value);
-                            } else {
-                                this.property.map(obj => {
-                                    if (obj.key === currentProp.key && obj.value !== currentProp.value) {
-                                        obj.value = currentProp.value;
-                                        const index = this.property.map(kv => kv.key).indexOf(currentProp.key);
-                                        this.currentValues[index] = currentProp.value;
-                                    }
-                                });
-                            }
-                        }
-                        if (this.currentValues.length === 0) {
-                            for (const key in currentProperties) {
-                                if (currentProperties.hasOwnProperty(key)) {
-                                    const value = currentProperties[key];
-                                    this.currentValues.push(value);
-                                }
-                            }
+                        } else {
+                            this.nodeProperties = currentProperties.kvproperties;
                         }
                     } else if (this.propertyDefinitionType === 'XML') {
-                        this.xmlProperty = currentProperties;
+                        this.xmlProperty = currentProperties.any;
                     }
                 } catch (e) {
                 }
@@ -126,22 +104,8 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
             .subscribe(value => {
                 let property;
                 if (this.propertyDefinitionType === 'KV') {
-                    if (this.values[this.index]) {
-                        this.values[this.index] = value;
-                    } else {
-                        this.values.push(value);
-                    }
-                    let currentValue;
-                    if (!this.values[this.index]) {
-                        currentValue = value;
-                    } else {
-                        currentValue = this.values[this.index];
-                    }
-                    this.keyValue = {
-                        key: this.keys[this.index].key,
-                        value: currentValue
-                    };
-                    property = this.keyValue;
+                    this.nodeProperties[this.index].value = value;
+                    property = this.nodeProperties;
                 } else {
                     property = value;
                 }
