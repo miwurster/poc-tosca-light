@@ -10,7 +10,6 @@
  * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
-
 -->
 
 <div class="bootstrap-vertical-nav">
@@ -20,19 +19,13 @@
     </button>
 
     <div [@paletteItemState]="paletteRootState" class="palette-items-wrapper">
-        <accordion [closeOthers]="oneAtATime">
-            <accordion-group *ngFor="let ns of groupedNodeTypes; let i = index;">
-                <div accordion-heading>{{ns.text}}</div>
-                <ul class="nav flex-column nav-tabs">
-                    <li *ngFor="let child of ns.children" class="nav-item">
-                        <div class="btn btn-light btn-sm btn-block"
-                             (mousedown)="publishTitle($event)">{{ child.text }}
-                        </div>
-                    </li>
-                </ul>
-            </accordion-group>
-        </accordion>
-
+            <ul class="nav flex-column nav-tabs">
+                <li *ngFor="let nodeType of entityTypes.unGroupedNodeTypes" class="nav-item">
+                    <div class="btn btn-light btn-sm btn-block"
+                         (mousedown)="generateNewNode($event)">{{ nodeType.id }}
+                    </div>
+                </li>
+            </ul>
     </div>
 </div>
 

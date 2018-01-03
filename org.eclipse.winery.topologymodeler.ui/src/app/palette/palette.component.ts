@@ -12,14 +12,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {animate, state, style, transition, trigger} from '@angular/animations';
-import {PaletteService} from '../palette.service';
-import {WineryActions} from '../redux/actions/winery.actions';
-import {NgRedux} from '@angular-redux/store';
-import {IWineryState} from '../redux/store/winery.store';
-import {TNodeTemplate} from '../models/ttopology-template';
-import {BackendService} from '../backend.service';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { PaletteService } from '../palette.service';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../redux/store/winery.store';
+import { TNodeTemplate } from '../models/ttopology-template';
+import { BackendService } from '../backend.service';
+import {NewNodeIdTypeColorModel} from '../models/newNodeIdTypeColorModel';
 
 /**
  * This is the left sidebar, where nodes can be created from.
@@ -53,9 +54,8 @@ export class PaletteComponent implements OnInit, OnDestroy {
     paletteOpenedSubscription;
     public oneAtATime = true;
     allNodeTemplates: TNodeTemplate[] = [];
-    // All Node Types grouped by their namespaces
-    groupedNodeTypes = [];
-    ungroupedNodeTypes = [];
+    readonly newNodePositionOffsetX = 108;
+    readonly newNodePositionOffsetY = 30;
 
     constructor (private ngRedux: NgRedux<IWineryState>,
                  private actions: WineryActions,
@@ -64,14 +64,6 @@ export class PaletteComponent implements OnInit, OnDestroy {
             .subscribe(currentNodes => this.updateNodes(currentNodes));
         this.paletteOpenedSubscription = ngRedux.select(wineryState => wineryState.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.updateState(currentPaletteOpened));
-        backendService.requestGroupedNodeTypes();
-        backendService.groupedNodeTypes$.subscribe(data => {
-            this.groupedNodeTypes = data;
-        });
-        backendService.requestNodeTypes();
-        backendService.nodeTypes$.subscribe(data => {
-            this.ungroupedNodeTypes = data;
-        });
     }
 
     /**
@@ -115,13 +107,13 @@ export class PaletteComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Generates and publishes a new node.
+     * Generates and stores a new node in the store.
      * @param $event
      */
-    publishTitle ($event): void {
-        const left = ($event.pageX - 108).toString();
-        const top = ($event.pageY - 30).toString();
-        const name = $event.target.innerHTML;
+    generateNewNode ($event): void {
+        const left = ($event.pageX - this.newNodePositionOffsetX).toString();
+        const top = ($event.pageY - this.newNodePositionOffsetY).toString();
+        const name = $event.target.innerText;
         const otherAttributes = {
             location: 'undefined',
             x: left,
@@ -129,17 +121,17 @@ export class PaletteComponent implements OnInit, OnDestroy {
         };
         const y = top;
         const x = left;
-        const newIdType = this.generateId(name);
-        const newId = newIdType.newId;
-        const newType = newIdType.type;
-        const paletteItem: TNodeTemplate = new TNodeTemplate(
+        const newIdTypeColor = this.generateIdTypeColor(name);
+        const newId = newIdTypeColor.id;
+        const newType = newIdTypeColor.type;
+        const newNode: TNodeTemplate = new TNodeTemplate(
             undefined,
             newId,
             newType,
             name,
             1,
             1,
-            'yellow',
+            newIdTypeColor.color,
             undefined,
             undefined,
             undefined,
@@ -152,27 +144,27 @@ export class PaletteComponent implements OnInit, OnDestroy {
             undefined,
             undefined
         );
-        this.ngRedux.dispatch(this.actions.saveNodeTemplate(paletteItem));
-        this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
+        this.ngRedux.dispatch(this.actions.saveNodeTemplate(newNode));
     }
 
     /**
-     * Generates a new node id, which must be unique.
+     * Generates a new unique node id, type and color.
      * @param name
-     * @return
+     * @return result
      */
-    generateId (name: string): any {
+    generateIdTypeColor (name: string): NewNodeIdTypeColorModel {
         if (this.allNodeTemplates.length > 0) {
             // iterate from back to front because only the last added instance of a node type is important
             // e.g. Node_8 so to increase to Node_9 only the 8 is important which is in the end of the array
             for (let i = this.allNodeTemplates.length - 1; i >= 0; i--) {
                 // get type of node Template
                 const type = this.allNodeTemplates[i].type;
+                const color = this.allNodeTemplates[i].color;
                 // split it to get a string like "NodeTypeWithTwoProperties"
                 let typeOfCurrentNode = type.split('}').pop();
                 // eliminate whitespaces from both strings, important for string comparison
-                typeOfCurrentNode = typeOfCurrentNode.replace(/\s+/g, "");
-                name = name.replace(/\s+/g, "");
+                typeOfCurrentNode = typeOfCurrentNode.replace(/\s+/g, '');
+                name = name.replace(/\s+/g, '');
                 if (name === typeOfCurrentNode) {
                     const idOfCurrentNode = this.allNodeTemplates[i].id;
                     const numberOfNewInstance = parseInt(idOfCurrentNode.substring(idOfCurrentNode.indexOf('_') + 1), 10) + 1;
@@ -183,19 +175,21 @@ export class PaletteComponent implements OnInit, OnDestroy {
                         newId = name.concat('_', '2');
                     }
                     const result = {
-                        newId: newId,
-                        type: type
+                        id: newId,
+                        type: type,
+                        color: color
                     };
                     return result;
                 }
             }
             // case that the node name is not in the array which contains a local copy of all node templates visible in the DOM,
             // then search in ungroupedNodeTypes where all possible node information is available
-            for (const node of this.ungroupedNodeTypes) {
+            for (const node of this.entityTypes.unGroupedNodeTypes) {
                 if (node.id === name) {
                     const result = {
-                        newId: name,
-                        type: name
+                        id: name,
+                        type: name,
+                        color: node.color
                     };
                     return result;
                 }

@@ -1061,4 +1061,3 @@ export const WineryReducer =
                 return lastState;
         }
     };
-

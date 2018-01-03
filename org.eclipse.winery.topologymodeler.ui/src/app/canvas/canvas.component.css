@@ -50,3 +50,12 @@
 #grid {
     position: absolute;
 }
+
+.labelStyle path {
+    font: 11px Roboto, sans-serif;
+    color: #212121;
+    fill: #efefef;
+    borderStyle: #fafafa;
+    borderWidth: 1;
+    padding: 3px;
+}

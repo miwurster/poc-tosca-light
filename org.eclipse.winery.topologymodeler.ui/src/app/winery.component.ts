@@ -41,16 +41,6 @@ export class WineryComponent implements OnInit {
     requirementTypes: Array<any> = [];
     groupedNodeTypes: Array<any> = [];
     relationshipTypes: Array<any> = [];
-    // This object contains all the arrays from above after all GET requests are done by the backend service
-    // This object entityTypes is passed to all child components. Looks like this in the memory:
-    // entityTypes:
-    //     artifactTypes: [],
-    //     policyTypes: [],
-    //     policyTemplates: [],
-    //     capabilityTypes: [],
-    //     requirementTypes: [],
-    //     groupedNodeTypes: [],
-    //     relationshipTypes: []
     entityTypes: any = {};
 
     public loaded: ILoaded;
@@ -87,11 +77,10 @@ export class WineryComponent implements OnInit {
         this.backendService.topologyTemplateAndVisuals$.subscribe(JSON => {
             // topologyTemplate JSON[0]
             const topologyTemplate = JSON[0];
-            // visuals JSON[1]
             const visuals = JSON[1];
+            this.entityTypes.nodeVisuals = visuals;
             // init the NodeTemplates and RelationshipTemplates to start their rendering
             this.initTopologyTemplate(topologyTemplate.nodeTemplates, visuals, topologyTemplate.relationshipTemplates);
-
         });
 
         // Get other entity types
@@ -123,17 +112,21 @@ export class WineryComponent implements OnInit {
         this.backendService.relationshipTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'relationshipTypes');
         });
+        this.backendService.nodeTypes$.subscribe(JSON => {
+            this.initEntityType(JSON, 'unGroupedNodeTypes');
+        });
     }
 
     /**
-     * Save the received Array of Entity Types inside the respective variables
+     * Save the received Array of Entity Types inside the respective variables in the entityTypes array of arrays
+     * which is getting passed to the palette and the topology renderer
      * @param {Array<any>} entityTypeJSON
      * @param {string} entityType
      */
     initEntityType(entityTypeJSON: Array<any>, entityType: string): void {
         switch (entityType) {
             case 'artifactTypes': {
-                for (const artifactType of entityTypeJSON) {
+                entityTypeJSON.forEach(artifactType => {
                     this.artifactTypes
                         .push(new EntityType(
                             artifactType.id,
@@ -141,12 +134,12 @@ export class WineryComponent implements OnInit {
                             artifactType.name,
                             artifactType.namespace
                         ));
-                }
+                });
                 this.entityTypes.artifactTypes = this.artifactTypes;
                 break;
             }
             case 'policyTypes': {
-                for (const policyType of entityTypeJSON) {
+                entityTypeJSON.forEach(policyType => {
                     this.policyTypes
                         .push(new EntityType(
                             policyType.id,
@@ -154,12 +147,12 @@ export class WineryComponent implements OnInit {
                             policyType.name,
                             policyType.namespace
                         ));
-                }
+                });
                 this.entityTypes.policyTypes = this.policyTypes;
                 break;
             }
             case 'capabilityTypes': {
-                for (const capabilityType of entityTypeJSON) {
+                entityTypeJSON.forEach(capabilityType => {
                     this.capabilityTypes
                         .push(new EntityType(
                             capabilityType.id,
@@ -167,12 +160,12 @@ export class WineryComponent implements OnInit {
                             capabilityType.name,
                             capabilityType.namespace
                         ));
-                }
+                });
                 this.entityTypes.capabilityTypes = this.capabilityTypes;
                 break;
             }
             case 'requirementTypes': {
-                for (const requirementType of entityTypeJSON) {
+                entityTypeJSON.forEach(requirementType => {
                     this.requirementTypes
                         .push(new EntityType(
                             requirementType.id,
@@ -180,12 +173,12 @@ export class WineryComponent implements OnInit {
                             requirementType.name,
                             requirementType.namespace
                         ));
-                }
+                });
                 this.entityTypes.requirementTypes = this.requirementTypes;
                 break;
             }
             case 'policyTemplates': {
-                for (const policyTemplate of entityTypeJSON) {
+                entityTypeJSON.forEach(policyTemplate => {
                     this.policyTemplates
                         .push(new EntityType(
                             policyTemplate.id,
@@ -193,17 +186,21 @@ export class WineryComponent implements OnInit {
                             policyTemplate.name,
                             policyTemplate.namespace
                         ));
-                }
+                });
                 this.entityTypes.policyTemplates = this.policyTemplates;
                 break;
             }
             case 'groupedNodeTypes': {
-                this.groupedNodeTypes = entityTypeJSON;
-                this.entityTypes.groupedNodeTypes = this.groupedNodeTypes;
+                this.entityTypes.groupedNodeTypes = entityTypeJSON;
+                break;
+            }
+            case 'unGroupedNodeTypes': {
+                this.entityTypes.unGroupedNodeTypes = entityTypeJSON;
+                this.setNodeVisuals(this.entityTypes.nodeVisuals);
                 break;
             }
             case 'relationshipTypes': {
-                for (const relationshipType of entityTypeJSON) {
+                entityTypeJSON.forEach(relationshipType => {
                     // get relationship type visualappearances
                     let visualAppearance;
                     this.backendService
@@ -222,79 +219,93 @@ export class WineryComponent implements OnInit {
                                     visualAppearance.color
                                 ));
                         });
-                }
+                });
                 this.entityTypes.relationshipTypes = this.relationshipTypes;
                 break;
             }
         }
+    }
 
+    private setNodeVisuals(nodeVisuals: Array<any>): void {
+        nodeVisuals.forEach( nodeVisual => {
+            const nodeId = nodeVisual.nodeTypeId.substring(nodeVisual.nodeTypeId.indexOf('}') + 1);
+            this.entityTypes.unGroupedNodeTypes.forEach(node => {
+               if (node.id === nodeId) {
+                   node.color = nodeVisual.color;
+               }
+            });
+        });
     }
 
     initTopologyTemplate(nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
         // init node templates
-        for (const node of nodeTemplateArray) {
-            let color;
-            let imageUrl;
-            for (const visual of visuals) {
-                const qName = new QName(visual.nodeTypeId);
-                const localName = qName.localName;
-                if (localName === new QName(node.type).localName) {
-                    color = visual.color;
-                    imageUrl = visual.imageUrl;
-                    if (imageUrl) {
-                        imageUrl = imageUrl.replace('appearance', 'visualappearance');
+        if (nodeTemplateArray.length > 0) {
+            nodeTemplateArray.forEach(node => {
+                let color;
+                let imageUrl;
+                for (const visual of visuals) {
+                    const qName = new QName(visual.nodeTypeId);
+                    const localName = qName.localName;
+                    if (localName === new QName(node.type).localName) {
+                        color = visual.color;
+                        imageUrl = visual.imageUrl;
+                        if (imageUrl) {
+                            imageUrl = imageUrl.replace('appearance', 'visualappearance');
+                        }
+                        break;
                     }
                 }
-            }
-            let properties;
-            if (node.properties) {
-                properties = node.properties;
-
-            }
-            this.nodeTemplates.push(
-                new TNodeTemplate(
-                    properties,
-                    node.id,
-                    node.type,
-                    node.name,
-                    node.minInstances,
-                    node.maxInstances,
-                    color,
-                    imageUrl,
-                    node.documentation,
-                    node.any,
-                    node.otherAttributes,
-                    node.x,
-                    node.y,
-                    node.capabilities,
-                    node.requirements,
-                    node.deploymentArtifacts,
-                    node.policies,
-                    node.targetLocations
-                )
-            );
-        }
-        for (const nodeTemplate of this.nodeTemplates) {
-            this.ngRedux.dispatch(this.actions.saveNodeTemplate(nodeTemplate));
+                let properties;
+                if (node.properties) {
+                    properties = node.properties;
+                }
+                this.nodeTemplates.push(
+                    new TNodeTemplate(
+                        properties,
+                        node.id,
+                        node.type,
+                        node.name,
+                        node.minInstances,
+                        node.maxInstances,
+                        color,
+                        imageUrl,
+                        node.documentation,
+                        node.any,
+                        node.otherAttributes,
+                        node.x,
+                        node.y,
+                        node.capabilities,
+                        node.requirements,
+                        node.deploymentArtifacts,
+                        node.policies,
+                        node.targetLocations
+                    )
+                );
+            });
+            this.nodeTemplates.forEach(nodeTemplate => {
+                this.ngRedux.dispatch(this.actions.saveNodeTemplate(nodeTemplate));
+            });
         }
         // init relationship templates
-        for (const relationship of relationshipTemplateArray) {
-            const relationshipType = relationship.type;
-            this.relationshipTemplates.push(
-                new TRelationshipTemplate(
-                    relationship.sourceElement,
-                    relationship.targetElement,
-                    relationship.name,
-                    `${relationship.sourceElement.ref}_${relationshipType}_${relationship.targetElement.ref}`,
-                    relationshipType,
-                    relationship.documentation,
-                    relationship.any,
-                    relationship.otherAttributes
-                )
-            );
-        }
-        for (const relationshipTemplate of this.relationshipTemplates) {
-            this.ngRedux.dispatch(this.actions.saveRelationship(relationshipTemplate));
+        if (relationshipTemplateArray.length > 0) {
+            relationshipTemplateArray.forEach(relationship => {
+                const relationshipType = relationship.type;
+                this.relationshipTemplates.push(
+                    new TRelationshipTemplate(
+                        relationship.sourceElement,
+                        relationship.targetElement,
+                        relationship.name,
+                        `${relationship.sourceElement.ref}_${relationshipType.substring(relationshipType.indexOf('}') + 1)}_${relationship.targetElement.ref}`,
+                        relationshipType,
+                        relationship.documentation,
+                        relationship.any,
+                        relationship.otherAttributes
+                    )
+                );
+            });
+            this.relationshipTemplates.forEach(relationshipTemplate => {
+                this.ngRedux.dispatch(this.actions.saveRelationship(relationshipTemplate));
+            });
         }
     }
 }

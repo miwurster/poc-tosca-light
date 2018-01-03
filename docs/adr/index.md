@@ -4,7 +4,7 @@ This lists the architectural decisions for Eclipse Winery.
 
 <!-- adrlog -->
 
-- [ADR-0000](0000-use-architectural-decision-records.md) - Use Architectural Decision Records
+- [ADR-0000](0000-use-architectural-decision-records.md) - Use Markdown Architectural Decision Records
 - [ADR-0001](0001-use-filesystem-as-backend.md) - Use filesystem as backend
 - [ADR-0002](0002-filesystem-folder-structure-using-type-namespace-id-structure.md) - File system folder structure using type-namespace-id structure
 - [ADR-0003](0003-double-encoded-urls.md) - Double Encoded URLs

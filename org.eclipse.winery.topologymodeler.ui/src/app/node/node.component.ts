@@ -25,13 +25,13 @@ import {
     Output,
     Renderer2
 } from '@angular/core';
-import {animate, keyframes, state, style, transition, trigger} from '@angular/animations';
-import {ButtonsStateModel} from '../models/buttonsState.model';
-import {NgRedux} from '@angular-redux/store';
-import {IWineryState} from '../redux/store/winery.store';
-import {WineryActions} from '../redux/actions/winery.actions';
-import {hostURL} from '../configuration';
-import {TNodeTemplate} from '../models/ttopology-template';
+import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
+import { ButtonsStateModel } from '../models/buttonsState.model';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../redux/store/winery.store';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { hostURL } from '../configuration';
+import { TNodeTemplate } from '../models/ttopology-template';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -128,9 +128,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     }
 
     ngDoCheck () {
-        const nodeTemplateChanges = this.differ.diff(this.nodeTemplate);
+        const nodeTemplateChanges = this.differ.diff(this.allRelationshipTypesColors);
         if (nodeTemplateChanges) {
-
         }
     }
 
@@ -199,8 +198,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
             this.parentEl = $event.target.parentElement.className;
         }
         if (this.parentEl !== 'accordion-toggle' && this.parentEl !== 'ng-tns-c6-2' && this.parentEl) {
-            const offsetLeft = this.elRef.nativeElement.firstChild.offsetLeft;
-            const offsetTop = this.elRef.nativeElement.firstChild.offsetTop;
+            const offsetLeft = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetLeft;
+            const offsetTop = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetTop;
             this.previousPosition = {
                 x: offsetLeft,
                 y: offsetTop
@@ -216,8 +215,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * @param $event
      */
     mouseMove ($event): void {
-        const offsetLeft = this.elRef.nativeElement.firstChild.offsetLeft;
-        const offsetTop = this.elRef.nativeElement.firstChild.offsetTop;
+        const offsetLeft = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetLeft;
+        const offsetTop = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetTop;
         this.currentPosition = {
             id: this.nodeTemplate.id,
             x: offsetLeft,
@@ -231,17 +230,17 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      */
     mouseUpHandler ($event): void {
         // mouseup
-        if (this.unbindMouseMove) {
-            this.unbindMouseMove();
-        }
         this.endTime = new Date().getTime();
         this.testTimeDifference($event);
         if (this.previousPosition !== undefined && this.currentPosition !== undefined) {
             const differenceY = this.previousPosition.y - this.currentPosition.y;
             const differenceX = this.previousPosition.x - this.currentPosition.x;
             if (Math.abs(differenceX) > 2 || Math.abs(differenceY) > 2) {
-                this.updateSelectedNodes.emit('Update selectedNodes');
+                this.updateSelectedNodes.emit();
             }
+        }
+        if (this.unbindMouseMove) {
+            this.unbindMouseMove();
         }
     }
 

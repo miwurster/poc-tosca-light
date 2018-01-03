@@ -12,11 +12,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {AfterViewInit, Directive, ElementRef} from '@angular/core';
+import { AfterViewInit, Directive, ElementRef } from '@angular/core';
 import ELK from 'elkjs/lib/elk.bundled.js';
-import {TNodeTemplate, TRelationshipTemplate} from './models/ttopology-template';
-import {WineryAlertService} from './winery-alert/winery-alert.service';
-import {LayoutChildNodeModel} from './models/layoutChildNodeModel';
+import { TNodeTemplate, TRelationshipTemplate } from './models/ttopology-template';
+import { WineryAlertService } from './winery-alert/winery-alert.service';
+import { LayoutChildNodeModel } from './models/layoutChildNodeModel';
 
 @Directive({
     selector: '[wineryLayout]'
@@ -25,12 +25,16 @@ import {LayoutChildNodeModel} from './models/layoutChildNodeModel';
  * Manages all layouting operations besides drag and drop (this is in canvas.ts)
  */
 export class LayoutDirective implements AfterViewInit {
-    private jsPlumbInstance: any;
     readonly nodeXOffset = 40;
     readonly nodeYOffset = 50;
+    private jsPlumbInstance: any;
 
     constructor (private alert: WineryAlertService,
                  private elRef: ElementRef) {
+    }
+
+    setJsPlumbInstance(jsPlumbInstance: any): void {
+        this.jsPlumbInstance = jsPlumbInstance;
     }
 
     /**
@@ -38,11 +42,9 @@ export class LayoutDirective implements AfterViewInit {
      * Uses ELK.Js which implements sugiyama to layout nodes.
      * @param nodeTemplates
      * @param relationshipTemplates
-     * @param jsPlumbInstance
      */
     public layoutNodes (nodeTemplates: Array<TNodeTemplate>,
-                        relationshipTemplates: Array<TRelationshipTemplate>,
-                        jsPlumbInstance: any): void {
+                        relationshipTemplates: Array<TRelationshipTemplate>): void {
         // These are the input arrays for eclipse layout kernel (ELK).
         const children: LayoutChildNodeModel[] = [];
         const edges: any[] = [];
@@ -61,8 +63,8 @@ export class LayoutDirective implements AfterViewInit {
 
         // get source and targets of relationships
         relationshipTemplates.forEach((rel, index) => {
-            const sourceElement = rel.sourceElement;
-            const targetElement = rel.targetElement;
+            const sourceElement = rel.sourceElement.ref;
+            const targetElement = rel.targetElement.ref;
             edges.push({id: index.toString(), sources: [sourceElement], targets: [targetElement]});
         });
 
@@ -82,7 +84,7 @@ export class LayoutDirective implements AfterViewInit {
 
         const promise = elk.layout(graph);
         promise.then((data) => {
-            this.applyPositions(data, nodeTemplates, this.jsPlumbInstance);
+            this.applyPositions(data, nodeTemplates);
         });
     }
 
@@ -94,15 +96,14 @@ export class LayoutDirective implements AfterViewInit {
      * @param jsPlumbInstance
      */
     private applyPositions (data: any,
-                            nodeTemplates: Array<TNodeTemplate>,
-                            jsPlumbInstance: any): void {
+                            nodeTemplates: Array<TNodeTemplate>): void {
         nodeTemplates.forEach((node, index) => {
             // apply the new positions to the nodes
             node.x = data.children[index].x + this.nodeXOffset;
             node.y = data.children[index].y + this.nodeYOffset;
         });
 
-        this.repaintEverything(jsPlumbInstance);
+        this.repaintEverything();
     }
 
     /**
@@ -111,8 +112,7 @@ export class LayoutDirective implements AfterViewInit {
      * @param selectedNodes
      * @param jsPlumbInstance
      */
-    public alignHorizontal (selectedNodes: Array<TNodeTemplate>,
-                            jsPlumbInstance: any): void {
+    public alignHorizontal (selectedNodes: Array<TNodeTemplate>): void {
         let result;
         // if there is only 1 node selected, do nothing
         if (!(selectedNodes.length === 1)) {
@@ -125,7 +125,7 @@ export class LayoutDirective implements AfterViewInit {
             selectedNodes.forEach((node) => {
                 node.y = result;
             });
-            this.repaintEverything(jsPlumbInstance);
+            this.repaintEverything();
         } else {
             this.showWarningAlert('You have only one node selected.');
         }
@@ -137,8 +137,7 @@ export class LayoutDirective implements AfterViewInit {
      * @param selectedNodes
      * @param jsPlumbInstance
      */
-    public alignVertical (selectedNodes: Array<TNodeTemplate>,
-                          jsPlumbInstance: any): void {
+    public alignVertical (selectedNodes: Array<TNodeTemplate>): void {
         let result;
         // if there is only 1 node selected, do nothing
         if (!(selectedNodes.length === 1)) {
@@ -151,7 +150,7 @@ export class LayoutDirective implements AfterViewInit {
             selectedNodes.forEach((node) => {
                 node.x = result;
             });
-            this.repaintEverything(jsPlumbInstance);
+            this.repaintEverything();
         } else {
             this.showWarningAlert('You have only one node selected.');
         }
@@ -161,8 +160,8 @@ export class LayoutDirective implements AfterViewInit {
      * Repaints everything after 1ms.
      * @param jsPlumbInstance
      */
-    private repaintEverything (jsPlumbInstance: any): void {
-        setTimeout(() => jsPlumbInstance.repaintEverything(), 1);
+    private repaintEverything (): void {
+        setTimeout(() => this.jsPlumbInstance.repaintEverything(), 1);
     }
 
     /**

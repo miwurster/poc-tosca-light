@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Injectable} from '@angular/core';
-import {Headers, Http, RequestOptions} from '@angular/http';
-import {Observable} from 'rxjs/Rx';
-import {ActivatedRoute} from '@angular/router';
-import {isNullOrUndefined} from 'util';
-import {backendBaseURL} from './configuration';
-import {Subject} from 'rxjs/Subject';
+import { Injectable } from '@angular/core';
+import { Headers, Http, RequestOptions } from '@angular/http';
+import { Observable } from 'rxjs/Rx';
+import { ActivatedRoute } from '@angular/router';
+import { backendBaseURL } from './configuration';
+import { Subject } from 'rxjs/Subject';
+import { isNullOrUndefined } from 'util';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -63,8 +63,8 @@ export class BackendService {
     private topologyTemplateAndVisuals = new Subject<any>();
     topologyTemplateAndVisuals$ = this.topologyTemplateAndVisuals.asObservable();
 
-    constructor(private http: Http,
-                private activatedRoute: ActivatedRoute) {
+    constructor (private http: Http,
+                 private activatedRoute: ActivatedRoute) {
 
         this.activatedRoute.queryParams.subscribe((params: TopologyModelerConfiguration) => {
             if (!(isNullOrUndefined(params.id) &&
@@ -72,7 +72,6 @@ export class BackendService {
                     isNullOrUndefined(params.repositoryURL) &&
                     isNullOrUndefined(params.uiURL))) {
                 this.configuration = params;
-                console.log(this.configuration);
                 // ServiceTemplate / TopologyTemplate
                 this.requestServiceTemplate().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
@@ -85,6 +84,7 @@ export class BackendService {
                 });
                 // TopologyTemplate and Visuals together
                 this.requestTopologyTemplateAndVisuals().subscribe(data => {
+                    console.log(data);
                     this.topologyTemplateAndVisuals.next(data);
                 });
                 // Policy Types
@@ -139,7 +139,7 @@ export class BackendService {
      * This is required
      * @returns data  The JSON from the server
      */
-    requestTopologyTemplateAndVisuals(): Observable<[string, string]> {
+    requestTopologyTemplateAndVisuals (): Observable<[string, string]> {
         if (this.configuration) {
             const url = this.configuration.repositoryURL + '/servicetemplates/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
@@ -158,7 +158,7 @@ export class BackendService {
      * Requests data from the server
      * @returns data  The JSON from the server
      */
-    requestServiceTemplate(): Observable<Object> {
+    requestServiceTemplate (): Observable<Object> {
         if (this.configuration) {
             const url = this.configuration.repositoryURL + '/servicetemplates/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
@@ -171,7 +171,7 @@ export class BackendService {
      * Returns data that is later used by jsPlumb to render a relationship connector
      * @returns data The JSON from the server
      */
-    requestRelationshipTypeVisualappearance(namespace: string, id: string): Observable<any> {
+    requestRelationshipTypeVisualappearance (namespace: string, id: string): Observable<any> {
         if (this.configuration) {
             const url = this.configuration.repositoryURL + '/relationshiptypes/'
                 + encodeURIComponent(encodeURIComponent(namespace)) + '/'
@@ -184,7 +184,7 @@ export class BackendService {
      * Requests all visual appearances used for the NodeTemplates
      * @returns {Observable<string>}
      */
-    requestAllNodeTemplateVisuals(): Observable<any> {
+    requestAllNodeTemplateVisuals (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/nodetypes/allvisualappearancedata', this.options)
                 .map(res => res.json());
@@ -195,7 +195,7 @@ export class BackendService {
      * Requests all policy types from the backend
      * @returns {Observable<string>}
      */
-    requestPolicyTypes(): Observable<any> {
+    requestPolicyTypes (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/policytypes', this.options)
                 .map(res => res.json());
@@ -206,7 +206,7 @@ export class BackendService {
      * Requests all requirement types from the backend
      * @returns {Observable<string>}
      */
-    requestRequirementTypes(): Observable<any> {
+    requestRequirementTypes (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/requirementtypes', this.options)
                 .map(res => res.json());
@@ -217,7 +217,7 @@ export class BackendService {
      * Requests all capability types from the backend
      * @returns {Observable<string>}
      */
-    requestCapabilityTypes(): Observable<any> {
+    requestCapabilityTypes (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/capabilitytypes', this.options)
                 .map(res => res.json());
@@ -228,7 +228,7 @@ export class BackendService {
      * Requests all grouped node types from the backend
      * @returns {Observable<string>}
      */
-    requestGroupedNodeTypes(): Observable<any> {
+    requestGroupedNodeTypes (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/nodetypes?grouped&full', this.options)
                 .map(res => res.json());
@@ -239,7 +239,7 @@ export class BackendService {
      * Requests all ungrouped node types from the backend
      * @returns {Observable<string>}
      */
-    requestNodeTypes(): Observable<any> {
+    requestNodeTypes (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/nodetypes?full', this.options)
                 .map(res => res.json());
@@ -250,7 +250,7 @@ export class BackendService {
      * Requests all policy templates from the backend
      * @returns {Observable<string>}
      */
-    requestPolicyTemplates(): Observable<any> {
+    requestPolicyTemplates (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/policytemplates', this.options)
                 .map(res => res.json());
@@ -261,7 +261,7 @@ export class BackendService {
      * Requests all artifact types from the backend
      * @returns {Observable<string>}
      */
-    requestArtifactTypes(): Observable<any> {
+    requestArtifactTypes (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/artifacttypes', this.options)
                 .map(res => res.json());
@@ -272,7 +272,7 @@ export class BackendService {
      * Requests all relationship types from the backend
      * @returns {Observable<string>}
      */
-    requestRelationshipTypes(): Observable<any> {
+    requestRelationshipTypes (): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/relationshiptypes', this.options)
                 .map(res => res.json());
@@ -283,7 +283,7 @@ export class BackendService {
      * Saves the topologyTemplate back to the repository
      * @returns {Observable<Response>}
      */
-    saveTopologyTemplate(topologyTemplate: any): Observable<any> {
+    saveTopologyTemplate (topologyTemplate: any): Observable<any> {
         if (this.configuration) {
             const headers = new Headers({'Content-Type': 'application/json'});
             const options = new RequestOptions({headers: headers});
