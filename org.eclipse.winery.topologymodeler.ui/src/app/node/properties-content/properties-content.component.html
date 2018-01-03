@@ -20,22 +20,18 @@
         <th>
             Values
         </th>
-    </tr>
-    <tr *ngFor="let kvPair of keys, let index=index">
-        <td class="">{{kvPair.key}}</td>
-        <td class="">
-            <textarea
-                rows="1"
-                placeholder="Edit your value here."
-                required
-                value="{{currentValues[index]}}"
-                (keyup)="properties.next($event.target.value)"
-                (keyup)="kvPropertiesIndex.next(index)">
-            </textarea>
-        </td>
-    </tr>
-    <tr>
-
+        <tr *ngFor="let kvPair of nodeProperties, let index=index">
+            <td class="">{{kvPair.key}}</td>
+            <td class="">
+                <textarea
+                    rows="1"
+                    placeholder="Edit your value here."
+                    required
+                    value="{{kvPair.value}}"
+                    (keyup)="properties.next($event.target.value)"
+                    (keyup)="kvPropertiesIndex.next(index)">
+                </textarea>
+            </td>
     </tr>
 </table>
 

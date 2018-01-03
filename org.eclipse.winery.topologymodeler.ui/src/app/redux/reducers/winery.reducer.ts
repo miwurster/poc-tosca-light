@@ -659,29 +659,10 @@ export const WineryReducer =
 
                 const nodePropertyTemplate = lastState.currentJsonTopology.nodeTemplates
                     .find(nodeTemplate => nodeTemplate.id === newProperty.nodeId);
-                let currentProperties;
-                let newObject;
                 let newProperties: Array<any>;
                 let newXMLProperty: string;
                 if (propertyType === 'KV') {
-                    try {
-                        currentProperties = nodePropertyTemplate.properties.kvproperties;
-                    } catch (e) {
-                        currentProperties = nodePropertyTemplate.properties;
-                    }
-                    newObject = {
-                        key: newProperty.newProperty.key,
-                        value: newProperty.newProperty.value
-                    };
-                    newProperties = [];
-                    newProperties.push(newObject);
-                    if (currentProperties) {
-                        for (const obj of currentProperties) {
-                            if (!newProperties.find(node => node.key === obj.key)) {
-                                newProperties.push(obj);
-                            }
-                        }
-                    }
+                    newProperties = newProperty.newProperty;
                 } else {
                     newXMLProperty = newProperty.newProperty;
                 }
