@@ -13,15 +13,17 @@
  ********************************************************************************/
 
 import 'rxjs/add/operator/do';
-import {Component, OnInit} from '@angular/core';
-import {EntityType, TNodeTemplate, TRelationshipTemplate} from './models/ttopology-template';
-import {IWineryState} from './redux/store/winery.store';
-import {WineryActions} from './redux/actions/winery.actions';
-import {NgRedux} from '@angular-redux/store';
-import {ILoaded, LoadedService} from './loaded.service';
-import {AppReadyEventService} from './app-ready-event.service';
-import {BackendService} from './backend.service';
-import {QName} from './qname';
+import { Component, OnInit } from '@angular/core';
+import { EntityType, TNodeTemplate, TRelationshipTemplate } from './models/ttopology-template';
+import { IWineryState } from './redux/store/winery.store';
+import { WineryActions } from './redux/actions/winery.actions';
+import { NgRedux } from '@angular-redux/store';
+import { ILoaded, LoadedService } from './loaded.service';
+import { AppReadyEventService } from './app-ready-event.service';
+import { BackendService } from './backend.service';
+import { QName } from './qname';
+import { forkJoin } from 'rxjs/observable/forkJoin';
+import { zip } from 'rxjs/observable/zip';
 
 /**
  * This is the root component of the topology modeler.
@@ -50,14 +52,6 @@ export class WineryComponent implements OnInit {
                 private loadedService: LoadedService,
                 private appReadyEvent: AppReadyEventService,
                 private backendService: BackendService) {
-        // Loading Animation
-        this.loaded = null;
-        this.loadedService.getLoadingState()
-            .subscribe((isAppLoaded) => {
-                this.loaded = isAppLoaded;
-                this.appReadyEvent.trigger();
-            });
-
     }
 
     /**
@@ -67,6 +61,7 @@ export class WineryComponent implements OnInit {
      * inside the Redux store of this application.
      */
     ngOnInit() {
+
         /**
          * This subscriptionProperties receives an Observable of [string, string], the former value being
          * the JSON representation of the topologyTemplate and the latter value being the JSON
@@ -81,6 +76,8 @@ export class WineryComponent implements OnInit {
             this.entityTypes.nodeVisuals = visuals;
             // init the NodeTemplates and RelationshipTemplates to start their rendering
             this.initTopologyTemplate(topologyTemplate.nodeTemplates, visuals, topologyTemplate.relationshipTemplates);
+            this.loaded = {isLoaded: true};
+            this.appReadyEvent.trigger();
         });
 
         // Get other entity types
@@ -114,11 +111,6 @@ export class WineryComponent implements OnInit {
         });
         this.backendService.nodeTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'unGroupedNodeTypes');
-        });
-
-        this.backendService.loadDataFromBackend().subscribe(() => {
-            this.loaded = {isLoaded: true};
-            this.appReadyEvent.trigger();
         });
     }
 
@@ -231,17 +223,6 @@ export class WineryComponent implements OnInit {
         }
     }
 
-    private setNodeVisuals(nodeVisuals: Array<any>): void {
-        nodeVisuals.forEach( nodeVisual => {
-            const nodeId = nodeVisual.nodeTypeId.substring(nodeVisual.nodeTypeId.indexOf('}') + 1);
-            this.entityTypes.unGroupedNodeTypes.forEach(node => {
-               if (node.id === nodeId) {
-                   node.color = nodeVisual.color;
-               }
-            });
-        });
-    }
-
     initTopologyTemplate(nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
         // init node templates
         if (nodeTemplateArray.length > 0) {
@@ -312,6 +293,17 @@ export class WineryComponent implements OnInit {
                 this.ngRedux.dispatch(this.actions.saveRelationship(relationshipTemplate));
             });
         }
+    }
+
+    private setNodeVisuals(nodeVisuals: Array<any>): void {
+        nodeVisuals.forEach(nodeVisual => {
+            const nodeId = nodeVisual.nodeTypeId.substring(nodeVisual.nodeTypeId.indexOf('}') + 1);
+            this.entityTypes.unGroupedNodeTypes.forEach(node => {
+                if (node.id === nodeId) {
+                    node.color = nodeVisual.color;
+                }
+            });
+        });
     }
 }
 

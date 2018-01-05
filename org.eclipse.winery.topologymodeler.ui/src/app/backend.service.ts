@@ -15,6 +15,9 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
+import { forkJoin } from 'rxjs/observable/forkJoin';
+import { of } from 'rxjs/observable/of';
+import 'rxjs/add/operator/catch';
 import { ActivatedRoute } from '@angular/router';
 import { backendBaseURL } from './configuration';
 import { Subject } from 'rxjs/Subject';
@@ -131,22 +134,6 @@ export class BackendService {
                 // TODO: how does it have to behave when no params are specified?
             }
         });
-    }
-
-    /**
-     *  This method requests all data from the backend and returns the data as an Observable.
-     */
-    loadDataFromBackend(): Observable<any[]> {
-        return Observable.forkJoin(this.requestServiceTemplate(),
-            this.requestNodeTypes(),
-            this.requestGroupedNodeTypes(),
-            this.requestAllNodeTemplateVisuals(),
-            this.requestArtifactTypes(),
-            this.requestCapabilityTypes(),
-            this.requestPolicyTemplates(),
-            this.requestPolicyTypes(),
-            this.requestRelationshipTypes(),
-            this.requestRequirementTypes());
     }
 
     /**

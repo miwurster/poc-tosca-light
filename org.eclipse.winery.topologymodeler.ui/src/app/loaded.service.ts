@@ -30,18 +30,4 @@ export class LoadedService {
 
     constructor () {
     }
-
-    /**
-     * Getter for loading state
-     * @returns stream
-     */
-    public getLoadingState(): Observable<ILoaded> {
-        const stream = Observable
-            .of({isLoaded: true})
-            .do(() => console.log('loading started...'))
-            .delay(1500)
-            .do(() => console.log('loading finished after 1.5s'));
-        return stream;
-    }
-
 }
