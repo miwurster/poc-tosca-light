@@ -127,7 +127,7 @@ export class LayoutDirective implements AfterViewInit {
             });
             this.repaintEverything();
         } else {
-            this.showWarningAlert('You have only one node selected.');
+            this.alert.info('You have only one node selected.');
         }
     }
 
@@ -152,7 +152,7 @@ export class LayoutDirective implements AfterViewInit {
             });
             this.repaintEverything();
         } else {
-            this.showWarningAlert('You have only one node selected.');
+            this.alert.info('You have only one node selected.');
         }
     }
 
@@ -162,14 +162,6 @@ export class LayoutDirective implements AfterViewInit {
      */
     private repaintEverything (): void {
         setTimeout(() => this.jsPlumbInstance.repaintEverything(), 1);
-    }
-
-    /**
-     * Shows a warning.
-     * @param message The message which is displayed.
-     */
-    private showWarningAlert (message: string): void {
-        this.alert.info(message);
     }
 
     /**

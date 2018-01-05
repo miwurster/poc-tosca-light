@@ -101,9 +101,7 @@ export class PaletteComponent implements OnInit, OnDestroy {
      * @param currentNodes  List of all displayed nodes.
      */
     updateNodes (currentNodes: Array<TNodeTemplate>): void {
-        if (currentNodes.length > 0) {
-            this.allNodeTemplates = currentNodes;
-        }
+        this.allNodeTemplates = currentNodes;
     }
 
     /**

@@ -15,7 +15,6 @@
 import {
     Component,
     Input,
-    KeyValueDiffers,
     OnChanges,
     OnDestroy,
     OnInit,
@@ -39,12 +38,10 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     propertyDefinitionType: string;
     keys: any[];
     values: Array<any> = [];
-    keyValue: any;
     @Input() currentNodeData: any;
     @Input() currentProperties: string;
     @Input() groupedNodeTypes: any[];
     index: number;
-    currentValues: Array<any> = [];
     xmlProperty: string;
 
     nodeProperties: Array<any> = [];
@@ -61,18 +58,20 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
         setTimeout(() => {
             if (changes.currentProperties) {
                 try {
-                    let currentProperties = changes.currentProperties.currentValue;
+                    const currentProperties = changes.currentProperties.currentValue;
                     if (this.propertyDefinitionType === 'KV') {
                         // checks if the incoming properties are an object or an array,
-                        // if not an array, it gets converted to one for iterating over
+                        // if not an array, it gets converted to one (this.nodeProperties) for iterating over
                         // the keys and values in the template via ngFor
                         if (!currentProperties.kvproperties.length) {
                             for (const obj in currentProperties.kvproperties) {
-                                const keyValuePair = {
-                                    key: obj,
-                                    value: currentProperties.kvproperties[obj]
-                                };
-                                this.nodeProperties.push(keyValuePair);
+                                if (currentProperties.kvproperties.hasOwnProperty(obj)) {
+                                    const keyValuePair = {
+                                        key: obj,
+                                        value: currentProperties.kvproperties[obj]
+                                    };
+                                    this.nodeProperties.push(keyValuePair);
+                                }
                             }
                         } else {
                             this.nodeProperties = currentProperties.kvproperties;

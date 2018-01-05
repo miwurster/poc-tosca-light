@@ -13,6 +13,7 @@
  ********************************************************************************/
 
 import {
+    AfterContentInit,
     AfterViewInit,
     Component,
     ComponentRef, DoCheck,
@@ -165,7 +166,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         let currentType: string;
         try {
             currentType = $event.srcElement.innerText.replace(/\n/g, '').replace(/\s+/g, '');
-            console.log(currentType);
         } catch (e) {
             currentType = $event.target.innerText.replace(/\n/g, '').replace(/\s+/g, '');
         }
