@@ -18,6 +18,7 @@ import {
     ElementRef,
     HostListener,
     Input,
+    KeyValueDiffers,
     NgZone,
     OnDestroy,
     OnInit,
@@ -62,6 +63,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('deploymentArtifactModal') deploymentArtifactModal: ModalDirective;
     @Input() entityTypes: any;
+    @Input() relationshipTypes: Array<any> = [];
     allNodeTemplates: Array<TNodeTemplate> = [];
     allRelationshipTemplates: Array<TRelationshipTemplate> = [];
     navbarButtonsState: ButtonsStateModel;
@@ -95,6 +97,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     deploymentArtifacts: ArtifactsModalData;
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
+    differ: any;
 
     constructor (private jsPlumbService: JsPlumbService,
                  private eref: ElementRef,
@@ -105,7 +108,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
                  private zone: NgZone,
                  private hotkeysService: HotkeysService,
                  private renderer: Renderer2,
-                 private alert: WineryAlertService) {
+                 private alert: WineryAlertService,
+                 private differs: KeyValueDiffers) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
         console.log(this.newJsPlumbInstance);
@@ -1205,19 +1209,30 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
         if (this.entityTypes.relationshipTypes) {
             this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
             this.entityTypes.relationshipTypes.forEach(rel => {
-                this.allRelationshipTypesColors.push({
-                    type: rel.id,
-                    color: rel.color
-                });
-                this.newJsPlumbInstance.registerConnectionType(
-                    rel.id, {
-                        paintStyle: {
-                            stroke: rel.color,
-                            strokeWidth: 2
-                        },
-                        hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
+                if (!this.allRelationshipTypesColors.some(con => con.type === rel.id)) {
+                    this.allRelationshipTypesColors.push({
+                        type: rel.id,
+                        color: rel.color
                     });
+                    this.newJsPlumbInstance.registerConnectionType(
+                        rel.id, {
+                            paintStyle: {
+                                stroke: rel.color,
+                                strokeWidth: 2
+                            },
+                            hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
+                        });
+                }
             });
+            const allJsPlumbConnections = this.newJsPlumbInstance.getAllConnections();
+            if (allJsPlumbConnections.length > 0) {
+                allJsPlumbConnections.forEach(rel => {
+                    const relTemplate = this.allRelationshipTemplates.find(con => con.id === rel.id);
+                    if (relTemplate) {
+                        this.handleRelSideBar(rel, relTemplate);
+                    }
+                });
+            }
         }
     }
 
@@ -1226,10 +1241,16 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     ngOnInit () {
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
-        try {
+        this.differ = this.differs.find(this.entityTypes).create(null);
+    }
+
+    /**
+     * Angular lifecycle event.
+     */
+    ngDoCheck () {
+        const entityTypesChanges = this.differ.diff(this.relationshipTypes);
+        if (entityTypesChanges) {
             this.assignRelTypes();
-        } catch (e) {
-            this.alert.info('Failed at assigning relationship types.');
         }
     }
 
@@ -1270,7 +1291,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     private bindNewNode (): void {
-        this.handleNodePressActions(this.newNode.id);
+        setTimeout(() => this.handleNodePressActions(this.newNode.id), 1);
         this.zone.run(() => {
             this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mousemove',
                 (event) => this.moveNewNode(event)));

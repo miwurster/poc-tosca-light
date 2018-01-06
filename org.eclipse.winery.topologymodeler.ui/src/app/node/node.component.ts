@@ -128,12 +128,18 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         this.differ = this.differs.find(this.nodeTemplate).create(null);
     }
 
+    /**
+     * Angular lifecycle event.
+     */
     ngDoCheck () {
         const nodeTemplateChanges = this.differ.diff(this.nodeTemplate);
         if (nodeTemplateChanges) {
         }
     }
 
+    /**
+     * Triggered when opening a modal to send node data to the canvas for handling the addition of modal data.
+     */
     sendToggleAction (nodeData: any): void {
         const currentNodeData = {...this.nodeTemplate, ...nodeData};
         this.sendNodeData.emit(currentNodeData);

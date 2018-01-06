@@ -37,7 +37,6 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     kvPropertiesIndex: Subject<string> = new Subject<string>();
     propertyDefinitionType: string;
     keys: any[];
-    values: Array<any> = [];
     @Input() currentNodeData: any;
     @Input() currentProperties: string;
     @Input() groupedNodeTypes: any[];
@@ -46,7 +45,6 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
 
     nodeProperties: Array<any> = [];
 
-    property: Array<any> = [];
     subscriptionProperties: Subscription;
     subscriptionKvPropertiesIndex: Subscription;
 

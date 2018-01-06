@@ -25,6 +25,7 @@ import {WineryAlertService} from '../winery-alert/winery-alert.service';
 })
 export class TopologyRendererComponent implements OnInit {
     @Input() entityTypes: any;
+    @Input() relationshipTypes: Array<any> = [];
 
     constructor (vcr: ViewContainerRef, private notify: WineryAlertService) {
         this.notify.init(vcr);
