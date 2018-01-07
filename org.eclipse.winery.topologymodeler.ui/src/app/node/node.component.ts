@@ -125,7 +125,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Angular lifecycle event.
      */
     ngOnInit () {
-        this.differ = this.differs.find(this.nodeTemplate).create(null);
+        console.log(this.nodeTemplate);
+        this.differ = this.differs.find([]).create(null);
     }
 
     /**
@@ -307,7 +308,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Only display the sidebar if the click is no longpress (drag)
      * @param $event
      */
-    // Only display the sidebar if the click is no longpress
     openSidebar ($event): void {
         $event.stopPropagation();
         // close sidebar when longpressing a node template

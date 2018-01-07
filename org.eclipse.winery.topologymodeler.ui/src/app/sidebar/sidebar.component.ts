@@ -53,7 +53,6 @@ import {Subscription} from 'rxjs/Subscription';
 export class SidebarComponent implements OnInit, OnDestroy {
     // ngRedux sidebarSubscription
     sidebarSubscription;
-    nodeTemplateSubscription;
     sidebarState: any;
     sidebarAnimationStatus: string;
     maxInputEnabled = true;
@@ -108,10 +107,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     }
                 }
             );
-        this.nodeTemplateSubscription = this.$ngRedux.select(wineryState => wineryState.wineryState.currentJsonTopology.nodeTemplates)
-            .subscribe((nodeTemplates) => {
-
-            });
         // apply changes to the node name <input> field with a debounceTime of 300ms
         this.subscription = this.nodeNameKeyUp
             .debounceTime(300)
@@ -140,7 +135,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         id: this.sidebarState.id,
                         nameTextFieldValue: data,
                         type: this.sidebarState.type,
-                        minInstances: this.sidebarState.minInstances,
+                        minInstances: Number(this.sidebarState.minInstances),
                         maxInstances: Number(this.sidebarState.maxInstances)
                     }
                 }));

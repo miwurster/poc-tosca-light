@@ -15,6 +15,7 @@
 import {
     AfterViewInit,
     Component,
+    DoCheck,
     ElementRef,
     HostListener,
     Input,
@@ -46,7 +47,7 @@ import {PoliciesModalData} from '../models/policiesModalData';
 import {ArtifactsModalData} from '../models/artifactsModalData';
 import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
 import {ToggleModalDataModel} from '../models/toggleModalDataModel';
-import {WineryAlertService} from "../winery-alert/winery-alert.service";
+import {WineryAlertService} from '../winery-alert/winery-alert.service';
 
 @Component({
     selector: 'winery-canvas',
@@ -54,7 +55,7 @@ import {WineryAlertService} from "../winery-alert/winery-alert.service";
     templateUrl: './canvas.component.html',
     styleUrls: ['./canvas.component.css']
 })
-export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
+export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoCheck {
     @ViewChildren(NodeComponent) nodeComponentChildren: QueryList<NodeComponent>;
     @ViewChild('nodes') child: ElementRef;
     @ViewChild('selection') selection: ElementRef;
@@ -1203,36 +1204,31 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
 
     /**
      * Registers relationship (connection) types in JSPlumb (Color, strokewidth etc.)
-     * @param unmarkMessage
+     * @param relType
      */
-    assignRelTypes (): void {
-        if (this.entityTypes.relationshipTypes) {
-            this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
-            this.entityTypes.relationshipTypes.forEach(rel => {
-                if (!this.allRelationshipTypesColors.some(con => con.type === rel.id)) {
-                    this.allRelationshipTypesColors.push({
-                        type: rel.id,
-                        color: rel.color
-                    });
-                    this.newJsPlumbInstance.registerConnectionType(
-                        rel.id, {
-                            paintStyle: {
-                                stroke: rel.color,
-                                strokeWidth: 2
-                            },
-                            hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
-                        });
+    assignRelTypes (relType: any): void {
+        if (!this.allRelationshipTypesColors.some(con => con.type === relType.id)) {
+            this.allRelationshipTypesColors.push({
+                type: relType.id,
+                color: relType.color
+            });
+            this.newJsPlumbInstance.registerConnectionType(
+                relType.id, {
+                    paintStyle: {
+                        stroke: relType.color,
+                        strokeWidth: 2
+                    },
+                    hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
+                });
+        }
+        const allJsPlumbConnections = this.newJsPlumbInstance.getAllConnections();
+        if (allJsPlumbConnections.length > 0) {
+            allJsPlumbConnections.forEach(rel => {
+                const relTemplate = this.allRelationshipTemplates.find(con => con.id === rel.id);
+                if (relTemplate) {
+                    this.handleRelSideBar(rel, relTemplate);
                 }
             });
-            const allJsPlumbConnections = this.newJsPlumbInstance.getAllConnections();
-            if (allJsPlumbConnections.length > 0) {
-                allJsPlumbConnections.forEach(rel => {
-                    const relTemplate = this.allRelationshipTemplates.find(con => con.id === rel.id);
-                    if (relTemplate) {
-                        this.handleRelSideBar(rel, relTemplate);
-                    }
-                });
-            }
         }
     }
 
@@ -1241,16 +1237,17 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit {
      */
     ngOnInit () {
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
-        this.differ = this.differs.find(this.entityTypes).create(null);
+        this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
+        this.differ = this.differs.find([]).create(null);
     }
 
     /**
      * Angular lifecycle event.
      */
     ngDoCheck () {
-        const entityTypesChanges = this.differ.diff(this.relationshipTypes);
-        if (entityTypesChanges) {
-            this.assignRelTypes();
+        const relationshipTypesChanges = this.differ.diff(this.relationshipTypes);
+        if (relationshipTypesChanges) {
+            relationshipTypesChanges.forEachAddedItem(r => this.assignRelTypes(r.currentValue));
         }
     }
 

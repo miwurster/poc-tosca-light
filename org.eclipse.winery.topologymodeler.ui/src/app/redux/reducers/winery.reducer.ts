@@ -86,7 +86,36 @@ export const WineryReducer =
                 const sideBarNodeId: any = (<SidebarMinInstanceChanges>action).minInstances.id;
                 const minInstances: any = (<SidebarMinInstanceChanges>action).minInstances.count;
                 const indexChangeMinInstances = lastState.currentJsonTopology.nodeTemplates.map(el => el.id).indexOf(sideBarNodeId);
-                console.log('asd' + minInstances);
+                const fool = true;
+                console.log( {...lastState,
+                    currentJsonTopology: {
+            ...lastState.currentJsonTopology,
+                    nodeTemplates: lastState.currentJsonTopology.nodeTemplates.map(nodeTemplate => nodeTemplate.id === sideBarNodeId ?
+                    new TNodeTemplate(
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].properties,
+                        // id
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].id,
+                        // type
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].type,
+                        // name
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].name,
+                        minInstances,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].maxInstances,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].color,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].imageUrl,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].any,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].documentation,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].otherAttributes,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].x,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].y,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].capabilities,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].requirements,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].deploymentArtifacts,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].policies,
+                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].targetLocations,
+                    ) : nodeTemplate
+                )
+            }});
                 return {
                     ...lastState,
                     currentJsonTopology: {
@@ -121,7 +150,6 @@ export const WineryReducer =
             case WineryActions.CHANGE_MAX_INSTANCES:
                 const sideBarNodeId2: any = (<SidebarMaxInstanceChanges>action).maxInstances.id;
                 const maxInstances: any = (<SidebarMaxInstanceChanges>action).maxInstances.count;
-                console.log(sideBarNodeId2);
                 const indexChangeMaxInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(sideBarNodeId2);
                 return {
