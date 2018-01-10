@@ -120,7 +120,6 @@ export class PaletteComponent implements OnInit, OnDestroy {
         const y = top;
         const x = left;
         const newIdTypeColor = this.generateIdTypeColor(name);
-        console.log(newIdTypeColor);
         const newId = newIdTypeColor.id;
         const newType = newIdTypeColor.type;
         const newNode: TNodeTemplate = new TNodeTemplate(

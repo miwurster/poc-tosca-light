@@ -519,7 +519,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     positionNewNode (): void {
         this.updateSelectedNodes();
         this.unbindAll();
-        setTimeout(() => this.newJsPlumbInstance.revalidate(this.newNode.id), 1000);
+        setTimeout(() => this.newJsPlumbInstance.revalidate(this.newNode.id), 10);
     }
 
     /**
@@ -624,14 +624,25 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 }
                 this.ngRedux.dispatch(this.topologyRendererActions.executeAlignV());
             }
+            this.revalidateContainer();
             setTimeout(() => {
                 if (selectedNodes === true) {
                     this.updateSelectedNodes();
                 } else {
                     this.updateAllNodes();
                 }
-            }, 1);
+            }, 500);
         }
+    }
+
+    /**
+     * Revalidates the offsets and other data of the container in the DOM.
+     */
+    private revalidateContainer (): void {
+        setTimeout(() => {
+            this.newJsPlumbInstance.revalidate('container');
+            this.repaintJsPlumb();
+        }, 1);
     }
 
     /**
@@ -642,9 +653,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             for (const nodeTemplate of this.child.nativeElement.children) {
                 this.setNewCoordinates(nodeTemplate);
             }
-            setTimeout(() => {
-                this.newJsPlumbInstance.revalidate('container');
-            }, 1000);
         }
     }
 
@@ -681,9 +689,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     this.setNewCoordinates(nodeTemplate);
                 }
             }
-            setTimeout(() => {
-                this.newJsPlumbInstance.revalidate('container');
-            }, 1000);
         }
     }
 
@@ -692,34 +697,29 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param newRelationship
      */
     paintRelationship (newRelationship: TRelationshipTemplate) {
-        try {
-            const allJsPlumbRelationships = this.newJsPlumbInstance.getAllConnections();
-            if (!allJsPlumbRelationships.some(rel => rel.id === newRelationship.id)) {
-                const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
-                const conn = this.newJsPlumbInstance.connect({
-                    source: newRelationship.sourceElement.ref,
-                    target: newRelationship.targetElement.ref,
-                    overlays: [['Arrow', {width: 15, length: 15, location: 1, id: 'arrow', direction: 1}],
-                        ['Label', {
-                            label: type,
-                            id: 'label',
-                            // jsplumb doku nachgucken wie man css class einbindet
-                            labelStyle: {
-                                font: '11px Roboto, sans-serif',
-                                color: '#212121',
-                                fill: '#efefef',
-                                borderStyle: '#fafafa',
-                                borderWidth: 1,
-                                padding: '3px'
-                            }
-                        }]
-                    ],
-                });
-                setTimeout(() => this.handleRelSideBar(conn, newRelationship), 1);
-            }
-        } catch (e) {
-            // alterts benutzen, rechts oben!
-            this.alert.info('Failed at painting relationship.');
+        const allJsPlumbRelationships = this.newJsPlumbInstance.getAllConnections();
+        if (!allJsPlumbRelationships.some(rel => rel.id === newRelationship.id)) {
+            const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
+            const conn = this.newJsPlumbInstance.connect({
+                source: newRelationship.sourceElement.ref,
+                target: newRelationship.targetElement.ref,
+                overlays: [['Arrow', {width: 15, length: 15, location: 1, id: 'arrow', direction: 1}],
+                    ['Label', {
+                        label: type,
+                        id: 'label',
+                        // jsplumb doku nachgucken wie man css class einbindet
+                        labelStyle: {
+                            font: '11px Roboto, sans-serif',
+                            color: '#212121',
+                            fill: '#efefef',
+                            borderStyle: '#fafafa',
+                            borderWidth: 1,
+                            padding: '3px'
+                        }
+                    }]
+                ],
+            });
+            setTimeout(() => this.handleRelSideBar(conn, newRelationship), 1);
         }
     }
 
@@ -729,31 +729,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param newRelationship The new relationship internally
      */
     private handleRelSideBar (conn: any, newRelationship: TRelationshipTemplate): void {
-        try {
-            conn.id = newRelationship.id;
-            const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
-            conn.setType(type);
-            const me = this;
-            conn.bind('click', rel => {
-                this.clearSelectedNodes();
-                this.newJsPlumbInstance.select().removeType('marked');
-                const currentRel = me.allRelationshipTemplates.find(con => con.id === rel.id);
-                if (currentRel) {
-                    me.ngRedux.dispatch(this.actions.openSidebar({
-                        sidebarContents: {
-                            sidebarVisible: true,
-                            nodeClicked: false,
-                            id: currentRel.id,
-                            nameTextFieldValue: currentRel.name,
-                            type: currentRel.type
-                        }
-                    }));
-                    conn.addType('marked');
-                }
-            });
-        } catch (e) {
-            this.alert.info('Failed at handling the relationship sidebar.');
-        }
+        conn.id = newRelationship.id;
+        const type = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
+        conn.setType(type);
+        const me = this;
+        conn.bind('click', rel => {
+            this.clearSelectedNodes();
+            this.newJsPlumbInstance.select().removeType('marked');
+            const currentRel = me.allRelationshipTemplates.find(con => con.id === rel.id);
+            if (currentRel) {
+                me.ngRedux.dispatch(this.actions.openSidebar({
+                    sidebarContents: {
+                        sidebarVisible: true,
+                        nodeClicked: false,
+                        id: currentRel.id,
+                        nameTextFieldValue: currentRel.name,
+                        type: currentRel.type
+                    }
+                }));
+                conn.addType('marked');
+            }
+        });
+        this.revalidateContainer();
     }
 
     /**
@@ -762,7 +759,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      */
     manageRelationships (newRelationship: TRelationshipTemplate): void {
         try {
-            this.paintRelationship(newRelationship);
+            setTimeout(() => this.paintRelationship(newRelationship), 1);
             this.resetDragSource('');
             this.repaintJsPlumb();
         } catch (e) {
@@ -1188,9 +1185,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                         );
                         this.ngRedux.dispatch(this.actions.saveRelationship(newRelationship));
                     }
-                    this.unbindConnection();
-                    this.repaintJsPlumb();
                 }
+                this.unbindConnection();
+                this.repaintJsPlumb();
+                this.revalidateContainer();
             });
         }
     }
@@ -1361,7 +1359,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             this.nodeChildrenIdArray = this.nodeChildrenArray.map(node => node.nodeTemplate.id);
         });
         if (this.allRelationshipTemplates.length > 0 && this.nodeChildrenArray.length > 1) {
-            this.allRelationshipTemplates.forEach(rel => this.manageRelationships(rel));
+            this.allRelationshipTemplates.forEach(rel => {
+                setTimeout(() => this.manageRelationships(rel), 1);
+            });
         }
     }
 

@@ -125,7 +125,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Angular lifecycle event.
      */
     ngOnInit () {
-        console.log(this.nodeTemplate);
         this.differ = this.differs.find([]).create(null);
     }
 
