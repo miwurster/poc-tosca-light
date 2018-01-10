@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, OnDestroy} from '@angular/core';
-import {WineryAlertService} from '../winery-alert/winery-alert.service';
-import {NgRedux} from '@angular-redux/store';
-import {TopologyRendererActions} from '../redux/actions/topologyRenderer.actions';
-import {ButtonsStateModel} from '../models/buttonsState.model';
-import {IWineryState} from '../redux/store/winery.store';
-import {BackendService} from '../backend.service';
+import { Component, OnDestroy } from '@angular/core';
+import { WineryAlertService } from '../winery-alert/winery-alert.service';
+import { NgRedux } from '@angular-redux/store';
+import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
+import { ButtonsStateModel } from '../models/buttonsState.model';
+import { IWineryState } from '../redux/store/winery.store';
+import { BackendService } from '../backend.service';
 
 /**
  * The navbar of the topologymodeler.
@@ -142,10 +142,14 @@ export class NavbarComponent implements OnDestroy {
         topologySkeleton.nodeTemplates.map(nodeTemplate => delete nodeTemplate.color);
         const topologyToBeSaved = topologySkeleton;
         console.log(topologyToBeSaved);
+        // The topology gets saved here.
         this.backendService.saveTopologyTemplate(topologyToBeSaved)
-            .subscribe(res => window.alert(res));
-
-        // response ? this.alert.success('Successfully saved!') : this.alert.info('Something went wrong!');
+            .subscribe(res => {
+                res.ok === true ? this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>')
+                    : this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>');
+            });
     }
 
     /**

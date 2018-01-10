@@ -23,5 +23,6 @@ export class WineryCustomOption extends ToastOptions {
     animate = 'fade'; // you can override any options available
     newestOnTop = false;
     showCloseButton = true;
-    positionClass = 'toast-top-right';
+    positionClass = 'toast-bottom-right';
+    enableHTML = true;
 }
