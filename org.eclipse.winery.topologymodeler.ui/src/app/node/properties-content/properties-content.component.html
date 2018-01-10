@@ -20,16 +20,16 @@
         <th>
             Values
         </th>
-        <tr *ngFor="let kvPair of nodeProperties, let index=index">
-            <td class="">{{kvPair.key}}</td>
+        <tr *ngFor="let key of nodeProperties | keysPipe, let index=index">
+            <td class="">{{key.key}}</td>
             <td class="">
                 <textarea
                     rows="1"
                     placeholder="Edit your value here."
                     required
-                    value="{{kvPair.value}}"
+                    value="{{key.value}}"
                     (keyup)="properties.next($event.target.value)"
-                    (keyup)="kvPropertiesIndex.next(index)">
+                    (keyup)="keyOfEditedKVProperty.next(key.key)">
                 </textarea>
             </td>
     </tr>

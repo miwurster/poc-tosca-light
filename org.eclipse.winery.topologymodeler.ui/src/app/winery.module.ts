@@ -38,14 +38,16 @@ import {AppReadyEventService} from './app-ready-event.service';
 import {HotkeyModule} from 'angular2-hotkeys';
 import {BackendService} from './backend.service';
 import {WineryModalModule} from '../repositoryUiDependencies/wineryModalModule/winery.modal.module';
+import { KeysPipe } from './keys.pipe';
 
 @NgModule({
     declarations: [
         WineryComponent,
         PaletteComponent,
         SidebarComponent,
-        PrintViewComponent,
+        PrintViewComponent
     ],
+    exports: [],
     imports: [
         BrowserModule,
         FormsModule,
@@ -70,7 +72,6 @@ import {WineryModalModule} from '../repositoryUiDependencies/wineryModalModule/w
         AppReadyEventService,
         BackendService
     ],
-
     bootstrap: [WineryComponent]
 })
 export class WineryModule {

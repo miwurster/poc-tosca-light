@@ -22,8 +22,6 @@ import { ILoaded, LoadedService } from './loaded.service';
 import { AppReadyEventService } from './app-ready-event.service';
 import { BackendService } from './backend.service';
 import { QName } from './qname';
-import { forkJoin } from 'rxjs/observable/forkJoin';
-import { zip } from 'rxjs/observable/zip';
 
 /**
  * This is the root component of the topology modeler.

@@ -17,7 +17,7 @@ import {
     Input,
     OnChanges,
     OnDestroy,
-    OnInit,
+    OnInit, Pipe, PipeTransform,
     SimpleChanges
 } from '@angular/core';
 import {Subject} from 'rxjs/Subject';
@@ -34,19 +34,19 @@ import {Subscription} from 'rxjs/Subscription';
 export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy {
 
     properties: Subject<string> = new Subject<string>();
-    kvPropertiesIndex: Subject<string> = new Subject<string>();
+    keyOfEditedKVProperty: Subject<string> = new Subject<string>();
     propertyDefinitionType: string;
     keys: any[];
     @Input() currentNodeData: any;
     @Input() currentProperties: string;
     @Input() groupedNodeTypes: any[];
-    index: number;
+    key: string;
     xmlProperty: string;
 
-    nodeProperties: Array<any> = [];
+    nodeProperties;
 
     subscriptionProperties: Subscription;
-    subscriptionKvPropertiesIndex: Subscription;
+    subscriptionKeyOfEditedKVProperty: Subscription;
 
     constructor (private $ngRedux: NgRedux<IWineryState>,
                  private actions: WineryActions) {
@@ -58,22 +58,8 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                 try {
                     const currentProperties = changes.currentProperties.currentValue;
                     if (this.propertyDefinitionType === 'KV') {
-                        // checks if the incoming properties are an object or an array,
-                        // if not an array, it gets converted to one (this.nodeProperties) for iterating over
-                        // the keys and values in the template via ngFor
-                        if (!currentProperties.kvproperties.length) {
-                            for (const obj in currentProperties.kvproperties) {
-                                if (currentProperties.kvproperties.hasOwnProperty(obj)) {
-                                    const keyValuePair = {
-                                        key: obj,
-                                        value: currentProperties.kvproperties[obj]
-                                    };
-                                    this.nodeProperties.push(keyValuePair);
-                                }
-                            }
-                        } else {
-                            this.nodeProperties = currentProperties.kvproperties;
-                        }
+                        this.nodeProperties = currentProperties.kvproperties;
+                        console.log("nodeProperties: ", this.nodeProperties);
                     } else if (this.propertyDefinitionType === 'XML') {
                         this.xmlProperty = currentProperties.any;
                     }
@@ -87,12 +73,12 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
         // find out which type of properties shall be displayed
         this.findOutPropertyDefinitionTypeForThisInstance(this.currentNodeData.currentNodeType);
 
-        // find out which row was edited
-        this.subscriptionKvPropertiesIndex = this.kvPropertiesIndex
+        // find out which row was edited by key
+        this.subscriptionKeyOfEditedKVProperty = this.keyOfEditedKVProperty
             .debounceTime(200)
             .distinctUntilChanged()
-            .subscribe(index => {
-                this.index = Number(index);
+            .subscribe(key => {
+                this.key = key;
             });
         // set key value property with a debounceTime of 300ms
         this.subscriptionProperties = this.properties
@@ -101,7 +87,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
             .subscribe(value => {
                 let property;
                 if (this.propertyDefinitionType === 'KV') {
-                    this.nodeProperties[this.index].value = value;
+                    this.nodeProperties[this.key] = value;
                     property = this.nodeProperties;
                 } else {
                     property = value;
@@ -197,6 +183,6 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
 
     ngOnDestroy () {
         this.subscriptionProperties.unsubscribe();
-        this.subscriptionKvPropertiesIndex.unsubscribe();
+        this.subscriptionKeyOfEditedKVProperty.unsubscribe();
     }
 }

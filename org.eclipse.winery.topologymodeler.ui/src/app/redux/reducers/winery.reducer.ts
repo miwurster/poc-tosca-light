@@ -72,7 +72,7 @@ export const WineryReducer =
         switch (action.type) {
             case WineryActions.SEND_PALETTE_OPENED:
                 const paletteOpened: boolean = (<SendPaletteOpenedAction>action).paletteOpened;
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentPaletteOpenedState: paletteOpened
                 };
@@ -690,6 +690,7 @@ export const WineryReducer =
                 let newProperties: Array<any>;
                 let newXMLProperty: string;
                 if (propertyType === 'KV') {
+                    console.log("1", newProperty);
                     newProperties = newProperty.newProperty;
                 } else {
                     newXMLProperty = newProperty.newProperty;
@@ -703,7 +704,7 @@ export const WineryReducer =
                                 new TNodeTemplate(
                                     // new Property
                                     propertyType === 'KV' ?
-                                        {kvproperties: newProperties} : {any: newXMLProperty},
+                                        {kvproperties: newProperty.newProperty} : {any: newXMLProperty},
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].id,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].type,
                                     lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].name,

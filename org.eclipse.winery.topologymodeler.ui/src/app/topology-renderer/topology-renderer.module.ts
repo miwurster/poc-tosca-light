@@ -38,6 +38,7 @@ import { DeploymentArtifactsComponent } from '../node/deployment-artifacts/deplo
 import { WineryModalModule } from '../../repositoryUiDependencies/wineryModalModule/winery.modal.module';
 import { CapabilitiesComponent } from '../node/capabilities/capabilities.component';
 import {PropertiesContentComponent} from '../node/properties-content/properties-content.component';
+import { KeysPipe } from '../keys.pipe';
 
 @NgModule({
     imports: [
@@ -65,10 +66,12 @@ import {PropertiesContentComponent} from '../node/properties-content/properties-
         PoliciesComponent,
         DeploymentArtifactsComponent,
         CapabilitiesComponent,
-        PropertiesContentComponent
+        PropertiesContentComponent,
+        KeysPipe
     ],
     exports: [
-        TopologyRendererComponent
+        TopologyRendererComponent,
+        KeysPipe
     ],
 })
 export class TopologyRendererModule {
