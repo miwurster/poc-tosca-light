@@ -159,6 +159,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
      */
     findOutPropertyDefinitionTypeForThisInstance (nodeType: any): void {
         if (this.groupedNodeTypes) {
+            console.log(nodeType);
             for (const nameSpace of this.groupedNodeTypes) {
                 for (const nodeTypeVar of nameSpace.children) {
                     if (nodeTypeVar.id === nodeType) {
@@ -178,6 +179,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                     }
                 }
             }
+            console.log(this.propertyDefinitionType);
         }
     }
 

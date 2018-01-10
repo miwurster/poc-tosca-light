@@ -120,6 +120,7 @@ export class PaletteComponent implements OnInit, OnDestroy {
         const y = top;
         const x = left;
         const newIdTypeColor = this.generateIdTypeColor(name);
+        console.log(newIdTypeColor);
         const newId = newIdTypeColor.id;
         const newType = newIdTypeColor.type;
         const newNode: TNodeTemplate = new TNodeTemplate(
@@ -192,8 +193,8 @@ export class PaletteComponent implements OnInit, OnDestroy {
         for (const node of this.entityTypes.unGroupedNodeTypes) {
             if (node.id === name) {
                 const result = {
-                    id: name,
-                    type: name,
+                    id: node.id,
+                    type: node.qName,
                     color: node.color
                 };
                 return result;

@@ -1236,6 +1236,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Lifecycle hook
      */
     ngOnInit () {
+        console.log(this.entityTypes);
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
         this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
         this.differ = this.differs.find([]).create(null);
