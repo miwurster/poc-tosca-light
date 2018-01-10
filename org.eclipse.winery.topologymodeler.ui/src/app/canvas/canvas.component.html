@@ -14,7 +14,7 @@
 
 <div id="container" style="height: auto;"
      (mousedown)="showSelectionRange($event)"
-     (click)="this.repaintJsPlumb()">
+     (click)="this.revalidateContainer()">
     <div id="grid"
          (mousedown)="trackTimeOfMouseDown()"
          (mouseup)="trackTimeOfMouseUp()"
@@ -38,7 +38,7 @@
                      [allRelationshipTypesColors]="allRelationshipTypesColors"
                      (sendId)="activateNewNode($event)"
                      [navbarButtonsState]="navbarButtonsState"
-                     (askForRepaint)="repaintJsPlumb($event)"
+                     (askForRepaint)="revalidateContainer($event)"
                      (askForRemoval)="removeElement($event)"
                      (setDragSource)="setDragSource($event)"
                      (closedEndpoint)="toggleClosedEndpoint($event)"

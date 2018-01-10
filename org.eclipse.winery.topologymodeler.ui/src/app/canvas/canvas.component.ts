@@ -517,9 +517,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param $event  The html event.
      */
     positionNewNode (): void {
-        this.updateSelectedNodes();
+        setTimeout(() => this.updateSelectedNodes(), 1);
         this.unbindAll();
-        setTimeout(() => this.newJsPlumbInstance.revalidate(this.newNode.id), 10);
+        this.revalidateContainer();
     }
 
     /**
@@ -597,7 +597,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     setButtonsState (currentButtonsState: ButtonsStateModel): void {
         if (currentButtonsState) {
             this.navbarButtonsState = currentButtonsState;
-            this.repaintJsPlumb();
+            this.revalidateContainer();
             const alignmentButtonLayout = this.navbarButtonsState.buttonsState.layoutButton;
             const alignmentButtonAlignH = this.navbarButtonsState.buttonsState.alignHButton;
             const alignmentButtonAlignV = this.navbarButtonsState.buttonsState.alignVButton;
@@ -631,7 +631,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 } else {
                     this.updateAllNodes();
                 }
-            }, 500);
+            }, 1);
         }
     }
 
@@ -641,7 +641,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     private revalidateContainer (): void {
         setTimeout(() => {
             this.newJsPlumbInstance.revalidate('container');
-            this.repaintJsPlumb();
+            this.newJsPlumbInstance.repaintEverything();
         }, 1);
     }
 
@@ -758,13 +758,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param newRelationship
      */
     manageRelationships (newRelationship: TRelationshipTemplate): void {
-        try {
-            setTimeout(() => this.paintRelationship(newRelationship), 1);
-            this.resetDragSource('');
-            this.repaintJsPlumb();
-        } catch (e) {
-            this.alert.info('Failed at managing the relationships.');
-        }
+        setTimeout(() => this.paintRelationship(newRelationship), 1);
+        this.resetDragSource('');
+        this.revalidateContainer();
     }
 
     /**
@@ -787,7 +783,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 const indexOfNode = this.nodeChildrenIdArray.indexOf(this.dragSourceInfos.nodeId);
                 if (this.nodeChildrenArray[indexOfNode]) {
                     this.nodeChildrenArray[indexOfNode].connectorEndpointVisible = false;
-                    this.repaintJsPlumb();
+                    this.revalidateContainer();
                 }
                 this.dragSourceActive = false;
                 this.dragSourceInfos = null;
@@ -1187,7 +1183,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     }
                 }
                 this.unbindConnection();
-                this.repaintJsPlumb();
                 this.revalidateContainer();
             });
         }
@@ -1264,15 +1259,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      */
     removeElement (id: string) {
         this.newJsPlumbInstance.remove(id);
-        this.repaintJsPlumb();
-    }
-
-    /**
-     * Repaints JSPlumb after 1ms, timeout because of paint problems when omitting the timeout jsplumb repaints everything
-     * too fast before the DOM is updated
-     */
-    repaintJsPlumb () {
-        setTimeout(() => this.newJsPlumbInstance.repaintEverything(), 1);
+        this.revalidateContainer();
     }
 
     /**
@@ -1286,6 +1273,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         }
     }
 
+    /**
+     * Handles the new node by binding to mouse move and mouse up actions
+     */
     private bindNewNode (): void {
         setTimeout(() => this.handleNodePressActions(this.newNode.id), 1);
         this.zone.run(() => {
@@ -1320,7 +1310,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      */
     trackTimeOfMouseDown (): void {
         this.newJsPlumbInstance.select().removeType('marked');
-        this.repaintJsPlumb();
+        this.revalidateContainer();
         this.removeDragSource();
         this.clearSelectedNodes();
         this.unbindConnection();

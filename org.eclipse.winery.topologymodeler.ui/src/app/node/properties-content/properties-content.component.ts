@@ -59,7 +59,6 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                     const currentProperties = changes.currentProperties.currentValue;
                     if (this.propertyDefinitionType === 'KV') {
                         this.nodeProperties = currentProperties.kvproperties;
-                        console.log("nodeProperties: ", this.nodeProperties);
                     } else if (this.propertyDefinitionType === 'XML') {
                         this.xmlProperty = currentProperties.any;
                     }
@@ -159,7 +158,6 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
      */
     findOutPropertyDefinitionTypeForThisInstance (nodeType: any): void {
         if (this.groupedNodeTypes) {
-            console.log(nodeType);
             for (const nameSpace of this.groupedNodeTypes) {
                 for (const nodeTypeVar of nameSpace.children) {
                     if (nodeTypeVar.id === nodeType) {
@@ -179,7 +177,6 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                     }
                 }
             }
-            console.log(this.propertyDefinitionType);
         }
     }
 
