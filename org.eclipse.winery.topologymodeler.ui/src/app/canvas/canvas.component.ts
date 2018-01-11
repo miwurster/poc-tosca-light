@@ -624,13 +624,13 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 }
                 this.ngRedux.dispatch(this.topologyRendererActions.executeAlignV());
             }
-            this.revalidateContainer();
             setTimeout(() => {
                 if (selectedNodes === true) {
                     this.updateSelectedNodes();
                 } else {
                     this.updateAllNodes();
                 }
+                this.revalidateContainer();
             }, 1);
         }
     }
@@ -638,7 +638,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     /**
      * Revalidates the offsets and other data of the container in the DOM.
      */
-    private revalidateContainer (): void {
+    public revalidateContainer (): void {
         setTimeout(() => {
             this.newJsPlumbInstance.revalidate('container');
             this.newJsPlumbInstance.repaintEverything();

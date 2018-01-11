@@ -690,7 +690,6 @@ export const WineryReducer =
                 let newProperties: Array<any>;
                 let newXMLProperty: string;
                 if (propertyType === 'KV') {
-                    console.log("1", newProperty);
                     newProperties = newProperty.newProperty;
                 } else {
                     newXMLProperty = newProperty.newProperty;
