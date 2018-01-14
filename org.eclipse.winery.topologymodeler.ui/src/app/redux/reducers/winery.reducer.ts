@@ -20,14 +20,18 @@ import {
     IncMaxInstances,
     IncMinInstances,
     SaveNodeTemplateAction,
-    SaveRelationshipAction, SendCurrentNodeIdAction,
+    SaveRelationshipAction,
+    SendCurrentNodeIdAction,
     SendPaletteOpenedAction,
     SetCababilityAction,
     SetCapPropertyAction,
-    SetDepArtifactsPropertyAction, SetDeploymentArtifactsAction,
-    SetPoliciesPropertyAction, SetPolicyAction,
+    SetDepArtifactsPropertyAction,
+    SetDeploymentArtifactsAction,
+    SetPoliciesPropertyAction,
+    SetPolicyAction,
     SetPropertyAction,
-    SetReqPropertyAction, SetRequirementAction,
+    SetReqPropertyAction,
+    SetRequirementAction,
     SetTargetLocPropertyAction,
     SidebarMaxInstanceChanges,
     SidebarMinInstanceChanges,
@@ -78,7 +82,7 @@ export const WineryReducer =
                 };
             case WineryActions.OPEN_SIDEBAR:
                 const newSidebarData: any = (<SidebarStateAction>action).sidebarContents;
-                return {
+                return <WineryState>{
                     ...lastState,
                     sidebarContents: newSidebarData
                 };
@@ -87,63 +91,21 @@ export const WineryReducer =
                 const minInstances: any = (<SidebarMinInstanceChanges>action).minInstances.count;
                 const indexChangeMinInstances = lastState.currentJsonTopology.nodeTemplates.map(el => el.id).indexOf(sideBarNodeId);
                 const fool = true;
-                console.log( {...lastState,
-                    currentJsonTopology: {
-            ...lastState.currentJsonTopology,
-                    nodeTemplates: lastState.currentJsonTopology.nodeTemplates.map(nodeTemplate => nodeTemplate.id === sideBarNodeId ?
-                    new TNodeTemplate(
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].properties,
-                        // id
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].id,
-                        // type
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].type,
-                        // name
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].name,
-                        minInstances,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].maxInstances,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].color,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].imageUrl,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].any,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].documentation,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].otherAttributes,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].x,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].y,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].capabilities,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].requirements,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].deploymentArtifacts,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].policies,
-                        lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].targetLocations,
-                    ) : nodeTemplate
-                )
-            }});
-                return {
+                console.log({
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates.map(nodeTemplate => nodeTemplate.id === sideBarNodeId ?
-                            new TNodeTemplate(
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].properties,
-                                // id
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].id,
-                                // type
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].type,
-                                // name
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].name,
-                                minInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].maxInstances,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].color,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].imageUrl,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].any,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].documentation,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].otherAttributes,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].x,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].y,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].capabilities,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].requirements,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].deploymentArtifacts,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].policies,
-                                lastState.currentJsonTopology.nodeTemplates[indexChangeMinInstances].targetLocations,
-                            ) : nodeTemplate
+                            nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4, minInstances.toString()) : nodeTemplate
+                        )
+                    }
+                });
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates.map(nodeTemplate => nodeTemplate.id === sideBarNodeId ?
+                            nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4, minInstances.toString()) : nodeTemplate
                         )
                     }
                 };
@@ -152,35 +114,13 @@ export const WineryReducer =
                 const maxInstances: any = (<SidebarMaxInstanceChanges>action).maxInstances.count;
                 const indexChangeMaxInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(sideBarNodeId2);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === sideBarNodeId2 ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].properties,
-                                    // id
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].id,
-                                    // type
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].type,
-                                    // name
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].minInstances,
-                                    maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeMaxInstances].targetLocations,
-                                ) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(5, maxInstances.toString()) : nodeTemplate
                             )
                     }
                 };
@@ -188,36 +128,15 @@ export const WineryReducer =
                 const id_incMinInstances: any = (<IncMinInstances>action).minInstances.id;
                 const indexIncMinInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_incMinInstances);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_incMinInstances ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].properties,
-                                    // id
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].id,
-                                    // type
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].type,
-                                    // name
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].name,
-                                    Number(lastState.currentJsonTopology
-                                        .nodeTemplates[indexIncMinInstances].minInstances) + 1,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].targetLocations,
-                                ) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4,
+                                    (Number(lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].minInstances) + 1).toString())
+                                : nodeTemplate
                             )
                     }
                 };
@@ -225,36 +144,15 @@ export const WineryReducer =
                 const id_decMinInstances: any = (<DecMinInstances>action).minInstances.id;
                 const indexDecMinInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_decMinInstances);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_decMinInstances ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].properties,
-                                    // id
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].id,
-                                    // type
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].type,
-                                    // name
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].name,
-                                    Number(lastState.currentJsonTopology
-                                        .nodeTemplates[indexDecMinInstances].minInstances) - 1,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].targetLocations,
-                                ) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4,
+                                    (Number(lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].minInstances) - 1).toString())
+                                : nodeTemplate
                             )
                     }
                 };
@@ -262,36 +160,15 @@ export const WineryReducer =
                 const id_incMaxInstances: any = (<IncMaxInstances>action).maxInstances.id;
                 const indexIncMaxInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_incMaxInstances);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_incMaxInstances ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].properties,
-                                    // id
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].id,
-                                    // type
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].type,
-                                    // name
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].minInstances,
-                                    Number(lastState.currentJsonTopology
-                                        .nodeTemplates[indexIncMaxInstances].maxInstances) + 1,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].targetLocations,
-                                ) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(5,
+                                    (Number(lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].maxInstances) + 1).toString())
+                                : nodeTemplate
                             )
                     }
                 };
@@ -299,36 +176,15 @@ export const WineryReducer =
                 const id_decMaxInstances: any = (<DecMaxInstances>action).maxInstances.id;
                 const indexDecMaxInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_decMaxInstances);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_decMaxInstances ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].properties,
-                                    // id
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].id,
-                                    // type
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].type,
-                                    // name
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].minInstances,
-                                    Number(lastState.currentJsonTopology
-                                        .nodeTemplates[indexDecMaxInstances].maxInstances) - 1,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].targetLocations,
-                                ) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(5,
+                                    (Number(lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].maxInstances) - 1).toString())
+                                : nodeTemplate
                             )
                     }
                 };
@@ -365,28 +221,13 @@ export const WineryReducer =
                 } else {
                     newXMLDepArtProperty = newPropertyDepArt.newDepArtProperty;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPropertyDepArt.nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].requirements,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(15,
                                     depArtPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
@@ -395,10 +236,7 @@ export const WineryReducer =
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
                                             properties: {any: newXMLDepArtProperty}
-                                        },
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].targetLocations,
-                                ) : nodeTemplate
+                                        }) : nodeTemplate
                             )
                     }
                 };
@@ -434,27 +272,13 @@ export const WineryReducer =
                 } else {
                     newXMLReqProperty = newReqProperty.newReqProperty;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newReqProperty.nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].capabilities,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(14,
                                     reqPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
@@ -463,11 +287,7 @@ export const WineryReducer =
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
                                             properties: {any: newXMLReqProperty}
-                                        },
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].targetLocations,
-                                ) : nodeTemplate
+                                        }) : nodeTemplate
                             )
                     }
                 };
@@ -503,26 +323,13 @@ export const WineryReducer =
                 } else {
                     newXMLCapProperty = newCapProperty.newCapProperty;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapProperty.nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].y,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(13,
                                     capPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
@@ -531,12 +338,7 @@ export const WineryReducer =
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
                                             properties: {any: newXMLCapProperty}
-                                        },
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].targetLocations,
-                                ) : nodeTemplate
+                                        }) : nodeTemplate
                             )
                     }
                 };
@@ -572,29 +374,13 @@ export const WineryReducer =
                 } else {
                     newXMLPolicyProperty = newPoliciesProperty.newPoliciesProperty;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPoliciesProperty.nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].deploymentArtifacts,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(16,
                                     policiesPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
@@ -603,9 +389,7 @@ export const WineryReducer =
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
                                             properties: {any: newXMLPolicyProperty}
-                                        },
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].targetLocations,
-                                ) : nodeTemplate
+                                        }) : nodeTemplate
                             )
                     }
                 };
@@ -641,31 +425,13 @@ export const WineryReducer =
                 } else {
                     newXMLTarLocProperty = newTargetLocProperty.newTargetLocProperty;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newTargetLocProperty.nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].requirements,
-                                    lastState.currentJsonTopology
-                                        .nodeTemplates[indexOfNodeTargetLocProp].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].policies,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(17,
                                     targetLocationsPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
@@ -674,8 +440,7 @@ export const WineryReducer =
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
                                             properties: {any: newXMLTarLocProperty}
-                                        },
-                                ) : nodeTemplate
+                                        }) : nodeTemplate
                             )
                     }
                 };
@@ -694,34 +459,15 @@ export const WineryReducer =
                 } else {
                     newXMLProperty = newProperty.newProperty;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newProperty.nodeId ?
-                                new TNodeTemplate(
-                                    // new Property
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(0,
                                     propertyType === 'KV' ?
-                                        {kvproperties: newProperty.newProperty} : {any: newXMLProperty},
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeProp].targetLocations,
-                                ) : nodeTemplate
+                                        {kvproperties: newProperty.newProperty} : {any: newXMLProperty}) : nodeTemplate
                             )
                     }
                 };
@@ -742,37 +488,18 @@ export const WineryReducer =
                 if (nodeCapTemplate.capabilities) {
                     capabilitiesExist = true;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapability.nodeId ?
-                                new TNodeTemplate(
-                                    // new Property
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].y,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(13,
                                     capabilitiesExist ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].capabilities,
                                             ...capability
-                                        } : capability,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].targetLocations,
-                                ) : nodeTemplate
+                                        } : capability) : nodeTemplate
                             )
                     }
                 };
@@ -793,37 +520,18 @@ export const WineryReducer =
                 if (nodeReqTemplate.requirements) {
                     requirementsExist = true;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newRequirement.nodeId ?
-                                new TNodeTemplate(
-                                    // new Property
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].capabilities,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(14,
                                     requirementsExist ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].requirements,
                                             ...requirement
-                                        } : requirement,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].targetLocations,
-                                ) : nodeTemplate
+                                        } : requirement) : nodeTemplate
                             )
                     }
                 };
@@ -844,36 +552,18 @@ export const WineryReducer =
                 if (nodeDepArtTemplate.deploymentArtifacts) {
                     depArtExist = true;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newDepArt.nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].requirements,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(15,
                                     depArtExist ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].deploymentArtifacts,
                                             ...deploymentArtifact
-                                        } : deploymentArtifact,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].targetLocations,
-                                ) : nodeTemplate
+                                        } : deploymentArtifact) : nodeTemplate
                             )
                     }
                 };
@@ -904,35 +594,17 @@ export const WineryReducer =
                 if (nodePolicyTemplate.policies) {
                     policyExist = true;
                 }
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPolicy.nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].deploymentArtifacts,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(16,
                                     policyExist ? {
                                         ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies,
                                         ...policy
-                                    } : policy,
-                                    lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].targetLocations,
-                                ) : nodeTemplate
+                                    } : policy) : nodeTemplate
                             )
                     }
                 };
@@ -940,32 +612,14 @@ export const WineryReducer =
                 const newNodeName: any = (<SidebarNodeNamechange>action).nodeNames;
                 const indexChangeNodeName = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(newNodeName.id);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newNodeName.id ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].type,
-                                    newNodeName.newNodeName,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].documentation,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].otherAttributes,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].x,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].requirements,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexChangeNodeName].targetLocations,
-                                ) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(3, newNodeName.newNodeName)
+                                : nodeTemplate
                             )
                     }
                 };
@@ -979,39 +633,20 @@ export const WineryReducer =
                 };
                 const indexUpdateNodeCoordinates = lastState.currentJsonTopology.nodeTemplates
                     .map(nodeTemplate => nodeTemplate.id).indexOf(nodeId);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === nodeId ?
-                                new TNodeTemplate(
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].properties,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].id,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].type,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].name,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].minInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].maxInstances,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].color,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].imageUrl,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].any,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].documentation,
-                                    otherAttributes,
-                                    currentNodeCoordinates.x,
-                                    currentNodeCoordinates.y,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].capabilities,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].requirements,
-                                    lastState.currentJsonTopology
-                                        .nodeTemplates[indexUpdateNodeCoordinates].deploymentArtifacts,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].policies,
-                                    lastState.currentJsonTopology.nodeTemplates[indexUpdateNodeCoordinates].targetLocations,
-                                ) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(10, otherAttributes)
+                                : nodeTemplate
                             )
                     }
                 };
             case WineryActions.SAVE_NODE_TEMPLATE :
                 const newNode: TNodeTemplate = (<SaveNodeTemplateAction>action).nodeTemplate;
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
@@ -1020,7 +655,7 @@ export const WineryReducer =
                 };
             case WineryActions.SAVE_RELATIONSHIP :
                 const newRelationship: TRelationshipTemplate = (<SaveRelationshipAction>action).relationshipTemplate;
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
@@ -1029,7 +664,7 @@ export const WineryReducer =
                 };
             case WineryActions.DELETE_NODE_TEMPLATE:
                 const deletedNodeId: string = (<DeleteNodeAction>action).nodeTemplateId;
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
@@ -1043,30 +678,25 @@ export const WineryReducer =
                 const relData: any = (<UpdateRelationshipNameAction>action).relData;
                 const indexRel = lastState.currentJsonTopology.relationshipTemplates
                     .map(rel => rel.id).indexOf(relData.id);
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates
                             .map(relTemplate => relTemplate.id === relData.id ?
-                                new TRelationshipTemplate(
-                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].sourceElement,
-                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].targetElement,
-                                    relData.newRelName,
-                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].id,
-                                    lastState.currentJsonTopology.relationshipTemplates[indexRel].type,
-                                ) : relTemplate
+                                relTemplate.generateNewRelTemplateWithUpdatedAttribute(2, relData.newRelName)
+                                : relTemplate
                             )
                     }
                 };
             case WineryActions.SEND_CURRENT_NODE_ID :
                 const currentNodeData: string = (<SendCurrentNodeIdAction>action).currentNodeData;
                 console.log({...lastState, currentNodeId: currentNodeData});
-                return {
+                return <WineryState>{
                     ...lastState,
                     currentNodeData: currentNodeData
                 };
             default:
-                return lastState;
+                return <WineryState> lastState;
         }
     };
