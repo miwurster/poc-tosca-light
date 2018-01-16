@@ -11,6 +11,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Type</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let cap of capabilities">
+        <td>{{cap.id}}</td>
+        <td>{{cap.name}}</td>
+        <td>{{cap.type}}</td>
+    </tr>
+    </tbody>
+</table>
 
 <winery-properties-content
     [currentNodeData]=currentNodeData

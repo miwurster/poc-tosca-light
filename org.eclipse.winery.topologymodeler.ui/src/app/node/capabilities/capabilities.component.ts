@@ -35,6 +35,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
     differ: any;
+    capabilities: any[] = [];
 
     constructor (private differs: KeyValueDiffers) {
         this.toggleModalHandler = new EventEmitter();
@@ -46,6 +47,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
     ngOnChanges (changes: SimpleChanges) {
         if (changes.currentNodeData.currentValue.currentProperties) {
             console.log(changes.currentNodeData.currentValue.currentProperties);
+            this.capabilities = changes.currentNodeData.currentValue.currentProperties.capability;
         }
     }
 
