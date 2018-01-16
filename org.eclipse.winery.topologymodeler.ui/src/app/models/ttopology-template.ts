@@ -61,7 +61,7 @@ export class TNodeTemplate extends AbstractTTemplate {
      * @return nodeTemplate: a new node template with the updated value
      */
     generateNewNodeTemplateWithUpdatedAttribute(indexOfUpdatedAttribute: number, updatedValue: any): TNodeTemplate {
-        let nodeTemplate = new TNodeTemplate(this.properties, this.id, this.type, this.name, this.minInstances, this.maxInstances, this.color,
+        const nodeTemplate = new TNodeTemplate(this.properties, this.id, this.type, this.name, this.minInstances, this.maxInstances, this.color,
                         this.imageUrl, this.documentation, this.any, this.otherAttributes, this.x, this.y, this.capabilities,
                         this.requirements, this.deploymentArtifacts, this.policies, this.targetLocations);
         switch (indexOfUpdatedAttribute) {
@@ -70,6 +70,7 @@ export class TNodeTemplate extends AbstractTTemplate {
                 break;
             case 1:
                 nodeTemplate.id = updatedValue;
+                break;
             case 2:
                 nodeTemplate.type = updatedValue;
                 break;
@@ -95,7 +96,10 @@ export class TNodeTemplate extends AbstractTTemplate {
                 nodeTemplate.any = updatedValue;
                 break;
             case 10:
-                nodeTemplate.otherAttributes = updatedValue;
+                for (const key in nodeTemplate.otherAttributes) {
+                    const trimmedKey = key.substring(key.indexOf('}') + 1);
+                    nodeTemplate.otherAttributes[key] = updatedValue[trimmedKey];
+                }
                 nodeTemplate.x = updatedValue.x;
                 nodeTemplate.y = updatedValue.y;
                 break;
@@ -163,7 +167,7 @@ export class TRelationshipTemplate extends AbstractTTemplate {
      * @return relTemplate: a new relationship template with the updated value
      */
     generateNewRelTemplateWithUpdatedAttribute(indexOfUpdatedAttribute: number, updatedValue: any): TRelationshipTemplate {
-        let relTemplate = new TRelationshipTemplate(this.sourceElement, this.targetElement, this.name, this.id, this.type,
+        const relTemplate = new TRelationshipTemplate(this.sourceElement, this.targetElement, this.name, this.id, this.type,
             this.documentation, this.any, this.otherAttributes);
         switch (indexOfUpdatedAttribute) {
             case 2:

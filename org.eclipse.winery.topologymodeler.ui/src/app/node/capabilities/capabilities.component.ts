@@ -12,7 +12,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {
+    Component,
+    EventEmitter,
+    Input,
+    KeyValueDiffers,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 
 @Component({
     selector: 'winery-capabilities',
@@ -20,14 +29,24 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
     styleUrls: ['./capabilities.component.css']
 })
 /**
- * This Handles Information about the nodes capabilities
+ * This Handles Information about the node capabilities
  */
-export class CapabilitiesComponent implements OnInit {
+export class CapabilitiesComponent implements OnInit, OnChanges {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
+    differ: any;
 
-    constructor () {
+    constructor (private differs: KeyValueDiffers) {
         this.toggleModalHandler = new EventEmitter();
+    }
+
+    /**
+     * Angular lifecycle event.
+     */
+    ngOnChanges (changes: SimpleChanges) {
+        if (changes.currentNodeData.currentValue.currentProperties) {
+            console.log(changes.currentNodeData.currentValue.currentProperties);
+        }
     }
 
     /**
@@ -39,5 +58,6 @@ export class CapabilitiesComponent implements OnInit {
     }
 
     ngOnInit () {
+        this.differ = this.differs.find([]).create(null);
     }
 }

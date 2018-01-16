@@ -52,6 +52,9 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                  private actions: WineryActions) {
     }
 
+    /**
+     * Angular lifecycle event.
+     */
     ngOnChanges (changes: SimpleChanges) {
         setTimeout(() => {
             if (changes.currentProperties) {
@@ -68,6 +71,9 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
         }, 1);
     }
 
+    /**
+     * Angular lifecycle event.
+     */
     ngOnInit () {
         // find out which type of properties shall be displayed
         this.findOutPropertyDefinitionTypeForThisInstance(this.currentNodeData.currentNodeType);

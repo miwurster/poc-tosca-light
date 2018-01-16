@@ -13,7 +13,6 @@
  ********************************************************************************/
 
 import {
-    AfterContentInit,
     AfterViewInit,
     Component,
     ComponentRef, DoCheck,

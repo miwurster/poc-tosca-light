@@ -149,7 +149,7 @@
                            required="required"
                            name="CapTypeDisplay"
                            disabled="disabled"
-                           [(ngModel)]="capabilities.capType"/>
+                           [(ngModel)]="capabilities.capQName"/>
                 </div>
 
                 <div id="CapPropertiesContainer">
@@ -200,7 +200,7 @@
 
                 <div class="form-group">
                     <label for="ReqTypeDisplay" class="control-label">Req Type:</label>
-                    <input [(ngModel)]="requirements.reqType"
+                    <input [(ngModel)]="requirements.reqQName"
                            id="ReqTypeDisplay"
                            name="ReqTypeDisplay"
                            class="form-control"
