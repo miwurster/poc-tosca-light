@@ -96,7 +96,7 @@ export const WineryReducer =
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates.map(nodeTemplate => nodeTemplate.id === sideBarNodeId ?
-                            nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4, minInstances.toString()) : nodeTemplate
+                            nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('minInstances', minInstances.toString()) : nodeTemplate
                         )
                     }
                 });
@@ -105,7 +105,7 @@ export const WineryReducer =
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates.map(nodeTemplate => nodeTemplate.id === sideBarNodeId ?
-                            nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4, minInstances.toString()) : nodeTemplate
+                            nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('minInstances', minInstances.toString()) : nodeTemplate
                         )
                     }
                 };
@@ -120,7 +120,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === sideBarNodeId2 ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(5, maxInstances.toString()) : nodeTemplate
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('maxInstances', maxInstances.toString()) : nodeTemplate
                             )
                     }
                 };
@@ -134,7 +134,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_incMinInstances ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('minInstances',
                                     (Number(lastState.currentJsonTopology.nodeTemplates[indexIncMinInstances].minInstances) + 1).toString())
                                 : nodeTemplate
                             )
@@ -150,7 +150,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_decMinInstances ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(4,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('minInstances',
                                     (Number(lastState.currentJsonTopology.nodeTemplates[indexDecMinInstances].minInstances) - 1).toString())
                                 : nodeTemplate
                             )
@@ -166,7 +166,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_incMaxInstances ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(5,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('maxInstances',
                                     (Number(lastState.currentJsonTopology.nodeTemplates[indexIncMaxInstances].maxInstances) + 1).toString())
                                 : nodeTemplate
                             )
@@ -182,7 +182,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === id_decMaxInstances ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(5,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('maxInstances',
                                     (Number(lastState.currentJsonTopology.nodeTemplates[indexDecMaxInstances].maxInstances) - 1).toString())
                                 : nodeTemplate
                             )
@@ -227,7 +227,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPropertyDepArt.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(15,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('deploymentArtifacts',
                                     depArtPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
@@ -278,7 +278,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newReqProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(14,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('requirements',
                                     reqPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
@@ -329,7 +329,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(13,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('capabilities',
                                     capPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
@@ -380,7 +380,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPoliciesProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(16,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('policies',
                                     policiesPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
@@ -431,7 +431,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newTargetLocProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(17,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('targetLocations',
                                     targetLocationsPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
@@ -465,7 +465,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(0,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('properties',
                                     propertyType === 'KV' ?
                                         {kvproperties: newProperty.newProperty} : {any: newXMLProperty}) : nodeTemplate
                             )
@@ -494,7 +494,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapability.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(13,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('capabilities',
                                     capabilitiesExist ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].capabilities,
@@ -526,7 +526,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newRequirement.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(14,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('requirements',
                                     requirementsExist ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].requirements,
@@ -558,7 +558,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newDepArt.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(15,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('deploymentArtifacts',
                                     depArtExist ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].deploymentArtifacts,
@@ -600,7 +600,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newPolicy.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(16,
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('policies',
                                     policyExist ? {
                                         ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies,
                                         ...policy
@@ -618,7 +618,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newNodeName.id ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(3, newNodeName.newNodeName)
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('name', newNodeName.newNodeName)
                                 : nodeTemplate
                             )
                     }
@@ -639,7 +639,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute(10, otherAttributes)
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('otherAttributes', otherAttributes)
                                 : nodeTemplate
                             )
                     }
@@ -684,7 +684,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates
                             .map(relTemplate => relTemplate.id === relData.id ?
-                                relTemplate.generateNewRelTemplateWithUpdatedAttribute(2, relData.newRelName)
+                                relTemplate.generateNewRelTemplateWithUpdatedAttribute('name', relData.newRelName)
                                 : relTemplate
                             )
                     }

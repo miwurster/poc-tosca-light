@@ -54,70 +54,29 @@ export class TNodeTemplate extends AbstractTTemplate {
 
     /**
      * needed for the winery redux reducer,
-     * updates a specific attribute and returns the whole new node template
+     * updates a specific attribute and returns a whole new node template
      * @param indexOfUpdatedAttribute: index of the to be updated attribute in the constructor
      * @param updatedValue: the new value
      *
      * @return nodeTemplate: a new node template with the updated value
      */
-    generateNewNodeTemplateWithUpdatedAttribute(indexOfUpdatedAttribute: number, updatedValue: any): TNodeTemplate {
+    generateNewNodeTemplateWithUpdatedAttribute(updatedAttribute: string, updatedValue: any): TNodeTemplate {
         const nodeTemplate = new TNodeTemplate(this.properties, this.id, this.type, this.name, this.minInstances, this.maxInstances, this.color,
                         this.imageUrl, this.documentation, this.any, this.otherAttributes, this.x, this.y, this.capabilities,
                         this.requirements, this.deploymentArtifacts, this.policies, this.targetLocations);
-        switch (indexOfUpdatedAttribute) {
-            case 0:
-                nodeTemplate.properties = updatedValue;
-                break;
-            case 1:
-                nodeTemplate.id = updatedValue;
-                break;
-            case 2:
-                nodeTemplate.type = updatedValue;
-                break;
-            case 3:
-                nodeTemplate.name = updatedValue;
-                break;
-            case 4:
-                nodeTemplate.minInstances = +updatedValue;
-                break;
-            case 5:
-                nodeTemplate.maxInstances = +updatedValue;
-                break;
-            case 6:
-                nodeTemplate.color = updatedValue;
-                break;
-            case 7:
-                nodeTemplate.imageUrl = updatedValue;
-                break;
-            case 8:
-                nodeTemplate.documentation = updatedValue;
-                break;
-            case 9:
-                nodeTemplate.any = updatedValue;
-                break;
-            case 10:
-                for (const key in nodeTemplate.otherAttributes) {
+        if (updatedAttribute === 'otherAttributes') {
+            for (const key in nodeTemplate.otherAttributes) {
+                if (nodeTemplate.otherAttributes.hasOwnProperty(key)) {
                     const trimmedKey = key.substring(key.indexOf('}') + 1);
                     nodeTemplate.otherAttributes[key] = updatedValue[trimmedKey];
                 }
-                nodeTemplate.x = updatedValue.x;
-                nodeTemplate.y = updatedValue.y;
-                break;
-            case 13:
-                nodeTemplate.capabilities = updatedValue;
-                break;
-            case 14:
-                nodeTemplate.requirements = updatedValue;
-                break;
-            case 15:
-                nodeTemplate.deploymentArtifacts = updatedValue;
-                break;
-            case 16:
-                nodeTemplate.policies = updatedValue;
-                break;
-            case 17:
-                nodeTemplate.targetLocations = updatedValue;
-                break;
+            }
+            nodeTemplate.x = updatedValue.x;
+            nodeTemplate.y = updatedValue.y;
+        } else if(updatedAttribute === ('minInstances') || updatedAttribute === ('maxInstances')) {
+            nodeTemplate[updatedAttribute] = +updatedValue;
+        } else {
+            nodeTemplate[updatedAttribute] = updatedValue;
         }
         return nodeTemplate;
     }
@@ -166,14 +125,10 @@ export class TRelationshipTemplate extends AbstractTTemplate {
      *
      * @return relTemplate: a new relationship template with the updated value
      */
-    generateNewRelTemplateWithUpdatedAttribute(indexOfUpdatedAttribute: number, updatedValue: any): TRelationshipTemplate {
+    generateNewRelTemplateWithUpdatedAttribute(updatedAttribute: string, updatedValue: any): TRelationshipTemplate {
         const relTemplate = new TRelationshipTemplate(this.sourceElement, this.targetElement, this.name, this.id, this.type,
             this.documentation, this.any, this.otherAttributes);
-        switch (indexOfUpdatedAttribute) {
-            case 2:
-                relTemplate.name = updatedValue;
-                break;
-        }
+        relTemplate[updatedAttribute] = updatedValue;
         return relTemplate;
     }
 
