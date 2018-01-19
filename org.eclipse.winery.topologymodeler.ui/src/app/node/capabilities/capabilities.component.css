@@ -17,19 +17,27 @@ table {
     width: 100%;
 }
 
-table, th, td {
-    border: 1px solid black;
+.dataId:hover, .dataName:hover, .dataType:hover {
+    background-color: #FFFFCC;
+    overflow: visible;
+    display: inline-block;
+}
+
+.dataId:hover ~ .dataName, .dataId:hover ~ .dataType {
+    visibility: hidden;
+}
+
+.dataName:hover ~ .dataType {
+    visibility: hidden;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-tbody, thead, tr {
-    display: block;
-}
-
-tbody, thead {
-    overflow-y: auto;
-    overflow-x: auto;
-}
