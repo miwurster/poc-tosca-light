@@ -54,6 +54,9 @@ export class BackendService {
     private artifactTypes = new Subject<any>();
     artifactTypes$ = this.artifactTypes.asObservable();
 
+    private artifactTemplates = new Subject<any>();
+    artifactTemplates$ = this.artifactTemplates.asObservable();
+
     private groupedNodeTypes = new Subject<any>();
     groupedNodeTypes$ = this.groupedNodeTypes.asObservable();
 
@@ -87,7 +90,6 @@ export class BackendService {
                 });
                 // TopologyTemplate and Visuals together
                 this.requestTopologyTemplateAndVisuals().subscribe(data => {
-                    console.log(data);
                     this.topologyTemplateAndVisuals.next(data);
                 });
                 // Policy Types
@@ -114,6 +116,11 @@ export class BackendService {
                 this.requestArtifactTypes().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
                     this.artifactTypes.next(data);
+                });
+                // Artifact Templates
+                this.requestArtifactTemplates().subscribe(data => {
+                    // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.artifactTemplates.next(data);
                 });
                 // Grouped NodeTypes
                 this.requestGroupedNodeTypes().subscribe(data => {
@@ -267,6 +274,17 @@ export class BackendService {
     requestArtifactTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/artifacttypes', this.options)
+                .map(res => res.json());
+        }
+    }
+
+    /**
+     * Requests all artifact templates from the backend
+     * @returns {Observable<string>}
+     */
+    requestArtifactTemplates(): Observable<any> {
+        if (this.configuration) {
+            return this.http.get(backendBaseURL + '/artifacttemplates?grouped&full', this.options)
                 .map(res => res.json());
         }
     }
