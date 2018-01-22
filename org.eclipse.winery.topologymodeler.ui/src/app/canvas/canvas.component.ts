@@ -48,6 +48,11 @@ import {ArtifactsModalData} from '../models/artifactsModalData';
 import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
 import {ToggleModalDataModel} from '../models/toggleModalDataModel';
 import {WineryAlertService} from '../winery-alert/winery-alert.service';
+import { isNullOrUndefined } from 'util';
+import { GenerateArtifactApiData } from '../../repositoryUiDependencies/generateArtifactApiData';
+import { GenerateData } from '../../repositoryUiDependencies/wineryComponentExists/wineryComponentExists.component';
+import { backendBaseURL } from '../configuration';
+import { BackendService } from '../backend.service';
 
 @Component({
     selector: 'winery-canvas',
@@ -95,10 +100,17 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     capabilities: CapabilitiesModalData;
     requirements: RequirementsModalData;
     policies: PoliciesModalData;
-    deploymentArtifacts: ArtifactsModalData;
+    deploymentArtifactModalData: ArtifactsModalData;
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
     differ: any;
+    // deployment artifact modal
+    deploymentArtifactSelectedRadioButton = 'createArtifactTemplate';
+    deploymentArtifactSelectedOperation = '';
+    newArtifact: GenerateArtifactApiData = new GenerateArtifactApiData();
+    artifact: GenerateData = new GenerateData();
+    artifactUrl: string;
+    uploadUrl: string;
 
     constructor (private jsPlumbService: JsPlumbService,
                  private eref: ElementRef,
@@ -110,7 +122,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                  private hotkeysService: HotkeysService,
                  private renderer: Renderer2,
                  private alert: WineryAlertService,
-                 private differs: KeyValueDiffers) {
+                 private differs: KeyValueDiffers,
+                 private backendService: BackendService) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
         console.log(this.newJsPlumbInstance);
@@ -132,7 +145,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.gridTemplate = new GridTemplate(100, false, false);
         this.capabilities = new CapabilitiesModalData();
         this.requirements = new RequirementsModalData();
-        this.deploymentArtifacts = new ArtifactsModalData();
+        this.deploymentArtifactModalData = new ArtifactsModalData();
         this.policies = new PoliciesModalData();
     }
 
@@ -291,10 +304,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             case 'DEPLOYMENT_ARTIFACTS':
                 this.deploymentArtifactModal.show();
                 try {
-                    this.deploymentArtifacts.deploymentArtifacts = currentNodeData.deploymentArtifacts;
-                    this.deploymentArtifacts.artifactTypes = this.entityTypes.artifactTypes;
+                    this.deploymentArtifactModalData.deploymentArtifacts = currentNodeData.deploymentArtifacts;
+                    this.deploymentArtifactModalData.artifactTypes = this.entityTypes.artifactTypes;
+                    this.deploymentArtifactModalData.artifactTemplates = this.entityTypes.artifactTemplates;
                 } catch (e) {
-                    this.deploymentArtifacts.deploymentArtifacts = '';
+                    this.deploymentArtifactModalData.deploymentArtifacts = '';
                 }
                 break;
             case 'REQUIREMENTS':
@@ -317,6 +331,45 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 }
                 break;
         }
+    }
+
+    /**
+     * This method gets called when the add button is pressed inside the "Add Deployment Artifact" modal
+     */
+    addDeploymentArtifactConfirmed() {
+        if (isNullOrUndefined(this.deploymentArtifactSelectedOperation)) {
+            this.deploymentArtifactSelectedOperation = '';
+        }
+
+        if (this.deploymentArtifactSelectedRadioButton === 'createArtifactTemplate') {
+            this.newArtifact.autoCreateArtifactTemplate = 'true';
+            this.newArtifact.artifactTemplateName = this.artifact.name ? this.artifact.name : '';
+            this.newArtifact.artifactTemplateNamespace = this.artifact.namespace ? this.artifact.namespace : '';
+            this.makeArtifactUrl();
+        } else if (this.deploymentArtifactSelectedRadioButton === 'linkArtifactTemplate') {
+            this.newArtifact.autoCreateArtifactTemplate = '';
+        } else if (this.deploymentArtifactSelectedRadioButton === 'skipArtifactTemplate') {
+            this.newArtifact.autoCreateArtifactTemplate = '';
+        }
+        this.newArtifact.operationName = this.deploymentArtifactSelectedOperation;
+        this.createNewDeploymentArtifact();
+        this.deploymentArtifactModal.hide();
+    }
+
+    /**
+     *
+     */
+    createNewDeploymentArtifact() {
+        // this.backendService.createNewArtifact(this.newArtifact).subscribe(
+        //     data => this.handlePostResponse(),
+        //     error => this.showError(error)
+        // );
+    }
+
+    private makeArtifactUrl() {
+        this.artifactUrl = backendBaseURL + '/artifacttemplates/' + encodeURIComponent(encodeURIComponent(
+            this.newArtifact.artifactTemplateNamespace)) + '/' + this.newArtifact.artifactTemplateName + '/';
+        this.uploadUrl = this.artifactUrl + 'files/';
     }
 
     /**
@@ -384,14 +437,14 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     /**
      * Auto-completes other deployment-artifact relevant values when a deployment-artifact type has been selected in the modal
      */
-    onChangeDepArtifacts (artType: any): void {
-        this.entityTypes.artifactTypes.some(art => {
-            if (art.qName === artType) {
-                this.deploymentArtifacts.depArtColor = art.color;
-                this.deploymentArtifacts.depArtId = art.id;
-                this.deploymentArtifacts.artifactName = art.id;
-                this.deploymentArtifacts.artifactTemplateNS = art.namespace;
-                this.deploymentArtifacts.artifactTemplateName = art.qName;
+    onChangeDeploymentArtifacts(artifactType: any): void {
+        // change the ones affected
+        this.entityTypes.artifactTypes.some(artifactCurrentlySelected => {
+            if (artifactCurrentlySelected.name === artifactType) {
+                this.deploymentArtifactModalData.id = artifactCurrentlySelected.id;
+                this.deploymentArtifactModalData.artifactName = artifactCurrentlySelected.id;
+                this.deploymentArtifactModalData.artifactTemplateNameSpace = artifactCurrentlySelected.namespace;
+                this.deploymentArtifactModalData.artifactTemplateName = artifactCurrentlySelected.name;
                 return true;
             }
         });
@@ -401,16 +454,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Saves a deployment artifacts template to the model and gets pushed into the Redux state of the application
      */
     saveDeploymentArtifactsToModel (): void {
-        const deploymentArtifacts = {
+        const deploymentArtifactToBeSavedToRedux = {
             nodeId: this.currentModalData.id,
-            color: this.deploymentArtifacts.depArtColor,
-            id: this.deploymentArtifacts.depArtId,
-            name: this.deploymentArtifacts.artifactName,
-            namespace: this.deploymentArtifacts.artifactTemplateNS,
-            qName: this.deploymentArtifacts.artifactTemplateName
+            id: this.deploymentArtifactModalData.id,
+            name: this.deploymentArtifactModalData.artifactName,
+            namespace: this.deploymentArtifactModalData.artifactTemplateNameSpace,
+            qName: this.deploymentArtifactModalData.artifactTemplateName
         };
-        this.ngRedux.dispatch(this.actions.setDeploymentArtifact(deploymentArtifacts));
-        this.resetDeploymentArtifacts();
+        this.ngRedux.dispatch(this.actions.setDeploymentArtifact(deploymentArtifactToBeSavedToRedux));
+        this.resetDeploymentArtifactModalData();
     }
 
     /**
@@ -471,31 +523,31 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Clears the modal values of the corresponding modal type
      */
     resetPolicies (): void {
-        this.policies.policyTemplateName = null;
-        this.policies.policyType = null;
-        this.policies.policyTemplate = null;
+        this.policies.policyTemplateName = '';
+        this.policies.policyType = '';
+        this.policies.policyTemplate = '';
         this.policiesModal.hide();
     }
 
     resetRequirements (): void {
-        this.requirements.reqId = null;
-        this.requirements.reqDefinitionName = null;
-        this.requirements.reqType = null;
+        this.requirements.reqId = '';
+        this.requirements.reqDefinitionName = '';
+        this.requirements.reqType = '';
         this.requirementsModal.hide();
     }
 
     resetCapabilities (): void {
-        this.capabilities.capId = null;
-        this.capabilities.capDefinitionName = null;
-        this.capabilities.capType = null;
+        this.capabilities.capId = '';
+        this.capabilities.capDefinitionName = '';
+        this.capabilities.capType = '';
         this.capabilitiesModal.hide();
     }
 
-    resetDeploymentArtifacts (): void {
-        this.deploymentArtifacts.artifactTemplateNS = null;
-        this.deploymentArtifacts.artifactTemplateName = null;
-        this.deploymentArtifacts.artifactName = null;
-        this.deploymentArtifacts.artifactType = null;
+    resetDeploymentArtifactModalData (): void {
+        this.deploymentArtifactModalData.artifactTemplateNameSpace = '';
+        this.deploymentArtifactModalData.artifactTemplateName = '';
+        this.deploymentArtifactModalData.artifactName = '';
+        this.deploymentArtifactModalData.artifactType = '';
         this.deploymentArtifactModal.hide();
     }
 
@@ -1230,10 +1282,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Lifecycle hook
      */
     ngOnInit () {
-        console.log(this.entityTypes);
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
         this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
         this.differ = this.differs.find([]).create(null);
+        console.log(this.entityTypes);
     }
 
     /**
