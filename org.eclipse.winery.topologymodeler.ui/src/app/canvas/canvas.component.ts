@@ -50,9 +50,8 @@ import {ToggleModalDataModel} from '../models/toggleModalDataModel';
 import {WineryAlertService} from '../winery-alert/winery-alert.service';
 import { isNullOrUndefined } from 'util';
 import { GenerateArtifactApiData } from '../../repositoryUiDependencies/generateArtifactApiData';
-import { GenerateData } from '../../repositoryUiDependencies/wineryComponentExists/wineryComponentExists.component';
-import { backendBaseURL } from '../configuration';
 import { BackendService } from '../backend.service';
+import { backendBaseURL } from '../configuration';
 
 @Component({
     selector: 'winery-canvas',
@@ -108,7 +107,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     deploymentArtifactSelectedRadioButton = 'createArtifactTemplate';
     deploymentArtifactSelectedOperation = '';
     newArtifact: GenerateArtifactApiData = new GenerateArtifactApiData();
-    artifact: GenerateData = new GenerateData();
+    artifact: any;
     artifactUrl: string;
     uploadUrl: string;
 
