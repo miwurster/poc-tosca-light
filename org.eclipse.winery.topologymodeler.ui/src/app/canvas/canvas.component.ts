@@ -49,7 +49,6 @@ import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
 import {ToggleModalDataModel} from '../models/toggleModalDataModel';
 import {WineryAlertService} from '../winery-alert/winery-alert.service';
 import { isNullOrUndefined } from 'util';
-import { GenerateArtifactApiData } from '../../repositoryUiDependencies/generateArtifactApiData';
 import { BackendService } from '../backend.service';
 import { backendBaseURL } from '../configuration';
 
@@ -106,7 +105,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     // deployment artifact modal
     deploymentArtifactSelectedRadioButton = 'createArtifactTemplate';
     deploymentArtifactSelectedOperation = '';
-    newArtifact: GenerateArtifactApiData = new GenerateArtifactApiData();
+    newArtifact: any;
     artifact: any;
     artifactUrl: string;
     uploadUrl: string;
