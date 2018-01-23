@@ -1,0 +1,42 @@
+/**
+ * Copyright (c) 2017 University of Stuttgart.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * and the Apache License 2.0 which both accompany this distribution,
+ * and are available at http://www.eclipse.org/legal/epl-v20.html
+ * and http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Contributors:
+ *     Niko Stadelmaier - initial API and implementation
+ */
+import { NgModule } from '@angular/core';
+import { WineryArtifactComponent } from './artifact.component';
+import { BrowserModule } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
+import { WineryTableModule } from '../../../../../org.eclipse.winery.repository.ui/src/app/wineryTableModule/wineryTable.module';
+import { WineryLoaderModule } from '../../../../../org.eclipse.winery.repository.ui/src/app/wineryLoader/wineryLoader.module';
+import { WineryModalModule } from '../../../../../org.eclipse.winery.repository.ui/src/app/wineryModalModule/winery.modal.module';
+import { FormsModule } from '@angular/forms';
+import { WineryQNameSelectorModule } from '../../../../../org.eclipse.winery.repository.ui/src/app/wineryQNameSelector/wineryQNameSelector.module';
+import { WineryComponentExistsModule } from '../../../../../org.eclipse.winery.repository.ui/src/app/wineryComponentExists/wineryComponentExists.module';
+import { WineryUploaderModule } from '../../../../../org.eclipse.winery.repository.ui/src/app/wineryUploader/wineryUploader.module';
+
+@NgModule({
+    imports: [
+        BrowserModule,
+        RouterModule,
+        WineryComponentExistsModule,
+        WineryTableModule,
+        WineryLoaderModule,
+        WineryModalModule,
+        WineryQNameSelectorModule,
+        WineryUploaderModule,
+        FormsModule,
+    ],
+    exports: [WineryArtifactComponent],
+    declarations: [
+        WineryArtifactComponent,
+    ]
+})
+export class WineryArtifactModule {
+}

@@ -49,7 +49,7 @@ import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
 import {ToggleModalDataModel} from '../models/toggleModalDataModel';
 import {WineryAlertService} from '../winery-alert/winery-alert.service';
 import { isNullOrUndefined } from 'util';
-import { GenerateArtifactApiData } from '../../repositoryUiDependencies/generateArtifactApiData';
+import { GenerateArtifactApiData } from '../cross-project-utils/generateArtifactApiData';
 import { BackendService } from '../backend.service';
 import { backendBaseURL } from '../configuration';
 
