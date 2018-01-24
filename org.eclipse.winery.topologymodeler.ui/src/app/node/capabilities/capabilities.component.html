@@ -11,6 +11,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
+
+<div *ngIf="capabilitiesExist">
 <table>
     <thead>
     <tr>
@@ -32,7 +34,11 @@
     [currentNodeData]=currentNodeData
     [currentProperties]="currentNodeData.currentProperties">
 </winery-properties-content>
+</div>
 
 <div (click)="toggleModal($event);" class="btn btn-sm btn-modal">
     Add new
 </div>
+
+<div *ngIf="!capabilitiesExist" style="color: dimgray; text-align: center">
+    <span>No capabilities defined <br> at the NodeType.</span></div>

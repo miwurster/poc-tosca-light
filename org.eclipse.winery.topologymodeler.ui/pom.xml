@@ -60,6 +60,10 @@
                                 <copy todir="${project.basedir}/src/repositoryUiDependencies/wineryModalModule" overwrite="true">
                                     <fileset dir="${project.basedir}/../org.eclipse.winery.repository.ui/src/app/wineryModalModule"/>
                                 </copy>
+                                <!-- Import the wineryArtifacts module from the repository.UI project -->
+                                <!-- <copy todir="${project.basedir}/src/repositoryUiDependencies/wineryArtifacts" overwrite="true">
+                                    <fileset dir="${project.basedir}/../org.eclipse.winery.repository.ui/src/app/instance/sharedComponents/wineryArtifacts"/>
+                                </copy> -->
                             </target>
                         </configuration>
                         <goals>

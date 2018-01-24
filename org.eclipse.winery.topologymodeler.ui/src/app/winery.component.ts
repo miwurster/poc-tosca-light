@@ -83,6 +83,10 @@ export class WineryComponent implements OnInit {
         this.backendService.artifactTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'artifactTypes');
         });
+        // Artifact Templates
+        this.backendService.artifactTemplates$.subscribe(JSON => {
+            this.initEntityType(JSON, 'artifactTemplates');
+        });
         // Policy Types
         this.backendService.policyTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'policyTypes');
@@ -107,6 +111,7 @@ export class WineryComponent implements OnInit {
         this.backendService.relationshipTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'relationshipTypes');
         });
+        // NodeTypes
         this.backendService.nodeTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'unGroupedNodeTypes');
         });
@@ -131,6 +136,10 @@ export class WineryComponent implements OnInit {
                         ));
                 });
                 this.entityTypes.artifactTypes = this.artifactTypes;
+                break;
+            }
+            case 'artifactTemplates': {
+                this.entityTypes.artifactTemplates = entityTypeJSON;
                 break;
             }
             case 'policyTypes': {
@@ -260,7 +269,7 @@ export class WineryComponent implements OnInit {
                         node.y,
                         node.capabilities,
                         node.requirements,
-                        node.deploymentArtifacts,
+                        node.deploymentArtifactModalData,
                         node.policies,
                         node.targetLocations
                     )

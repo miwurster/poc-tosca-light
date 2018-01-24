@@ -13,16 +13,15 @@
  ********************************************************************************/
 
 /**
- * Encompasses the artifacts data defined by the user when using the modal
+ * Encompasses the capability model
  */
-export class ArtifactsModalData {
+export class CapabilityModel {
 
-    constructor(public id?: string,
-                public artifactName?: string,
-                public artifactType?: string,
-                public artifactTypes?: string[],
-                public artifactTemplates?: string[],
-                public artifactTemplateName?: any,
-                public artifactTemplateNameSpace?: any,
-                public deploymentArtifacts?: any) { }
+    constructor(public any: any,
+                public documentation: any,
+                public id: string,
+                public name: string,
+                public otherAttributes: any,
+                public type: any,
+                public properties?: any ) { }
 }

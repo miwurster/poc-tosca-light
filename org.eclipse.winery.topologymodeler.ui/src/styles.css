@@ -21,6 +21,33 @@ body {
     background-color: rgba(0, 0, 0, 0.2) !important;
 }
 
+.help-block {
+    display: block;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    color: #737373;
+}
+
+label {
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+[type=checkbox], [type=radio] {
+    box-sizing: border-box;
+    padding-right: 20px;
+}
+
+.checkbox label, .radio label {
+    min-height: 20px;
+    padding-left: 0px;
+    margin-bottom: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
 .btn-modal:focus, .btn-modal:hover {
     background-color: rgba(0, 0, 0, 0.6) !important;
     color: #ffffff !important;
