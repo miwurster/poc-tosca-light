@@ -15,8 +15,6 @@
 import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
-import { forkJoin } from 'rxjs/observable/forkJoin';
-import { of } from 'rxjs/observable/of';
 import 'rxjs/add/operator/catch';
 import { ActivatedRoute } from '@angular/router';
 import { backendBaseURL } from './configuration';
@@ -30,6 +28,20 @@ import { isNullOrUndefined } from 'util';
 export class BackendService {
     readonly headers = new Headers({'Accept': 'application/json'});
     readonly options = new RequestOptions({headers: this.headers});
+
+    entityLoaded = {
+        topologyTemplateAndVisuals: false,
+        artifactTypes: false,
+        artifactTemplates: false,
+        policyTypes: false,
+        policyTemplates: false,
+        capabilityTypes: false,
+        requirementTypes: false,
+        groupedNodeTypes: false,
+        ungroupedNodeTypes: false,
+        relationshipTypes: false,
+    };
+    allEntitiesLoaded = false;
 
     configuration: TopologyModelerConfiguration;
 
@@ -90,55 +102,92 @@ export class BackendService {
                 });
                 // TopologyTemplate and Visuals together
                 this.requestTopologyTemplateAndVisuals().subscribe(data => {
+                    this.entityLoaded.topologyTemplateAndVisuals = true;
                     this.topologyTemplateAndVisuals.next(data);
                 });
                 // Policy Types
                 this.requestPolicyTypes().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.policyTypes = true;
                     this.policyTypes.next(data);
                 });
                 // Policy Templates
                 this.requestPolicyTemplates().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.policyTemplates = true;
                     this.policyTemplates.next(data);
                 });
                 // Capability Types
                 this.requestCapabilityTypes().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.capabilityTypes = true;
                     this.capabilityTypes.next(data);
                 });
                 // Requirement Types
                 this.requestRequirementTypes().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.requirementTypes = true;
                     this.requirementTypes.next(data);
                 });
                 // Artifact Types
                 this.requestArtifactTypes().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.artifactTypes = true;
                     this.artifactTypes.next(data);
                 });
                 // Artifact Templates
                 this.requestArtifactTemplates().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.artifactTemplates = true;
                     this.artifactTemplates.next(data);
                 });
                 // Grouped NodeTypes
                 this.requestGroupedNodeTypes().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.groupedNodeTypes = true;
                     this.groupedNodeTypes.next(data);
                 });
                 // NodeTypes
                 this.requestNodeTypes().subscribe(data => {
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
+                    this.entityLoaded.ungroupedNodeTypes = true;
                     this.nodeTypes.next(data);
                 });
                 // Relationship Types
                 this.requestRelationshipTypes().subscribe(data => {
+                    this.entityLoaded.relationshipTypes = true;
                     // add JSON to Promise, WineryComponent will subscribe to its Observable
                     this.relationshipTypes.next(data);
                 });
             } else {
                 // TODO: how does it have to behave when no params are specified?
+            }
+        });
+
+        this.everythingLoaded().then(() => {
+            console.log('all data arrived');
+
+            console.log(this.entityLoaded);
+            // TODO: fire actual event here
+        });
+
+    }
+
+    everythingLoaded() {
+        return new Promise((resolve) => {
+            if (this.entityLoaded.topologyTemplateAndVisuals &&
+                this.entityLoaded.artifactTypes &&
+                this.entityLoaded.artifactTemplates &&
+                this.entityLoaded.policyTypes &&
+                this.entityLoaded.policyTemplates &&
+                this.entityLoaded.capabilityTypes &&
+                this.entityLoaded.requirementTypes &&
+                this.entityLoaded.groupedNodeTypes &&
+                this.entityLoaded.ungroupedNodeTypes &&
+                this.entityLoaded.relationshipTypes) {
+                resolve(true);
+            } else {
+                resolve(false);
             }
         });
     }
