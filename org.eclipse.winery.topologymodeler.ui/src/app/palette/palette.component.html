@@ -1,0 +1,31 @@
+<!--
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+-->
+
+<div class="bootstrap-vertical-nav">
+
+    <button id="palette_root" class="btn btn-primary" type="button" (click)="toggleRootState()">
+        <div>Palette</div>
+    </button>
+
+    <div [@paletteItemState]="paletteRootState" class="palette-items-wrapper">
+            <ul class="nav flex-column nav-tabs">
+                <li *ngFor="let nodeType of entityTypes.unGroupedNodeTypes" class="nav-item">
+                    <div class="btn btn-light btn-sm btn-block"
+                         (mousedown)="generateNewNode($event)">{{ nodeType.id }}
+                    </div>
+                </li>
+            </ul>
+    </div>
+</div>
+
