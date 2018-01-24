@@ -59,3 +59,7 @@
     borderWidth: 1;
     padding: 3px;
 }
+
+#skipArtifactTemplateInput, #createArtifactTemplateInput, #linkArtifactTemplateInput {
+    margin-right: .5em;
+}

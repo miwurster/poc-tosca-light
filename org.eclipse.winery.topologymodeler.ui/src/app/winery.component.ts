@@ -68,14 +68,14 @@ export class WineryComponent implements OnInit {
          * by using Observable.forkJoin(1$, 2$);
          */
         this.backendService.topologyTemplateAndVisuals$.subscribe(JSON => {
+            this.loaded = {isLoaded: true};
+            this.appReadyEvent.trigger();
             // topologyTemplate JSON[0]
             const topologyTemplate = JSON[0];
             const visuals = JSON[1];
             this.entityTypes.nodeVisuals = visuals;
             // init the NodeTemplates and RelationshipTemplates to start their rendering
             this.initTopologyTemplate(topologyTemplate.nodeTemplates, visuals, topologyTemplate.relationshipTemplates);
-            this.loaded = {isLoaded: true};
-            this.appReadyEvent.trigger();
         });
 
         // Get other entity types
@@ -106,6 +106,7 @@ export class WineryComponent implements OnInit {
         // Grouped NodeTypes
         this.backendService.groupedNodeTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'groupedNodeTypes');
+
         });
         // Relationship Types
         this.backendService.relationshipTypes$.subscribe(JSON => {
@@ -115,6 +116,7 @@ export class WineryComponent implements OnInit {
         this.backendService.nodeTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'unGroupedNodeTypes');
         });
+
     }
 
     /**

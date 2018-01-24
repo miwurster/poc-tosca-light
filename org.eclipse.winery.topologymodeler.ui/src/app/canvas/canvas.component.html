@@ -247,6 +247,7 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="artifactTemplateCreation" value="linkArtifactTemplate"
+                               id="linkArtifactTemplateInput"
                                [(ngModel)]="deploymentArtifactSelectedRadioButton"/>Link Artifact
                         Template
                     </label>
@@ -255,6 +256,7 @@
                 <div class="radio">
                     <label>
                         <input type="radio" name="artifactTemplateCreation" value="skipArtifactTemplate"
+                               id="skipArtifactTemplateInput"
                                [(ngModel)]="deploymentArtifactSelectedRadioButton"/>Do not create
                         an artifact template
                     </label>
@@ -300,7 +302,7 @@
                         <label for="artifactTemplateNS" class="control-label">Namespace</label>
                         <input [(ngModel)]="deploymentArtifactModalData.artifactTemplateNameSpace" type="text"
                                class="form-control"
-                               name="artifactTemplateNS" id="artifactTemplateNS"/>
+                               name="artifactTemplateNS" id="artifactTemplateNS" disabled/>
                     </div>
                 </div>
 
