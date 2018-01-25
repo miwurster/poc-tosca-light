@@ -51,6 +51,7 @@ import { WineryAlertService } from '../winery-alert/winery-alert.service';
 import { BackendService } from '../backend.service';
 import { backendBaseURL } from '../configuration';
 import { QName } from '../qname';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 
 @Component({
     selector: 'winery-canvas',
@@ -109,6 +110,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     artifact: any;
     artifactUrl: string;
     uploadUrl: string;
+    form: FormGroup;
 
     constructor(private jsPlumbService: JsPlumbService,
                 private eref: ElementRef,
@@ -330,7 +332,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Auto-completes other capability relevant values when a capability name has been selected in the modal
      */
     onChangeCapId (capId: string) {
-        //this.capabilities.capabilities
+        // this.capabilities.capabilities
         console.log(this.capabilities);
     }
 
@@ -1039,6 +1041,13 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
         this.differ = this.differs.find([]).create(null);
         console.log(this.entityTypes);
+        /*
+        this.form = this.formBuilder.group({
+            capId: [null, Validators.required],
+            capName: [null, Validators.required],
+            capType: [null, Validators.required]
+        });
+        */
     }
 
     /**
