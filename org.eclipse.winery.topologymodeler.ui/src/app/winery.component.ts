@@ -60,6 +60,11 @@ export class WineryComponent implements OnInit {
      */
     ngOnInit() {
 
+        // Artifact Templates
+        this.backendService.artifactTemplates$.subscribe(JSON => {
+            this.initEntityType(JSON, 'artifactTemplates');
+        });
+
         /**
          * This subscriptionProperties receives an Observable of [string, string], the former value being
          * the JSON representation of the topologyTemplate and the latter value being the JSON
@@ -82,10 +87,6 @@ export class WineryComponent implements OnInit {
         // Artifact Types
         this.backendService.artifactTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'artifactTypes');
-        });
-        // Artifact Templates
-        this.backendService.artifactTemplates$.subscribe(JSON => {
-            this.initEntityType(JSON, 'artifactTemplates');
         });
         // Policy Types
         this.backendService.policyTypes$.subscribe(JSON => {
@@ -271,7 +272,7 @@ export class WineryComponent implements OnInit {
                         node.y,
                         node.capabilities,
                         node.requirements,
-                        node.deploymentArtifactModalData,
+                        node.deploymentArtifacts,
                         node.policies,
                         node.targetLocations
                     )

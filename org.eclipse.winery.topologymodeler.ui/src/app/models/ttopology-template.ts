@@ -75,6 +75,9 @@ export class TNodeTemplate extends AbstractTTemplate {
             nodeTemplate.y = updatedValue.y;
         } else if (updatedAttribute === ('minInstances') || updatedAttribute === ('maxInstances')) {
             nodeTemplate[updatedAttribute] = +updatedValue;
+        } else if (updatedAttribute === 'deploymentArtifacts') {
+            console.log(nodeTemplate[updatedAttribute]);
+            nodeTemplate[updatedAttribute] = updatedValue;
         } else {
             nodeTemplate[updatedAttribute] = updatedValue;
         }

@@ -42,6 +42,7 @@ import {
     WineryActions
 } from '../actions/winery.actions';
 import {TNodeTemplate, TRelationshipTemplate, TTopologyTemplate} from 'app/models/ttopology-template';
+import { TDeploymentArtifact } from '../../models/artifactsModalData';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;
@@ -188,7 +189,7 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SET_DEPLOYMENT_ARTIFACTS_PROPERTY:
+            /*case WineryActions.SET_DEPLOYMENT_ARTIFACTS_PROPERTY:
                 const newPropertyDepArt: any = (<SetDepArtifactsPropertyAction>action).nodeDepArtProperty;
                 const depArtPropertyType = newPropertyDepArt.propertyType;
                 const indexOfNodeDepArtProp = lastState.currentJsonTopology.nodeTemplates
@@ -239,7 +240,7 @@ export const WineryReducer =
                                         }) : nodeTemplate
                             )
                     }
-                };
+                };*/
             case WineryActions.SET_REQUIREMENT_PROPERTY:
                 const newReqProperty: any = (<SetReqPropertyAction>action).nodeReqProperty;
                 const reqPropertyType = newReqProperty.propertyType;
@@ -537,13 +538,7 @@ export const WineryReducer =
                 };
             case WineryActions.SET_DEPLOYMENT_ARTIFACT:
                 const newDepArt: any = (<SetDeploymentArtifactsAction>action).nodeDeploymentArtifact;
-                const deploymentArtifact = {
-                    color: newDepArt.color,
-                    id: newDepArt.id,
-                    name: newDepArt.name,
-                    namespace: newDepArt.namespace,
-                    qName: newDepArt.qName
-                };
+                const newDeploymentArtifact: TDeploymentArtifact = newDepArt.newDeploymentArtifact;
                 const indexOfNodeDepArt = lastState.currentJsonTopology.nodeTemplates
                     .map(node => node.id).indexOf(newDepArt.nodeId);
                 const nodeDepArtTemplate = lastState.currentJsonTopology.nodeTemplates
@@ -559,11 +554,15 @@ export const WineryReducer =
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newDepArt.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('deploymentArtifacts',
-                                    depArtExist ?
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].deploymentArtifacts,
-                                            ...deploymentArtifact
-                                        } : deploymentArtifact) : nodeTemplate
+                                    depArtExist ? {
+                                            deploymentArtifact: [
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].deploymentArtifacts.deploymentArtifact,
+                                            newDeploymentArtifact
+                                            ]} : {
+                                            deploymentArtifact: [
+                                                newDeploymentArtifact
+                                            ]
+                                }) : nodeTemplate
                             )
                     }
                 };

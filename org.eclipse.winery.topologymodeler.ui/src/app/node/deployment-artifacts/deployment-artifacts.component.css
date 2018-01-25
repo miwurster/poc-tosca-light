@@ -11,3 +11,53 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
+.da-table {
+    width: 210px;
+    table-layout: fixed;
+}
+
+.da-table-td div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
+    width: auto;
+    max-width: 100%;
+    -webkit-transition: max-width linear 1ms;
+    transition: max-width linear 1ms;
+}
+
+.da-table-td:hover div{
+    overflow: visible;
+    display: inline-block;
+    white-space: normal;
+    -ms-word-break: break-all;
+    word-break: break-all;
+
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+    width:600%;
+    max-width: 600%;
+    z-index: 1; /* stack above subsequent cells */
+}
+
+.da-table-td:hover div:before{
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    content: "";
+    height: 100%;
+    display: block;
+    left: 0;
+    top: 0;
+    width: 100%;
+    position: absolute;
+    z-index:-1; /* stack below truncated text */
+    -webkit-user-select: all;  /* Chrome all / Safari all */
+    -moz-user-select: all;     /* Firefox all */
+    -ms-user-select: all;      /* IE 10+ */
+    user-select: all;
+}
+
+
+

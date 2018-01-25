@@ -12,7 +12,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { IWineryState } from '../../redux/store/winery.store';
+import { NgRedux } from '@angular-redux/store';
+import { WineryState } from '../../redux/reducers/winery.reducer';
 
 @Component({
     selector: 'winery-deployment-artifacts',
@@ -25,8 +28,10 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 export class DeploymentArtifactsComponent implements OnInit {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
+    deploymentArtifacts = {};
+    latestNodeTemplate;
 
-    constructor () {
+    constructor (private $ngRedux: NgRedux<IWineryState>) {
         this.toggleModalHandler = new EventEmitter();
     }
 
@@ -39,6 +44,14 @@ export class DeploymentArtifactsComponent implements OnInit {
     }
 
     ngOnInit () {
+        console.log(this.deploymentArtifacts = this.currentNodeData.currentProperties.deploymentArtifacts);
+        this.$ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
+            .subscribe(latestNodeTemplates => {
+                this.latestNodeTemplate = latestNodeTemplates.find(nodeTemplate => {
+                    return nodeTemplate.id === this.currentNodeData.currentNodeId;
+                });
+                console.log(this.latestNodeTemplate);
+                this.deploymentArtifacts = this.latestNodeTemplate.deploymentArtifacts;
+            });
     }
-
 }

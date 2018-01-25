@@ -232,7 +232,8 @@
                     <label>Name</label>
                     <input [(ngModel)]="deploymentArtifactModalData.artifactName" class="form-control"
                            name="artifactName"
-                           id="artifactName" type="text" required="required" autocomplete="on"/>
+                           required
+                           id="artifactName" type="text" autocomplete="on"/>
                 </div>
                 <h4>Artifact Template Creation</h4>
                 <div class="radio">
@@ -276,7 +277,7 @@
                             required="required"
                             (change)="onChangeDeploymentArtifacts($event.target.value)">
                         <option *ngFor="let artifactType of deploymentArtifactModalData.artifactTypes"
-                                [value]="artifactType.name">{{artifactType.name}}
+                                [value]="artifactType.qName">{{artifactType.name}}
                         </option>
                     </select>
                 </div>
@@ -290,7 +291,7 @@
                         <!-- name is an NCName -->
                         <input [(ngModel)]="deploymentArtifactModalData.artifactTemplateName"
                                class="artifactData form-control"
-                               id="artifactTemplateName" name="artifactTemplateName" type="text" required="required"
+                               id="artifactTemplateName" name="artifactTemplateName" type="text" required
                                autocomplete="on" placeholder="Enter name for artifact template"/>
                         <div id="artifactTemplateNameIsValid" class="invalid">
                             <span id="artifactTemplateNameIsInvalidReason"></span>
@@ -305,18 +306,21 @@
                                name="artifactTemplateNS" id="artifactTemplateNS" disabled/>
                     </div>
                 </div>
-
+                <!-- linkArtifactTemplate -->
                 <div id="linkArtifactTemplate" class="form-group"
                      *ngIf="deploymentArtifactSelectedRadioButton === 'linkArtifactTemplate'">
                     <label for="divArtifactTemplateToLink">Artifact Template</label>
                     <div id="divArtifactTemplateToLink">
 
-                        <select id=artifactTemplateToLink name="artifactTemplate" class="form-control"
+                        <select id=artifactTemplateToLink name="artifactTemplate"
+                                class="form-control"
+                                required
+                                (change)="updateDeploymentArtifactModalData($event.target.value)"
                                 style="max-width: 90%">
                             <optgroup *ngFor="let namespace of deploymentArtifactModalData.artifactTemplates"
                                       label="{{namespace.text}}">
                                 <option *ngFor="let artifactTemplate of namespace.children"
-                                        [value]="artifactTemplate.text">
+                                        [value]="artifactTemplate | json">
                                     {{artifactTemplate.text}}
                                 </option>
                             </optgroup>
@@ -332,6 +336,6 @@
         <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default"
                 (click)="resetDeploymentArtifactModalData()">Cancel
         </button>
-        <button type="button" class="btn btn-primary" (click)="addDeploymentArtifactConfirmed()">Add</button>
+        <button type="button" class="btn btn-primary" [disabled]="addDeploymentArtifactForm.form.invalid" (click)="addDeploymentArtifactConfirmed()">Add</button>
     </winery-modal-footer>
 </winery-modal>

@@ -15,6 +15,7 @@
 import {Action, ActionCreator} from 'redux';
 import {Injectable} from '@angular/core';
 import {TNodeTemplate, TRelationshipTemplate} from '../../models/ttopology-template';
+import { TDeploymentArtifact } from '../../models/artifactsModalData';
 
 export interface SendPaletteOpenedAction extends Action {
     paletteOpened: boolean;
@@ -173,11 +174,7 @@ export interface SetRequirementAction extends Action {
 export interface SetDeploymentArtifactsAction extends Action {
     nodeDeploymentArtifact: {
         nodeId: string,
-        color: string,
-        id: string,
-        name: string,
-        namespace: string,
-        qName: string
+        newDeploymentArtifact: TDeploymentArtifact
     };
 }
 

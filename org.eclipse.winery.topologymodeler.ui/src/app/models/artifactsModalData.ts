@@ -12,6 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
+import { QName } from '../qname';
+
 /**
  * Encompasses the artifacts data defined by the user when using the modal
  */
@@ -23,6 +25,17 @@ export class ArtifactsModalData {
                 public artifactTypes?: string[],
                 public artifactTemplates?: string[],
                 public artifactTemplateName?: any,
+                public artifactTemplateRef?: any,
                 public artifactTemplateNameSpace?: any,
                 public deploymentArtifacts?: any) { }
+}
+
+export class TDeploymentArtifact {
+
+    constructor(public documentation?: any[],
+                public any?: any[],
+                public otherAttributes?: any,
+                public name?: string,
+                public artifactType?: string,
+                public artifactRef?: string) { }
 }

@@ -19,13 +19,13 @@ export class QName {
     private _localName: string;
     private _nameSpace: string;
 
-    constructor (private _qName: string) {
+    constructor(private _qName?: string) {
     }
 
     /**
      * Getter for localName
      */
-    get localName (): string {
+    get localName(): string {
         this._localName = this._qName.split('}')[1];
         return this._localName;
     }
@@ -33,14 +33,14 @@ export class QName {
     /**
      * Setter for localName
      */
-    set localName (value: string) {
+    set localName(value: string) {
         this._localName = value;
     }
 
     /**
      * Getter for namespace
      */
-    get nameSpace (): string {
+    get nameSpace(): string {
         this._nameSpace = this._qName.split('}')[0];
         return this._nameSpace + '}';
     }
@@ -48,7 +48,30 @@ export class QName {
     /**
      * Setter for namespace
      */
-    set nameSpace (value: string) {
+    set nameSpace(value: string) {
         this._nameSpace = value;
+    }
+
+    /**
+     * Getter for qName
+     */
+    get qName(): string {
+        return this._qName;
+    }
+
+    /**
+     * Setter for qName
+     */
+    set qName(value: string) {
+        this._qName = value;
+    }
+
+    /**
+     * Another setter for when the QName has to be constructed
+     * @param {string} localname
+     * @param {string} namespace
+     */
+    setQNameWithLocalNameAndNamespace(localname: string, namespace: string) {
+        this._qName = '{' + namespace + '}' + localname;
     }
 }

@@ -17,6 +17,29 @@
     [currentProperties]="currentNodeData.currentProperties">
 </winery-properties-content>
 
+<table *ngIf="deploymentArtifacts" class="da-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Ref</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let da of deploymentArtifacts.deploymentArtifact">
+        <td class="da-table-td">
+            <div>{{da.name}}</div>
+        </td>
+        <td class="da-table-td">
+            <div>{{da.artifactType}}</div>
+        </td>
+        <td class="da-table-td">
+            <div>{{da.artifactRef}}</div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
 <div (click)="toggleModal($event);" class="btn btn-sm btn-modal">
     Add new
 </div>
