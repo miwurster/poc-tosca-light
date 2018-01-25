@@ -330,7 +330,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Auto-completes other capability relevant values when a capability name has been selected in the modal
      */
     onChangeCapId (capId: string) {
-        //this.capabilities.capabilities
+        // this.capabilities.capabilities
         console.log(this.capabilities);
     }
 
