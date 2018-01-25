@@ -299,6 +299,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Saves a capability template to the model and gets pushed into the Redux store of the application
      */
     saveCapabilityToModel(): void {
+        console.log(this.capabilities);
         const capabilities = {
             nodeId: this.currentModalData.id,
             color: this.capabilities.capColor,
@@ -318,12 +319,19 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.entityTypes.capabilityTypes.some(cap => {
             if (cap.name === capName) {
                 this.capabilities.capColor = cap.color;
-                this.capabilities.capId = cap.id;
                 this.capabilities.capType = cap.namespace;
                 this.capabilities.capQName = cap.qName;
                 return true;
             }
         });
+    }
+
+    /**
+     * Auto-completes other capability relevant values when a capability name has been selected in the modal
+     */
+    onChangeCapId (capId: string) {
+        //this.capabilities.capabilities
+        console.log(this.capabilities);
     }
 
     /**

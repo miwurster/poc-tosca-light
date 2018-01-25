@@ -36,6 +36,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
     @Input() currentNodeData: any;
     differ: any;
     capabilities: any[] = [];
+    capabilitiesExist: boolean;
 
     constructor (private differs: KeyValueDiffers) {
         this.toggleModalHandler = new EventEmitter();
@@ -48,6 +49,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
         if (changes.currentNodeData.currentValue.currentProperties) {
             console.log(changes.currentNodeData.currentValue.currentProperties);
             this.capabilities = changes.currentNodeData.currentValue.currentProperties.capability;
+            this.capabilitiesExist = true;
         }
     }
 

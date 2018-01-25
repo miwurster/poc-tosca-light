@@ -123,7 +123,8 @@
                            class="form-control"
                            name="CapId"
                            type="text"
-                           required="required"/>
+                           required="required"
+                           (change)="onChangeCapId($event.target.value)"/>
                 </div>
 
                 <div class="form-group">
