@@ -42,6 +42,12 @@
     z-index: 1; /* stack above subsequent cells */
 }
 
+.button-wrapper {
+    margin: 10px 0px 5px 0px;
+    display: flex;
+    justify-content: center;
+}
+
 .da-table-td:hover div:before{
     background-color: #ffffff;
     border: 1px solid #ddd;

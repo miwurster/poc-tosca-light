@@ -17,7 +17,7 @@ body {
 .btn-modal {
     border: 1px solid;
     font-size: x-small;
-    margin: 10px 0px 10px 57px;
+    margin: auto;
     background-color: rgba(0, 0, 0, 0.2) !important;
 }
 
