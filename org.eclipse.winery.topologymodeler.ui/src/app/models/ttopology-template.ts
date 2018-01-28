@@ -13,9 +13,9 @@
  ********************************************************************************/
 
 export class AbstractTTemplate {
-    constructor (public documentation?: any,
-                 public any?: any,
-                 public otherAttributes?: any) {
+    constructor(public documentation?: any,
+                public any?: any,
+                public otherAttributes?: any) {
     }
 }
 
@@ -31,24 +31,24 @@ export class TTopologyTemplate extends AbstractTTemplate {
  * This is the datamodel for node Templates
  */
 export class TNodeTemplate extends AbstractTTemplate {
-    constructor (public properties: any,
-                 public id: string,
-                 public type: string,
-                 public name: string,
-                 public minInstances: number,
-                 public maxInstances: number,
-                 public color: string,
-                 public imageUrl: string,
-                 documentation?: any,
-                 any?: any,
-                 otherAttributes?: any,
-                 public x?: string,
-                 public y?: string,
-                 public capabilities?: any,
-                 public requirements?: any,
-                 public deploymentArtifacts?: any,
-                 public policies?: any,
-                 public targetLocations?: any) {
+    constructor(public properties: any,
+                public id: string,
+                public type: string,
+                public name: string,
+                public minInstances: number,
+                public maxInstances: number,
+                public color: string,
+                public imageUrl: string,
+                documentation?: any,
+                any?: any,
+                otherAttributes?: any,
+                public x?: string,
+                public y?: string,
+                public capabilities?: any,
+                public requirements?: any,
+                public deploymentArtifacts?: any,
+                public policies?: any,
+                public targetLocations?: any) {
         super(documentation, any, otherAttributes);
     }
 
@@ -62,8 +62,8 @@ export class TNodeTemplate extends AbstractTTemplate {
      */
     generateNewNodeTemplateWithUpdatedAttribute(updatedAttribute: string, updatedValue: any): TNodeTemplate {
         const nodeTemplate = new TNodeTemplate(this.properties, this.id, this.type, this.name, this.minInstances, this.maxInstances, this.color,
-                        this.imageUrl, this.documentation, this.any, this.otherAttributes, this.x, this.y, this.capabilities,
-                        this.requirements, this.deploymentArtifacts, this.policies, this.targetLocations);
+            this.imageUrl, this.documentation, this.any, this.otherAttributes, this.x, this.y, this.capabilities,
+            this.requirements, this.deploymentArtifacts, this.policies, this.targetLocations);
         if (updatedAttribute === 'otherAttributes') {
             for (const key in nodeTemplate.otherAttributes) {
                 if (nodeTemplate.otherAttributes.hasOwnProperty(key)) {
@@ -92,11 +92,12 @@ export class TNodeTemplate extends AbstractTTemplate {
  * This is the datamodel for the Entity Types
  */
 export class EntityType {
-    constructor (public id: string,
-                 public qName: string,
-                 public name: string,
-                 public namespace: string,
-                 public color?: string) {
+    constructor(public id: string,
+                public qName: string,
+                public name: string,
+                public namespace: string,
+                public color?: string,
+                public full?: any) {
     }
 }
 
@@ -112,14 +113,14 @@ export class TRelationshipTemplate extends AbstractTTemplate {
      return this.sourceElement;
      }
      */
-    constructor (public sourceElement: { ref: string },
-                 public targetElement: { ref: string },
-                 public name?: string,
-                 public id?: string,
-                 public type?: string,
-                 documentation?: any,
-                 any?: any,
-                 otherAttributes?: any) {
+    constructor(public sourceElement: { ref: string },
+                public targetElement: { ref: string },
+                public name?: string,
+                public id?: string,
+                public type?: string,
+                documentation?: any,
+                any?: any,
+                otherAttributes?: any) {
         super(documentation, any, otherAttributes);
     }
 
@@ -145,10 +146,10 @@ export class TRelationshipTemplate extends AbstractTTemplate {
  */
 export class Visuals {
 
-    constructor (public color: string,
-                 public nodeTypeId: string,
-                 public localName?: string,
-                 public imageUrl?: string) {
+    constructor(public color: string,
+                public nodeTypeId: string,
+                public localName?: string,
+                public imageUrl?: string) {
     }
 
     /*

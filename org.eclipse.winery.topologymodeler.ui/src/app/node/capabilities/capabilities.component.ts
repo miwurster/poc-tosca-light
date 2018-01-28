@@ -21,6 +21,8 @@ import {
     Output,
     SimpleChanges
 } from '@angular/core';
+import { EntityTypesModel } from '../../models/entityTypesModel';
+import { TNodeTemplate } from '../../models/ttopology-template';
 
 @Component({
     selector: 'winery-capabilities',
@@ -35,20 +37,26 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
     @Input() currentNodeData: any;
     capabilities: any[] = [];
     capabilitiesExist: boolean;
-    nameVisibility: boolean;
-    typeVisibility: boolean;
+    entityTypes: EntityTypesModel;
+    nodeTemplate: TNodeTemplate;
 
-    constructor () {
+    constructor() {
         this.toggleModalHandler = new EventEmitter();
     }
 
     /**
      * Angular lifecycle event.
      */
-    ngOnChanges (changes: SimpleChanges) {
-        if (changes.currentNodeData.currentValue.currentProperties) {
-            this.capabilities = changes.currentNodeData.currentValue.currentProperties.capability;
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.currentNodeData.currentValue.nodeTemplate) {
+            this.nodeTemplate = changes.currentNodeData.currentValue.nodeTemplate;
+        }
+        if (changes.currentNodeData.currentValue.nodeTemplate.capabilities) {
+            this.capabilities = changes.currentNodeData.currentValue.nodeTemplate.capabilities.capability;
             this.capabilitiesExist = true;
+        }
+        if (changes.currentNodeData.currentValue.entityTypes) {
+            this.entityTypes = changes.currentNodeData.currentValue.entityTypes;
         }
     }
 
@@ -56,10 +64,18 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
      * Propagates the click event to node.component, where capabilities modal gets opened.
      * @param $event
      */
-    public toggleModal ($event) {
+    public checkForProperties($event) {
+        console.log($event);
+    }
+
+    /**
+     * Propagates the click event to node.component, where capabilities modal gets opened.
+     * @param $event
+     */
+    public toggleModal($event) {
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 
-    ngOnInit () {
+    ngOnInit() {
     }
 }

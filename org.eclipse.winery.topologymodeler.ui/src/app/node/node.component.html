@@ -91,11 +91,9 @@
             </div>
             <winery-properties
                 (toggleModalHandler)="sendToggleAction($event)"
-                [currentNodeData]="{currentNodeId: nodeTemplate.id,
-                                    currentNodeType: nodeTemplate.type,
-                                    currentNodePart: 'PROPERTIES'}"
-                [currentProperties]="nodeTemplate.properties"
-                [groupedNodeTypes]="entityTypes.groupedNodeTypes">
+                [currentNodeData]="{entityTypes: entityTypes,
+                                    nodeTemplate: nodeTemplate,
+                                    currentNodePart: 'PROPERTIES'}">
             </winery-properties>
         </accordion-group>
 
@@ -133,9 +131,9 @@
             </div>
             <winery-requirements
                 (toggleModalHandler)="sendToggleAction($event)"
-                [currentNodeData]="{currentNodeId: nodeTemplate.id,
-                                    currentNodePart: 'REQUIREMENTS',
-                                    currentProperties: nodeTemplate.requirements}">
+                [currentNodeData]="{entityTypes: entityTypes,
+                                    nodeTemplate: nodeTemplate,
+                                    currentNodePart: 'REQUIREMENTS'}">
             </winery-requirements>
         </accordion-group>
 
@@ -153,10 +151,9 @@
             </div>
             <winery-capabilities
                 (toggleModalHandler)="sendToggleAction($event)"
-                [currentNodeData]="{
-                                    currentNodeId: nodeTemplate.id,
-                                    currentNodePart: 'CAPABILITIES',
-                                    currentProperties: nodeTemplate.capabilities}">
+                [currentNodeData]="{entityTypes: entityTypes,
+                                    nodeTemplate: nodeTemplate,
+                                    currentNodePart: 'CAPABILITIES'}">
             </winery-capabilities>
         </accordion-group>
 

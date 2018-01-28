@@ -20,6 +20,8 @@ import { Component,
     Output,
     SimpleChanges
 } from '@angular/core';
+import { EntityTypesModel } from '../../models/entityTypesModel';
+import { TNodeTemplate } from '../../models/ttopology-template';
 
 @Component({
     selector: 'winery-requirements',
@@ -34,6 +36,8 @@ export class RequirementsComponent implements OnInit, OnChanges {
     @Input() currentNodeData: any;
     requirements: any[] = [];
     requirementsExist: boolean;
+    entityTypes: EntityTypesModel;
+    nodeTemplate: TNodeTemplate;
 
     constructor () {
         this.toggleModalHandler = new EventEmitter();
@@ -43,9 +47,15 @@ export class RequirementsComponent implements OnInit, OnChanges {
      * Angular lifecycle event.
      */
     ngOnChanges (changes: SimpleChanges) {
-        if (changes.currentNodeData.currentValue.currentProperties) {
-            this.requirements = changes.currentNodeData.currentValue.currentProperties.requirement;
+        if (changes.currentNodeData.currentValue.nodeTemplate) {
+            this.nodeTemplate = changes.currentNodeData.currentValue.nodeTemplate;
+        }
+        if (changes.currentNodeData.currentValue.nodeTemplate.requirements) {
+            this.requirements = changes.currentNodeData.currentValue.nodeTemplate.requirements.requirement;
             this.requirementsExist = true;
+        }
+        if (changes.currentNodeData.currentValue.entityTypes) {
+            this.entityTypes = changes.currentNodeData.currentValue.entityTypes;
         }
     }
 

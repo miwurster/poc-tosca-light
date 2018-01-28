@@ -55,6 +55,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CapabilityModel } from '../models/capabilityModel';
 import { isNullOrUndefined } from 'util';
 import { RequirementModel } from '../models/requirementModel';
+import { EntityTypesModel } from '../models/entityTypesModel';
 
 @Component({
     selector: 'winery-canvas',
@@ -70,7 +71,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('deploymentArtifactModal') deploymentArtifactModal: ModalDirective;
-    @Input() entityTypes: any;
+    @Input() entityTypes: EntityTypesModel;
     @Input() relationshipTypes: Array<any> = [];
     allNodeTemplates: Array<TNodeTemplate> = [];
     allRelationshipTemplates: Array<TRelationshipTemplate> = [];
@@ -739,7 +740,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     ['Label', {
                         label: type,
                         id: 'label',
-                        // jsplumb doku nachgucken wie man css class einbindet
                         labelStyle: {
                             font: '11px Roboto, sans-serif',
                             color: '#212121',
@@ -1076,6 +1076,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         console.log(this.entityTypes);
     }
 
+    /*
     isFieldValid(field: string) {
         return !this.form.get(field).valid && this.form.get(field).touched;
     }
@@ -1086,6 +1087,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             'has-feedback': this.isFieldValid(field)
         };
     }
+*/
 
     /**
      * Angular lifecycle event.

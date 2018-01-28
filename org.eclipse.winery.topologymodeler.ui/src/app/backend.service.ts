@@ -256,7 +256,7 @@ export class BackendService {
      */
     requestPolicyTypes(): Observable<any> {
         if (this.configuration) {
-            return this.http.get(backendBaseURL + '/policytypes', this.options)
+            return this.http.get(backendBaseURL + '/policytypes?full', this.options)
                 .map(res => res.json());
         }
     }
@@ -267,7 +267,7 @@ export class BackendService {
      */
     requestRequirementTypes(): Observable<any> {
         if (this.configuration) {
-            return this.http.get(backendBaseURL + '/requirementtypes', this.options)
+            return this.http.get(backendBaseURL + '/requirementtypes?full', this.options)
                 .map(res => res.json());
         }
     }
@@ -278,7 +278,7 @@ export class BackendService {
      */
     requestCapabilityTypes(): Observable<any> {
         if (this.configuration) {
-            return this.http.get(backendBaseURL + '/capabilitytypes', this.options)
+            return this.http.get(backendBaseURL + '/capabilitytypes?full', this.options)
                 .map(res => res.json());
         }
     }

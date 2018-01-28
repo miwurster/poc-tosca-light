@@ -165,7 +165,9 @@ export class WineryComponent implements OnInit {
                             capabilityType.id,
                             capabilityType.qName,
                             capabilityType.name,
-                            capabilityType.namespace
+                            capabilityType.namespace,
+                            '',
+                            capabilityType.full
                         ));
                 });
                 this.entityTypes.capabilityTypes = this.capabilityTypes;

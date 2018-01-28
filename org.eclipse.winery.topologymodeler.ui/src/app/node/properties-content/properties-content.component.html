@@ -20,7 +20,7 @@
         <th>
             Values
         </th>
-        <tr *ngFor="let key of nodeProperties | keysPipe, let index=index">
+        <tr *ngFor="let key of nodeProperties | keysPipe">
             <td class="">{{key.key}}</td>
             <td class="">
                 <textarea

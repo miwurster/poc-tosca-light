@@ -12,21 +12,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {
-    Component,
-    Input
-} from '@angular/core';
-import { EntityTypesModel } from '../../models/entityTypesModel';
-
-@Component({
-    selector: 'winery-properties',
-    templateUrl: './properties.component.html',
-    styleUrls: ['./properties.component.css']
-})
-export class PropertiesComponent {
-    @Input() currentNodeData: any;
-
-    constructor () {
-    }
-
+/**
+ * Internal representation of entity Types
+ */
+export interface EntityTypesModel {
+    artifactTemplates: any;
+    artifactTypes: any;
+    capabilityTypes: any;
+    groupedNodeTypes: any;
+    nodeVisuals: any;
+    policyTemplates: any;
+    policyTypes: any;
+    relationshipTypes: any;
+    requirementTypes: any;
+    unGroupedNodeTypes: any;
+    deploymentArtifacts: any;
 }

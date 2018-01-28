@@ -13,27 +13,28 @@
 -->
 
 <div *ngIf="capabilitiesExist">
-<table>
-    <thead>
-    <tr>
-        <th>Id</th>
-        <th>Name</th>
-        <th>Type</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let cap of capabilities">
-        <td class="dataId">{{cap.id}}</td>
-        <td class="dataName">{{cap.name}}</td>
-        <td class="dataType"><a href="{{cap.type}}">{{cap.type}}</a></td>
-    </tr>
-    </tbody>
-</table>
+    <table>
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Type</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let cap of capabilities" (click)="checkForProperties($event)">
+            <td class="dataId">{{cap.id}}</td>
+            <td class="dataName">{{cap.name}}</td>
+            <td class="dataType"><a href="{{cap.type}}">{{cap.type}}</a></td>
+        </tr>
+        </tbody>
+    </table>
 
-<winery-properties-content
-    [currentNodeData]=currentNodeData
-    [currentProperties]="currentNodeData.currentProperties">
-</winery-properties-content>
+    <winery-properties
+        [currentNodeData]="{nodeTemplate: nodeTemplate,
+                            entityTypes: entityTypes,
+                            currentNodePart: 'CAPABILITIES'}">
+    </winery-properties>
 </div>
 
 <div *ngIf="!capabilitiesExist" style="color: dimgray; text-align: center">

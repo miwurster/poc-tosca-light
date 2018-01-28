@@ -20,11 +20,12 @@ import {
     OnInit, Pipe, PipeTransform,
     SimpleChanges
 } from '@angular/core';
-import {Subject} from 'rxjs/Subject';
-import {NgRedux} from '@angular-redux/store';
-import {IWineryState} from '../../redux/store/winery.store';
-import {WineryActions} from '../../redux/actions/winery.actions';
-import {Subscription} from 'rxjs/Subscription';
+import { Subject } from 'rxjs/Subject';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../../redux/store/winery.store';
+import { WineryActions } from '../../redux/actions/winery.actions';
+import { Subscription } from 'rxjs/Subscription';
+import { EntityTypesModel } from '../../models/entityTypesModel';
 
 @Component({
     selector: 'winery-properties-content',
@@ -38,8 +39,6 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     propertyDefinitionType: string;
     keys: any[];
     @Input() currentNodeData: any;
-    @Input() currentProperties: string;
-    @Input() groupedNodeTypes: any[];
     key: string;
     xmlProperty: string;
 
@@ -48,18 +47,18 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     subscriptionProperties: Subscription;
     subscriptionKeyOfEditedKVProperty: Subscription;
 
-    constructor (private $ngRedux: NgRedux<IWineryState>,
-                 private actions: WineryActions) {
+    constructor(private $ngRedux: NgRedux<IWineryState>,
+                private actions: WineryActions) {
     }
 
     /**
      * Angular lifecycle event.
      */
-    ngOnChanges (changes: SimpleChanges) {
+    ngOnChanges(changes: SimpleChanges) {
         setTimeout(() => {
-            if (changes.currentProperties) {
+            if (changes.currentNodeData.currentValue.nodeTemplate.properties) {
                 try {
-                    const currentProperties = changes.currentProperties.currentValue;
+                    const currentProperties = changes.currentNodeData.currentValue.nodeTemplate.properties;
                     if (this.propertyDefinitionType === 'KV') {
                         this.nodeProperties = currentProperties.kvproperties;
                     } else if (this.propertyDefinitionType === 'XML') {
@@ -74,9 +73,9 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     /**
      * Angular lifecycle event.
      */
-    ngOnInit () {
+    ngOnInit() {
         // find out which type of properties shall be displayed
-        this.findOutPropertyDefinitionTypeForThisInstance(this.currentNodeData.currentNodeType);
+        this.findOutPropertyDefinitionTypeForThisInstance(this.currentNodeData.nodeTemplate.type);
 
         // find out which row was edited by key
         this.subscriptionKeyOfEditedKVProperty = this.keyOfEditedKVProperty
@@ -162,22 +161,24 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
      * @param nodeType
      * @param {any[]} groupedNodeTypes
      */
-    findOutPropertyDefinitionTypeForThisInstance (nodeType: any): void {
-        if (this.groupedNodeTypes) {
-            for (const nameSpace of this.groupedNodeTypes) {
-                for (const nodeTypeVar of nameSpace.children) {
-                    if (nodeTypeVar.id === nodeType) {
-                        // if PropertiesDefinition doesn't exist then it must be of type NONE
-                        if (nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition == null) {
-                            this.propertyDefinitionType = 'NONE';
-                        } else {
-                            // if no XML element inside PropertiesDefinition then it must be of type Key Value
-                            if (!nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
-                                this.propertyDefinitionType = 'KV';
-                                this.keys = nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+    findOutPropertyDefinitionTypeForThisInstance(nodeType: any): void {
+        if (this.currentNodeData.currentNodePart === 'PROPERTIES') {
+            if (this.currentNodeData.entityTypes.groupedNodeTypes) {
+                for (const nameSpace of this.currentNodeData.entityTypes.groupedNodeTypes) {
+                    for (const nodeTypeVar of nameSpace.children) {
+                        if (nodeTypeVar.id === nodeType) {
+                            // if PropertiesDefinition doesn't exist then it must be of type NONE
+                            if (nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition == null) {
+                                this.propertyDefinitionType = 'NONE';
                             } else {
-                                // else we have XML
-                                this.propertyDefinitionType = 'XML';
+                                // if no XML element inside PropertiesDefinition then it must be of type Key Value
+                                if (!nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                                    this.propertyDefinitionType = 'KV';
+                                    this.keys = nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+                                } else {
+                                    // else we have XML
+                                    this.propertyDefinitionType = 'XML';
+                                }
                             }
                         }
                     }
@@ -186,7 +187,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
         }
     }
 
-    ngOnDestroy () {
+    ngOnDestroy() {
         this.subscriptionProperties.unsubscribe();
         this.subscriptionKeyOfEditedKVProperty.unsubscribe();
     }
