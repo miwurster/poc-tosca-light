@@ -12,10 +12,32 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
 
-<winery-properties-content
-    [currentNodeData]="currentNodeData"
-    [currentProperties]="currentNodeData.currentProperties">
-</winery-properties-content>
+<div *ngIf="requirementsExist">
+    <table>
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Type</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let req of requirements">
+            <td class="dataId">{{req.id}}</td>
+            <td class="dataName">{{req.name}}</td>
+            <td class="dataType"><a href="{{req.type}}">{{req.type}}</a></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <winery-properties-content
+        [currentNodeData]=currentNodeData
+        [currentProperties]="currentNodeData.currentProperties">
+    </winery-properties-content>
+</div>
+
+<div *ngIf="!requirementsExist" style="color: dimgray; text-align: center">
+    <span>No requirements defined <br> at the NodeType.</span></div>
 
 <div (click)="toggleModal($event);" class="btn btn-sm btn-modal" style="display: block;">
     Add new

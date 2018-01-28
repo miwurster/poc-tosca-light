@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Action} from 'redux';
+import { Action } from 'redux';
 import {
     DecMaxInstances,
     DecMinInstances,
@@ -41,7 +41,7 @@ import {
     UpdateRelationshipNameAction,
     WineryActions
 } from '../actions/winery.actions';
-import {TNodeTemplate, TRelationshipTemplate, TTopologyTemplate} from 'app/models/ttopology-template';
+import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from 'app/models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 
 export interface WineryState {
@@ -283,11 +283,11 @@ export const WineryReducer =
                                     reqPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
-                                            properties: {kvproperties: newReqProperties}
+                                            properties: { kvproperties: newReqProperties }
                                         } :
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
-                                            properties: {any: newXMLReqProperty}
+                                            properties: { any: newXMLReqProperty }
                                         }) : nodeTemplate
                             )
                     }
@@ -334,11 +334,11 @@ export const WineryReducer =
                                     capPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
-                                            properties: {kvproperties: newCapProperties}
+                                            properties: { kvproperties: newCapProperties }
                                         } :
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
-                                            properties: {any: newXMLCapProperty}
+                                            properties: { any: newXMLCapProperty }
                                         }) : nodeTemplate
                             )
                     }
@@ -385,11 +385,11 @@ export const WineryReducer =
                                     policiesPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
-                                            properties: {kvproperties: newPolicyProperties}
+                                            properties: { kvproperties: newPolicyProperties }
                                         } :
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
-                                            properties: {any: newXMLPolicyProperty}
+                                            properties: { any: newXMLPolicyProperty }
                                         }) : nodeTemplate
                             )
                     }
@@ -436,11 +436,11 @@ export const WineryReducer =
                                     targetLocationsPropertyType === 'KV' ?
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
-                                            properties: {kvproperties: newTarLocProperties}
+                                            properties: { kvproperties: newTarLocProperties }
                                         } :
                                         {
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
-                                            properties: {any: newXMLTarLocProperty}
+                                            properties: { any: newXMLTarLocProperty }
                                         }) : nodeTemplate
                             )
                     }
@@ -468,27 +468,12 @@ export const WineryReducer =
                             .map(nodeTemplate => nodeTemplate.id === newProperty.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('properties',
                                     propertyType === 'KV' ?
-                                        {kvproperties: newProperty.newProperty} : {any: newXMLProperty}) : nodeTemplate
+                                        { kvproperties: newProperty.newProperty } : { any: newXMLProperty }) : nodeTemplate
                             )
                     }
                 };
             case WineryActions.SET_CAPABILITY:
                 const newCapability: any = (<SetCababilityAction>action).nodeCapability;
-                const capability = {
-                    color: newCapability.color,
-                    id: newCapability.id,
-                    name: newCapability.name,
-                    namespace: newCapability.namespace,
-                    qName: newCapability.qName
-                };
-                const indexOfNodeCap = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newCapability.nodeId);
-                const nodeCapTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newCapability.nodeId);
-                let capabilitiesExist = false;
-                if (nodeCapTemplate.capabilities) {
-                    capabilitiesExist = true;
-                }
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
@@ -496,31 +481,14 @@ export const WineryReducer =
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapability.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('capabilities',
-                                    capabilitiesExist ?
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCap].capabilities,
-                                            ...capability
-                                        } : capability) : nodeTemplate
+                                    {
+                                        capability: newCapability.capability
+                                    }) : nodeTemplate
                             )
                     }
                 };
             case WineryActions.SET_REQUIREMENT:
                 const newRequirement: any = (<SetRequirementAction>action).nodeRequirement;
-                const requirement = {
-                    color: newRequirement.color,
-                    id: newRequirement.id,
-                    name: newRequirement.name,
-                    namespace: newRequirement.namespace,
-                    qName: newRequirement.qName
-                };
-                const indexOfNodeReq = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newRequirement.nodeId);
-                const nodeReqTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newRequirement.nodeId);
-                let requirementsExist = false;
-                if (nodeReqTemplate.requirements) {
-                    requirementsExist = true;
-                }
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
@@ -528,11 +496,9 @@ export const WineryReducer =
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newRequirement.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('requirements',
-                                    requirementsExist ?
                                         {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReq].requirements,
-                                            ...requirement
-                                        } : requirement) : nodeTemplate
+                                            requirement: newRequirement.requirement
+                                        }) : nodeTemplate
                             )
                     }
                 };
@@ -555,14 +521,15 @@ export const WineryReducer =
                             .map(nodeTemplate => nodeTemplate.id === newDepArt.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('deploymentArtifacts',
                                     depArtExist ? {
-                                            deploymentArtifact: [
+                                        deploymentArtifact: [
                                             ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArt].deploymentArtifacts.deploymentArtifact,
                                             newDeploymentArtifact
-                                            ]} : {
-                                            deploymentArtifact: [
-                                                newDeploymentArtifact
-                                            ]
-                                }) : nodeTemplate
+                                        ]
+                                    } : {
+                                        deploymentArtifact: [
+                                            newDeploymentArtifact
+                                        ]
+                                    }) : nodeTemplate
                             )
                     }
                 };
@@ -690,7 +657,7 @@ export const WineryReducer =
                 };
             case WineryActions.SEND_CURRENT_NODE_ID :
                 const currentNodeData: string = (<SendCurrentNodeIdAction>action).currentNodeData;
-                console.log({...lastState, currentNodeId: currentNodeData});
+                console.log({ ...lastState, currentNodeId: currentNodeData });
                 return <WineryState>{
                     ...lastState,
                     currentNodeData: currentNodeData

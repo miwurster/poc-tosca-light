@@ -12,7 +12,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import { Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
 
 @Component({
     selector: 'winery-requirements',
@@ -22,12 +29,24 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 /**
  * This Handles Information about the nodes requirements
  */
-export class RequirementsComponent implements OnInit {
+export class RequirementsComponent implements OnInit, OnChanges {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
+    requirements: any[] = [];
+    requirementsExist: boolean;
 
     constructor () {
         this.toggleModalHandler = new EventEmitter();
+    }
+
+    /**
+     * Angular lifecycle event.
+     */
+    ngOnChanges (changes: SimpleChanges) {
+        if (changes.currentNodeData.currentValue.currentProperties) {
+            this.requirements = changes.currentNodeData.currentValue.currentProperties.requirement;
+            this.requirementsExist = true;
+        }
     }
 
     /**

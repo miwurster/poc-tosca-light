@@ -74,9 +74,15 @@ export class TNodeTemplate extends AbstractTTemplate {
             nodeTemplate.x = updatedValue.x;
             nodeTemplate.y = updatedValue.y;
         } else if (updatedAttribute === ('minInstances') || updatedAttribute === ('maxInstances')) {
-            nodeTemplate[updatedAttribute] = +updatedValue;
+            if (Number.isNaN(+updatedValue)) {
+                nodeTemplate[updatedAttribute] = updatedValue;
+            } else {
+                nodeTemplate[updatedAttribute] = +updatedValue;
+            }
         } else {
+            console.log(updatedValue);
             nodeTemplate[updatedAttribute] = updatedValue;
+            console.log(nodeTemplate);
         }
         return nodeTemplate;
     }

@@ -11,3 +11,32 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
+
+table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.dataId:hover, .dataName:hover, .dataType:hover {
+    background-color: #FFFFCC;
+    overflow: visible;
+    display: inline-block;
+}
+
+.dataId:hover ~ .dataName, .dataId:hover ~ .dataType {
+    visibility: hidden;
+}
+
+.dataName:hover ~ .dataType {
+    visibility: hidden;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

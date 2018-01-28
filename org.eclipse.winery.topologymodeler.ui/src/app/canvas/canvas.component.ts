@@ -51,7 +51,10 @@ import { WineryAlertService } from '../winery-alert/winery-alert.service';
 import { BackendService } from '../backend.service';
 import { backendBaseURL } from '../configuration';
 import { QName } from '../qname';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CapabilityModel } from '../models/capabilityModel';
+import { isNullOrUndefined } from 'util';
+import { RequirementModel } from '../models/requirementModel';
 
 @Component({
     selector: 'winery-canvas',
@@ -175,7 +178,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     /**
      * Executed when a node is short clicked triggering the sidebar, focusing on the name input field and
      * upon unfocusing the input field blurs away
-     * @param currentNodeData - holds the node id and a focus boolean value which determines the marking or unmarking of the node
+     * @param currentNodeData - holds the node id and a focus boolean value which determines the marking or unmarking
+     *     of the node
      */
     toggleMarkNode(currentNodeData: NodeIdAndFocusModel) {
         if (this.nodeChildrenArray) {
@@ -203,7 +207,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
 
     /**
      * This modal handler gets triggered by the node component
-     * @param currentNodeData - this holds the corresponding node template information and the information which modal to show
+     * @param currentNodeData - this holds the corresponding node template information and the information which modal
+     *     to show
      */
     public toggleModalHandler(currentNodeData: ToggleModalDataModel) {
         this.currentModalData = currentNodeData;
@@ -232,6 +237,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 try {
                     this.requirements.requirements = currentNodeData.requirements;
                     this.requirements.reqDefinitionNames = this.entityTypes.requirementTypes;
+                    this.requirements.nodeId = currentNodeData.id;
                 } catch (e) {
                     this.requirements.requirements = '';
                 }
@@ -242,6 +248,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     console.log(currentNodeData);
                     this.capabilities.capabilities = currentNodeData.capabilities;
                     this.capabilities.capDefinitionNames = this.entityTypes.capabilityTypes;
+                    this.capabilities.nodeId = currentNodeData.id;
                 } catch (e) {
                     this.capabilities.capabilities = '';
                 }
@@ -301,16 +308,23 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Saves a capability template to the model and gets pushed into the Redux store of the application
      */
     saveCapabilityToModel(): void {
-        console.log(this.capabilities);
-        const capabilities = {
-            nodeId: this.currentModalData.id,
-            color: this.capabilities.capColor,
-            id: this.capabilities.capId,
-            name: this.capabilities.capDefinitionName,
-            namespace: this.capabilities.capType,
-            qName: this.capabilities.capType
-        };
-        this.ngRedux.dispatch(this.actions.setCapability(capabilities));
+        const newCapability = new CapabilityModel();
+        newCapability.any = [];
+        newCapability.documentation = [];
+        newCapability.id = this.capabilities.capId;
+        newCapability.name = this.capabilities.capQName.substring(this.capabilities.capQName.indexOf('}') + 1);
+        newCapability.otherAttributes = {};
+        newCapability.type = this.capabilities.capQName;
+        if (isNullOrUndefined(this.capabilities.capabilities)) {
+            const capabilityArray: Array<CapabilityModel> = [];
+            this.capabilities.capabilities = {
+                capability: capabilityArray
+            };
+        }
+        this.capabilities.capabilities.capability.push(newCapability);
+        const newCapabilityData = this.capabilities.capabilities;
+        newCapabilityData.nodeId = this.capabilities.nodeId;
+        this.ngRedux.dispatch(this.actions.setCapability(newCapabilityData));
         this.resetCapabilities();
     }
 
@@ -329,26 +343,33 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     }
 
     /**
-     * Auto-completes other capability relevant values when a capability name has been selected in the modal
+     * saves the typed in capability id from the modal
      */
-    onChangeCapId (capId: string) {
-        // this.capabilities.capabilities
-        console.log(this.capabilities);
+    onChangeCapId(capId: string) {
+        this.capabilities.capId = capId;
     }
 
     /**
      * Saves a requirement template to the model and gets pushed into the Redux store of the application
      */
     saveRequirementsToModel(): void {
-        const requirements = {
-            nodeId: this.currentModalData.id,
-            color: this.requirements.reqColor,
-            id: this.requirements.reqId,
-            name: this.requirements.reqDefinitionName,
-            namespace: this.requirements.reqType,
-            qName: this.requirements.reqQName
-        };
-        this.ngRedux.dispatch(this.actions.setRequirement(requirements));
+        const newRequirement = new RequirementModel();
+        newRequirement.any = [];
+        newRequirement.documentation = [];
+        newRequirement.id = this.requirements.reqId;
+        newRequirement.name = this.requirements.reqQName.substring(this.requirements.reqQName.indexOf('}') + 1);
+        newRequirement.otherAttributes = {};
+        newRequirement.type = this.requirements.reqQName;
+        if (isNullOrUndefined(this.requirements.requirements)) {
+            const requirementsArray: Array<RequirementModel> = [];
+            this.requirements.requirements = {
+                requirement: requirementsArray
+            };
+        }
+        this.requirements.requirements.requirement.push(newRequirement);
+        const newRequirementData = this.requirements.requirements;
+        newRequirementData.nodeId = this.requirements.nodeId;
+        this.ngRedux.dispatch(this.actions.setRequirement(newRequirementData));
         this.resetRequirements();
     }
 
@@ -359,7 +380,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.entityTypes.requirementTypes.some(req => {
             if (req.name === reqName) {
                 this.requirements.reqColor = req.color;
-                this.requirements.reqId = req.id;
                 this.requirements.reqType = req.namespace;
                 this.requirements.reqQName = req.qName;
                 return true;
@@ -368,7 +388,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     }
 
     /**
-     * Auto-completes other deployment-artifact relevant values when a deployment-artifact type has been selected in the modal
+     * saves the typed in requirement id from the modal
+     */
+    onChangeReqId(capId: string) {
+        this.requirements.reqId = capId;
+    }
+
+    /**
+     * Auto-completes other deployment-artifact relevant values when a deployment-artifact type has been selected in
+     * the modal
      */
     onChangeDeploymentArtifacts(artifactType: any): void {
         // change the ones affected
@@ -480,6 +508,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.requirements.reqId = '';
         this.requirements.reqDefinitionName = '';
         this.requirements.reqType = '';
+        this.requirements.reqQName = '';
+        this.requirements.nodeId = '';
         this.requirementsModal.hide();
     }
 
@@ -487,6 +517,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.capabilities.capId = '';
         this.capabilities.capDefinitionName = '';
         this.capabilities.capType = '';
+        this.capabilities.capQName = '';
+        this.capabilities.nodeId = '';
         this.capabilitiesModal.hide();
     }
 
@@ -703,7 +735,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             const conn = this.newJsPlumbInstance.connect({
                 source: newRelationship.sourceElement.ref,
                 target: newRelationship.targetElement.ref,
-                overlays: [['Arrow', {width: 15, length: 15, location: 1, id: 'arrow', direction: 1}],
+                overlays: [['Arrow', { width: 15, length: 15, location: 1, id: 'arrow', direction: 1 }],
                     ['Label', {
                         label: type,
                         id: 'label',
@@ -783,7 +815,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     }
 
     /**
-     * Sets drag source which marks the area where a connection can be dragged from and binds to the connections listener
+     * Sets drag source which marks the area where a connection can be dragged from and binds to the connections
+     * listener
      * @param dragSourceInfo
      */
     setDragSource(dragSourceInfo: any): void {
@@ -792,7 +825,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         if (!this.dragSourceActive && !currentNodeIsSource && nodeArrayLength > 1) {
             this.newJsPlumbInstance.makeSource(dragSourceInfo.dragSource, {
                 connectorOverlays: [
-                    ['Arrow', {location: 1}],
+                    ['Arrow', { location: 1 }],
                 ],
             });
             this.dragSourceInfos = dragSourceInfo;
@@ -1019,7 +1052,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                         stroke: relType.color,
                         strokeWidth: 2
                     },
-                    hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
+                    hoverPaintStyle: { stroke: 'red', strokeWidth: 5 }
                 });
         }
         const allJsPlumbConnections = this.newJsPlumbInstance.getAllConnections();
@@ -1038,16 +1071,20 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      */
     ngOnInit() {
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
-        this.newJsPlumbInstance.registerConnectionType('marked', {paintStyle: {stroke: 'red', strokeWidth: 5}});
+        this.newJsPlumbInstance.registerConnectionType('marked', { paintStyle: { stroke: 'red', strokeWidth: 5 } });
         this.differ = this.differs.find([]).create(null);
         console.log(this.entityTypes);
-        /*
-        this.form = this.formBuilder.group({
-            capId: [null, Validators.required],
-            capName: [null, Validators.required],
-            capType: [null, Validators.required]
-        });
-        */
+    }
+
+    isFieldValid(field: string) {
+        return !this.form.get(field).valid && this.form.get(field).touched;
+    }
+
+    displayFieldCss(field: string) {
+        return {
+            'has-error': this.isFieldValid(field),
+            'has-feedback': this.isFieldValid(field)
+        };
     }
 
     /**
@@ -1420,8 +1457,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
                     if (relTypeExists === false && sourceElement !== targetElement) {
                         const newRelationship = new TRelationshipTemplate(
-                            {ref: sourceElement},
-                            {ref: targetElement},
+                            { ref: sourceElement },
+                            { ref: targetElement },
                             relationshipId,
                             relationshipId,
                             this.currentType

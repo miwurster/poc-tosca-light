@@ -16,12 +16,14 @@
  * Encompasses the capability model
  */
 export class CapabilityModel {
+    public any: any;
+    public documentation: any;
+    public id: string;
+    public name: string;
+    public otherAttributes: any;
+    public type: any;
+    public properties?: any;
 
-    constructor(public any: any,
-                public documentation: any,
-                public id: string,
-                public name: string,
-                public otherAttributes: any,
-                public type: any,
-                public properties?: any ) { }
+    constructor() {
+    }
 }

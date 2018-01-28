@@ -13,16 +13,17 @@
  ********************************************************************************/
 
 /**
- * Encompasses the capabilities data defined by the user when using the modal
+ * Encompasses the requirement model
  */
-export class CapabilitiesModalData {
+export class RequirementModel {
+    public any: any;
+    public documentation: any;
+    public id: string;
+    public name: string;
+    public otherAttributes: any;
+    public type: any;
+    public properties?: any;
 
-    constructor(public capId?: string,
-                public capColor?: string,
-                public capQName?: string,
-                public capType?: string,
-                public capDefinitionName?: string,
-                public capabilities?: any,
-                public capDefinitionNames?: any,
-                public nodeId?: string) { }
+    constructor() {
+    }
 }

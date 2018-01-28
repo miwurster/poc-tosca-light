@@ -180,7 +180,8 @@
                            class="form-control"
                            name="ReqId"
                            type="text"
-                           required="required"/>
+                           required="required"
+                           (change)="onChangeReqId($event.target.value)"/>
                 </div>
 
                 <div class="form-group">
