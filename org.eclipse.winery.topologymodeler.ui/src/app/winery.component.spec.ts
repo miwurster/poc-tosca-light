@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {TestBed, async} from '@angular/core/testing';
+import { async, TestBed } from '@angular/core/testing';
 
 import {WineryComponent} from './winery.component';
 import {TopologyRendererModule} from './topology-renderer/topology-renderer.module';

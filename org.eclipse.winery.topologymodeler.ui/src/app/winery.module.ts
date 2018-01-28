@@ -51,7 +51,7 @@ import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule
         BrowserModule,
         FormsModule,
         HttpModule,
-        RouterModule.forRoot([{path: '**', redirectTo: '', pathMatch: 'full'}]),
+        RouterModule.forRoot([{ path: '**', redirectTo: '', pathMatch: 'full' }]),
         BrowserAnimationsModule,
         NgReduxModule,
         BsDropdownModule.forRoot(),
@@ -63,7 +63,7 @@ import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule
         WineryModalModule,
     ],
     providers: [
-        {provide: ToastOptions, useClass: WineryCustomOption},
+        { provide: ToastOptions, useClass: WineryCustomOption },
         JsPlumbService,
         WineryActions,
         TopologyRendererActions,

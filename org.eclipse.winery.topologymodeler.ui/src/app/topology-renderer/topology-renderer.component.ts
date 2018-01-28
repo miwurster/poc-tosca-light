@@ -12,8 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, Input, OnInit, ViewContainerRef} from '@angular/core';
-import {WineryAlertService} from '../winery-alert/winery-alert.service';
+import { Component, EventEmitter, Input, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { WineryAlertService } from '../winery-alert/winery-alert.service';
+import { TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
+import { NgRedux } from '@angular-redux/store';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { IWineryState } from '../redux/store/winery.store';
+import { ILoaded } from '../loaded.service';
 
 /**
  * This is the parent component of the canvas and navbar component.
@@ -24,13 +29,37 @@ import {WineryAlertService} from '../winery-alert/winery-alert.service';
     styleUrls: ['./topology-renderer.component.css']
 })
 export class TopologyRendererComponent implements OnInit {
+
     @Input() entityTypes: any;
     @Input() relationshipTypes: Array<any> = [];
+    @Input() nodeTemplates: Array<TNodeTemplate>;
+    @Input() relationshipTemplates: Array<TRelationshipTemplate>;
+    @Output() generatedReduxState = new EventEmitter();
 
-    constructor (vcr: ViewContainerRef, private notify: WineryAlertService) {
+    loader: ILoaded;
+    showDiffLegend: boolean;
+
+    constructor(private ngRedux: NgRedux<IWineryState>,
+                private actions: WineryActions,
+                vcr: ViewContainerRef,
+                private notify: WineryAlertService) {
         this.notify.init(vcr);
     }
 
-    ngOnInit () {
+    ngOnInit() {
+        this.loader = { loadedData: true, generatedReduxState: false };
+        this.addElementsToRedux();
+    }
+
+    private addElementsToRedux() {
+        this.relationshipTemplates.forEach(relationshipTemplate => {
+            this.ngRedux.dispatch(this.actions.saveRelationship(relationshipTemplate));
+        });
+        this.nodeTemplates.forEach(nodeTemplate => {
+            this.ngRedux.dispatch(this.actions.saveNodeTemplate(nodeTemplate));
+        });
+
+        this.loader.generatedReduxState = true;
+        this.generatedReduxState.emit(this.loader);
     }
 }
