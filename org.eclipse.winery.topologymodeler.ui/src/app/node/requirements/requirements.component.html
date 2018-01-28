@@ -22,7 +22,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let req of requirements">
+        <tr *ngFor="let req of requirements" (click)="checkForProperties($event)">
             <td class="dataId">{{req.id}}</td>
             <td class="dataName">{{req.name}}</td>
             <td class="dataType"><a href="{{req.type}}">{{req.type}}</a></td>
@@ -30,9 +30,12 @@
         </tbody>
     </table>
 
-    <winery-properties-content
-        [currentNodeData]=currentNodeData>
-    </winery-properties-content>
+    <div *ngIf="tblRowClicked">
+        <winery-properties-content
+            [currentNodeData]=currentNodeData>
+        </winery-properties-content>
+    </div>
+
 </div>
 
 <div *ngIf="!requirementsExist" style="color: dimgray; text-align: center">

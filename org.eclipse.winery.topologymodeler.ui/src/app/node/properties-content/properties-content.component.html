@@ -20,7 +20,7 @@
         <th>
             Values
         </th>
-        <tr *ngFor="let key of nodeProperties | keysPipe">
+        <tr *ngFor="let key of nodeProperties | keysPipe; let i = index">
             <td class="">{{key.key}}</td>
             <td class="">
                 <textarea
@@ -40,7 +40,7 @@
         rows="3"
         placeholder="Edit your XML here."
         required
-        value="{{xmlProperty}}"
+        value="{{nodeProperties}}"
         (keyup)="properties.next($event.target.value)">
             </textarea>
 </div>

@@ -180,7 +180,9 @@ export class WineryComponent implements OnInit {
                             requirementType.id,
                             requirementType.qName,
                             requirementType.name,
-                            requirementType.namespace
+                            requirementType.namespace,
+                            '',
+                            requirementType.full
                         ));
                 });
                 this.entityTypes.requirementTypes = this.requirementTypes;

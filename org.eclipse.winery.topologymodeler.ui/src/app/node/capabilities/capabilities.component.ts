@@ -39,6 +39,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
     capabilitiesExist: boolean;
     entityTypes: EntityTypesModel;
     nodeTemplate: TNodeTemplate;
+    tblRowClicked: boolean;
 
     constructor() {
         this.toggleModalHandler = new EventEmitter();
@@ -61,11 +62,25 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
     }
 
     /**
-     * Propagates the click event to node.component, where capabilities modal gets opened.
+     * Triggered upon clicking on a table row, needed for setting the capability type of that row
+     * which gets passed to the properties content component, for showing the correct component type
+     * under all the capabilities
      * @param $event
      */
     public checkForProperties($event) {
-        console.log($event);
+        this.tblRowClicked = false;
+        setTimeout(() => {
+            if ($event.srcElement.nextElementSibling) {
+                if ($event.srcElement.nextElementSibling.nextElementSibling) {
+                    this.currentNodeData.currentCapType = $event.srcElement.nextElementSibling.nextElementSibling.textContent;
+                } else {
+                    this.currentNodeData.currentCapType = $event.srcElement.nextElementSibling.textContent;
+                }
+            } else {
+                this.currentNodeData.currentCapType = $event.srcElement.textContent;
+            }
+            this.tblRowClicked = true;
+        }, 1);
     }
 
     /**

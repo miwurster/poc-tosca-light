@@ -30,11 +30,12 @@
         </tbody>
     </table>
 
-    <winery-properties
-        [currentNodeData]="{nodeTemplate: nodeTemplate,
-                            entityTypes: entityTypes,
-                            currentNodePart: 'CAPABILITIES'}">
-    </winery-properties>
+    <div *ngIf="tblRowClicked">
+    <winery-properties-content
+        [currentNodeData]=currentNodeData>
+    </winery-properties-content>
+    </div>
+
 </div>
 
 <div *ngIf="!capabilitiesExist" style="color: dimgray; text-align: center">

@@ -243,36 +243,8 @@ export const WineryReducer =
                 };*/
             case WineryActions.SET_REQUIREMENT_PROPERTY:
                 const newReqProperty: any = (<SetReqPropertyAction>action).nodeReqProperty;
-                const reqPropertyType = newReqProperty.propertyType;
-                const indexOfNodeReqProp = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newReqProperty.nodeId);
-                const nodeReqPropertyTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newReqProperty.nodeId);
-                let currentReqProperties;
-                let newReqPropObject;
-                let newReqProperties: Array<any>;
-                let newXMLReqProperty: string;
-                if (reqPropertyType === 'KV') {
-                    try {
-                        currentReqProperties = nodeReqPropertyTemplate.requirements.properties.kvproperties;
-                    } catch (e) {
-                    }
-                    newReqPropObject = {
-                        key: newReqProperty.newReqProperty.key,
-                        value: newReqProperty.newReqProperty.value
-                    };
-                    newReqProperties = [];
-                    newReqProperties.push(newReqPropObject);
-                    if (currentReqProperties) {
-                        for (const obj of currentReqProperties) {
-                            if (!newReqProperties.find(node => node.key === obj.key)) {
-                                newReqProperties.push(obj);
-                            }
-                        }
-                    }
-                } else {
-                    newXMLReqProperty = newReqProperty.newReqProperty;
-                }
+                const newReqProperties = newReqProperty.newReqProperty;
+                console.log(newReqProperties);
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
@@ -280,50 +252,13 @@ export const WineryReducer =
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newReqProperty.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('requirements',
-                                    reqPropertyType === 'KV' ?
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
-                                            properties: { kvproperties: newReqProperties }
-                                        } :
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeReqProp].requirements,
-                                            properties: { any: newXMLReqProperty }
-                                        }) : nodeTemplate
+                                    newReqProperties) : nodeTemplate
                             )
                     }
                 };
             case WineryActions.SET_CAPABILITY_PROPERTY:
                 const newCapProperty: any = (<SetCapPropertyAction>action).nodeCapProperty;
-                const capPropertyType = newCapProperty.propertyType;
-                const indexOfNodeCapProp = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newReqProperty.nodeId);
-                const nodeCapPropertyTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newCapProperty.nodeId);
-                let currentCapProperties;
-                let newCapPropObject;
-                let newCapProperties: Array<any>;
-                let newXMLCapProperty: string;
-                if (capPropertyType === 'KV') {
-                    try {
-                        currentCapProperties = nodeCapPropertyTemplate.capabilities.properties.kvproperties;
-                    } catch (e) {
-                    }
-                    newCapPropObject = {
-                        key: newCapProperty.newCapProperty.key,
-                        value: newCapProperty.newCapProperty.value
-                    };
-                    newCapProperties = [];
-                    newCapProperties.push(newCapPropObject);
-                    if (currentCapProperties) {
-                        for (const obj of currentCapProperties) {
-                            if (!newCapProperties.find(node => node.key === obj.key)) {
-                                newCapProperties.push(obj);
-                            }
-                        }
-                    }
-                } else {
-                    newXMLCapProperty = newCapProperty.newCapProperty;
-                }
+                const newCapProperties = newCapProperty.newCapProperty;
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
@@ -331,15 +266,7 @@ export const WineryReducer =
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newCapProperty.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('capabilities',
-                                    capPropertyType === 'KV' ?
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
-                                            properties: { kvproperties: newCapProperties }
-                                        } :
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeCapProp].capabilities,
-                                            properties: { any: newXMLCapProperty }
-                                        }) : nodeTemplate
+                                    newCapProperties) : nodeTemplate
                             )
                     }
                 };
