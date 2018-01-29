@@ -22,7 +22,9 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let req of requirements" (click)="checkForProperties($event)">
+        <tr *ngFor="let req of requirements; let index=index"
+            (click)="checkForProperties($event)"
+            (click)="saveIndex(index)">
             <td class="dataId">{{req.id}}</td>
             <td class="dataName">{{req.name}}</td>
             <td class="dataType"><a href="{{req.type}}">{{req.type}}</a></td>
@@ -32,6 +34,7 @@
 
     <div *ngIf="tblRowClicked">
         <winery-properties-content
+            [currentTableRowIndex]= "currentTableRowIndex"
             [currentNodeData]=currentNodeData>
         </winery-properties-content>
     </div>

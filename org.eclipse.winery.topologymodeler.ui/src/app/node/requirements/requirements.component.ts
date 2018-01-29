@@ -39,6 +39,7 @@ export class RequirementsComponent implements OnInit, OnChanges {
     entityTypes: EntityTypesModel;
     nodeTemplate: TNodeTemplate;
     tblRowClicked: boolean;
+    currentTableRowIndex: number;
 
     constructor () {
         this.toggleModalHandler = new EventEmitter();
@@ -48,12 +49,19 @@ export class RequirementsComponent implements OnInit, OnChanges {
      * Angular lifecycle event.
      */
     ngOnChanges (changes: SimpleChanges) {
+        console.log(changes);
         if (changes.currentNodeData.currentValue.nodeTemplate) {
             this.nodeTemplate = changes.currentNodeData.currentValue.nodeTemplate;
+            console.log(this.nodeTemplate);
+            if (this.nodeTemplate.requirements) {
+                this.requirements = this.nodeTemplate.requirements.requirement;
+                console.log(this.requirements);
+            }
         }
         if (changes.currentNodeData.currentValue.nodeTemplate.requirements) {
             this.requirements = changes.currentNodeData.currentValue.nodeTemplate.requirements.requirement;
             this.requirementsExist = true;
+            console.log(this.requirements);
         }
         if (changes.currentNodeData.currentValue.entityTypes) {
             this.entityTypes = changes.currentNodeData.currentValue.entityTypes;
@@ -80,6 +88,15 @@ export class RequirementsComponent implements OnInit, OnChanges {
             }
             this.tblRowClicked = true;
         }, 1);
+    }
+
+    /**
+     * Triggered upon clicking on a table row, needed for setting the index of the clicked table row
+     * for the xml property value update if yet undefined
+     * @param $event
+     */
+    public saveIndex(tblRowIndex: number) {
+        this.currentTableRowIndex = tblRowIndex;
     }
 
     /**

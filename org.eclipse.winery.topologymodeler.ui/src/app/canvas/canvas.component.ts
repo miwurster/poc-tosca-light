@@ -246,7 +246,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             case 'CAPABILITIES':
                 this.capabilitiesModal.show();
                 try {
-                    console.log(currentNodeData);
                     this.capabilities.capabilities = currentNodeData.capabilities;
                     this.capabilities.capDefinitionNames = this.entityTypes.capabilityTypes;
                     this.capabilities.nodeId = currentNodeData.id;

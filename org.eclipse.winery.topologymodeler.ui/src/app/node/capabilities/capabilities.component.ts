@@ -23,6 +23,7 @@ import {
 } from '@angular/core';
 import { EntityTypesModel } from '../../models/entityTypesModel';
 import { TNodeTemplate } from '../../models/ttopology-template';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
     selector: 'winery-capabilities',
@@ -40,6 +41,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
     entityTypes: EntityTypesModel;
     nodeTemplate: TNodeTemplate;
     tblRowClicked: boolean;
+    currentTableRowIndex: number;
 
     constructor() {
         this.toggleModalHandler = new EventEmitter();
@@ -81,6 +83,15 @@ export class CapabilitiesComponent implements OnInit, OnChanges {
             }
             this.tblRowClicked = true;
         }, 1);
+    }
+
+    /**
+     * Triggered upon clicking on a table row, needed for setting the index of the clicked table row
+     * for the xml property value update if yet undefined
+     * @param $event
+     */
+    public saveIndex(tblRowIndex: number) {
+        this.currentTableRowIndex = tblRowIndex;
     }
 
     /**

@@ -22,7 +22,9 @@
         </tr>
         </thead>
         <tbody>
-        <tr *ngFor="let cap of capabilities" (click)="checkForProperties($event)">
+        <tr *ngFor="let cap of capabilities; let index=index"
+            (click)="checkForProperties($event)"
+            (click)="saveIndex(index)">
             <td class="dataId">{{cap.id}}</td>
             <td class="dataName">{{cap.name}}</td>
             <td class="dataType"><a href="{{cap.type}}">{{cap.type}}</a></td>
@@ -32,7 +34,8 @@
 
     <div *ngIf="tblRowClicked">
     <winery-properties-content
-        [currentNodeData]=currentNodeData>
+        [currentTableRowIndex]= "currentTableRowIndex"
+        [currentNodeData]="currentNodeData">
     </winery-properties-content>
     </div>
 

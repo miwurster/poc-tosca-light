@@ -244,7 +244,6 @@ export const WineryReducer =
             case WineryActions.SET_REQUIREMENT_PROPERTY:
                 const newReqProperty: any = (<SetReqPropertyAction>action).nodeReqProperty;
                 const newReqProperties = newReqProperty.newReqProperty;
-                console.log(newReqProperties);
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {

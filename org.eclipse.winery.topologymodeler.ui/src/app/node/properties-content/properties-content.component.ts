@@ -26,6 +26,8 @@ import { IWineryState } from '../../redux/store/winery.store';
 import { WineryActions } from '../../redux/actions/winery.actions';
 import { Subscription } from 'rxjs/Subscription';
 import { isNullOrUndefined } from 'util';
+import { CapabilityModel } from '../../models/capabilityModel';
+import { RequirementModel } from '../../models/requirementModel';
 
 @Component({
     selector: 'winery-properties-content',
@@ -38,6 +40,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     keyOfEditedKVProperty: Subject<string> = new Subject<string>();
     propertyDefinitionType: string;
     @Input() currentNodeData: any;
+    @Input() currentTableRowIndex: any;
     key: string;
 
     nodeProperties: any;
@@ -134,12 +137,27 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                 if (this.propertyDefinitionType === 'KV') {
                     this.nodeProperties[this.key] = value;
                 } else {
-                    this.nodeProperties = value;
-                    /*
-                    if (this.currentNodeData.currentNodePart === 'REQUIREMENTS') {
-                        // this.currentNodeData.nodeTemplate.requirements.requirement[index].properties.any = value;
-                }
-                */
+                    if (this.currentNodeData.currentNodePart === 'CAPABILITIES') {
+                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties)) {
+                            const capability = {
+                                ...this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex],
+                                properties: { any: value }
+                            };
+                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex] = capability;
+                        } else {
+                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties.any = value;
+                        }
+                    } else if (this.currentNodeData.currentNodePart === 'REQUIREMENTS') {
+                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties)) {
+                            const requirement = {
+                                ...this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex],
+                                properties: { any: value }
+                            };
+                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex] = requirement;
+                        } else {
+                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties.any = value;
+                        }
+                    }
                 }
                 switch (this.currentNodeData.currentNodePart) {
                     case 'DEPLOYMENT_ARTIFACTS':
