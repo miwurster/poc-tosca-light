@@ -14,14 +14,11 @@
 
 import 'rxjs/add/operator/do';
 import { Component, OnInit } from '@angular/core';
-import { EntityType, TNodeTemplate, TRelationshipTemplate } from './models/ttopology-template';
-import { IWineryState } from './redux/store/winery.store';
-import { WineryActions } from './redux/actions/winery.actions';
-import { NgRedux } from '@angular-redux/store';
+import { EntityType, TNodeTemplate, TRelationshipTemplate, Visuals } from './models/ttopology-template';
 import { ILoaded, LoadedService } from './loaded.service';
 import { AppReadyEventService } from './app-ready-event.service';
 import { BackendService } from './backend.service';
-import { QName } from './qname';
+import { Utils } from './utils';
 
 /**
  * This is the root component of the topology modeler.
@@ -32,6 +29,7 @@ import { QName } from './qname';
     styleUrls: ['./winery.component.css']
 })
 export class WineryComponent implements OnInit {
+
     nodeTemplates: Array<TNodeTemplate> = [];
     relationshipTemplates: Array<TRelationshipTemplate> = [];
     artifactTypes: Array<any> = [];
@@ -45,9 +43,7 @@ export class WineryComponent implements OnInit {
 
     public loaded: ILoaded;
 
-    constructor(private ngRedux: NgRedux<IWineryState>,
-                private actions: WineryActions,
-                private loadedService: LoadedService,
+    constructor(private loadedService: LoadedService,
                 private appReadyEvent: AppReadyEventService,
                 private backendService: BackendService) {
     }
@@ -73,14 +69,13 @@ export class WineryComponent implements OnInit {
          * by using Observable.forkJoin(1$, 2$);
          */
         this.backendService.topologyTemplateAndVisuals$.subscribe(JSON => {
-            this.loaded = {isLoaded: true};
-            this.appReadyEvent.trigger();
-            // topologyTemplate JSON[0]
             const topologyTemplate = JSON[0];
-            const visuals = JSON[1];
-            this.entityTypes.nodeVisuals = visuals;
+            this.entityTypes.nodeVisuals = JSON[1];
             // init the NodeTemplates and RelationshipTemplates to start their rendering
-            this.initTopologyTemplate(topologyTemplate.nodeTemplates, visuals, topologyTemplate.relationshipTemplates);
+            this.initTopologyTemplate(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
+
+            this.loaded = { loadedData: true, generatedReduxState: false };
+            this.appReadyEvent.trigger();
         });
 
         // Get other entity types
@@ -117,7 +112,6 @@ export class WineryComponent implements OnInit {
         this.backendService.nodeTypes$.subscribe(JSON => {
             this.initEntityType(JSON, 'unGroupedNodeTypes');
         });
-
     }
 
     /**
@@ -237,53 +231,11 @@ export class WineryComponent implements OnInit {
         }
     }
 
-    initTopologyTemplate(nodeTemplateArray: Array<any>, visuals: any, relationshipTemplateArray: Array<any>) {
+    initTopologyTemplate(nodeTemplateArray: Array<TNodeTemplate>, relationshipTemplateArray: Array<TRelationshipTemplate>) {
         // init node templates
         if (nodeTemplateArray.length > 0) {
             nodeTemplateArray.forEach(node => {
-                let color;
-                let imageUrl;
-                for (const visual of visuals) {
-                    const qName = new QName(visual.nodeTypeId);
-                    const localName = qName.localName;
-                    if (localName === new QName(node.type).localName) {
-                        color = visual.color;
-                        imageUrl = visual.imageUrl;
-                        if (imageUrl) {
-                            imageUrl = imageUrl.replace('appearance', 'visualappearance');
-                        }
-                        break;
-                    }
-                }
-                let properties;
-                if (node.properties) {
-                    properties = node.properties;
-                }
-                this.nodeTemplates.push(
-                    new TNodeTemplate(
-                        properties,
-                        node.id,
-                        node.type,
-                        node.name,
-                        node.minInstances,
-                        node.maxInstances,
-                        color,
-                        imageUrl,
-                        node.documentation,
-                        node.any,
-                        node.otherAttributes,
-                        node.x,
-                        node.y,
-                        node.capabilities,
-                        node.requirements,
-                        node.deploymentArtifacts,
-                        node.policies,
-                        node.targetLocations
-                    )
-                );
-            });
-            this.nodeTemplates.forEach(nodeTemplate => {
-                this.ngRedux.dispatch(this.actions.saveNodeTemplate(nodeTemplate));
+                this.nodeTemplates.push(Utils.createTNodeTemplateFromObject(node, this.entityTypes.nodeVisuals));
             });
         }
         // init relationship templates
@@ -303,13 +255,10 @@ export class WineryComponent implements OnInit {
                     )
                 );
             });
-            this.relationshipTemplates.forEach(relationshipTemplate => {
-                this.ngRedux.dispatch(this.actions.saveRelationship(relationshipTemplate));
-            });
         }
     }
 
-    private setNodeVisuals(nodeVisuals: Array<any>): void {
+    private setNodeVisuals(nodeVisuals: Array<Visuals>): void {
         nodeVisuals.forEach(nodeVisual => {
             const nodeId = nodeVisual.nodeTypeId.substring(nodeVisual.nodeTypeId.indexOf('}') + 1);
             this.entityTypes.unGroupedNodeTypes.forEach(node => {
@@ -318,6 +267,10 @@ export class WineryComponent implements OnInit {
                 }
             });
         });
+    }
+
+    onReduxReady() {
+        this.loaded.generatedReduxState = true;
     }
 }
 

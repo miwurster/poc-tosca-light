@@ -22,7 +22,8 @@ import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/do';
 
 export interface ILoaded {
-    isLoaded: boolean;
+    loadedData: boolean;
+    generatedReduxState: boolean;
 }
 
 @Injectable()

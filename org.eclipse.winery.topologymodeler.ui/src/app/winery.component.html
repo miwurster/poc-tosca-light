@@ -14,15 +14,17 @@
 
 <router-outlet></router-outlet>
 
-<div *ngIf="loaded">
-    <winery-topology-renderer
-        [entityTypes]="this.entityTypes"
-        [relationshipTypes]="relationshipTypes">
-    </winery-topology-renderer>
+<winery-topology-renderer *ngIf="loaded?.loadedData"
+                          [entityTypes]="this.entityTypes"
+                          [relationshipTypes]="relationshipTypes"
+                          [nodeTemplates]="nodeTemplates"
+                          [relationshipTemplates]="relationshipTemplates"
+                          (generatedReduxState)="onReduxReady()">
+</winery-topology-renderer>
 
+<div *ngIf="loaded?.generatedReduxState">
     <winery-palette-component style="width:200px;float:left;margin-top:50px"
                               [entityTypes]="this.entityTypes">
-
     </winery-palette-component>
 
     <winery-sidebar style="width : 300px; float:right; z-index: 400"></winery-sidebar>

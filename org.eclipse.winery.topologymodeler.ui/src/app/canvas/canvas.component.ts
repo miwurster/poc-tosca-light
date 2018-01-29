@@ -13,20 +13,8 @@
  ********************************************************************************/
 
 import {
-    AfterViewInit,
-    Component,
-    DoCheck,
-    ElementRef,
-    HostListener,
-    Input,
-    KeyValueDiffers,
-    NgZone,
-    OnDestroy,
-    OnInit,
-    QueryList,
-    Renderer2,
-    ViewChild,
-    ViewChildren
+    AfterViewInit, Component, DoCheck, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnDestroy, OnInit,
+    QueryList, Renderer2, ViewChild, ViewChildren
 } from '@angular/core';
 import { JsPlumbService } from '../jsPlumbService';
 import { TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
@@ -64,6 +52,7 @@ import { EntityTypesModel } from '../models/entityTypesModel';
     styleUrls: ['./canvas.component.css']
 })
 export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoCheck {
+
     @ViewChildren(NodeComponent) nodeComponentChildren: QueryList<NodeComponent>;
     @ViewChild('nodes') child: ElementRef;
     @ViewChild('selection') selection: ElementRef;
@@ -334,7 +323,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     onChangeCapDefinitionName(capName: string) {
         this.entityTypes.capabilityTypes.some(cap => {
             if (cap.name === capName) {
-                this.capabilities.capColor = cap.color;
                 this.capabilities.capType = cap.namespace;
                 this.capabilities.capQName = cap.qName;
                 return true;
@@ -379,7 +367,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     onChangeReqDefinitionName(reqName: string): void {
         this.entityTypes.requirementTypes.some(req => {
             if (req.name === reqName) {
-                this.requirements.reqColor = req.color;
+                this.requirements.reqId = req.id;
                 this.requirements.reqType = req.namespace;
                 this.requirements.reqQName = req.qName;
                 return true;
@@ -446,12 +434,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     savePoliciesToModel(): void {
         const policies = {
             nodeId: this.currentModalData.id,
-            templateColor: this.policies.policyTemplateColor,
             templateId: this.policies.policyTemplateId,
             templateName: this.policies.policyTemplateName,
             templateNamespace: this.policies.policyTemplateNamespace,
             templateQName: this.policies.policyTemplateQName,
-            typeColor: this.policies.policyTypeColor,
             typeId: this.policies.policyTypeId,
             typeName: this.policies.policyTypeName,
             typeNamespace: this.policies.policyTypeNamespace,
@@ -467,7 +453,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     onChangePolicyTemplate(policyTemplate: string): void {
         this.entityTypes.policyTemplates.some(policy => {
             if (policy.id === policyTemplate) {
-                this.policies.policyTemplateColor = policy.color;
                 this.policies.policyTemplateId = policy.id;
                 this.policies.policyTemplateName = policy.name;
                 this.policies.policyTemplateNamespace = policy.namespace;
@@ -484,7 +469,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     onChangePolicyType(policyType: string): void {
         this.entityTypes.policyTypes.some(policy => {
             if (policy.id === policyType) {
-                this.policies.policyTypeColor = policy.color;
                 this.policies.policyTypeId = policy.id;
                 this.policies.policyTypeName = policy.name;
                 this.policies.policyTypeNamespace = policy.namespace;
@@ -1070,7 +1054,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      */
     ngOnInit() {
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
-        this.newJsPlumbInstance.registerConnectionType('marked', { paintStyle: { stroke: 'red', strokeWidth: 5 } });
+        this.newJsPlumbInstance.registerConnectionType('marked', {
+            paintStyle: {
+                strokeWidth: 5
+            }
+        });
         this.differ = this.differs.find([]).create(null);
         console.log(this.entityTypes);
     }

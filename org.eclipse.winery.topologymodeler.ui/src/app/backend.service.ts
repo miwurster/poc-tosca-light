@@ -20,14 +20,15 @@ import { ActivatedRoute } from '@angular/router';
 import { backendBaseURL } from './configuration';
 import { Subject } from 'rxjs/Subject';
 import { isNullOrUndefined } from 'util';
+import { TTopologyTemplate, Visuals } from './models/ttopology-template';
 
 /**
  * Responsible for interchanging data between the app and the server.
  */
 @Injectable()
 export class BackendService {
-    readonly headers = new Headers({'Accept': 'application/json'});
-    readonly options = new RequestOptions({headers: this.headers});
+    readonly headers = new Headers({ 'Accept': 'application/json' });
+    readonly options = new RequestOptions({ headers: this.headers });
 
     entityLoaded = {
         topologyTemplateAndVisuals: false,
@@ -78,7 +79,7 @@ export class BackendService {
     private relationshipTypes = new Subject<any>();
     relationshipTypes$ = this.relationshipTypes.asObservable();
 
-    private topologyTemplateAndVisuals = new Subject<any>();
+    private topologyTemplateAndVisuals = new Subject<[TTopologyTemplate, Visuals]>();
     topologyTemplateAndVisuals$ = this.topologyTemplateAndVisuals.asObservable();
 
     constructor(private http: Http,
@@ -198,7 +199,7 @@ export class BackendService {
      * This is required
      * @returns data  The JSON from the server
      */
-    requestTopologyTemplateAndVisuals(): Observable<[string, string]> {
+    requestTopologyTemplateAndVisuals(): Observable<[TTopologyTemplate, Visuals]> {
         if (this.configuration) {
             const url = this.configuration.repositoryURL + '/servicetemplates/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
@@ -355,12 +356,12 @@ export class BackendService {
      */
     saveTopologyTemplate(topologyTemplate: any): Observable<any> {
         if (this.configuration) {
-            const headers = new Headers({'Content-Type': 'application/json'});
-            const options = new RequestOptions({headers: headers});
+            const headers = new Headers({ 'Content-Type': 'application/json' });
+            const options = new RequestOptions({ headers: headers });
             const url = this.configuration.repositoryURL + '/servicetemplates/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
                 + this.configuration.id + '/topologytemplate/';
-            console.log(url);
+
             return this.http.put(url, JSON.stringify(topologyTemplate), options);
         }
     }
