@@ -26,8 +26,6 @@ import { IWineryState } from '../../redux/store/winery.store';
 import { WineryActions } from '../../redux/actions/winery.actions';
 import { Subscription } from 'rxjs/Subscription';
 import { isNullOrUndefined } from 'util';
-import { CapabilityModel } from '../../models/capabilityModel';
-import { RequirementModel } from '../../models/requirementModel';
 
 @Component({
     selector: 'winery-properties-content',
@@ -75,8 +73,25 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                         this.currentNodeData.entityTypes.capabilityTypes);
                     if (this.propertyDefinitionType === 'KV') {
                         for (const cap of changes.currentNodeData.currentValue.nodeTemplate.capabilities.capability) {
-                            if (cap.type === changes.currentNodeData.currentValue.currentCapType) {
-                                this.nodeProperties = cap.properties.kvproperties;
+                            if (cap.type === changes.currentNodeData.currentValue.currentCapType &&
+                                cap.id === changes.currentNodeData.currentValue.currentCapId) {
+                                if (cap.properties) {
+                                    this.nodeProperties = cap.properties.kvproperties;
+                                } else {
+                                    this.currentNodeData.entityTypes.capabilityTypes.some(capType => {
+                                        if (capType.qName === this.currentNodeData.currentCapType) {
+                                            const kvProperties = capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+                                            for (const obj of kvProperties) {
+                                                const key = obj.key;
+                                                const value = obj.type;
+                                                const keyValuePair = {
+                                                    [key]: value
+                                                };
+                                                this.nodeProperties = { ...this.nodeProperties, ...keyValuePair };
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         }
                     } else if (this.propertyDefinitionType === 'XML') {
@@ -94,9 +109,26 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                     this.findOutPropertyDefinitionType(changes.currentNodeData.currentValue.currentReqType,
                         this.currentNodeData.entityTypes.requirementTypes);
                     if (this.propertyDefinitionType === 'KV') {
-                        for (const cap of changes.currentNodeData.currentValue.nodeTemplate.requirements.requirement) {
-                            if (cap.type === changes.currentNodeData.currentValue.currentReqType) {
-                                this.nodeProperties = cap.properties.kvproperties;
+                        for (const req of changes.currentNodeData.currentValue.nodeTemplate.requirements.requirement) {
+                            if (req.type === changes.currentNodeData.currentValue.currentReqType &&
+                                req.id === changes.currentNodeData.currentValue.currentReqId) {
+                                if (req.properties) {
+                                    this.nodeProperties = req.properties.kvproperties;
+                                } else {
+                                    this.currentNodeData.entityTypes.requirementTypes.some(capType => {
+                                        if (capType.qName === this.currentNodeData.currentReqType) {
+                                            const kvProperties = capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+                                            for (const obj of kvProperties) {
+                                                const key = obj.key;
+                                                const value = obj.type;
+                                                const keyValuePair = {
+                                                    [key]: value
+                                                };
+                                                this.nodeProperties = { ...this.nodeProperties, ...keyValuePair };
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         }
                     } else if (this.propertyDefinitionType === 'XML') {
@@ -136,6 +168,27 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
             .subscribe(value => {
                 if (this.propertyDefinitionType === 'KV') {
                     this.nodeProperties[this.key] = value;
+                    if (this.currentNodeData.currentNodePart === 'CAPABILITIES') {
+                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties)) {
+                            const capability = {
+                                ...this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex],
+                                properties: { kvproperties: this.nodeProperties }
+                            };
+                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex] = capability;
+                        } else {
+                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties.kvproperties = this.nodeProperties;
+                        }
+                    } else if (this.currentNodeData.currentNodePart === 'REQUIREMENTS') {
+                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties)) {
+                            const requirement = {
+                                ...this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex],
+                                properties: { kvproperties: this.nodeProperties }
+                            };
+                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex] = requirement;
+                        } else {
+                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties.kvproperties = this.nodeProperties;
+                        }
+                    }
                 } else {
                     if (this.currentNodeData.currentNodePart === 'CAPABILITIES') {
                         if (isNullOrUndefined(this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties)) {
