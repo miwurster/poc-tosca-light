@@ -461,23 +461,7 @@ export const WineryReducer =
                 };
             case WineryActions.SET_POLICY:
                 const newPolicy: any = (<SetPolicyAction>action).nodePolicy;
-                const policy = {
-                    color: newPolicy.color,
-                    id: newPolicy.id,
-                    name: newPolicy.name,
-                    namespace: newPolicy.namespace,
-                    qName: newPolicy.qName,
-                    templateColor: newPolicy.templateColor,
-                    templateId: newPolicy.templateId,
-                    templateName: newPolicy.templateName,
-                    templateNamespace: newPolicy.templateNamespace,
-                    templateQName: newPolicy.templateQName,
-                    typeColor: newPolicy.typeColor,
-                    typeId: newPolicy.typeId,
-                    typeName: newPolicy.typeName,
-                    typeNamespace: newPolicy.typeNamespace,
-                    typeQName: newPolicy.typeQName,
-                };
+                const policy = newPolicy.newPolicy;
                 const indexOfNodePolicy = lastState.currentJsonTopology.nodeTemplates
                     .map(node => node.id).indexOf(newPolicy.nodeId);
                 const nodePolicyTemplate = lastState.currentJsonTopology.nodeTemplates
@@ -494,9 +478,15 @@ export const WineryReducer =
                             .map(nodeTemplate => nodeTemplate.id === newPolicy.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('policies',
                                     policyExist ? {
-                                        ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies,
-                                        ...policy
-                                    } : policy) : nodeTemplate
+                                        policy: [
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies.policy,
+                                            policy
+                                        ]
+                                    } : {
+                                        policy: [
+                                            policy
+                                        ]
+                                    }) : nodeTemplate
                             )
                     }
                 };
