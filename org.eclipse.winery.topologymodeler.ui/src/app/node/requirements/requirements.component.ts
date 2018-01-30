@@ -12,16 +12,21 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component,
+import {
+    Component,
     EventEmitter,
     Input,
-    OnChanges,
+    OnChanges, OnDestroy,
     OnInit,
     Output,
     SimpleChanges
 } from '@angular/core';
 import { EntityTypesModel } from '../../models/entityTypesModel';
 import { TNodeTemplate } from '../../models/ttopology-template';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../../redux/store/winery.store';
+import { Subscription } from 'rxjs/Subscription';
+import { RequirementModel } from '../../models/requirementModel';
 
 @Component({
     selector: 'winery-requirements',
@@ -31,7 +36,7 @@ import { TNodeTemplate } from '../../models/ttopology-template';
 /**
  * This Handles Information about the nodes requirements
  */
-export class RequirementsComponent implements OnInit, OnChanges {
+export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
     requirements: any[] = [];
@@ -40,31 +45,33 @@ export class RequirementsComponent implements OnInit, OnChanges {
     nodeTemplate: TNodeTemplate;
     tblRowClicked: boolean;
     currentTableRowIndex: number;
+    subscription: Subscription;
 
-    constructor () {
+    constructor (private ngRedux: NgRedux<IWineryState>) {
         this.toggleModalHandler = new EventEmitter();
+        this.subscription = this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
+            .subscribe(currentNodes => this.updateReqs());
+    }
+
+    /**
+     * Gets called if nodes representation in the store changes
+     */
+    updateReqs(): void {
+        if (this.currentNodeData) {
+            if (this.currentNodeData.nodeTemplate.requirements) {
+                this.requirements = this.currentNodeData.nodeTemplate.requirements.requirement;
+                this.requirementsExist = true;
+            }
+        }
     }
 
     /**
      * Angular lifecycle event.
      */
     ngOnChanges (changes: SimpleChanges) {
-        console.log(changes);
-        if (changes.currentNodeData.currentValue.nodeTemplate) {
-            this.nodeTemplate = changes.currentNodeData.currentValue.nodeTemplate;
-            console.log(this.nodeTemplate);
-            if (this.nodeTemplate.requirements) {
-                this.requirements = this.nodeTemplate.requirements.requirement;
-                console.log(this.requirements);
-            }
-        }
-        if (changes.currentNodeData.currentValue.nodeTemplate.requirements) {
-            this.requirements = changes.currentNodeData.currentValue.nodeTemplate.requirements.requirement;
-            this.requirementsExist = true;
-            console.log(this.requirements);
-        }
         if (changes.currentNodeData.currentValue.entityTypes) {
             this.entityTypes = changes.currentNodeData.currentValue.entityTypes;
+            this.nodeTemplate = changes.currentNodeData.currentValue.nodeTemplate;
         }
     }
 
@@ -88,6 +95,18 @@ export class RequirementsComponent implements OnInit, OnChanges {
             }
             this.tblRowClicked = true;
         }, 1);
+        setTimeout(() => {
+            if ($event.srcElement.previousElementSibling) {
+                if ($event.srcElement.previousElementSibling.previousElementSibling) {
+                    this.currentNodeData.currentReqId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
+                } else {
+                    this.currentNodeData.currentReqId = $event.srcElement.previousElementSibling.textContent;
+                }
+            } else {
+                this.currentNodeData.currentReqId = $event.srcElement.textContent;
+            }
+            this.tblRowClicked = true;
+        }, 1);
     }
 
     /**
@@ -108,6 +127,13 @@ export class RequirementsComponent implements OnInit, OnChanges {
     }
 
     ngOnInit () {
+    }
+
+    /**
+     * Lifecycle event
+     */
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
     }
 
 }
