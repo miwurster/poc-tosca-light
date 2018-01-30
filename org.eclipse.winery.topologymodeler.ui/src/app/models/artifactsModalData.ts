@@ -27,6 +27,7 @@ export class ArtifactsModalData {
                 public artifactTemplateName?: any,
                 public artifactTemplateRef?: any,
                 public artifactTemplateNameSpace?: any,
+                public nodeTemplateId?: string,
                 public deploymentArtifacts?: any) { }
 }
 

@@ -31,5 +31,16 @@ export class PoliciesModalData {
                 public policyTypeName?: string,
                 public policyTypeNamespace?: any,
                 public policyTypeQName?: any,
-                public policies?: any) { }
+                public policies?: any) {
+    }
+}
+
+export class TPolicy {
+    constructor(public name?: string,
+                public policyRef?: string,
+                public policyType?: string,
+                public any?: any[],
+                public documentation?: any[],
+                public otherAttributes?: any) {
+    }
 }
