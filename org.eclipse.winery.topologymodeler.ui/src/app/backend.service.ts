@@ -17,10 +17,11 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 import 'rxjs/add/operator/catch';
 import { ActivatedRoute } from '@angular/router';
-import { backendBaseURL } from './configuration';
+import { backendBaseURL, hostURL } from './configuration';
 import { Subject } from 'rxjs/Subject';
 import { isNullOrUndefined } from 'util';
 import { TTopologyTemplate, Visuals } from './models/ttopology-template';
+import { GenerateArtifactApiData } from './generateArtifactApiData';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -334,7 +335,7 @@ export class BackendService {
      */
     requestArtifactTemplates(): Observable<any> {
         if (this.configuration) {
-            return this.http.get(backendBaseURL + '/artifacttemplates?grouped&full', this.options)
+            return this.http.get(backendBaseURL + '/artifacttemplates?full', this.options)
                 .map(res => res.json());
         }
     }
@@ -346,6 +347,23 @@ export class BackendService {
     requestRelationshipTypes(): Observable<any> {
         if (this.configuration) {
             return this.http.get(backendBaseURL + '/relationshiptypes', this.options)
+                .map(res => res.json());
+        }
+    }
+
+    /**
+     * Requests all namespaces from the backend
+     * @returns {Observable<any>} json of namespaces
+     */
+    requestNamespaces(all: boolean = false): Observable<any> {
+        if (this.configuration) {
+            let URL: string;
+            if (all) {
+                URL = backendBaseURL + '/admin/namespaces/?all';
+            } else {
+                URL = backendBaseURL + '/admin/namespaces/';
+            }
+            return this.http.get(URL, this.options)
                 .map(res => res.json());
         }
     }
@@ -364,6 +382,21 @@ export class BackendService {
 
             return this.http.put(url, JSON.stringify(topologyTemplate), options);
         }
+    }
+
+    /**
+     * Used for creating new deployment artifacts inside node templates.
+     * @param {GenerateArtifactApiData} artifact
+     * @param {string} nodeTemplateId
+     * @returns {Observable<any>}
+     */
+    createNewArtifact(artifact: GenerateArtifactApiData, nodeTemplateId: string): Observable<any> {
+        const headers = new Headers({ 'Content-Type': 'application/json' });
+        const options = new RequestOptions({ headers: headers });
+        const url = this.configuration.repositoryURL + '/servicetemplates/'
+            + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
+            + this.configuration.id + '/topologytemplate/' + nodeTemplateId + '/deploymentartifacts/';
+        return this.http.post(url + '/', artifact, options);
     }
 
     /*  saveVisuals(data: any): Observable<Response> {
