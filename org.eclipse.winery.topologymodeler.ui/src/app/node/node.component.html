@@ -113,7 +113,8 @@
                 (toggleModalHandler)="sendToggleAction($event)"
                 [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'DEPLOYMENT_ARTIFACTS',
-                                    currentProperties: nodeTemplate}">
+                                    currentProperties: nodeTemplate}"
+                [deploymentArtifacts]="nodeTemplate.deploymentArtifacts?.deploymentArtifact">
             </winery-deployment-artifacts>
         </accordion-group>
 
@@ -172,7 +173,8 @@
                 (toggleModalHandler)="sendToggleAction($event)"
                 [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'POLICIES',
-                                    currentProperties: nodeTemplate.policies}">
+                                    currentProperties: nodeTemplate}"
+                [policies]="nodeTemplate.policies?.policy">
             </winery-policies>
         </accordion-group>
 
