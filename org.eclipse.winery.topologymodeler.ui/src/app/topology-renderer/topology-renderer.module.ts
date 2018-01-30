@@ -39,6 +39,8 @@ import { WineryModalModule } from '../../repositoryUiDependencies/wineryModalMod
 import { CapabilitiesComponent } from '../node/capabilities/capabilities.component';
 import {PropertiesContentComponent} from '../node/properties-content/properties-content.component';
 import { KeysPipe } from '../keys.pipe';
+import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
+import { ToscatypeTableComponent } from '../node/toscatype-table/toscatype-table.component';
 
 @NgModule({
     imports: [
@@ -53,6 +55,7 @@ import { KeysPipe } from '../keys.pipe';
         NgReduxModule,
         RouterModule,
         WineryModalModule,
+        TypeaheadModule.forRoot()
     ],
     declarations: [
         NavbarComponent,
@@ -67,6 +70,7 @@ import { KeysPipe } from '../keys.pipe';
         DeploymentArtifactsComponent,
         CapabilitiesComponent,
         PropertiesContentComponent,
+        ToscatypeTableComponent,
         KeysPipe
     ],
     exports: [

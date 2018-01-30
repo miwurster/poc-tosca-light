@@ -38,6 +38,9 @@ import { AppReadyEventService } from './app-ready-event.service';
 import { HotkeyModule } from 'angular2-hotkeys';
 import { BackendService } from './backend.service';
 import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule/winery.modal.module';
+import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
+import { ExistsService } from './exists.service';
+import { ToscatypeTableComponent } from './node/toscatype-table/toscatype-table.component';
 
 @NgModule({
     declarations: [
@@ -61,6 +64,7 @@ import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule
         TopologyRendererModule.forRoot(),
         HotkeyModule.forRoot(),
         WineryModalModule,
+        TypeaheadModule.forRoot()
     ],
     providers: [
         { provide: ToastOptions, useClass: WineryCustomOption },
@@ -69,7 +73,8 @@ import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule
         TopologyRendererActions,
         LoadedService,
         AppReadyEventService,
-        BackendService
+        BackendService,
+        ExistsService
     ],
     bootstrap: [WineryComponent]
 })
