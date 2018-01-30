@@ -28,7 +28,7 @@ import { WineryState } from '../../redux/reducers/winery.reducer';
 export class DeploymentArtifactsComponent implements OnInit {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
-    deploymentArtifacts = {};
+    @Input() deploymentArtifacts;
     latestNodeTemplate;
 
     constructor (private $ngRedux: NgRedux<IWineryState>) {
@@ -44,14 +44,5 @@ export class DeploymentArtifactsComponent implements OnInit {
     }
 
     ngOnInit () {
-        console.log(this.deploymentArtifacts = this.currentNodeData.currentProperties.deploymentArtifacts);
-        this.$ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
-            .subscribe(latestNodeTemplates => {
-                this.latestNodeTemplate = latestNodeTemplates.find(nodeTemplate => {
-                    return nodeTemplate.id === this.currentNodeData.currentNodeId;
-                });
-                console.log(this.latestNodeTemplate);
-                this.deploymentArtifacts = this.latestNodeTemplate.deploymentArtifacts;
-            });
     }
 }
