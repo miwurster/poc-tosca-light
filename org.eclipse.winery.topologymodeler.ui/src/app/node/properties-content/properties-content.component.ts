@@ -80,7 +80,9 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                                 } else {
                                     this.currentNodeData.entityTypes.capabilityTypes.some(capType => {
                                         if (capType.qName === this.currentNodeData.currentCapType) {
-                                            const kvProperties = capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+                                            const kvProperties = capType.full.
+                                                serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].
+                                                any[0].propertyDefinitionKVList;
                                             for (const obj of kvProperties) {
                                                 const key = obj.key;
                                                 const value = obj.type;
@@ -117,7 +119,9 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                                 } else {
                                     this.currentNodeData.entityTypes.requirementTypes.some(capType => {
                                         if (capType.qName === this.currentNodeData.currentReqType) {
-                                            const kvProperties = capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+                                            const kvProperties = capType.full.
+                                                serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].
+                                                any[0].propertyDefinitionKVList;
                                             for (const obj of kvProperties) {
                                                 const key = obj.key;
                                                 const value = obj.type;
