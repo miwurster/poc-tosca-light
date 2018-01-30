@@ -25,6 +25,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 export class PoliciesComponent implements OnInit {
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() currentNodeData: any;
+    @Input() policies;
 
     constructor () {
         this.toggleModalHandler = new EventEmitter();
