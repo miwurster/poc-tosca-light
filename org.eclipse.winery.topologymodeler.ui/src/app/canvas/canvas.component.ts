@@ -1117,7 +1117,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         });
         this.backendService.requestArtifactTemplates().subscribe(data => {
             console.log('dA call to backendservice' + data);
-            this.deploymentArtifactModalData.deploymentArtifacts = data
+            this.deploymentArtifactModalData.deploymentArtifacts = data;
         });
         this.differ = this.differs.find([]).create(null);
         console.log(this.entityTypes);
