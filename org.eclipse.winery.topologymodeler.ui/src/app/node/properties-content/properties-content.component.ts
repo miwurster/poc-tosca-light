@@ -39,6 +39,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     propertyDefinitionType: string;
     @Input() currentNodeData: any;
     @Input() currentTableRowIndex: any;
+    @Input() currentElement: any;
     key: string;
 
     nodeProperties: any;
@@ -68,80 +69,72 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                     }
                 }
             } else if (this.currentNodeData.currentNodePart === 'CAPABILITIES') {
-                if (changes.currentNodeData.currentValue.currentCapType) {
-                    this.findOutPropertyDefinitionType(changes.currentNodeData.currentValue.currentCapType,
+                // checks if there is an incoming capability
+                if (changes.currentElement.currentValue) {
+                    // get type for determining which type of template is shown (KV, NONE, XML)
+                    const currentCapType = changes.currentElement.currentValue.type;
+                    this.findOutPropertyDefinitionType(currentCapType,
                         this.currentNodeData.entityTypes.capabilityTypes);
                     if (this.propertyDefinitionType === 'KV') {
-                        for (const cap of changes.currentNodeData.currentValue.nodeTemplate.capabilities.capability) {
-                            if (cap.type === changes.currentNodeData.currentValue.currentCapType &&
-                                cap.id === changes.currentNodeData.currentValue.currentCapId) {
-                                if (cap.properties) {
-                                    this.nodeProperties = cap.properties.kvproperties;
-                                } else {
-                                    this.currentNodeData.entityTypes.capabilityTypes.some(capType => {
-                                        if (capType.qName === this.currentNodeData.currentCapType) {
-                                            const kvProperties = capType.full.
-                                                serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].
-                                                any[0].propertyDefinitionKVList;
-                                            for (const obj of kvProperties) {
-                                                const key = obj.key;
-                                                const value = obj.type;
-                                                const keyValuePair = {
-                                                    [key]: value
-                                                };
-                                                this.nodeProperties = { ...this.nodeProperties, ...keyValuePair };
-                                            }
-                                        }
-                                    });
+                        // sets the properties of the capability if there are some
+                        if (this.currentElement.properties) {
+                            this.nodeProperties = this.currentElement.properties.kvproperties;
+                        } else {
+                            // if the capability has the type 'KV' but yet no properties, set the default ones from
+                            // the corresponding capabilityType
+                            this.currentNodeData.entityTypes.capabilityTypes.some(capType => {
+                                if (capType.qName === currentCapType) {
+                                    this.setKVProperties(capType);
                                 }
-                            }
+                            });
                         }
                     } else if (this.propertyDefinitionType === 'XML') {
-                        for (const cap of changes.currentNodeData.currentValue.nodeTemplate.capabilities.capability) {
-                            if (cap.type === changes.currentNodeData.currentValue.currentCapType) {
-                                if (cap.properties) {
-                                    this.nodeProperties = cap.properties.any;
+                        // sets the xml properties of the capability if there are some
+                        if (changes.currentElement.currentValue.properties) {
+                            this.nodeProperties = changes.currentElement.currentValue.properties.any;
+                        } else {
+                            // if the capability has the type 'XML' but yet no properties, set the default ones from
+                            // the corresponding capabilityType
+                            this.currentNodeData.entityTypes.capabilityTypes.some(capType => {
+                                if (capType.qName === currentCapType) {
+                                    this.nodeProperties = capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element;
                                 }
-                            }
+                            });
                         }
                     }
                 }
             } else if (this.currentNodeData.currentNodePart === 'REQUIREMENTS') {
-                if (changes.currentNodeData.currentValue.currentReqType) {
-                    this.findOutPropertyDefinitionType(changes.currentNodeData.currentValue.currentReqType,
+                // checks if there is an incoming requirement
+                if (changes.currentElement.currentValue) {
+                    // get type for determining which type of template is shown (KV, NONE, XML)
+                    const currentReqType = changes.currentElement.currentValue.type;
+                    this.findOutPropertyDefinitionType(currentReqType,
                         this.currentNodeData.entityTypes.requirementTypes);
                     if (this.propertyDefinitionType === 'KV') {
-                        for (const req of changes.currentNodeData.currentValue.nodeTemplate.requirements.requirement) {
-                            if (req.type === changes.currentNodeData.currentValue.currentReqType &&
-                                req.id === changes.currentNodeData.currentValue.currentReqId) {
-                                if (req.properties) {
-                                    this.nodeProperties = req.properties.kvproperties;
-                                } else {
-                                    this.currentNodeData.entityTypes.requirementTypes.some(capType => {
-                                        if (capType.qName === this.currentNodeData.currentReqType) {
-                                            const kvProperties = capType.full.
-                                                serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].
-                                                any[0].propertyDefinitionKVList;
-                                            for (const obj of kvProperties) {
-                                                const key = obj.key;
-                                                const value = obj.type;
-                                                const keyValuePair = {
-                                                    [key]: value
-                                                };
-                                                this.nodeProperties = { ...this.nodeProperties, ...keyValuePair };
-                                            }
-                                        }
-                                    });
+                        // sets the properties of the requirement if there are some
+                        if (this.currentElement.properties) {
+                            this.nodeProperties = this.currentElement.properties.kvproperties;
+                        } else {
+                            // if the requirement has the type 'KV' but yet no properties, set the default ones from
+                            // the corresponding requirementType
+                            this.currentNodeData.entityTypes.requirementTypes.some(reqType => {
+                                if (reqType.qName === currentReqType) {
+                                    this.setKVProperties(reqType);
                                 }
-                            }
+                            });
                         }
                     } else if (this.propertyDefinitionType === 'XML') {
-                        for (const req of changes.currentNodeData.currentValue.nodeTemplate.requirements.requirement) {
-                            if (req.type === changes.currentNodeData.currentValue.currentReqType) {
-                                if (req.properties) {
-                                    this.nodeProperties = req.properties.any;
+                        // sets the xml properties of the requirement if there are some
+                        if (changes.currentElement.currentValue.properties) {
+                            this.nodeProperties = changes.currentElement.currentValue.properties.any;
+                        } else {
+                            // if the requirement has the type 'XML' but yet no properties, set the default ones from
+                            // the corresponding requirementType
+                            this.currentNodeData.entityTypes.requirementTypes.some(reqType => {
+                                if (reqType.qName === currentReqType) {
+                                    this.nodeProperties = reqType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element;
                                 }
-                            }
+                            });
                         }
                     }
                 }
@@ -172,50 +165,11 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
             .subscribe(value => {
                 if (this.propertyDefinitionType === 'KV') {
                     this.nodeProperties[this.key] = value;
-                    if (this.currentNodeData.currentNodePart === 'CAPABILITIES') {
-                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties)) {
-                            const capability = {
-                                ...this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex],
-                                properties: { kvproperties: this.nodeProperties }
-                            };
-                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex] = capability;
-                        } else {
-                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties.kvproperties = this.nodeProperties;
-                        }
-                    } else if (this.currentNodeData.currentNodePart === 'REQUIREMENTS') {
-                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties)) {
-                            const requirement = {
-                                ...this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex],
-                                properties: { kvproperties: this.nodeProperties }
-                            };
-                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex] = requirement;
-                        } else {
-                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties.kvproperties = this.nodeProperties;
-                        }
-                    }
-                } else {
-                    if (this.currentNodeData.currentNodePart === 'CAPABILITIES') {
-                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties)) {
-                            const capability = {
-                                ...this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex],
-                                properties: { any: value }
-                            };
-                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex] = capability;
-                        } else {
-                            this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties.any = value;
-                        }
-                    } else if (this.currentNodeData.currentNodePart === 'REQUIREMENTS') {
-                        if (isNullOrUndefined(this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties)) {
-                            const requirement = {
-                                ...this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex],
-                                properties: { any: value }
-                            };
-                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex] = requirement;
-                        } else {
-                            this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties.any = value;
-                        }
-                    }
                 }
+                // function for updating the properties of requirement, capabilities etc.
+                // so that the reducer gets the whole capability, requirement etc. object,
+                // so then it just has to save it into the store, without further proceding
+                this.updatePropertiesInNodeTemplate(value);
                 switch (this.currentNodeData.currentNodePart) {
                     case 'DEPLOYMENT_ARTIFACTS':
                         this.$ngRedux.dispatch(this.actions.setDeploymentArtifactsProperty({
@@ -277,18 +231,76 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     }
 
     /**
+     * This function sets the node's KV properties corresponding to the type for new generated Elements which
+     * have the KV Properties type but yet no kv properties
+     * @param any type : the element type, e.g. capabilityType, requirementType etc.
+     */
+    setKVProperties(type: any): void {
+        const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+        for (const obj of kvProperties) {
+            const key = obj.key;
+            let value;
+            if (isNullOrUndefined(obj.value)) {
+                value = '';
+            } else {
+                value = obj.value;
+            }
+            const keyValuePair = {
+                [key]: value
+            };
+            this.nodeProperties = { ...this.nodeProperties, ...keyValuePair };
+        }
+    }
+
+    /**
+     * Subscribed to the textArea of the corresponding property component type the function updates the node template
+     * properties which are then ready to be saved to the redux store
+     * @param any value
+     */
+    updatePropertiesInNodeTemplate(value: any): void {
+        if (this.currentNodeData.currentNodePart === 'CAPABILITIES') {
+            if (isNullOrUndefined(this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties)) {
+                const capability = {
+                    ...this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex],
+                    properties: this.propertyDefinitionType === 'KV' ? { kvproperties: this.nodeProperties } : { any: value }
+                };
+                this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex] = capability;
+            } else {
+                if (this.propertyDefinitionType === 'KV') {
+                    this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties.kvproperties = this.nodeProperties;
+                } else {
+                    this.currentNodeData.nodeTemplate.capabilities.capability[this.currentTableRowIndex].properties.any = value;
+                }
+            }
+        } else if (this.currentNodeData.currentNodePart === 'REQUIREMENTS') {
+            if (isNullOrUndefined(this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties)) {
+                const requirement = {
+                    ...this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex],
+                    properties: this.propertyDefinitionType === 'KV' ? { kvproperties: this.nodeProperties } : { any: value }
+                };
+                this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex] = requirement;
+            } else {
+                if (this.propertyDefinitionType === 'KV') {
+                    this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties.kvproperties = this.nodeProperties;
+                } else {
+                    this.currentNodeData.nodeTemplate.requirements.requirement[this.currentTableRowIndex].properties.any = value;
+                }
+            }
+        }
+    }
+
+    /**
      * This function determines which kind of properties the nodeType embodies.
      * We have 3 possibilities: none, XML element, or Key value pairs.
-     * @param nodeType
-     * @param {any[]} groupedNodeTypes
+     * @param {string} type
      */
-    findOutPropertyDefinitionTypeForProperties(type: any): void {
+    findOutPropertyDefinitionTypeForProperties(type: string): void {
         if (this.currentNodeData.entityTypes.groupedNodeTypes) {
             for (const nameSpace of this.currentNodeData.entityTypes.groupedNodeTypes) {
                 for (const nodeTypeVar of nameSpace.children) {
                     if (nodeTypeVar.id === type) {
                         // if PropertiesDefinition doesn't exist then it must be of type NONE
-                        if (nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition == null) {
+                        if (isNullOrUndefined(nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition)) {
                             this.propertyDefinitionType = 'NONE';
                         } else {
                             // if no XML element inside PropertiesDefinition then it must be of type Key Value
@@ -308,9 +320,10 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     /**
      * This function determines which kind of capability, requirement properties the nodeType embodies.
      * We have 3 possibilities: none, XML element, or Key value pairs.
-     * @param {any[]} capabilities
+     * @param {string} type
+     * @param {any[]} typeArray
      */
-    findOutPropertyDefinitionType(type: any, typeArray: any[]): void {
+    findOutPropertyDefinitionType(type: string, typeArray: any[]): void {
         for (const capType of typeArray) {
             if (type === capType.qName) {
                 // if PropertiesDefinition doesn't exist then it must be of type NONE

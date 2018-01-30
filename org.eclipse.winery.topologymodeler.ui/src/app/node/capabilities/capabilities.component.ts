@@ -48,6 +48,8 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
     tblRowClicked: boolean;
     currentTableRowIndex: number;
     subscription: Subscription;
+    currentCapId: string;
+    currentCapability: CapabilityModel;
 
     constructor(private ngRedux: NgRedux<IWineryState>,
                 private differs: KeyValueDiffers) {
@@ -86,28 +88,23 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
      */
     public checkForProperties($event) {
         this.tblRowClicked = false;
-        setTimeout(() => {
-            if ($event.srcElement.nextElementSibling) {
-                if ($event.srcElement.nextElementSibling.nextElementSibling) {
-                    this.currentNodeData.currentCapType = $event.srcElement.nextElementSibling.nextElementSibling.textContent;
-                } else {
-                    this.currentNodeData.currentCapType = $event.srcElement.nextElementSibling.textContent;
-                }
-            } else {
-                this.currentNodeData.currentCapType = $event.srcElement.textContent;
-            }
-            this.tblRowClicked = true;
-        }, 1);
+        this.currentCapability = null;
         setTimeout(() => {
             if ($event.srcElement.previousElementSibling) {
                 if ($event.srcElement.previousElementSibling.previousElementSibling) {
-                    this.currentNodeData.currentCapId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
+                    this.currentCapId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
                 } else {
-                    this.currentNodeData.currentCapId = $event.srcElement.previousElementSibling.textContent;
+                    this.currentCapId = $event.srcElement.previousElementSibling.textContent;
                 }
             } else {
-                this.currentNodeData.currentCapId = $event.srcElement.textContent;
+                this.currentCapId = $event.srcElement.textContent;
             }
+            this.capabilities.some(cap => {
+                if (cap.id === this.currentCapId) {
+                    this.currentCapability = cap;
+                    return true;
+                }
+            });
             this.tblRowClicked = true;
         }, 1);
     }

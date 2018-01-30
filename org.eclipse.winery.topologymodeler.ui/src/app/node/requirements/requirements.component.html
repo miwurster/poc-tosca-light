@@ -35,7 +35,8 @@
     <div *ngIf="tblRowClicked">
         <winery-properties-content
             [currentTableRowIndex]= "currentTableRowIndex"
-            [currentNodeData]=currentNodeData>
+            [currentNodeData]=currentNodeData
+            [currentElement]="currentRequirement">
         </winery-properties-content>
     </div>
 

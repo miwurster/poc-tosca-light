@@ -27,6 +27,7 @@ import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../../redux/store/winery.store';
 import { Subscription } from 'rxjs/Subscription';
 import { RequirementModel } from '../../models/requirementModel';
+import { CapabilityModel } from '../../models/capabilityModel';
 
 @Component({
     selector: 'winery-requirements',
@@ -46,6 +47,8 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
     tblRowClicked: boolean;
     currentTableRowIndex: number;
     subscription: Subscription;
+    currentReqId: string;
+    currentRequirement: RequirementModel;
 
     constructor (private ngRedux: NgRedux<IWineryState>) {
         this.toggleModalHandler = new EventEmitter();
@@ -83,28 +86,23 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
      */
     public checkForProperties($event) {
         this.tblRowClicked = false;
-        setTimeout(() => {
-            if ($event.srcElement.nextElementSibling) {
-                if ($event.srcElement.nextElementSibling.nextElementSibling) {
-                    this.currentNodeData.currentReqType = $event.srcElement.nextElementSibling.nextElementSibling.textContent;
-                } else {
-                    this.currentNodeData.currentReqType = $event.srcElement.nextElementSibling.textContent;
-                }
-            } else {
-                this.currentNodeData.currentReqType = $event.srcElement.textContent;
-            }
-            this.tblRowClicked = true;
-        }, 1);
+        this.currentRequirement = null;
         setTimeout(() => {
             if ($event.srcElement.previousElementSibling) {
                 if ($event.srcElement.previousElementSibling.previousElementSibling) {
-                    this.currentNodeData.currentReqId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
+                    this.currentReqId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
                 } else {
-                    this.currentNodeData.currentReqId = $event.srcElement.previousElementSibling.textContent;
+                    this.currentReqId = $event.srcElement.previousElementSibling.textContent;
                 }
             } else {
-                this.currentNodeData.currentReqId = $event.srcElement.textContent;
+                this.currentReqId = $event.srcElement.textContent;
             }
+            this.requirements.some(req => {
+                if (req.id === this.currentReqId) {
+                    this.currentRequirement = req;
+                    return true;
+                }
+            });
             this.tblRowClicked = true;
         }, 1);
     }

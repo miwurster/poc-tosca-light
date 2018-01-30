@@ -33,10 +33,11 @@
     </table>
 
     <div *ngIf="tblRowClicked">
-    <winery-properties-content
-        [currentTableRowIndex]= "currentTableRowIndex"
-        [currentNodeData]="currentNodeData">
-    </winery-properties-content>
+        <winery-properties-content
+            [currentTableRowIndex]="currentTableRowIndex"
+            [currentNodeData]="currentNodeData"
+            [currentElement]="currentCapability">
+        </winery-properties-content>
     </div>
 
 </div>
