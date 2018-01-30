@@ -62,7 +62,7 @@
                 <div class="form-group">
                     <label for="policyName" class="control-label">Name:</label>
                     <input [(ngModel)]="policies.policyTemplateName" id="policyName" class="form-control" name="Name"
-                           type="text" required="required"/>
+                           type="text" required/>
                 </div>
 
                 <div class="form-group">
@@ -72,9 +72,9 @@
                             name="policyType"
                             class="form-control"
                             type="text"
-                            required="required"
+                            required
                             (change)="onChangePolicyType($event.target.value)">
-                        <option *ngFor="let policyType of policies.policyTypes" [value]="policyType.id">
+                        <option *ngFor="let policyType of policies.policyTypes" [value]="policyType.qName">
                             {{policyType.id}}
                         </option>
                     </select>
@@ -88,7 +88,7 @@
                             class="form-control"
                             name="policyTemplate"
                             (change)="onChangePolicyTemplate($event.target.value)">
-                        <option *ngFor="let policyTemplate of policies.policyTemplates" [value]="policyTemplate.id">
+                        <option *ngFor="let policyTemplate of policies.policyTemplates" [value]="policyTemplate.qName">
                             {{policyTemplate.id}}
                         </option>
                     </select>
@@ -244,8 +244,9 @@
                                checked="checked" id="createArtifactTemplateInput"
                                [(ngModel)]="deploymentArtifactSelectedRadioButton"/>Create Artifact Template
                     </label>
-                    <p class="help-block">Check if you want to upload <strong>new</strong> files, you do not want to
-                        reuse existing files and you do not point to an image library.</p>
+                    <p class="help-block">If you want to add files to this deployment artifact you can do so via <a
+                        target="_blank" href="{{getHostUrl()+'#/nodetypeimplementations'}}">Winery's management UI</a>,
+                        after creating this deployment artifact.</p>
                 </div>
                 <div class="radio">
                     <label>
@@ -294,10 +295,24 @@
                         <input [(ngModel)]="deploymentArtifactModalData.artifactTemplateName"
                                class="artifactData form-control"
                                id="artifactTemplateName" name="artifactTemplateName" type="text" required
-                               autocomplete="on" placeholder="Enter name for artifact template"/>
+                               autocomplete="on"
+                               (keyup)="checkIfArtifactTemplateAlreadyExists($event)"
+                               placeholder="Enter name for artifact template"
+                               #artifactTemplateName="ngModel"/>
                         <div id="artifactTemplateNameIsValid" class="invalid">
                             <span id="artifactTemplateNameIsInvalidReason"></span>
                         </div>
+                        <div class="alert alert-info"
+                             *ngIf="artifactTemplateAlreadyExists && (artifactTemplateName.dirty || artifactTemplateName.touched) &&
+                            artifactTemplateName.valid">
+                            Artifact Template with this name already exists.
+                        </div>
+                        <div class="alert alert-success"
+                             *ngIf="!artifactTemplateAlreadyExists && (artifactTemplateName.dirty || artifactTemplateName.touched) &&
+                            artifactTemplateName.valid">
+                            Will be created.
+                        </div>
+
                     </div>
 
                     <!-- createArtifactTemplate class is required for artifactcreationdialog -->
@@ -305,7 +320,11 @@
                         <label for="artifactTemplateNS" class="control-label">Namespace</label>
                         <input [(ngModel)]="deploymentArtifactModalData.artifactTemplateNameSpace" type="text"
                                class="form-control"
-                               name="artifactTemplateNS" id="artifactTemplateNS" disabled/>
+                               name="artifactTemplateNS"
+                               id="artifactTemplateNS"
+                               (blur)="updateSelectedNamespaceInDeploymentArtifactModalData($event)"
+                               [typeahead]="allNamespaces"
+                               typeaheadOptionField="namespace"/>
                     </div>
                 </div>
                 <!-- linkArtifactTemplate -->
@@ -313,19 +332,14 @@
                      *ngIf="deploymentArtifactSelectedRadioButton === 'linkArtifactTemplate'">
                     <label for="divArtifactTemplateToLink">Artifact Template</label>
                     <div id="divArtifactTemplateToLink">
-
                         <select id=artifactTemplateToLink name="artifactTemplate"
                                 class="form-control"
                                 required
-                                (change)="updateDeploymentArtifactModalData($event.target.value)"
-                                style="max-width: 90%">
-                            <optgroup *ngFor="let namespace of deploymentArtifactModalData.artifactTemplates"
-                                      label="{{namespace.text}}">
-                                <option *ngFor="let artifactTemplate of namespace.children"
-                                        [value]="artifactTemplate | json">
-                                    {{artifactTemplate.text}}
-                                </option>
-                            </optgroup>
+                                (change)="updateDeploymentArtifactModalData($event.target.value)">
+                            <option *ngFor="let artifactTemplate of deploymentArtifactModalData.artifactTemplates"
+                                    [value]="artifactTemplate | json">
+                                {{artifactTemplate.name}}
+                            </option>
                         </select>
 
                         <a href="#" target="_blank" class="btn btn-info btn-sm" id="viewArtifactTemplateToLink">open</a>
@@ -338,6 +352,8 @@
         <button type="button" id="cancelDeploymentArtifacts" class="btn btn-default"
                 (click)="resetDeploymentArtifactModalData()">Cancel
         </button>
-        <button type="button" class="btn btn-primary" [disabled]="addDeploymentArtifactForm.form.invalid" (click)="addDeploymentArtifactConfirmed()">Add</button>
+        <button type="button" class="btn btn-primary" [disabled]="addDeploymentArtifactForm.form.invalid"
+                (click)="addDeploymentArtifactConfirmed()">Add
+        </button>
     </winery-modal-footer>
 </winery-modal>

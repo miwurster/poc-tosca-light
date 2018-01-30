@@ -13,8 +13,20 @@
  ********************************************************************************/
 
 import {
-    AfterViewInit, Component, DoCheck, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnDestroy, OnInit,
-    QueryList, Renderer2, ViewChild, ViewChildren
+    AfterViewInit,
+    Component,
+    DoCheck,
+    ElementRef,
+    HostListener,
+    Input,
+    KeyValueDiffers,
+    NgZone,
+    OnDestroy,
+    OnInit,
+    QueryList,
+    Renderer2,
+    ViewChild,
+    ViewChildren
 } from '@angular/core';
 import { JsPlumbService } from '../jsPlumbService';
 import { TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
@@ -31,19 +43,20 @@ import { GridTemplate } from 'app/models/gridTemplate';
 import { Subscription } from 'rxjs/Subscription';
 import { CapabilitiesModalData } from '../models/capabilitiesModalData';
 import { RequirementsModalData } from '../models/requirementsModalData';
-import { PoliciesModalData } from '../models/policiesModalData';
+import { PoliciesModalData, TPolicy } from '../models/policiesModalData';
 import { ArtifactsModalData, TDeploymentArtifact } from '../models/artifactsModalData';
 import { NodeIdAndFocusModel } from '../models/nodeIdAndFocusModel';
 import { ToggleModalDataModel } from '../models/toggleModalDataModel';
 import { WineryAlertService } from '../winery-alert/winery-alert.service';
 import { BackendService } from '../backend.service';
-import { backendBaseURL } from '../configuration';
-import { QName } from '../qname';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { backendBaseURL, hostURL } from '../configuration';
+import { FormGroup } from '@angular/forms';
 import { CapabilityModel } from '../models/capabilityModel';
 import { isNullOrUndefined } from 'util';
 import { RequirementModel } from '../models/requirementModel';
 import { EntityTypesModel } from '../models/entityTypesModel';
+import { ExistsService } from '../exists.service';
+import { GenerateArtifactApiData } from '../generateArtifactApiData';
 
 @Component({
     selector: 'winery-canvas',
@@ -99,8 +112,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     // deployment artifact modal
     deploymentArtifactSelectedRadioButton = 'createArtifactTemplate';
     deploymentArtifactSelectedOperation = '';
+    artifactTemplateAlreadyExists: boolean;
     newArtifact: any;
-    artifact: any;
+    artifact: GenerateArtifactApiData = new GenerateArtifactApiData();
+    allNamespaces;
     artifactUrl: string;
     uploadUrl: string;
     form: FormGroup;
@@ -116,7 +131,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 private renderer: Renderer2,
                 private alert: WineryAlertService,
                 private differs: KeyValueDiffers,
-                private backendService: BackendService) {
+                private backendService: BackendService,
+                private existsService: ExistsService) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
         console.log(this.newJsPlumbInstance);
@@ -213,14 +229,14 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 }
                 break;
             case 'DEPLOYMENT_ARTIFACTS':
-                this.deploymentArtifactModal.show();
                 try {
-                    this.deploymentArtifactModalData.deploymentArtifacts = this.entityTypes.deploymentArtifacts;
-                    this.deploymentArtifactModalData.artifactTypes = this.entityTypes.artifactTypes;
                     this.deploymentArtifactModalData.artifactTemplates = this.entityTypes.artifactTemplates;
+                    this.deploymentArtifactModalData.artifactTypes = this.entityTypes.artifactTypes;
                 } catch (e) {
-                    this.deploymentArtifactModalData.deploymentArtifacts = '';
+                    this.backendService.requestArtifactTemplates();
                 }
+                this.deploymentArtifactModalData.nodeTemplateId = currentNodeData.id;
+                this.deploymentArtifactModal.show();
                 break;
             case 'REQUIREMENTS':
                 this.requirementsModal.show();
@@ -250,11 +266,29 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      */
     addDeploymentArtifactConfirmed() {
         if (this.deploymentArtifactSelectedRadioButton === 'createArtifactTemplate') {
-            console.log('upload function not done yet');
-            /*this.newArtifact.autoCreateArtifactTemplate = 'true';
-            this.newArtifact.artifactTemplateName = this.artifact.name ? this.artifact.name : '';
-            this.newArtifact.artifactTemplateNamespace = this.artifact.namespace ? this.artifact.namespace : '';
-            this.makeArtifactUrl();*/
+            this.artifact.autoCreateArtifactTemplate = 'true';
+            this.artifact.artifactName = this.deploymentArtifactModalData.artifactName;
+            this.artifact.artifactTemplateName = this.deploymentArtifactModalData.artifactTemplateName;
+            this.artifact.artifactTemplateNamespace = this.deploymentArtifactModalData.artifactTemplateNameSpace;
+            this.artifact.artifactType = this.deploymentArtifactModalData.artifactType;
+            // POST to the backend
+            // Todo: POST to the backend
+            /*this.backendService.createNewArtifact(this.artifact, this.deploymentArtifactModalData.nodeTemplateId)
+                .subscribe(res => {
+                    res.ok === true ? this.alert.success('<p>Saved the Deployment Artifact!<br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>')
+                        : this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>');
+                });*/
+            const deploymentArtifactToBeSavedToRedux: TDeploymentArtifact = new TDeploymentArtifact(
+                [],
+                [],
+                {},
+                this.deploymentArtifactModalData.artifactName,
+                this.deploymentArtifactModalData.artifactType,
+                this.deploymentArtifactModalData.artifactTemplateRef
+            );
+            this.saveDeploymentArtifactsToModel(deploymentArtifactToBeSavedToRedux);
         } else if (this.deploymentArtifactSelectedRadioButton === 'linkArtifactTemplate') {
             // with artifactRef
             const deploymentArtifactToBeSavedToRedux: TDeploymentArtifact = new TDeploymentArtifact(
@@ -265,7 +299,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.deploymentArtifactModalData.artifactType,
                 this.deploymentArtifactModalData.artifactTemplateRef
             );
-            console.log(deploymentArtifactToBeSavedToRedux);
             this.saveDeploymentArtifactsToModel(deploymentArtifactToBeSavedToRedux);
         } else if (this.deploymentArtifactSelectedRadioButton === 'skipArtifactTemplate') {
             // without artifactRef
@@ -291,6 +324,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         //     data => this.handlePostResponse(),
         //     error => this.showError(error)
         // );
+    }
+
+    getHostUrl(): string {
+        return hostURL;
     }
 
     /**
@@ -406,14 +443,34 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         const atObject: any = JSON.parse(artifactTemplate);
         console.log(atObject);
         console.log(artifactTemplate);
-        this.deploymentArtifactModalData.artifactTemplateNameSpace = atObject.full.targetNamespace;
-        this.deploymentArtifactModalData.artifactTemplateName = atObject.full.text;
-        this.deploymentArtifactModalData.artifactTemplateRef = atObject.id;
+        this.deploymentArtifactModalData.artifactTemplateNameSpace = atObject.namespace;
+        this.deploymentArtifactModalData.artifactTemplateName = atObject.name;
+        this.deploymentArtifactModalData.artifactTemplateRef = atObject.qName;
+
         // if reference to download files is required
         // this.deploymentArtifactModalData.artifactTemplateRef =
         // atObject.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].artifactReferences.artifactReference[0].reference;
         this.deploymentArtifactModalData.artifactType = atObject.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].type;
         console.log(this.deploymentArtifactModalData);
+    }
+
+    checkIfArtifactTemplateAlreadyExists(event: any) {
+        this.deploymentArtifactModalData.artifactTemplateName = event.target.value;
+        if (!isNullOrUndefined(this.deploymentArtifactModalData.artifactTemplateNameSpace &&
+                this.deploymentArtifactModalData.artifactTemplateName)) {
+            const url = backendBaseURL + '/artifacttemplates/'
+                + encodeURIComponent(encodeURIComponent(this.deploymentArtifactModalData.artifactTemplateNameSpace)) + '/'
+                + this.deploymentArtifactModalData.artifactTemplateName + '/';
+            this.existsService.check(url)
+                .subscribe(
+                    data => this.artifactTemplateAlreadyExists = true,
+                    error => this.artifactTemplateAlreadyExists = false
+                );
+        }
+    }
+
+    updateSelectedNamespaceInDeploymentArtifactModalData(event: any) {
+        this.deploymentArtifactModalData.artifactTemplateNameSpace = event.target.value;
     }
 
     /**
@@ -432,18 +489,18 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * Saves a policy template to the model and gets pushed into the Redux state of the application
      */
     savePoliciesToModel(): void {
-        const policies = {
+        const policyToBeAddedToRedux: TPolicy = new TPolicy(
+                this.policies.policyTemplateName,
+                this.policies.policyTemplate,
+                this.policies.policyType,
+                [],
+                [],
+                {});
+        const actionObject = {
             nodeId: this.currentModalData.id,
-            templateId: this.policies.policyTemplateId,
-            templateName: this.policies.policyTemplateName,
-            templateNamespace: this.policies.policyTemplateNamespace,
-            templateQName: this.policies.policyTemplateQName,
-            typeId: this.policies.policyTypeId,
-            typeName: this.policies.policyTypeName,
-            typeNamespace: this.policies.policyTypeNamespace,
-            typeQName: this.policies.policyTypeQName,
+            newPolicy: policyToBeAddedToRedux
         };
-        this.ngRedux.dispatch(this.actions.setPolicy(policies));
+        this.ngRedux.dispatch(this.actions.setPolicy(actionObject));
         this.resetPolicies();
     }
 
@@ -457,7 +514,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.policies.policyTemplateName = policy.name;
                 this.policies.policyTemplateNamespace = policy.namespace;
                 this.policies.policyTemplateQName = policy.qName;
-                this.policies.policyType = policyTemplate.substring(0, policyTemplate.indexOf('-'));
                 return true;
             }
         });
@@ -719,7 +775,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             const conn = this.newJsPlumbInstance.connect({
                 source: newRelationship.sourceElement.ref,
                 target: newRelationship.targetElement.ref,
-                overlays: [['Arrow', { width: 15, length: 15, location: 1, id: 'arrow', direction: 1 }],
+                overlays: [['Arrow', {width: 15, length: 15, location: 1, id: 'arrow', direction: 1}],
                     ['Label', {
                         label: type,
                         id: 'label',
@@ -808,7 +864,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         if (!this.dragSourceActive && !currentNodeIsSource && nodeArrayLength > 1) {
             this.newJsPlumbInstance.makeSource(dragSourceInfo.dragSource, {
                 connectorOverlays: [
-                    ['Arrow', { location: 1 }],
+                    ['Arrow', {location: 1}],
                 ],
             });
             this.dragSourceInfos = dragSourceInfo;
@@ -1035,7 +1091,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                         stroke: relType.color,
                         strokeWidth: 2
                     },
-                    hoverPaintStyle: { stroke: 'red', strokeWidth: 5 }
+                    hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
                 });
         }
         const allJsPlumbConnections = this.newJsPlumbInstance.getAllConnections();
@@ -1059,8 +1115,19 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 strokeWidth: 5
             }
         });
+        this.backendService.requestArtifactTemplates().subscribe(data => {
+            console.log('dA call to backendservice' + data);
+            this.deploymentArtifactModalData.deploymentArtifacts = data
+        });
         this.differ = this.differs.find([]).create(null);
         console.log(this.entityTypes);
+        this.backendService.requestNamespaces()
+            .subscribe(
+                data => {
+                    this.allNamespaces = data;
+                },
+                error => this.alert.info((error.toString()))
+            );
     }
 
     /*
@@ -1265,8 +1332,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
 
     private makeArtifactUrl() {
         this.artifactUrl = backendBaseURL + '/artifacttemplates/' + encodeURIComponent(encodeURIComponent(
-            this.newArtifact.artifactTemplateNamespace)) + '/' + this.newArtifact.artifactTemplateName + '/';
-        this.uploadUrl = this.artifactUrl + 'files/';
+            this.deploymentArtifactModalData.artifactTemplateNameSpace)) + '/' + this.deploymentArtifactModalData.artifactTemplateName + '/';
+        // TODO: add upload ability "this.uploadUrl = this.artifactUrl + 'files/';"
     }
 
     /**
@@ -1446,8 +1513,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
                     if (relTypeExists === false && sourceElement !== targetElement) {
                         const newRelationship = new TRelationshipTemplate(
-                            { ref: sourceElement },
-                            { ref: targetElement },
+                            {ref: sourceElement},
+                            {ref: targetElement},
                             relationshipId,
                             relationshipId,
                             this.currentType
