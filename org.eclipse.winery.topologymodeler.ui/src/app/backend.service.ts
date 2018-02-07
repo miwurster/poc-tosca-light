@@ -17,7 +17,7 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 import 'rxjs/add/operator/catch';
 import { ActivatedRoute } from '@angular/router';
-import { backendBaseURL, hostURL } from './configuration';
+import { backendBaseURL } from './configuration';
 import { Subject } from 'rxjs/Subject';
 import { isNullOrUndefined } from 'util';
 import { TTopologyTemplate, Visuals } from './models/ttopology-template';

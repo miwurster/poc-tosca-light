@@ -23,6 +23,6 @@ export class RequirementsModalData {
                 public reqType?: string,
                 public reqDefinitionName?: string,
                 public requirements?: any,
-                public reqDefinitionNames?: any,
+                public reqDefinitionNames?: Array<string>,
                 public nodeId?: string) { }
 }
