@@ -15,15 +15,17 @@
 import {
     AfterViewInit,
     Component,
-    ComponentRef, DoCheck,
+    ComponentRef,
+    DoCheck,
     ElementRef,
     EventEmitter,
-    Input, KeyValueDiffers,
+    Input,
+    KeyValueDiffers,
     NgZone,
     OnDestroy,
     OnInit,
     Output,
-    Renderer2
+    Renderer2, ViewChild
 } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
 import { ButtonsStateModel } from '../models/buttonsState.model';
@@ -32,6 +34,7 @@ import { IWineryState } from '../redux/store/winery.store';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { hostURL } from '../configuration';
 import { TNodeTemplate } from '../models/ttopology-template';
+import { ModalDirective } from 'ngx-bootstrap';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -85,6 +88,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     @Output() sendNodeData: EventEmitter<any>;
     @Input() allRelationshipTypesColors: Array<string>;
     @Input() nodeTemplate: TNodeTemplate;
+
     previousPosition: any;
     currentPosition: any;
     nodeRef: ComponentRef<Component>;
@@ -96,16 +100,12 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     // differ object for detecting changes made to the nodeTemplate object for DoCheck
     differ: any;
 
-    public addItem (): void {
-        this.items.push(`Items ${this.items.length + 1}`);
-    }
-
-    constructor (private zone: NgZone,
-                 private $ngRedux: NgRedux<IWineryState>,
-                 private actions: WineryActions,
-                 private elRef: ElementRef,
-                 private renderer: Renderer2,
-                 private differs: KeyValueDiffers) {
+    constructor(private zone: NgZone,
+                private $ngRedux: NgRedux<IWineryState>,
+                private actions: WineryActions,
+                private elRef: ElementRef,
+                private renderer: Renderer2,
+                private differs: KeyValueDiffers) {
         this.sendId = new EventEmitter();
         this.askForRepaint = new EventEmitter();
         this.setDragSource = new EventEmitter();
@@ -121,16 +121,28 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     }
 
     /**
+     *  Parse the localName of the NodeType
+     */
+    get nodeTypeLocalName() {
+        return this.nodeTemplate.type.split('}').pop();
+        // return this.nodeTemplate.type ? new QName(this.nodeTemplate.type).localName : JSON.stringify({});
+    }
+
+    public addItem(): void {
+        this.items.push(`Items ${this.items.length + 1}`);
+    }
+
+    /**
      * Angular lifecycle event.
      */
-    ngOnInit () {
+    ngOnInit() {
         this.differ = this.differs.find([]).create(null);
     }
 
     /**
      * Angular lifecycle event.
      */
-    ngDoCheck () {
+    ngDoCheck() {
         const nodeTemplateChanges = this.differ.diff(this.nodeTemplate);
         if (nodeTemplateChanges) {
         }
@@ -139,7 +151,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     /**
      * Triggered when opening a modal to send node data to the canvas for handling the addition of modal data.
      */
-    sendToggleAction (nodeData: any): void {
+    sendToggleAction(nodeData: any): void {
         const currentNodeData = {...this.nodeTemplate, ...nodeData};
         this.sendNodeData.emit(currentNodeData);
     }
@@ -147,7 +159,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     /**
      * Angular lifecycle event.
      */
-    ngAfterViewInit (): void {
+    ngAfterViewInit(): void {
         this.sendId.emit(this.nodeTemplate.id);
         this.visibilityState = 'visible';
     }
@@ -156,7 +168,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Stops the event propagation to the canvas etc. and repaints.
      * @param $event
      */
-    repaint ($event) {
+    repaint($event) {
         $event.stopPropagation();
         setTimeout(() => this.askForRepaint.emit('Repaint'), 1);
     }
@@ -165,7 +177,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Sets the current type of a node.
      * @param $event
      */
-    passCurrentType ($event): void {
+    passCurrentType($event): void {
         $event.stopPropagation();
         $event.preventDefault();
         let currentType: string;
@@ -178,18 +190,10 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     }
 
     /**
-     *  Parse the localName of the NodeType
-     */
-    get nodeTypeLocalName () {
-        return this.nodeTemplate.type.split('}').pop();
-        // return this.nodeTemplate.type ? new QName(this.nodeTemplate.type).localName : JSON.stringify({});
-    }
-
-    /**
      * Handler for mousedown events, toggles visibility of node attributes
      * @param $event
      */
-    mouseDownHandler ($event): void {
+    mouseDownHandler($event): void {
         this.unmarkConnections.emit();
         this.startTime = new Date().getTime();
         this.repaint(new Event('repaint'));
@@ -220,7 +224,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * If a node is moved, this saves the current position of the node into the store.
      * @param $event
      */
-    mouseMove ($event): void {
+    mouseMove($event): void {
         const offsetLeft = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetLeft;
         const offsetTop = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetTop;
         this.currentPosition = {
@@ -234,7 +238,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Checks if it was a click or a drag operation on the node.
      * @param $event
      */
-    mouseUpHandler ($event): void {
+    mouseUpHandler($event): void {
         // mouseup
         this.endTime = new Date().getTime();
         this.testTimeDifference($event);
@@ -253,7 +257,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     /**
      * CSS flash effect.
      */
-    flash (flashType: string): void {
+    flash(flashType: string): void {
         if (flashType === 'name') {
             this.setFlash = true;
             setTimeout(() => this.setFlash = false, this.flashTimer);
@@ -270,7 +274,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * If it was a click operation, close the connector endpoints for relations
      * @param $event
      */
-    closeConnectorEndpoints ($event): void {
+    closeConnectorEndpoints($event): void {
         $event.stopPropagation();
         if (!this.longpress && !$event.ctrlKey) {
             this.closedEndpoint.emit(this.nodeTemplate.id);
@@ -279,22 +283,10 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     }
 
     /**
-     * Checks if it was a click or a drag operation on the node.
-     * @param $event
-     */
-    private testTimeDifference ($event): void {
-        if ((this.endTime - this.startTime) < 200) {
-            this.longpress = false;
-        } else if (this.endTime - this.startTime >= 200) {
-            this.longpress = true;
-        }
-    }
-
-    /**
      * Creates a dragoperation for nodes
      * @param $event
      */
-    makeSource ($event): void {
+    makeSource($event): void {
         const dragSourceInfo = {
             dragSource: this.dragSource,
             nodeId: this.nodeTemplate.id
@@ -306,7 +298,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Only display the sidebar if the click is no longpress (drag)
      * @param $event
      */
-    openSidebar ($event): void {
+    openSidebar($event): void {
         $event.stopPropagation();
         // close sidebar when longpressing a node template
         if (this.longpress) {
@@ -347,10 +339,22 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     /**
      * Angular lifecycle event.
      */
-    ngOnDestroy (): void {
+    ngOnDestroy(): void {
         this.askForRemoval.emit(this.nodeTemplate.id);
         if (this.nodeRef) {
             this.nodeRef.destroy();
+        }
+    }
+
+    /**
+     * Checks if it was a click or a drag operation on the node.
+     * @param $event
+     */
+    private testTimeDifference($event): void {
+        if ((this.endTime - this.startTime) < 200) {
+            this.longpress = false;
+        } else if (this.endTime - this.startTime >= 200) {
+            this.longpress = true;
         }
     }
 }

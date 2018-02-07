@@ -31,7 +31,8 @@ export class PoliciesModalData {
                 public policyTypeName?: string,
                 public policyTypeNamespace?: any,
                 public policyTypeQName?: any,
-                public policies?: any) {
+                public policies?: any,
+                public nodeTemplateId?: string) {
     }
 }
 

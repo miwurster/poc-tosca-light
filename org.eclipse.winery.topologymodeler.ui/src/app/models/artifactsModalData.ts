@@ -17,7 +17,7 @@ import { QName } from '../qname';
 /**
  * Encompasses the artifacts data defined by the user when using the modal
  */
-export class ArtifactsModalData {
+export class DeploymentArtifactsModalData {
 
     constructor(public id?: string,
                 public artifactName?: string,

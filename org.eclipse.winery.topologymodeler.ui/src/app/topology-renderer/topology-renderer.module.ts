@@ -37,10 +37,11 @@ import { PoliciesComponent } from '../node/policies/policies.component';
 import { DeploymentArtifactsComponent } from '../node/deployment-artifacts/deployment-artifacts.component';
 import { WineryModalModule } from '../../repositoryUiDependencies/wineryModalModule/winery.modal.module';
 import { CapabilitiesComponent } from '../node/capabilities/capabilities.component';
-import {PropertiesContentComponent} from '../node/properties-content/properties-content.component';
+import { PropertiesContentComponent } from '../node/properties-content/properties-content.component';
 import { KeysPipe } from '../keys.pipe';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { ToscatypeTableComponent } from '../node/toscatype-table/toscatype-table.component';
+import { EntitiesModalComponent } from '../canvas/entities-modal/entities-modal.component';
 
 @NgModule({
     imports: [
@@ -71,6 +72,7 @@ import { ToscatypeTableComponent } from '../node/toscatype-table/toscatype-table
         CapabilitiesComponent,
         PropertiesContentComponent,
         ToscatypeTableComponent,
+        EntitiesModalComponent,
         KeysPipe
     ],
     exports: [

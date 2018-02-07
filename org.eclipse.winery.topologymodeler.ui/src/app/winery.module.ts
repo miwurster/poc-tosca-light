@@ -40,21 +40,20 @@ import { BackendService } from './backend.service';
 import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule/winery.modal.module';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { ExistsService } from './exists.service';
-import { ToscatypeTableComponent } from './node/toscatype-table/toscatype-table.component';
 
 @NgModule({
     declarations: [
         WineryComponent,
         PaletteComponent,
         SidebarComponent,
-        PrintViewComponent
+        PrintViewComponent,
     ],
     exports: [],
     imports: [
         BrowserModule,
         FormsModule,
         HttpModule,
-        RouterModule.forRoot([{ path: '**', redirectTo: '', pathMatch: 'full' }]),
+        RouterModule.forRoot([{path: '**', redirectTo: '', pathMatch: 'full'}]),
         BrowserAnimationsModule,
         NgReduxModule,
         BsDropdownModule.forRoot(),
@@ -67,7 +66,7 @@ import { ToscatypeTableComponent } from './node/toscatype-table/toscatype-table.
         TypeaheadModule.forRoot()
     ],
     providers: [
-        { provide: ToastOptions, useClass: WineryCustomOption },
+        {provide: ToastOptions, useClass: WineryCustomOption},
         JsPlumbService,
         WineryActions,
         TopologyRendererActions,
