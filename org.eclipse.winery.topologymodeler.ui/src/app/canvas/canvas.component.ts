@@ -955,6 +955,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     if (con.hasType('marked')) {
                         this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(con.id));
                         this.newJsPlumbInstance.deleteConnection(con);
+                        this.hideSidebar();
                     }
                 }
             }
