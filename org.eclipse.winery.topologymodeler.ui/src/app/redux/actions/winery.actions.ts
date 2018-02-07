@@ -95,6 +95,10 @@ export interface DeleteNodeAction extends Action {
     nodeTemplateId: string;
 }
 
+export interface DeleteRelationshipAction extends Action {
+    nodeTemplateId: string;
+}
+
 export interface UpdateRelationshipNameAction extends Action {
     relData: {
         newRelName: string,
@@ -200,6 +204,7 @@ export class WineryActions {
     static SAVE_NODE_TEMPLATE = 'SAVE_NODE_TEMPLATE';
     static SAVE_RELATIONSHIP = 'SAVE_RELATIONSHIP';
     static DELETE_NODE_TEMPLATE = 'DELETE_NODE_TEMPLATE';
+    static DELETE_RELATIONSHIP_TEMPLATE = 'DELETE_RELATIONSHIP_TEMPLATE';
     static CHANGE_NODE_NAME = 'CHANGE_NODE_NAME';
     static OPEN_SIDEBAR = 'OPEN_SIDEBAR';
     static UPDATE_NODE_COORDINATES = 'UPDATE_NODE_COORDINATES';
@@ -285,6 +290,11 @@ export class WineryActions {
         ((deletedNodeId) => ({
             type: WineryActions.DELETE_NODE_TEMPLATE,
             nodeTemplateId: deletedNodeId
+        }));
+    deleteRelationshipTemplate: ActionCreator<DeleteRelationshipAction> =
+        ((deletedRelationshipId) => ({
+            type: WineryActions.DELETE_RELATIONSHIP_TEMPLATE,
+            nodeTemplateId: deletedRelationshipId
         }));
     updateNodeCoordinates: ActionCreator<UpdateNodeCoordinatesAction> =
         ((currentNodeCoordinates) => ({

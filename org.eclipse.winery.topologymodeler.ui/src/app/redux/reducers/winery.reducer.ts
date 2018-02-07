@@ -16,7 +16,7 @@ import { Action } from 'redux';
 import {
     DecMaxInstances,
     DecMinInstances,
-    DeleteNodeAction,
+    DeleteNodeAction, DeleteRelationshipAction,
     IncMaxInstances,
     IncMinInstances,
     SaveNodeTemplateAction,
@@ -422,9 +422,9 @@ export const WineryReducer =
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newRequirement.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('requirements',
-                                        {
-                                            requirement: newRequirement.requirement
-                                        }) : nodeTemplate
+                                    {
+                                        requirement: newRequirement.requirement
+                                    }) : nodeTemplate
                             )
                     }
                 };
@@ -554,6 +554,16 @@ export const WineryReducer =
                         relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates.filter(
                             relationshipTemplate => relationshipTemplate.sourceElement.ref !== deletedNodeId &&
                                 relationshipTemplate.targetElement.ref !== deletedNodeId)
+                    }
+                };
+            case WineryActions.DELETE_RELATIONSHIP_TEMPLATE:
+                const deletedRelNodeId: string = (<DeleteRelationshipAction>action).nodeTemplateId;
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates.filter(
+                            relationshipTemplate => relationshipTemplate.id !== deletedRelNodeId)
                     }
                 };
             case WineryActions.UPDATE_REL_DATA:

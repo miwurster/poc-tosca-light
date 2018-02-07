@@ -81,7 +81,7 @@
                             required="required"
                             (change)="onChangeCapDefinitionName($event.target.value)">
                         <option *ngFor="let capDefinitionName of capabilities.capDefinitionNames"
-                                [value]="capDefinitionName.name">{{ capDefinitionName.name }}
+                                [value]="capDefinitionName">{{ capDefinitionName }}
                         </option>
                     </select>
                 </div>
@@ -138,8 +138,8 @@
                             required="required"
                             (change)="onChangeReqDefinitionName($event.target.value)">
                         <option *ngFor="let reqDefinitionName of requirements.reqDefinitionNames"
-                                [value]="reqDefinitionName.name">
-                            {{reqDefinitionName.name}}
+                                [value]="reqDefinitionName">
+                            {{reqDefinitionName}}
                         </option>
                     </select>
                 </div>

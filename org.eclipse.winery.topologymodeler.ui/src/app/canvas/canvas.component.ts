@@ -45,13 +45,17 @@ import { RequirementsModalData } from '../models/requirementsModalData';
 import { NodeIdAndFocusModel } from '../models/nodeIdAndFocusModel';
 import { ToggleModalDataModel } from '../models/toggleModalDataModel';
 import { WineryAlertService } from '../winery-alert/winery-alert.service';
-import { BackendService } from '../backend.service';
+import { BackendService, TopologyModelerConfiguration } from '../backend.service';
 import { backendBaseURL, hostURL } from '../configuration';
 import { CapabilityModel } from '../models/capabilityModel';
 import { isNullOrUndefined } from 'util';
 import { RequirementModel } from '../models/requirementModel';
 import { EntityTypesModel } from '../models/entityTypesModel';
 import { ExistsService } from '../exists.service';
+import { GenerateArtifactApiData } from '../generateArtifactApiData';
+import { Subject } from 'rxjs/Subject';
+import { Observable } from 'rxjs/Rx';
+import { Headers, Http, RequestOptions } from '@angular/http';
 import { ModalData, ModalVariant } from './entities-modal/entities-modal.component';
 
 @Component({
@@ -108,6 +112,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         modalTitle: 'none'
     };
 
+    // Logic for fetching the requirement, capability definitions of a node type
+    readonly headers = new Headers({ 'Accept': 'application/json' });
+    readonly options = new RequestOptions({ headers: this.headers });
+
     constructor(private jsPlumbService: JsPlumbService,
                 private eref: ElementRef,
                 private layoutDirective: LayoutDirective,
@@ -119,7 +127,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 private renderer: Renderer2,
                 private alert: WineryAlertService,
                 private differs: KeyValueDiffers,
-                private backendService: BackendService) {
+                private backendService: BackendService,
+                private existsService: ExistsService,
+                private http: Http) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
         console.log(this.newJsPlumbInstance);
@@ -217,8 +227,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.requirementsModal.show();
                 try {
                     this.requirements.requirements = currentNodeData.requirements;
-                    this.requirements.reqDefinitionNames = this.entityTypes.requirementTypes;
                     this.requirements.nodeId = currentNodeData.id;
+                    // request all valid requirement types for that node type for display as name select options in the modal
+                    this.requestRequirementDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
+                        this.requirements.reqDefinitionNames = [];
+                        for (const reqType of data) {
+                            this.requirements.reqDefinitionNames.push(reqType.requirementType.substring(
+                                reqType.requirementType.indexOf('}') + 1));
+                        }
+                    });
                 } catch (e) {
                     this.requirements.requirements = '';
                 }
@@ -227,13 +244,42 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.capabilitiesModal.show();
                 try {
                     this.capabilities.capabilities = currentNodeData.capabilities;
-                    this.capabilities.capDefinitionNames = this.entityTypes.capabilityTypes;
                     this.capabilities.nodeId = currentNodeData.id;
+                    // request all valid capability types for that node type for display as name select options in the modal
+                    this.requestCapabilityDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
+                        this.capabilities.capDefinitionNames = [];
+                        for (const capType of data) {
+                            this.capabilities.capDefinitionNames.push(capType.capabilityType.substring(
+                                capType.capabilityType.indexOf('}') + 1));
+                        }
+                    });
                 } catch (e) {
                     this.capabilities.capabilities = '';
                 }
                 break;
         }
+    }
+
+    /**
+     * Requests all requirement definitions of a node type from the backend
+     * @returns {Observable<string>}
+     */
+    requestRequirementDefinitionsOfNodeType(nodeType: string): Observable<any> {
+        const url = backendBaseURL + '/nodetypes/http%253A%252F%252Fplain.winery.opentosca.org%252Fnodetypes/'
+            + nodeType.substring(nodeType.indexOf('}') + 1) + '/requirementdefinitions/';
+        return this.http.get(url, this.options)
+            .map(res => res.json());
+    }
+
+    /**
+     * Requests all capability definitions of a node type from the backend
+     * @returns {Observable<string>}
+     */
+    requestCapabilityDefinitionsOfNodeType(nodeType: string): Observable<any> {
+        const url = backendBaseURL + '/nodetypes/http%253A%252F%252Fplain.winery.opentosca.org%252Fnodetypes/'
+            + nodeType.substring(nodeType.indexOf('}') + 1) + '/capabilitydefinitions/';
+        return this.http.get(url, this.options)
+            .map(res => res.json());
     }
 
     getHostUrl(): string {
@@ -314,7 +360,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     onChangeReqDefinitionName(reqName: string): void {
         this.entityTypes.requirementTypes.some(req => {
             if (req.name === reqName) {
-                this.requirements.reqId = req.id;
+                // this.requirements.reqId = req.id;
                 this.requirements.reqType = req.namespace;
                 this.requirements.reqQName = req.qName;
                 return true;
@@ -552,7 +598,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             const conn = this.newJsPlumbInstance.connect({
                 source: newRelationship.sourceElement.ref,
                 target: newRelationship.targetElement.ref,
-                overlays: [['Arrow', {width: 15, length: 15, location: 1, id: 'arrow', direction: 1}],
+                overlays: [['Arrow', { width: 15, length: 15, location: 1, id: 'arrow', direction: 1 }],
                     ['Label', {
                         label: type,
                         id: 'label',
@@ -641,7 +687,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         if (!this.dragSourceActive && !currentNodeIsSource && nodeArrayLength > 1) {
             this.newJsPlumbInstance.makeSource(dragSourceInfo.dragSource, {
                 connectorOverlays: [
-                    ['Arrow', {location: 1}],
+                    ['Arrow', { location: 1 }],
                 ],
             });
             this.dragSourceInfos = dragSourceInfo;
@@ -682,6 +728,16 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 }
             });
             this.selectedNodes.length = 0;
+        } else {
+            if (this.newJsPlumbInstance.getAllConnections().length > 0) {
+                for (const con of this.newJsPlumbInstance.getAllConnections()) {
+                    if (con.hasType('marked')) {
+                        this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(con.id));
+                        this.newJsPlumbInstance.deleteConnection(con);
+                        this.hideSidebar();
+                    }
+                }
+            }
         }
 
     }
@@ -868,7 +924,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                         stroke: relType.color,
                         strokeWidth: 2
                     },
-                    hoverPaintStyle: {stroke: 'red', strokeWidth: 5}
+                    hoverPaintStyle: { stroke: 'red', strokeWidth: 5 }
                 });
         }
         const allJsPlumbConnections = this.newJsPlumbInstance.getAllConnections();
@@ -1273,8 +1329,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
                     if (relTypeExists === false && sourceElement !== targetElement) {
                         const newRelationship = new TRelationshipTemplate(
-                            {ref: sourceElement},
-                            {ref: targetElement},
+                            { ref: sourceElement },
+                            { ref: targetElement },
                             relationshipId,
                             relationshipId,
                             this.currentType

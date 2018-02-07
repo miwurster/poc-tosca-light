@@ -23,6 +23,6 @@ export class CapabilitiesModalData {
                 public capType?: string,
                 public capDefinitionName?: string,
                 public capabilities?: any,
-                public capDefinitionNames?: any,
+                public capDefinitionNames?: Array<string>,
                 public nodeId?: string) { }
 }
