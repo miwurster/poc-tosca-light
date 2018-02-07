@@ -949,6 +949,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 }
             });
             this.selectedNodes.length = 0;
+        } else {
+            if (this.newJsPlumbInstance.getAllConnections().length > 0) {
+                for (const con of this.newJsPlumbInstance.getAllConnections()) {
+                    if (con.hasType('marked')) {
+                        this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(con.id));
+                        this.newJsPlumbInstance.deleteConnection(con);
+                    }
+                }
+            }
         }
 
     }
