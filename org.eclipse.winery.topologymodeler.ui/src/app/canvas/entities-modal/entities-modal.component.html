@@ -1,6 +1,8 @@
 <!-- GENERIC MODAL -->
-<winery-modal *ngIf="modalData.modalVisible" bsModal #modal="bs-modal" [modalRef]="modal" [size]="'modal-lg'">
-    <winery-modal-header [title]="'Add ' + modalData.modalTitle">
+<winery-modal *ngIf="modalData.modalVisible"
+              bsModal #modal="bs-modal" [modalRef]="modal" [size]="'modal-lg'" (onHide)="resetModalData()">
+    <winery-modal-header *ngIf="modalData.modalVariant === 'deployment_artifacts' || modalData.modalVariant === 'policies'"
+                         [title]="'Add ' + modalData.modalTitle" [modalRef]="modal">
     </winery-modal-header>
     <!-- DEPLOYMENT_ARTIFACT BODY -->
     <winery-modal-body *ngIf="modalData.modalVariant === 'deployment_artifacts'">
@@ -21,7 +23,7 @@
                                [(ngModel)]="deploymentArtifactSelectedRadioButton"/>Create Artifact Template
                     </label>
                     <p class="help-block">If you want to add files to this deployment artifact you can do so via <a
-                        target="_blank" href="{{getHostUrl()+'#/deploymentartifacts'}}">Winery's management UI</a>,
+                        target="_blank" href="{{getHostUrl()+'#/artifacttemplates'}}">Winery's management UI</a>,
                         after creating this deployment artifact.</p>
                 </div>
                 <div class="radio">
@@ -64,6 +66,19 @@
             <fieldset>
                 <div class="form-group-grouping"
                      *ngIf="deploymentArtifactSelectedRadioButton === 'createArtifactTemplate'">
+
+                    <!-- createArtifactTemplate class is required for artifactcreationdialog -->
+                    <div class="form-group createArtifactTemplate">
+                        <label for="artifactTemplateNS" class="control-label">Namespace</label>
+                        <input [(ngModel)]="deploymentArtifactModalData.artifactTemplateNameSpace" type="text"
+                               class="form-control"
+                               name="artifactTemplateNS"
+                               id="artifactTemplateNS"
+                               (blur)="updateSelectedNamespaceInDeploymentArtifactModalData($event)"
+                               [typeahead]="allNamespaces"
+                               typeaheadOptionField="namespace"/>
+                    </div>
+
                     <!-- createArtifactTemplate class is required for artifactcreationdialog -->
                     <div class="form-group createArtifactTemplate">
                         <label>Artifact Template Name</label>
@@ -91,17 +106,7 @@
 
                     </div>
 
-                    <!-- createArtifactTemplate class is required for artifactcreationdialog -->
-                    <div class="form-group createArtifactTemplate">
-                        <label for="artifactTemplateNS" class="control-label">Namespace</label>
-                        <input [(ngModel)]="deploymentArtifactModalData.artifactTemplateNameSpace" type="text"
-                               class="form-control"
-                               name="artifactTemplateNS"
-                               id="artifactTemplateNS"
-                               (blur)="updateSelectedNamespaceInDeploymentArtifactModalData($event)"
-                               [typeahead]="allNamespaces"
-                               typeaheadOptionField="namespace"/>
-                    </div>
+
                 </div>
                 <!-- linkArtifactTemplate -->
                 <div id="linkArtifactTemplate" class="form-group"
@@ -190,7 +195,7 @@
         <button type="button"
                 id="cancelPolicies"
                 class="btn btn-default"
-                (click)="resetPolicies()">
+                (click)="resetPolicies();">
             Cancel
         </button>
         <button type="button"

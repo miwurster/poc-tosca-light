@@ -21,7 +21,7 @@ import { backendBaseURL } from './configuration';
 import { Subject } from 'rxjs/Subject';
 import { isNullOrUndefined } from 'util';
 import { TTopologyTemplate, Visuals } from './models/ttopology-template';
-import { GenerateArtifactApiData } from './generateArtifactApiData';
+import { GenerateArtifactApiData, QNameWithTypeApiData } from './generateArtifactApiData';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -385,18 +385,28 @@ export class BackendService {
     }
 
     /**
-     * Used for creating new deployment artifacts inside node templates.
-     * @param {GenerateArtifactApiData} artifact
-     * @param {string} nodeTemplateId
+     * Used for creating new artifact templates on the backend.
+     * @param {QNameWithTypeApiData} artifact
      * @returns {Observable<any>}
      */
-    createNewArtifact(artifact: GenerateArtifactApiData, nodeTemplateId: string): Observable<any> {
+    createNewArtifact(artifact: QNameWithTypeApiData): Observable<any> {
         const headers = new Headers({ 'Content-Type': 'application/json' });
         const options = new RequestOptions({ headers: headers });
-        const url = this.configuration.repositoryURL + '/servicetemplates/'
-            + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
-            + this.configuration.id + '/topologytemplate/' + nodeTemplateId + '/deploymentartifacts/';
+        const url = this.configuration.repositoryURL + '/artifacttemplates/';
         return this.http.post(url + '/', artifact, options);
+    }
+
+    /**
+     * Used for getting the newly created artifact templates for further processing on the client.
+     * @param {QNameWithTypeApiData} artifact
+     * @returns {Observable<any>}
+     */
+    getNewlyCreatedArtifact(artifact: QNameWithTypeApiData): Observable<any> {
+        const headers = new Headers({ 'Content-Type': 'application/json' });
+        const options = new RequestOptions({ headers: headers });
+        const url = this.configuration.repositoryURL + '/artifacttemplates/'
+            + encodeURIComponent(encodeURIComponent(artifact.namespace)) + '/' + artifact.localname;
+        return this.http.get(url + '/', options);
     }
 
     /*  saveVisuals(data: any): Observable<Response> {

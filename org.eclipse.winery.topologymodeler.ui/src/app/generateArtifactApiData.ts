@@ -25,3 +25,9 @@ export class GenerateArtifactApiData {
     operationName: string;
     javaPackage: string;
 }
+
+export class QNameWithTypeApiData {
+    localname: string;
+    namespace: string;
+    type: string;
+}

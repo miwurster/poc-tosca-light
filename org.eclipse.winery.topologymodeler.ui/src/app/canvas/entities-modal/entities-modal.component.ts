@@ -1,8 +1,17 @@
-import { AfterViewInit, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnInit, Output,
+    SimpleChanges,
+    ViewChild
+} from '@angular/core';
 import { ModalDirective } from 'ngx-bootstrap';
 import { PoliciesModalData, TPolicy } from '../../models/policiesModalData';
 import { DeploymentArtifactsModalData, TDeploymentArtifact } from '../../models/artifactsModalData';
-import { GenerateArtifactApiData } from '../../generateArtifactApiData';
+import { QNameWithTypeApiData } from '../../generateArtifactApiData';
 import { EntityTypesModel } from '../../models/entityTypesModel';
 import { BackendService } from '../../backend.service';
 import { IWineryState } from '../../redux/store/winery.store';
@@ -20,11 +29,13 @@ import { WineryAlertService } from '../../winery-alert/winery-alert.service';
 })
 export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges {
 
-    @ViewChild(ModalDirective) public modal: ModalDirective;
+    @ViewChild('modal') public modal: ModalDirective;
 
     @Input() modalData: ModalData;
     @Input() entityTypes: EntityTypesModel;
     @Input() currentNodeData: any;
+
+    @Output() modalDataChange = new EventEmitter<ModalData>();
 
     allNamespaces;
 
@@ -34,7 +45,7 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
     // deployment artifact modal
     deploymentArtifactSelectedRadioButton = 'createArtifactTemplate';
     artifactTemplateAlreadyExists: boolean;
-    artifact: GenerateArtifactApiData = new GenerateArtifactApiData();
+    artifact: QNameWithTypeApiData = new QNameWithTypeApiData();
     artifactUrl: string;
 
     // policies modal
@@ -101,20 +112,9 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
      */
     addDeploymentArtifactConfirmed() {
         if (this.deploymentArtifactSelectedRadioButton === 'createArtifactTemplate') {
-            this.artifact.autoCreateArtifactTemplate = 'true';
-            this.artifact.artifactName = this.deploymentArtifactModalData.artifactName;
-            this.artifact.artifactTemplateName = this.deploymentArtifactModalData.artifactTemplateName;
-            this.artifact.artifactTemplateNamespace = this.deploymentArtifactModalData.artifactTemplateNameSpace;
-            this.artifact.artifactType = this.deploymentArtifactModalData.artifactType;
-            // POST to the backend
-            // Todo: POST to the backend
-            /*this.backendService.createNewArtifact(this.artifact, this.deploymentArtifactModalData.nodeTemplateId)
-                .subscribe(res => {
-                    res.ok === true ? this.alert.success('<p>Saved the Deployment Artifact!<br>' + 'Response Status: '
-                        + res.statusText + ' ' + res.status + '</p>')
-                        : this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
-                        + res.statusText + ' ' + res.status + '</p>');
-                });*/
+            this.artifact.localname = this.deploymentArtifactModalData.artifactTemplateName;
+            this.artifact.namespace = this.deploymentArtifactModalData.artifactTemplateNameSpace;
+            this.artifact.type = this.deploymentArtifactModalData.artifactType;
             const deploymentArtifactToBeSavedToRedux: TDeploymentArtifact = new TDeploymentArtifact(
                 [],
                 [],
@@ -123,7 +123,19 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
                 this.deploymentArtifactModalData.artifactType,
                 this.deploymentArtifactModalData.artifactTemplateRef
             );
-            this.saveDeploymentArtifactsToModel(deploymentArtifactToBeSavedToRedux);
+            // POST to the backend
+            this.backendService.createNewArtifact(this.artifact)
+                .subscribe(res => {
+                    if (res.ok === true) {
+                        this.alert.success('<p>Saved the Deployment Artifact!<br>' + 'Response Status: '
+                            + res.statusText + ' ' + res.status + '</p>');
+                        // if saved successfully to backend, also add to topologyTemplate
+                        this.saveDeploymentArtifactsToModel(deploymentArtifactToBeSavedToRedux);
+                    } else {
+                        this.alert.info('<p>Something went wrong! The DA was not added to the Topology Template!<br>' + 'Response Status: '
+                            + res.statusText + ' ' + res.status + '</p>');
+                    }
+                });
         } else if (this.deploymentArtifactSelectedRadioButton === 'linkArtifactTemplate') {
             // with artifactRef
             const deploymentArtifactToBeSavedToRedux: TDeploymentArtifact = new TDeploymentArtifact(
@@ -148,6 +160,7 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
         }
         /*this.newArtifact.operationName = this.deploymentArtifactSelectedOperation;
         this.createNewDeploymentArtifact();*/
+        this.resetModalData();
         this.modal.hide();
     }
 
@@ -178,10 +191,6 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
         this.deploymentArtifactModalData.artifactTemplateNameSpace = atObject.namespace;
         this.deploymentArtifactModalData.artifactTemplateName = atObject.name;
         this.deploymentArtifactModalData.artifactTemplateRef = atObject.qName;
-
-        // if reference to download files is required
-        // this.deploymentArtifactModalData.artifactTemplateRef =
-        // atObject.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].artifactReferences.artifactReference[0].reference;
         this.deploymentArtifactModalData.artifactType = atObject.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].type;
         console.log(this.deploymentArtifactModalData);
     }
@@ -190,6 +199,8 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
         this.deploymentArtifactModalData.artifactTemplateName = event.target.value;
         if (!isNullOrUndefined(this.deploymentArtifactModalData.artifactTemplateNameSpace &&
             this.deploymentArtifactModalData.artifactTemplateName)) {
+            this.deploymentArtifactModalData.artifactTemplateRef = '{' +
+                this.deploymentArtifactModalData.artifactTemplateNameSpace + '}' + this.deploymentArtifactModalData.artifactTemplateName;
             const url = backendBaseURL + '/artifacttemplates/'
                 + encodeURIComponent(encodeURIComponent(this.deploymentArtifactModalData.artifactTemplateNameSpace)) + '/'
                 + this.deploymentArtifactModalData.artifactTemplateName + '/';
@@ -205,21 +216,12 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
         this.deploymentArtifactModalData.artifactTemplateNameSpace = event.target.value;
     }
 
-    /**
-     *
-     */
-    createNewDeploymentArtifact() {
-        // this.backendService.createNewArtifact(this.newArtifact).subscribe(
-        //     data => this.handlePostResponse(),
-        //     error => this.showError(error)
-        // );
-    }
-
     resetDeploymentArtifactModalData(): void {
         this.deploymentArtifactModalData.artifactTemplateNameSpace = '';
         this.deploymentArtifactModalData.artifactTemplateName = '';
         this.deploymentArtifactModalData.artifactName = '';
         this.deploymentArtifactModalData.artifactType = '';
+        this.resetModalData();
         this.modal.hide();
     }
 
@@ -293,12 +295,19 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
         this.policiesModalData.policyTemplateName = '';
         this.policiesModalData.policyType = '';
         this.policiesModalData.policyTemplate = '';
+        this.resetModalData();
         this.modal.hide();
     }
 
     // util functions
     getHostUrl(): string {
         return hostURL;
+    }
+
+    resetModalData() {
+        // reset variant to none and hide
+        this.modalData.modalVariant = ModalVariant.None;
+        this.modalDataChange.emit(this.modalData);
     }
 
     private makeArtifactUrl() {
