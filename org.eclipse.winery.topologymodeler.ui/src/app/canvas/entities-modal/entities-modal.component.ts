@@ -4,23 +4,25 @@ import {
     EventEmitter,
     Input,
     OnChanges,
-    OnInit, Output,
+    OnInit,
+    Output,
     SimpleChanges,
     ViewChild
 } from '@angular/core';
-import { ModalDirective } from 'ngx-bootstrap';
-import { PoliciesModalData, TPolicy } from '../../models/policiesModalData';
-import { DeploymentArtifactsModalData, TDeploymentArtifact } from '../../models/artifactsModalData';
-import { QNameWithTypeApiData } from '../../generateArtifactApiData';
-import { EntityTypesModel } from '../../models/entityTypesModel';
-import { BackendService } from '../../backend.service';
-import { IWineryState } from '../../redux/store/winery.store';
-import { NgRedux } from '@angular-redux/store';
-import { isNullOrUndefined } from 'util';
-import { backendBaseURL, hostURL } from '../../configuration';
-import { WineryActions } from '../../redux/actions/winery.actions';
-import { ExistsService } from '../../exists.service';
-import { WineryAlertService } from '../../winery-alert/winery-alert.service';
+import {ModalDirective} from 'ngx-bootstrap';
+import {PoliciesModalData, TPolicy} from '../../models/policiesModalData';
+import {DeploymentArtifactsModalData, TDeploymentArtifact} from '../../models/artifactsModalData';
+import {QNameWithTypeApiData} from '../../generateArtifactApiData';
+import {EntityTypesModel} from '../../models/entityTypesModel';
+import {BackendService} from '../../backend.service';
+import {IWineryState} from '../../redux/store/winery.store';
+import {NgRedux} from '@angular-redux/store';
+import {isNullOrUndefined} from 'util';
+import {backendBaseURL, hostURL} from '../../configuration';
+import {WineryActions} from '../../redux/actions/winery.actions';
+import {ExistsService} from '../../exists.service';
+import {WineryAlertService} from '../../winery-alert/winery-alert.service';
+import {ModalData, ModalVariant} from './modal-model';
 
 @Component({
     selector: 'winery-entities-modal',
@@ -48,6 +50,9 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
     artifact: QNameWithTypeApiData = new QNameWithTypeApiData();
     artifactUrl: string;
 
+    // init enum
+    ModalVariant = ModalVariant;
+
     // policies modal
 
     constructor(private backendService: BackendService,
@@ -55,6 +60,7 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
                 private actions: WineryActions,
                 private existsService: ExistsService,
                 private alert: WineryAlertService) {
+
     }
 
     ngOnInit() {
@@ -198,7 +204,7 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
     checkIfArtifactTemplateAlreadyExists(event: any) {
         this.deploymentArtifactModalData.artifactTemplateName = event.target.value;
         if (!isNullOrUndefined(this.deploymentArtifactModalData.artifactTemplateNameSpace &&
-            this.deploymentArtifactModalData.artifactTemplateName)) {
+                this.deploymentArtifactModalData.artifactTemplateName)) {
             this.deploymentArtifactModalData.artifactTemplateRef = '{' +
                 this.deploymentArtifactModalData.artifactTemplateNameSpace + '}' + this.deploymentArtifactModalData.artifactTemplateName;
             const url = backendBaseURL + '/artifacttemplates/'
@@ -318,14 +324,3 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
 
 }
 
-export class ModalData {
-    modalVariant: ModalVariant;
-    modalVisible: boolean;
-    modalTitle: string;
-}
-
-export enum ModalVariant {
-    Policies = 'policies',
-    DeploymentArtifacts = 'deployment_artifacts',
-    None = 'none'
-}
