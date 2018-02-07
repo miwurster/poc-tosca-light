@@ -53,6 +53,7 @@ export class PaletteComponent implements OnInit, OnDestroy {
     nodeTemplatesSubscription;
     paletteOpenedSubscription;
     public oneAtATime = true;
+    // All Node Types grouped by their namespaces
     allNodeTemplates: TNodeTemplate[] = [];
     readonly newNodePositionOffsetX = 108;
     readonly newNodePositionOffsetY = 30;
@@ -82,6 +83,7 @@ export class PaletteComponent implements OnInit, OnDestroy {
      * Angular lifecycle event.
      */
     ngOnInit () {
+        console.log(this.entityTypes);
     }
 
     /**
