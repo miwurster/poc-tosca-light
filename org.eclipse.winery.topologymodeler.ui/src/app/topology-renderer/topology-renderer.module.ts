@@ -42,6 +42,7 @@ import { KeysPipe } from '../keys.pipe';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { ToscatypeTableComponent } from '../node/toscatype-table/toscatype-table.component';
 import { EntitiesModalComponent } from '../canvas/entities-modal/entities-modal.component';
+import { LocalnamePipe } from '../localname.pipe';
 
 @NgModule({
     imports: [
@@ -73,7 +74,8 @@ import { EntitiesModalComponent } from '../canvas/entities-modal/entities-modal.
         PropertiesContentComponent,
         ToscatypeTableComponent,
         EntitiesModalComponent,
-        KeysPipe
+        KeysPipe,
+        LocalnamePipe
     ],
     exports: [
         TopologyRendererComponent,

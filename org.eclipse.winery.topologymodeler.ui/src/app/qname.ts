@@ -42,7 +42,8 @@ export class QName {
      */
     get nameSpace(): string {
         this._nameSpace = this._qName.split('}')[0];
-        return this._nameSpace + '}';
+        this._nameSpace = this._qName.split('{')[1];
+        return this._nameSpace;
     }
 
     /**
