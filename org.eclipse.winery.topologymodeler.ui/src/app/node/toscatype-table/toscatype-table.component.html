@@ -12,10 +12,10 @@
             <div>{{ da.name }}</div>
         </td>
         <td class="toscatype-table-td">
-            <div>{{ da.artifactRef }}</div>
+            <div (click)="clickArtifactRef(da.artifactRef)">{{ da.artifactRef | localname }}</div>
         </td>
         <td class="toscatype-table-td">
-            <div>{{ da.artifactType }}</div>
+            <div (click)="clickArtifactType(da.artifactType)">{{ da.artifactType | localname }}</div>
         </td>
     </tr>
     </tbody>
@@ -35,10 +35,10 @@
             <div>{{ pol.name }}</div>
         </td>
         <td class="toscatype-table-td">
-            <div>{{ pol.policyRef }}</div>
+            <div (click)="clickPolicyRef(pol.policyRef)">{{ pol.policyRef | localname }}</div>
         </td>
         <td class="toscatype-table-td">
-            <div>{{ pol.policyType }}</div>
+            <div (click)="clickPolicyType(pol.policyType)">{{ pol.policyType | localname }}</div>
         </td>
     </tr>
     </tbody>
