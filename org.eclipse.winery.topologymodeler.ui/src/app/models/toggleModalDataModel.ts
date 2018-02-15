@@ -37,4 +37,16 @@ export interface ToggleModalDataModel {
     type: string;
     x: number;
     y: number;
+    currentRequirement: ReqCapEntityModel;
+    currentCapability: ReqCapEntityModel;
+}
+
+export interface ReqCapEntityModel {
+    any: any;
+    documentation: any;
+    id: string;
+    name: string;
+    otherAttributes: any;
+    properties: any;
+    type: string;
 }

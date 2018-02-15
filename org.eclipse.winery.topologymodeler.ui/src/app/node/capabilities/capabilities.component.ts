@@ -89,24 +89,22 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
     public checkForProperties($event) {
         this.tblRowClicked = false;
         this.currentCapability = null;
-        setTimeout(() => {
-            if ($event.srcElement.previousElementSibling) {
-                if ($event.srcElement.previousElementSibling.previousElementSibling) {
-                    this.currentCapId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
-                } else {
-                    this.currentCapId = $event.srcElement.previousElementSibling.textContent;
-                }
+        if ($event.srcElement.previousElementSibling) {
+            if ($event.srcElement.previousElementSibling.previousElementSibling) {
+                this.currentCapId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
             } else {
-                this.currentCapId = $event.srcElement.textContent;
+                this.currentCapId = $event.srcElement.previousElementSibling.textContent;
             }
-            this.capabilities.some(cap => {
-                if (cap.id === this.currentCapId) {
-                    this.currentCapability = cap;
-                    return true;
-                }
-            });
-            this.tblRowClicked = true;
-        }, 1);
+        } else {
+            this.currentCapId = $event.srcElement.textContent;
+        }
+        this.capabilities.some(cap => {
+            if (cap.id === this.currentCapId) {
+                this.currentCapability = cap;
+                return true;
+            }
+        });
+        this.tblRowClicked = true;
     }
 
     /**
@@ -123,6 +121,11 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
      * @param $event
      */
     public toggleModal($event) {
+        if ($event.srcElement.innerText === 'Add new') {
+            this.currentNodeData.currentCapability = null;
+        } else {
+            this.currentNodeData.currentCapability = this.currentCapability;
+        }
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 

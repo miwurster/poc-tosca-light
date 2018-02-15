@@ -50,7 +50,7 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
     currentReqId: string;
     currentRequirement: RequirementModel;
 
-    constructor (private ngRedux: NgRedux<IWineryState>) {
+    constructor(private ngRedux: NgRedux<IWineryState>) {
         this.toggleModalHandler = new EventEmitter();
         this.subscription = this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
             .subscribe(currentNodes => this.updateReqs());
@@ -71,7 +71,7 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
     /**
      * Angular lifecycle event.
      */
-    ngOnChanges (changes: SimpleChanges) {
+    ngOnChanges(changes: SimpleChanges) {
         if (changes.currentNodeData.currentValue.entityTypes) {
             this.entityTypes = changes.currentNodeData.currentValue.entityTypes;
             this.nodeTemplate = changes.currentNodeData.currentValue.nodeTemplate;
@@ -87,24 +87,22 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
     public checkForProperties($event) {
         this.tblRowClicked = false;
         this.currentRequirement = null;
-        setTimeout(() => {
-            if ($event.srcElement.previousElementSibling) {
-                if ($event.srcElement.previousElementSibling.previousElementSibling) {
-                    this.currentReqId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
-                } else {
-                    this.currentReqId = $event.srcElement.previousElementSibling.textContent;
-                }
+        if ($event.srcElement.previousElementSibling) {
+            if ($event.srcElement.previousElementSibling.previousElementSibling) {
+                this.currentReqId = $event.srcElement.previousElementSibling.previousElementSibling.textContent;
             } else {
-                this.currentReqId = $event.srcElement.textContent;
+                this.currentReqId = $event.srcElement.previousElementSibling.textContent;
             }
-            this.requirements.some(req => {
-                if (req.id === this.currentReqId) {
-                    this.currentRequirement = req;
-                    return true;
-                }
-            });
-            this.tblRowClicked = true;
-        }, 1);
+        } else {
+            this.currentReqId = $event.srcElement.textContent;
+        }
+        this.requirements.some(req => {
+            if (req.id === this.currentReqId) {
+                this.currentRequirement = req;
+                return true;
+            }
+        });
+        this.tblRowClicked = true;
     }
 
     /**
@@ -120,11 +118,16 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
      * Propagates the click event to node.component, where requirements modal gets opened.
      * @param $event
      */
-    public toggleModal ($event) {
+    public toggleModal($event) {
+        if ($event.srcElement.innerText === 'Add new') {
+            this.currentNodeData.currentRequirement = null;
+        } else {
+            this.currentNodeData.currentRequirement = this.currentRequirement;
+        }
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 
-    ngOnInit () {
+    ngOnInit() {
     }
 
     /**

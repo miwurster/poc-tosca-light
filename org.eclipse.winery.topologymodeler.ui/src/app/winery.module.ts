@@ -63,7 +63,7 @@ import { ExistsService } from './exists.service';
         TopologyRendererModule.forRoot(),
         HotkeyModule.forRoot(),
         WineryModalModule,
-        TypeaheadModule.forRoot()
+        TypeaheadModule.forRoot(),
     ],
     providers: [
         {provide: ToastOptions, useClass: WineryCustomOption},

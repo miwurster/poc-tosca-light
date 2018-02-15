@@ -24,7 +24,8 @@
         <tbody>
         <tr *ngFor="let cap of capabilities; let index=index"
             (click)="checkForProperties($event)"
-            (click)="saveIndex(index)">
+            (click)="saveIndex(index)"
+            (click)="toggleModal($event)">
             <td class="dataId">{{cap.id}}</td>
             <td class="dataName">{{cap.name}}</td>
             <td class="dataType"><a href="{{cap.type}}">{{cap.type}}</a></td>

@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
 
-<div *ngIf="requirementsExist">
+<div id="requirementDiv" *ngIf="requirementsExist">
     <table>
         <thead>
         <tr>
@@ -24,7 +24,8 @@
         <tbody>
         <tr *ngFor="let req of requirements; let index=index"
             (click)="checkForProperties($event)"
-            (click)="saveIndex(index)">
+            (click)="saveIndex(index)"
+            (click)="toggleModal($event)">
             <td class="dataId">{{req.id}}</td>
             <td class="dataName">{{req.name}}</td>
             <td class="dataType"><a href="{{req.type}}">{{req.type}}</a></td>

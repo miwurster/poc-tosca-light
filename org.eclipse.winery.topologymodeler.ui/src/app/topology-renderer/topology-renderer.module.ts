@@ -57,7 +57,7 @@ import { LocalnamePipe } from '../localname.pipe';
         NgReduxModule,
         RouterModule,
         WineryModalModule,
-        TypeaheadModule.forRoot()
+        TypeaheadModule.forRoot(),
     ],
     declarations: [
         NavbarComponent,
