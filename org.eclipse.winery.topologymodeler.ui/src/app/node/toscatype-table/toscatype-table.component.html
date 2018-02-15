@@ -9,7 +9,7 @@
     <tbody>
     <tr *ngFor="let da of currentToscaTypeData">
         <td class="toscatype-table-td">
-            <div>{{ da.name }}</div>
+            <div (click)="openDeploymentArtifactModal(da)">{{ da.name }}</div>
         </td>
         <td class="toscatype-table-td">
             <div (click)="clickArtifactRef(da.artifactRef)">{{ da.artifactRef | localname }}</div>
@@ -32,7 +32,7 @@
     <tbody>
     <tr *ngFor="let pol of currentToscaTypeData">
         <td class="toscatype-table-td">
-            <div>{{ pol.name }}</div>
+            <div (click)="openPolicyModal(pol)">{{ pol.name }}</div>
         </td>
         <td class="toscatype-table-td">
             <div (click)="clickPolicyRef(pol.policyRef)">{{ pol.policyRef | localname }}</div>

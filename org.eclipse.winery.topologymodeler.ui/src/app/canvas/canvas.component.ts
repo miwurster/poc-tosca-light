@@ -57,7 +57,7 @@ import {Subject} from 'rxjs/Subject';
 import {Observable} from 'rxjs/Rx';
 import {Headers, Http, RequestOptions} from '@angular/http';
 import {ModalVariant} from './entities-modal/modal-model';
-import {ModalData} from './entities-modal/modal-model';
+import {ModalVariantAndState} from './entities-modal/modal-model';
 
 @Component({
     selector: 'winery-canvas',
@@ -106,8 +106,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
     differ: any;
-    // modalData is passed to the entities-modal component and tells it which modal to render
-    modalData: ModalData = {
+    // modalVariantAndState is passed to the entities-modal component and tells it which modal to render
+    modalData: ModalVariantAndState = {
         modalVisible: true,
         modalVariant: ModalVariant.None,
         modalTitle: 'none'
