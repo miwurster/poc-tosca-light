@@ -303,6 +303,8 @@ export class EntitiesModalComponent implements OnInit, AfterViewInit, OnChanges 
         this.modalDataChange.emit(this.modalVariantAndState);
     }
 
+    deleteDeploymentArtifactOrPolicy() {}
+
     private makeArtifactUrl() {
         this.artifactUrl = backendBaseURL + '/artifacttemplates/' + encodeURIComponent(encodeURIComponent(
             this.deploymentArtifactOrPolicyModalData.modalTemplateNameSpace))
