@@ -1,0 +1,60 @@
+/********************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ ********************************************************************************/
+@import url('https://fonts.googleapis.com/css?family=Roboto:300');
+
+.dark-button-style {
+    background-color: #cccccc;
+    color: #212121;
+    border: 1px solid #000;
+    border-radius: 4px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: lighter;
+    font-size: 14px;
+    line-height: 1.42857143;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.dark-button-style:focus {
+    box-shadow: none;
+}
+
+.dark-button-style:hover {
+    background-color: #aaaaaa;
+    color: #fafafa;
+    border-color: #cccccc;
+}
+
+.dropdown-menu li:hover a {
+    background-color: #424242 !important;
+}
+
+.dropdown-menu li {
+    border: 1px solid transparent;
+}
+
+.dropdown-menu li:hover {
+    border-color: #fff;
+}
+
+.dropdown-menu {
+    background-color: #424242;
+    padding: 0px;
+}
+
+.dropdown-item {
+    color: #fff !important;
+}
+

@@ -1,0 +1,8 @@
+#skipArtifactTemplateInput, #createArtifactTemplateInput, #linkArtifactTemplateInput {
+    margin-right: .5em;
+}
+
+.form-group-grouping {
+    padding: 1em;
+    background-color: #dddddd;
+}

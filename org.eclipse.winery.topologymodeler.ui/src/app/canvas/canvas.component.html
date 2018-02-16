@@ -1,0 +1,224 @@
+<!--
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+-->
+
+<div id="container" style="height: auto;"
+     (mousedown)="showSelectionRange($event)"
+     (click)="this.revalidateContainer()">
+    <div id="grid"
+         (mousedown)="trackTimeOfMouseDown()"
+         (mouseup)="trackTimeOfMouseUp()"
+         [class.crosshair]="this.gridTemplate.crosshair"
+         [style.width.vw]="this.gridTemplate.gridDimension"
+         [style.height.vh]="this.gridTemplate.gridDimension">
+        <div class="selection" id="selection"
+             [class.selection-active]="this.gridTemplate.selectionActive"
+             [style.left.px]="this.gridTemplate.pageX"
+             [style.top.px]="this.gridTemplate.pageY"
+             [style.width.px]="this.gridTemplate.selectionWidth"
+             [style.height.px]="this.gridTemplate.selectionHeight"
+             #selection>
+            <span></span>
+        </div>
+    </div>
+    <div #nodes>
+        <winery-node *ngFor="let nodeTemplate of allNodeTemplates"
+                     [nodeTemplate]="nodeTemplate"
+                     [entityTypes]="this.entityTypes"
+                     [allRelationshipTypesColors]="allRelationshipTypesColors"
+                     (sendId)="activateNewNode($event)"
+                     [navbarButtonsState]="navbarButtonsState"
+                     (askForRepaint)="revalidateContainer($event)"
+                     (askForRemoval)="removeElement($event)"
+                     (setDragSource)="setDragSource($event)"
+                     (closedEndpoint)="toggleClosedEndpoint($event)"
+                     (sendCurrentType)="setCurrentType($event)"
+                     [dragSource]="nodeTemplate.id + '_Endpoint'"
+                     (handleNodeClickedActions)="handleNodeClickedActions($event)"
+                     (updateSelectedNodes)="updateSelectedNodes($event)"
+                     (unmarkConnections)="unmarkConnections()"
+                     (sendNodeData)="toggleModalHandler($event)">
+        </winery-node>
+    </div>
+</div>
+
+<!-- CAPABILITIES MODAL -->
+<winery-modal bsModal #capabilitiesModal="bs-modal" [modalRef]="capabilitiesModal">
+    <winery-modal-header [title]="!showCurrentCapability?'Add Capability':'Modify/Delete Capability'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <form #addCapForm="ngForm" id="addCapForm" enctype="multipart/form-data">
+            <fieldset>
+
+                <div class="form-group" id="CapIdGroup">
+                    <label for="CapId" class="control-label">Id:</label>
+                    <input [(ngModel)]="capabilities.capId"
+                           id="CapId"
+                           class="form-control"
+                           name="CapId"
+                           type="text"
+                           required="required"
+                           (change)="onChangeCapId($event.target.value)"
+                           [attr.disabled]="showCurrentCapability?'disabled':null"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="CapNameChooser" class="control-label">Definition Name:</label>
+                    <div *ngIf="!showCurrentCapability;else disabledCapName">
+                        <select [(ngModel)]="capabilities.capDefinitionName"
+                                name="capName"
+                                id="CapNameChooser"
+                                class="form-control"
+                                type="text"
+                                required="required"
+                                (change)="onChangeCapDefinitionName($event.target.value)">
+                            <option *ngFor="let capDefinitionName of capabilities.capDefinitionNames"
+                                    [value]="capDefinitionName">{{ capDefinitionName }}
+                            </option>
+                        </select>
+                    </div>
+                    <ng-template #disabledCapName>
+                        <input [(ngModel)]="capabilities.capDefinitionName"
+                               id="CapName"
+                               class="form-control"
+                               name="CapName"
+                               type="text"
+                               required="required"
+                               disabled="disabled"/>
+                    </ng-template>
+                </div>
+
+                <div class="form-group">
+                    <label for="CapTypeDisplay" class="control-label">Cap Type:</label>
+                    <input id="CapTypeDisplay"
+                           class="form-control"
+                           type="text"
+                           required="required"
+                           name="CapTypeDisplay"
+                           disabled="disabled"
+                           [(ngModel)]="capabilities.capQName"/>
+                </div>
+
+                <div class="form-group" *ngIf="showCurrentCapability">
+                    <div *ngIf="capabilities.propertyType === 'KV'">
+                        <div *ngFor="let key of capabilities.properties | keysPipe; let i = index">
+                            <label for="CapKVPropertyDisplay" class="control-label">{{key.key}}</label>
+                            <input id="CapKVPropertyDisplay"
+                                   class="form-control"
+                                   type="text"
+                                   required="required"
+                                   name="CapKVPropertyDisplay"/>
+                        </div>
+                    </div>
+                    <div *ngIf="capabilities.propertyType === 'XML'">
+                        <label for="CapXMLPropertyDisplay" class="control-label">XML Property:</label>
+                        <input id="CapXMLPropertyDisplay"
+                               class="form-control"
+                               type="text"
+                               required="required"
+                               name="CapXMLPropertyDisplay"/>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer [showDefaultButtons]="false">
+        <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="resetCapabilities()">Cancel
+        </button>
+        <button *ngIf="!showCurrentCapability; else deleteCapButton"
+                (click)="saveCapabilityToModel()" type="button" id="addCapbtn" class="btn btn-primary">Add
+        </button>
+        <ng-template #deleteCapButton>
+            <button (click)="deleteCapability()" type="button" id="deleteCapbtn" class="btn btn-primary">Delete
+            </button>
+        </ng-template>
+    </winery-modal-footer>
+</winery-modal>
+
+<!-- REQUIREMENTS MODAL -->
+<winery-modal bsModal #requirementsModal="bs-modal" [modalRef]="requirementsModal">
+    <winery-modal-header [title]="!showCurrentRequirement?'Add Requirement':'Modify/Delete Requirement'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <form #addReqForm="ngForm" id="addReqForm" enctype="multipart/form-data">
+            <fieldset>
+
+                <div class="form-group" id="ReqIdGroup">
+                    <label for="ReqId" class="control-label">Id:</label>
+                    <input [(ngModel)]="requirements.reqId"
+                           id="ReqId"
+                           class="form-control"
+                           name="ReqId"
+                           type="text"
+                           required="required"
+                           (change)="onChangeReqId($event.target.value)"
+                           [attr.disabled]="showCurrentRequirement?'disabled':null"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="ReqNameChooser" class="control-label">Definition Name:</label>
+                    <div *ngIf="!showCurrentRequirement;else disabledReqName">
+                        <select [(ngModel)]="requirements.reqDefinitionName"
+                                id="ReqNameChooser"
+                                name="ReqNameChooser"
+                                class="form-control"
+                                type="text"
+                                required="required"
+                                (change)="onChangeReqDefinitionName($event.target.value)">
+                            <option *ngFor="let reqDefinitionName of requirements.reqDefinitionNames"
+                                    [value]="reqDefinitionName">
+                                {{reqDefinitionName}}
+                            </option>
+                        </select>
+                    </div>
+                    <ng-template #disabledReqName>
+                        <input [(ngModel)]="requirements.reqDefinitionName"
+                               id="ReqName"
+                               class="form-control"
+                               name="ReqName"
+                               type="text"
+                               required="required"
+                               disabled="disabled"/>
+                    </ng-template>
+                </div>
+
+                <div class="form-group">
+                    <label for="ReqTypeDisplay" class="control-label">Req Type:</label>
+                    <input [(ngModel)]="requirements.reqQName"
+                           id="ReqTypeDisplay"
+                           name="ReqTypeDisplay"
+                           class="form-control"
+                           type="text"
+                           required="required"
+                           disabled="disabled"/>
+                </div>
+            </fieldset>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer [showDefaultButtons]="false">
+        <button type="button" id="cancelRequirements" class="btn btn-default" (click)="resetRequirements()">Cancel
+        </button>
+        <button *ngIf="!showCurrentRequirement; else deleteReqButton"
+                (click)="saveRequirementsToModel()" type="button" id="addReqbtn" class="btn btn-primary">Add
+        </button>
+        <ng-template #deleteReqButton>
+            <button (click)="deleteRequirement()" type="button" id="deleteReqbtn" class="btn btn-primary">Delete
+            </button>
+        </ng-template>
+    </winery-modal-footer>
+</winery-modal>
+
+<winery-entities-modal [(modalVariantAndState)]="modalData"
+                       [entityTypes]="entityTypes"
+                       [currentNodeData]="currentModalData">
+</winery-entities-modal>
