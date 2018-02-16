@@ -64,6 +64,7 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
             if (this.currentNodeData.nodeTemplate.requirements) {
                 this.requirements = this.currentNodeData.nodeTemplate.requirements.requirement;
                 this.requirementsExist = true;
+                this.tblRowClicked = false;
             }
         }
     }
@@ -119,12 +120,15 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
      * @param $event
      */
     public toggleModal($event) {
-        if ($event.srcElement.innerText === 'Add new') {
-            this.currentNodeData.currentRequirement = null;
-        } else {
-            this.currentNodeData.currentRequirement = this.currentRequirement;
-        }
-        this.toggleModalHandler.emit(this.currentNodeData);
+        setTimeout(() => {
+            if ($event.srcElement.innerText === 'Add new') {
+                this.currentNodeData.currentRequirement = null;
+            } else {
+                this.currentNodeData.currentRequirement = this.currentRequirement;
+                this.currentNodeData.currentTableRowIndex = this.currentTableRowIndex;
+            }
+            this.toggleModalHandler.emit(this.currentNodeData);
+        }, 1);
     }
 
     ngOnInit() {

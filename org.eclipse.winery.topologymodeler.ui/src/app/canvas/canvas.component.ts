@@ -230,12 +230,21 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             case 'REQUIREMENTS':
                 this.requirements.requirements = currentNodeData.requirements;
                 this.requirements.nodeId = currentNodeData.id;
-                console.log(currentNodeData.currentRequirement);
+                console.log(currentNodeData);
                 if (!isNullOrUndefined(currentNodeData.currentRequirement)) {
                     this.showCurrentRequirement = true;
                     this.requirements.reqId = currentNodeData.currentRequirement.id;
                     this.requirements.reqDefinitionName = currentNodeData.currentRequirement.name;
                     this.requirements.reqQName = currentNodeData.currentRequirement.type;
+                    if (currentNodeData.currentRequirement.properties) {
+                        if (currentNodeData.currentRequirement.properties.kvproperties) {
+                            this.requirements.propertyType = 'KV';
+                            this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
+                            console.log(this.requirements.properties);
+                        } else if (currentNodeData.currentRequirement.properties.any) {
+                            this.requirements.propertyType = 'XML';
+                        }
+                    }
                 } else {
                     this.showCurrentRequirement = false;
                     try {
@@ -262,6 +271,15 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     this.capabilities.capId = currentNodeData.currentCapability.id;
                     this.capabilities.capDefinitionName = currentNodeData.currentCapability.name;
                     this.capabilities.capQName = currentNodeData.currentCapability.type;
+                    console.log(currentNodeData.currentCapability);
+                    if (currentNodeData.currentCapability.properties) {
+                        if (currentNodeData.currentCapability.properties.kvproperties) {
+                            this.capabilities.propertyType = 'KV';
+                            this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
+                        } else if (currentNodeData.currentCapability.properties.any) {
+                            this.capabilities.propertyType = 'XML';
+                        }
+                    }
                 } else {
                     this.showCurrentCapability = false;
                     try {
@@ -354,6 +372,18 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     }
 
     /**
+     * Deletes a capability from the winery store
+     */
+    deleteCapability() {
+        const capabilities = {
+            nodeId: this.currentModalData.id,
+            capability: this.currentModalData.capabilities.capability.filter(req => req.id !== this.currentModalData.currentCapability.id)
+        };
+        this.ngRedux.dispatch(this.actions.setCapability(capabilities));
+        this.resetCapabilities();
+    }
+
+    /**
      * Saves a requirement template to the model and gets pushed into the Redux store of the application
      */
     saveRequirementsToModel(): void {
@@ -398,12 +428,25 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.requirements.reqId = capId;
     }
 
+    /**
+     * Deletes a requirement from the winery store
+     */
+    deleteRequirement() {
+        const requirements = {
+            nodeId: this.currentModalData.id,
+            requirement: this.currentModalData.requirements.requirement.filter(req => req.id !== this.currentModalData.currentRequirement.id)
+        };
+        this.ngRedux.dispatch(this.actions.setRequirement(requirements));
+        this.resetRequirements();
+    }
+
     resetRequirements(): void {
         this.requirements.reqId = '';
         this.requirements.reqDefinitionName = '';
         this.requirements.reqType = '';
         this.requirements.reqQName = '';
         this.requirements.nodeId = '';
+        this.requirements.propertyType = '';
         this.requirementsModal.hide();
     }
 
@@ -413,6 +456,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         this.capabilities.capType = '';
         this.capabilities.capQName = '';
         this.capabilities.nodeId = '';
+        this.capabilities.propertyType = '';
         this.capabilitiesModal.hide();
     }
 

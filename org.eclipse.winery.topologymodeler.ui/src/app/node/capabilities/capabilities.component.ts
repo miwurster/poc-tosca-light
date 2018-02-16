@@ -66,6 +66,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
             if (this.currentNodeData.nodeTemplate.capabilities) {
                 this.capabilities = this.currentNodeData.nodeTemplate.capabilities.capability;
                 this.capabilitiesExist = true;
+                this.tblRowClicked = false;
             }
         }
     }

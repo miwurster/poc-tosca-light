@@ -75,17 +75,17 @@
                 <div class="form-group">
                     <label for="CapNameChooser" class="control-label">Definition Name:</label>
                     <div *ngIf="!showCurrentCapability;else disabledCapName">
-                    <select [(ngModel)]="capabilities.capDefinitionName"
-                            name="capName"
-                            id="CapNameChooser"
-                            class="form-control"
-                            type="text"
-                            required="required"
-                            (change)="onChangeCapDefinitionName($event.target.value)">
-                        <option *ngFor="let capDefinitionName of capabilities.capDefinitionNames"
-                                [value]="capDefinitionName">{{ capDefinitionName }}
-                        </option>
-                    </select>
+                        <select [(ngModel)]="capabilities.capDefinitionName"
+                                name="capName"
+                                id="CapNameChooser"
+                                class="form-control"
+                                type="text"
+                                required="required"
+                                (change)="onChangeCapDefinitionName($event.target.value)">
+                            <option *ngFor="let capDefinitionName of capabilities.capDefinitionNames"
+                                    [value]="capDefinitionName">{{ capDefinitionName }}
+                            </option>
+                        </select>
                     </div>
                     <ng-template #disabledCapName>
                         <input [(ngModel)]="capabilities.capDefinitionName"
@@ -108,6 +108,27 @@
                            disabled="disabled"
                            [(ngModel)]="capabilities.capQName"/>
                 </div>
+
+                <div class="form-group" *ngIf="showCurrentCapability">
+                    <div *ngIf="capabilities.propertyType === 'KV'">
+                        <div *ngFor="let key of capabilities.properties | keysPipe; let i = index">
+                            <label for="CapKVPropertyDisplay" class="control-label">{{key.key}}</label>
+                            <input id="CapKVPropertyDisplay"
+                                   class="form-control"
+                                   type="text"
+                                   required="required"
+                                   name="CapKVPropertyDisplay"/>
+                        </div>
+                    </div>
+                    <div *ngIf="capabilities.propertyType === 'XML'">
+                        <label for="CapXMLPropertyDisplay" class="control-label">XML Property:</label>
+                        <input id="CapXMLPropertyDisplay"
+                               class="form-control"
+                               type="text"
+                               required="required"
+                               name="CapXMLPropertyDisplay"/>
+                    </div>
+                </div>
             </fieldset>
         </form>
     </winery-modal-body>
@@ -115,9 +136,10 @@
         <button type="button" id="cancelCapabilities" class="btn btn-default" (click)="resetCapabilities()">Cancel
         </button>
         <button *ngIf="!showCurrentCapability; else deleteCapButton"
-                (click)="saveCapabilityToModel()" type="button" id="addCapbtn" class="btn btn-primary">Add</button>
-        <ng-template #deleteReqButton>
-            <button (click)="saveRequirementsToModel()" type="button" id="deleteCapbtn" class="btn btn-primary">Delete
+                (click)="saveCapabilityToModel()" type="button" id="addCapbtn" class="btn btn-primary">Add
+        </button>
+        <ng-template #deleteCapButton>
+            <button (click)="deleteCapability()" type="button" id="deleteCapbtn" class="btn btn-primary">Delete
             </button>
         </ng-template>
     </winery-modal-footer>
@@ -146,18 +168,18 @@
                 <div class="form-group">
                     <label for="ReqNameChooser" class="control-label">Definition Name:</label>
                     <div *ngIf="!showCurrentRequirement;else disabledReqName">
-                    <select [(ngModel)]="requirements.reqDefinitionName"
-                            id="ReqNameChooser"
-                            name="ReqNameChooser"
-                            class="form-control"
-                            type="text"
-                            required="required"
-                            (change)="onChangeReqDefinitionName($event.target.value)">
-                        <option *ngFor="let reqDefinitionName of requirements.reqDefinitionNames"
-                                [value]="reqDefinitionName">
-                            {{reqDefinitionName}}
-                        </option>
-                    </select>
+                        <select [(ngModel)]="requirements.reqDefinitionName"
+                                id="ReqNameChooser"
+                                name="ReqNameChooser"
+                                class="form-control"
+                                type="text"
+                                required="required"
+                                (change)="onChangeReqDefinitionName($event.target.value)">
+                            <option *ngFor="let reqDefinitionName of requirements.reqDefinitionNames"
+                                    [value]="reqDefinitionName">
+                                {{reqDefinitionName}}
+                            </option>
+                        </select>
                     </div>
                     <ng-template #disabledReqName>
                         <input [(ngModel)]="requirements.reqDefinitionName"
@@ -190,7 +212,7 @@
                 (click)="saveRequirementsToModel()" type="button" id="addReqbtn" class="btn btn-primary">Add
         </button>
         <ng-template #deleteReqButton>
-            <button (click)="saveRequirementsToModel()" type="button" id="deleteReqbtn" class="btn btn-primary">Delete
+            <button (click)="deleteRequirement()" type="button" id="deleteReqbtn" class="btn btn-primary">Delete
             </button>
         </ng-template>
     </winery-modal-footer>

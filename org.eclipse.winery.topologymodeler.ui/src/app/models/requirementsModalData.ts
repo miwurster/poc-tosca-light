@@ -24,5 +24,7 @@ export class RequirementsModalData {
                 public reqDefinitionName?: string,
                 public requirements?: any,
                 public reqDefinitionNames?: Array<string>,
-                public nodeId?: string) { }
+                public nodeId?: string,
+                public propertyType?: any,
+                public properties?: any) { }
 }

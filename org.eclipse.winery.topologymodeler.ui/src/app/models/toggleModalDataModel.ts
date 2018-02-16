@@ -37,6 +37,7 @@ export interface ToggleModalDataModel {
     type: string;
     x: number;
     y: number;
+    currentTableRowIndex: number;
     currentRequirement: ReqCapEntityModel;
     currentCapability: ReqCapEntityModel;
 }

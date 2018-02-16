@@ -214,8 +214,6 @@ export class WineryActions {
 
     static INC_MIN_INSTANCES = 'INC_MIN_INSTANCES';
     static DEC_MIN_INSTANCES = 'DEC_MIN_INSTANCES';
-    // new
-    static DEC_INC_MIN_INSTANCES = 'DEC_INC_MIN_INSTANCES';
 
     static INC_MAX_INSTANCES = 'INC_MAX_INSTANCES';
     static DEC_MAX_INSTANCES = 'DEC_MAX_INSTANCES';
