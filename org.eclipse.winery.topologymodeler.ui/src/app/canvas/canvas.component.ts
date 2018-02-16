@@ -27,37 +27,37 @@ import {
     ViewChild,
     ViewChildren
 } from '@angular/core';
-import { JsPlumbService } from '../jsPlumbService';
-import { TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
-import { LayoutDirective } from '../layout.directive';
-import { WineryActions } from '../redux/actions/winery.actions';
-import { NgRedux } from '@angular-redux/store';
-import { IWineryState } from '../redux/store/winery.store';
-import { ButtonsStateModel } from '../models/buttonsState.model';
-import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
-import { NodeComponent } from '../node/node.component';
-import { Hotkey, HotkeysService } from 'angular2-hotkeys';
-import { ModalDirective } from 'ngx-bootstrap';
-import { GridTemplate } from 'app/models/gridTemplate';
-import { Subscription } from 'rxjs/Subscription';
-import { CapabilitiesModalData } from '../models/capabilitiesModalData';
-import { RequirementsModalData } from '../models/requirementsModalData';
-import { NodeIdAndFocusModel } from '../models/nodeIdAndFocusModel';
-import { ToggleModalDataModel } from '../models/toggleModalDataModel';
-import { WineryAlertService } from '../winery-alert/winery-alert.service';
-import { BackendService, TopologyModelerConfiguration } from '../backend.service';
-import { backendBaseURL, hostURL } from '../configuration';
-import { CapabilityModel } from '../models/capabilityModel';
-import { isNullOrUndefined } from 'util';
-import { RequirementModel } from '../models/requirementModel';
-import { EntityTypesModel } from '../models/entityTypesModel';
-import { ExistsService } from '../exists.service';
-import { GenerateArtifactApiData } from '../generateArtifactApiData';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Rx';
-import { Headers, Http, RequestOptions } from '@angular/http';
-import { ModalVariant } from './entities-modal/modal-model';
-import { ModalData } from './entities-modal/modal-model';
+import {JsPlumbService} from '../jsPlumbService';
+import {TNodeTemplate, TRelationshipTemplate} from '../models/ttopology-template';
+import {LayoutDirective} from '../layout.directive';
+import {WineryActions} from '../redux/actions/winery.actions';
+import {NgRedux} from '@angular-redux/store';
+import {IWineryState} from '../redux/store/winery.store';
+import {ButtonsStateModel} from '../models/buttonsState.model';
+import {TopologyRendererActions} from '../redux/actions/topologyRenderer.actions';
+import {NodeComponent} from '../node/node.component';
+import {Hotkey, HotkeysService} from 'angular2-hotkeys';
+import {ModalDirective} from 'ngx-bootstrap';
+import {GridTemplate} from 'app/models/gridTemplate';
+import {Subscription} from 'rxjs/Subscription';
+import {CapabilitiesModalData} from '../models/capabilitiesModalData';
+import {RequirementsModalData} from '../models/requirementsModalData';
+import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
+import {ToggleModalDataModel} from '../models/toggleModalDataModel';
+import {WineryAlertService} from '../winery-alert/winery-alert.service';
+import {BackendService, TopologyModelerConfiguration} from '../backend.service';
+import {backendBaseURL, hostURL} from '../configuration';
+import {CapabilityModel} from '../models/capabilityModel';
+import {isNullOrUndefined} from 'util';
+import {RequirementModel} from '../models/requirementModel';
+import {EntityTypesModel} from '../models/entityTypesModel';
+import {ExistsService} from '../exists.service';
+import {GenerateArtifactApiData} from '../generateArtifactApiData';
+import {Subject} from 'rxjs/Subject';
+import {Observable} from 'rxjs/Rx';
+import {Headers, Http, RequestOptions} from '@angular/http';
+import {ModalVariant} from './entities-modal/modal-model';
+import {ModalVariantAndState} from './entities-modal/modal-model';
 
 @Component({
     selector: 'winery-canvas',
@@ -106,8 +106,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
     differ: any;
-    // modalData is passed to the entities-modal component and tells it which modal to render
-    modalData: ModalData = {
+    // modalVariantAndState is passed to the entities-modal component and tells it which modal to render
+    modalData: ModalVariantAndState = {
         modalVisible: true,
         modalVariant: ModalVariant.None,
         modalTitle: 'none'
@@ -116,8 +116,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     showCurrentCapability: boolean;
 
     // Logic for fetching the requirement, capability definitions of a node type
-    readonly headers = new Headers({ 'Accept': 'application/json' });
-    readonly options = new RequestOptions({ headers: this.headers });
+    readonly headers = new Headers({'Accept': 'application/json'});
+    readonly options = new RequestOptions({headers: this.headers});
 
     constructor(private jsPlumbService: JsPlumbService,
                 private eref: ElementRef,
@@ -215,7 +215,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      *     to show
      */
     public toggleModalHandler(currentNodeData: ToggleModalDataModel) {
-        console.log(currentNodeData);
         this.currentModalData = currentNodeData;
         this.modalData.modalVisible = true;
         switch (currentNodeData.currentNodePart) {

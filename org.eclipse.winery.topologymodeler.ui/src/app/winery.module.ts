@@ -40,6 +40,7 @@ import { BackendService } from './backend.service';
 import { WineryModalModule } from '../repositoryUiDependencies/wineryModalModule/winery.modal.module';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { ExistsService } from './exists.service';
+import { EntitiesModalService } from './canvas/entities-modal/entities-modal.service';
 
 @NgModule({
     declarations: [
@@ -73,7 +74,8 @@ import { ExistsService } from './exists.service';
         LoadedService,
         AppReadyEventService,
         BackendService,
-        ExistsService
+        ExistsService,
+        EntitiesModalService
     ],
     bootstrap: [WineryComponent]
 })
