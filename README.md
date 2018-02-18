@@ -1,6 +1,6 @@
 # Eclipse Winery – OpenTOSCA fork
 
-[![Build Status](https://travis-ci.org/OpenTOSCA/winery.svg?branch=master)](https://travis-ci.org/OpenTOSCA/winery)
+[![Build Status](https://travis-ci.org/OpenTOSCA/winery.svg?branch=ustutt)](https://travis-ci.org/OpenTOSCA/winery)
 [![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -44,7 +44,7 @@ usage: winery
 
 ## Differences to Eclipse Winery
 
-The branch `master` differs from eclipse/winery in the following files:
+The branch `ustutt` differs from eclipse/winery in the following files:
 
 - [README.md](README.md) - This text file
 - [.travis.settings.yml](.travis.settings.yml) - Different Travis settings
@@ -58,10 +58,10 @@ Further, following PRs have been merged into this repository:
 
 - https://github.com/OpenTOSCA/winery/pull/44 - not startet a PR on eclipse/winery, because Eclipse Orion offers an own markdown component
 
-One can find out the differences between the master branches of these two repositories by executing the following command:
+One can find out the differences between the `ustutt` branch of OpenTOSCA/winery and the `master` branch of eclipse/winery by executing the following command:
 
     git fetch --all
-    git difftool upstream/master origin/master
+    git difftool upstream/master origin/ustutt
 
 Precondition:
 
