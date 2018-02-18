@@ -65,23 +65,20 @@ public class ConsistencyChecker {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsistencyChecker.class);
     private static final String ARTEFACT_BE = "artefact";
 
-    public static ConsistencyErrorLogger checkCorruptionUsingCsarExport(ConsistencyCheckerConfiguration configuration) {
+    public static ConsistencyErrorLogger checkCorruption(ConsistencyCheckerConfiguration configuration) {
         ConsistencyCheckerProgressListener listener = new ConsistencyCheckerProgressListener() {
         };
-        return checkCorruptionUsingCsarExport(configuration, listener);
+        return checkCorruption(configuration, listener);
     }
 
-    public static ConsistencyErrorLogger checkCorruptionUsingCsarExport(ConsistencyCheckerConfiguration configuration,
-                                                                        ConsistencyCheckerProgressListener progressListener) {
+    public static ConsistencyErrorLogger checkCorruption(ConsistencyCheckerConfiguration configuration,
+                                                         ConsistencyCheckerProgressListener progressListener) {
         Set<DefinitionsChildId> allDefinitionsChildIds = configuration.getRepository().getAllDefinitionsChildIds();
         if (configuration.isServiceTemplatesOnly()) {
             allDefinitionsChildIds = allDefinitionsChildIds.stream().filter(id -> id instanceof ServiceTemplateId).collect(Collectors.toSet());
         }
         if (configuration.getVerbosity().contains(ConsistencyCheckerVerbosity.OUTPUT_NUMBER_OF_TOSCA_COMPONENTS)) {
             System.out.format("Number of TOSCA definitions to check: %d\n", allDefinitionsChildIds.size());
-        }
-        if (!configuration.getVerbosity().contains(ConsistencyCheckerVerbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
-            System.out.print("Checking ");
         }
 
         ConsistencyErrorLogger errorLogger = checkAllDefinitions(allDefinitionsChildIds, configuration, progressListener);
@@ -178,10 +175,10 @@ public class ConsistencyChecker {
             }
         } catch (IOException e) {
             LOGGER.debug("I/O error", e);
-            printAndAddError(errorLogger, configuration.getVerbosity(), "I/O error during XML validation " + e.getMessage());
+            printAndAddError(errorLogger, configuration.getVerbosity(), id, "I/O error during XML validation " + e.getMessage());
         } catch (SAXException e) {
             LOGGER.debug("SAX exception", e);
-            printAndAddError(errorLogger, configuration.getVerbosity(), "SAX error during XML validation: " + e.getMessage());
+            printAndAddError(errorLogger, configuration.getVerbosity(), id, "SAX error during XML validation: " + e.getMessage());
         }
     }
 
@@ -315,7 +312,7 @@ public class ConsistencyChecker {
         }
     }
 
-    public static void checkCsar(ConsistencyErrorLogger errorLogger, EnumSet<ConsistencyCheckerVerbosity> verbosity, DefinitionsChildId id, Path tempCsar) {
+    private static void checkCsar(ConsistencyErrorLogger errorLogger, EnumSet<ConsistencyCheckerVerbosity> verbosity, DefinitionsChildId id, Path tempCsar) {
         CsarExporter exporter = new CsarExporter();
         final OutputStream outputStream;
         try {
@@ -323,7 +320,7 @@ public class ConsistencyChecker {
         } catch (IOException e) {
             final String error = "Could not write to temp CSAR file";
             LOGGER.debug(error, e);
-            printAndAddError(errorLogger, verbosity, error);
+            printAndAddError(errorLogger, verbosity, id, error);
             return;
         }
         try {
@@ -339,10 +336,10 @@ public class ConsistencyChecker {
             }
         } catch (ArchiveException | JAXBException | IOException e) {
             LOGGER.debug("Error during checking ZIP", e);
-            printAndAddError(errorLogger, verbosity, "Invalid zip file");
+            printAndAddError(errorLogger, verbosity, id, "Invalid zip file: " + e.getMessage());
         } catch (RepositoryCorruptException e) {
             LOGGER.debug("Repository is corrupt", e);
-            printAndAddError(errorLogger, verbosity, "Corrupt: " + e.getMessage());
+            printAndAddError(errorLogger, verbosity, id, "Corrupt: " + e.getMessage());
         }
     }
 
@@ -352,39 +349,36 @@ public class ConsistencyChecker {
 
         try {
             tempCsar = Files.createTempFile("Export", ".csar");
-            float elementsChecked = 0;
-            for (DefinitionsChildId id : allDefinitionsChildIds) {
-                float progress = ++elementsChecked / allDefinitionsChildIds.size();
-                if (configuration.getVerbosity().contains(ConsistencyCheckerVerbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
-                    progressListener.detailedCheckerProgress(progress, id.toReadableString());
-                } else {
-                    progressListener.updateCheckerProgress(progress);
-                }
-
-                checkId(errorLogger, configuration.getVerbosity(), id);
-                checkXmlSchemaValidation(errorLogger, configuration, id);
-                checkReferencedQNames(errorLogger, configuration, id);
-                checkPropertiesValidation(errorLogger, configuration, id);
-                if (id instanceof ServiceTemplateId) {
-                    checkServiceTemplate(errorLogger, configuration, (ServiceTemplateId) id);
-                }
-                if (configuration.isCheckDocumentation()) {
-                    checkDocumentation(errorLogger, configuration, id);
-                }
-                checkPlainConformance(errorLogger, configuration.getVerbosity(), id, tempCsar);
-                checkCsar(errorLogger, configuration.getVerbosity(), id, tempCsar);
-            }
         } catch (IOException e) {
             LOGGER.debug("Could not create temp CSAR file", e);
             errorLogger.error("Could not create temp CSAR file");
+            return errorLogger;
+        }
+
+        float elementsChecked = 0;
+        for (DefinitionsChildId id : allDefinitionsChildIds) {
+            float progress = ++elementsChecked / allDefinitionsChildIds.size();
+            if (configuration.getVerbosity().contains(ConsistencyCheckerVerbosity.OUTPUT_CURRENT_TOSCA_COMPONENT_ID)) {
+                progressListener.updateProgress(progress, id.toReadableString());
+            } else {
+                progressListener.updateProgress(progress);
+            }
+
+            checkId(errorLogger, configuration.getVerbosity(), id);
+            checkXmlSchemaValidation(errorLogger, configuration, id);
+            checkReferencedQNames(errorLogger, configuration, id);
+            checkPropertiesValidation(errorLogger, configuration, id);
+            if (id instanceof ServiceTemplateId) {
+                checkServiceTemplate(errorLogger, configuration, (ServiceTemplateId) id);
+            }
+            if (configuration.isCheckDocumentation()) {
+                checkDocumentation(errorLogger, configuration, id);
+            }
+            checkPlainConformance(errorLogger, configuration.getVerbosity(), id, tempCsar);
+            checkCsar(errorLogger, configuration.getVerbosity(), id, tempCsar);
         }
 
         return errorLogger;
-    }
-
-    private static void printAndAddError(ConsistencyErrorLogger errorLogger, EnumSet<ConsistencyCheckerVerbosity> verbosity, String error) {
-        printError(verbosity, error);
-        errorLogger.error(error);
     }
 
     private static void printAndAddError(ConsistencyErrorLogger errorLogger, EnumSet<ConsistencyCheckerVerbosity> verbosity, DefinitionsChildId id, String error) {
