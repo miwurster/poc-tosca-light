@@ -20,8 +20,8 @@
     <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Winery</name>
-    <description>Winery is a Web-based environment to graphically model TOSCA topologies and plans managing these
-        topologies.
+    <description>
+        Winery is a Web-based environment to graphically model TOSCA topologies and plans managing these topologies.
     </description>
     <url>https://eclipse.github.io/winery</url>
     <organization>
@@ -226,7 +226,7 @@
                             <configuration>
                                 <featureDefinitions>
                                     <feature>
-                                        <id>winery.feature</id>
+                                        <id>winery</id>
                                         <version>2.0.0</version>
                                         <label>Winery Feature</label>
                                         <providerName>${project.groupId}</providerName>
@@ -237,7 +237,6 @@
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.model.bpmn4tosca:2.0.0-SNAPSHOT
                                                 </id>
-                                                <transitive>false</transitive>
                                                 <source>true</source>
                                             </artifact>
                                             <artifact>
