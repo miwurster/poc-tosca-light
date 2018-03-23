@@ -44,8 +44,27 @@ deploy:
       all_branches: true
       condition: $AWSAccessKeyId
   - provider: script
-    script: "mvn com.github.github:site-maven-plugin:site -N"
+    script: "mvn org.reficio:p2-maven-plugin:site -N"
     skip_cleanup: true
     on:
-      branch: ustutt
-      tags: true
+      all_branches: true
+  - provider: pages
+    skip-cleanup: true
+    github-token: $GITHUB_TOKEN
+    keep-history: false
+    local-dir: target/repository
+    repo: OpenTOSCA/winery-update-site
+    # ADR-0018
+    target-branch: $TRAVIS_BRANCH
+    on:
+      all_branches: true
+  - provider: pages
+    skip-cleanup: true
+    github-token: $GITHUB_TOKEN
+    keep-history: false
+    local-dir: target/mvn-repo
+    repo: OpenTOSCA/mvn-repo
+    # ADR-0019    
+    target-branch: $TRAVIS_BRANCH
+    on:
+      all_branches: true
