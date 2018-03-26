@@ -238,85 +238,101 @@
                                                     org.eclipse.winery:org.eclipse.winery.model.bpmn4tosca:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.model.csar.toscametafile:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.model.selfservice:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.model.tosca:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.model.tosca.yaml:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.common:2.0.0-SNAPSHOT</id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.yaml.common:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.yaml.converter:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.cli:2.0.0-SNAPSHOT</id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.bpmn4tosca.converter.tobpel:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.repository:2.0.0-SNAPSHOT</id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.repository.client:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.repository.configuration:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.compliance:2.0.0-SNAPSHOT</id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.generators.ia:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
                                                     org.eclipse.winery:org.eclipse.winery.highlevelrestapi:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
+                                                <transitive>false</transitive>
                                             </artifact>
                                         </artifacts>
                                     </feature>
