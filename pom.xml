@@ -313,6 +313,7 @@
                                                     <exclude>org.slf4j:::</exclude>
                                                     <exclude>org.eclipse.collections:eclipse-collections*::</exclude>
                                                 </excludes>
+                                                <transitive>true</transitive>
                                             </artifact>
                                             <artifact>
                                                 <id>
