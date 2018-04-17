@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,15 +12,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {animate, state, style, transition, trigger} from '@angular/animations';
-import {PaletteService} from '../palette.service';
-import {WineryActions} from '../redux/actions/winery.actions';
-import {NgRedux} from '@angular-redux/store';
-import {IWineryState} from '../redux/store/winery.store';
-import {TNodeTemplate} from '../models/ttopology-template';
-import {BackendService} from '../backend.service';
-import {NewNodeIdTypeColorModel} from '../models/newNodeIdTypeColorModel';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../redux/store/winery.store';
+import { TNodeTemplate } from '../models/ttopology-template';
+import { BackendService } from '../services/backend.service';
+import { NewNodeIdTypeColorPropertiesModel } from '../models/newNodeIdTypeColorModel';
+import { isNullOrUndefined } from 'util';
+import { Subscription } from 'rxjs/Subscription';
 
 /**
  * This is the left sidebar, where nodes can be created from.
@@ -29,69 +30,93 @@ import {NewNodeIdTypeColorModel} from '../models/newNodeIdTypeColorModel';
     selector: 'winery-palette-component',
     templateUrl: './palette.component.html',
     styleUrls: ['./palette.component.css'],
-    providers: [PaletteService],
+    providers: [],
     animations: [
         trigger('paletteItemState', [
             state('shrunk', style({
                 display: 'none',
                 opacity: '0',
-                height: '0px',
+                height: '*',
             })),
             state('extended', style({
                 display: 'block',
                 opacity: '1',
-                height: '100%',
+                height: '*',
             })),
-            transition('shrunk => extended', animate('100ms ease-out')),
-            transition('extended => shrunk', animate('100ms ease-out'))
+            transition('shrunk => extended', animate('500ms ease-out')),
+            transition('extended => shrunk', animate('500ms ease-out'))
+        ]),
+        trigger('paletteButtonState', [
+            state('left', style({
+                display: 'block',
+                opacity: '1',
+                height: '*',
+                transform: 'rotate(-90deg) translateY(-135px) translateX(-135px)'
+            })),
+            state('top', style({
+                display: 'block',
+                opacity: '1',
+                height: '*',
+                transform: 'rotate(0deg) translateY(0px) translateX(0px)'
+            })),
+            transition('left => top', animate('200ms ease-in')),
+            transition('top => left', animate('200ms ease-in', keyframes([
+                style({ opacity: '1', transform: 'rotate(0deg) translateY(0px) translateX(0px)' }),
+                style({ opacity: '0', transform: 'rotate(-45deg) translateY(-75px) translateX(-75px)' }),
+                style({ opacity: '1', transform: 'rotate(-90deg) translateY(-135px) translateX(-135px)' })
+            ])))
         ])
     ]
 })
 export class PaletteComponent implements OnInit, OnDestroy {
     @Input() entityTypes;
     paletteRootState = 'extended';
-    nodeTemplatesSubscription;
-    paletteOpenedSubscription;
+    paletteButtonRootState = 'left';
+    subscriptions: Array<Subscription> = [];
     public oneAtATime = true;
     // All Node Types grouped by their namespaces
     allNodeTemplates: TNodeTemplate[] = [];
     readonly newNodePositionOffsetX = 108;
     readonly newNodePositionOffsetY = 30;
 
-    constructor (private ngRedux: NgRedux<IWineryState>,
-                 private actions: WineryActions,
-                 private backendService: BackendService) {
-        this.nodeTemplatesSubscription = ngRedux.select(wineryState => wineryState.wineryState.currentJsonTopology.nodeTemplates)
-            .subscribe(currentNodes => this.updateNodes(currentNodes));
-        this.paletteOpenedSubscription = ngRedux.select(wineryState => wineryState.wineryState.currentPaletteOpenedState)
-            .subscribe(currentPaletteOpened => this.updateState(currentPaletteOpened));
+    constructor(private ngRedux: NgRedux<IWineryState>,
+                private actions: WineryActions,
+                private backendService: BackendService) {
+        this.subscriptions.push(ngRedux.select(wineryState => wineryState.wineryState.currentJsonTopology.nodeTemplates)
+            .subscribe(currentNodes => this.updateNodes(currentNodes)));
+        this.subscriptions.push(ngRedux.select(wineryState => wineryState.wineryState.currentPaletteOpenedState)
+            .subscribe(currentPaletteOpened => this.updateState(currentPaletteOpened)));
     }
 
     /**
      * Applies the correct css, depending on if the palette is open or not.
      * @param newPaletteOpenedState
      */
-    updateState (newPaletteOpenedState: any) {
+    updateState(newPaletteOpenedState: any) {
         if (!newPaletteOpenedState) {
             this.paletteRootState = 'shrunk';
+            this.paletteButtonRootState = 'left';
+
         } else {
             this.paletteRootState = 'extended';
+            this.paletteButtonRootState = 'top';
         }
     }
 
     /**
      * Angular lifecycle event.
      */
-    ngOnInit () {
-        console.log(this.entityTypes);
+    ngOnInit() {
+        // console.log(this.entityTypes);
     }
 
     /**
      * opens the palette if its closed and vice versa.
      */
-    public toggleRootState (): void {
+    public toggleRootState(): void {
         if (this.paletteRootState === 'shrunk') {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(true));
+
         } else {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
         }
@@ -102,7 +127,7 @@ export class PaletteComponent implements OnInit, OnDestroy {
      * correct handler.
      * @param currentNodes  List of all displayed nodes.
      */
-    updateNodes (currentNodes: Array<TNodeTemplate>): void {
+    updateNodes(currentNodes: Array<TNodeTemplate>): void {
         this.allNodeTemplates = currentNodes;
     }
 
@@ -110,35 +135,27 @@ export class PaletteComponent implements OnInit, OnDestroy {
      * Generates and stores a new node in the store.
      * @param $event
      */
-    generateNewNode ($event): void {
+    generateNewNode($event): void {
         const left = ($event.pageX - this.newNodePositionOffsetX).toString();
         const top = ($event.pageY - this.newNodePositionOffsetY).toString();
         const name = $event.target.innerText;
-        const otherAttributes = {
-            location: 'undefined',
-            x: left,
-            y: top
-        };
         const y = top;
         const x = left;
-        const newIdTypeColor = this.generateIdTypeColor(name);
-        const newId = newIdTypeColor.id;
-        const newType = newIdTypeColor.type;
+        const newIdTypeColorProperties = this.generateIdTypeColorProperties(name);
         const newNode: TNodeTemplate = new TNodeTemplate(
-            undefined,
-            newId,
-            newType,
+            newIdTypeColorProperties.properties,
+            newIdTypeColorProperties.id,
+            newIdTypeColorProperties.type,
             name,
             1,
             1,
-            newIdTypeColor.color,
+            newIdTypeColorProperties.color,
             undefined,
             undefined,
             undefined,
-            otherAttributes,
+            {},
             x,
             y,
-            undefined,
             undefined,
             undefined,
             undefined,
@@ -148,11 +165,11 @@ export class PaletteComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Generates a new unique node id, type and color.
+     * Generates a new unique node id, type, color and properties
      * @param name
      * @return result
      */
-    generateIdTypeColor (name: string): NewNodeIdTypeColorModel {
+    generateIdTypeColorProperties(name: string): NewNodeIdTypeColorPropertiesModel {
         if (this.allNodeTemplates.length > 0) {
             // iterate from back to front because only the last added instance of a node type is important
             // e.g. Node_8 so to increase to Node_9 only the 8 is important which is in the end of the array
@@ -167,9 +184,10 @@ export class PaletteComponent implements OnInit, OnDestroy {
                 name = name.replace(/\s+/g, '');
                 if (name === typeOfCurrentNode) {
                     const idOfCurrentNode = this.allNodeTemplates[i].id;
-                    const numberOfNewInstance = parseInt(idOfCurrentNode.substring(idOfCurrentNode.indexOf('_') + 1), 10) + 1;
+                    const numberOfNewInstance = parseInt(idOfCurrentNode.substring(name.length + 1), 10) + 1;
                     let newId;
                     if (numberOfNewInstance) {
+
                         newId = name.concat('_', numberOfNewInstance.toString());
                     } else {
                         newId = name.concat('_', '2');
@@ -177,7 +195,8 @@ export class PaletteComponent implements OnInit, OnDestroy {
                     const result = {
                         id: newId,
                         type: type,
-                        color: color
+                        properties: this.getDefaultPropertiesFromNodeTypes(name),
+                        color: color,
                     };
                     return result;
                 }
@@ -188,15 +207,45 @@ export class PaletteComponent implements OnInit, OnDestroy {
         }
     }
 
-    private getNewNodeDataFromNodeTypes (name: string): any {
-        // case that the node name is not in the array which contains a local copy of all node templates visible in the DOM,
-        // then search in ungroupedNodeTypes where all possible node information is available
+    /**
+     * This function transforms the node's KV properties from an array to an object representation
+     * @param any type : the element type, e.g. capabilityType, requirementType etc.
+     * @return newKvProperties : properties as a object
+     */
+    setKVProperties(type: any): any {
+        let newKVProperies;
+        const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+        for (const obj of kvProperties) {
+            const key = obj.key;
+            let value;
+            if (isNullOrUndefined(obj.value)) {
+                value = '';
+            } else {
+                value = obj.value;
+            }
+            const keyValuePair = {
+                [key]: value
+            };
+            newKVProperies = { ...newKVProperies, ...keyValuePair };
+        }
+        return newKVProperies;
+    }
+
+    /**
+     * Generates node id, type, color and properties from the node types
+     * @param name
+     * @return result
+     */
+    private getNewNodeDataFromNodeTypes(name: string): any {
+        // case that the node name is not in the array which contains a local copy of all node templates visible in the
+        // DOM, then search in ungroupedNodeTypes where all possible node information is available
         for (const node of this.entityTypes.unGroupedNodeTypes) {
             if (node.id === name) {
                 const result = {
                     id: node.id,
                     type: node.qName,
-                    color: node.color
+                    properties: this.getDefaultPropertiesFromNodeTypes(name),
+                    color: node.color,
                 };
                 return result;
             }
@@ -204,11 +253,41 @@ export class PaletteComponent implements OnInit, OnDestroy {
     }
 
     /**
+     * Generates default properties from node types
+     * @param name
+     * @return result
+     */
+    private getDefaultPropertiesFromNodeTypes(name: string): any {
+        for (const nodeType of this.entityTypes.unGroupedNodeTypes) {
+            if (nodeType.name === name) {
+                // if any is defined with at least one element it's a KV property, sets default values if there aren't
+                // any in the node template
+                if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
+                    const properties = {
+                        kvproperties: this.setKVProperties(nodeType)
+                    };
+                    return properties;
+                    // if propertiesDefinition is defined it's a XML property
+                } else if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
+                    if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                        const properties = {
+                            any: nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element
+                        };
+                        return properties;
+                    }
+                } else {
+                    // else no properties
+                    return null;
+                }
+            }
+        }
+    }
+
+    /**
      * Angular lifecycle event.
      */
-    ngOnDestroy () {
-        this.nodeTemplatesSubscription.unsubscribe();
-        this.paletteOpenedSubscription.unsubscribe();
+    ngOnDestroy() {
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
     }
 }
 

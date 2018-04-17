@@ -1,5 +1,5 @@
 <!--
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,9 +20,9 @@
         <th>
             Values
         </th>
-        <tr *ngFor="let key of nodeProperties | keysPipe; let i = index">
-            <td class="">{{key.key}}</td>
-            <td class="">
+    <tr *ngFor="let key of nodeProperties | keysPipe; let i = index">
+        <td class="">{{key.key}}</td>
+        <td class="">
                 <textarea
                     style="width:100%; overflow-y: scroll;"
                     rows="1"
@@ -32,7 +32,7 @@
                     (keyup)="properties.next($event.target.value)"
                     (keyup)="keyOfEditedKVProperty.next(key.key)">
                 </textarea>
-            </td>
+        </td>
     </tr>
 </table>
 

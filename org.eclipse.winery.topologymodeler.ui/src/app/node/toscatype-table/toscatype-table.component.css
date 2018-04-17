@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,6 +16,31 @@
     table-layout: fixed;
 }
 
+table {
+    border: 0px;
+}
+
+th {
+    background-color: #CFD8DC;
+    color: #000;
+    text-align: center;
+}
+
+th, td {
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 1px solid #ddd;
+}
+
+tr {
+    cursor: pointer;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
 .toscatype-table-td div {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -27,19 +52,29 @@
     transition: max-width linear 1ms;
 }
 
-.toscatype-table-td:hover div{
-    overflow: visible;
-    display: inline-block;
-    white-space: normal;
-    -ms-word-break: break-all;
-    word-break: break-all;
+.cell-with-comment {
+    position: relative;
+}
 
-    -webkit-hyphens: auto;
-    -moz-hyphens: auto;
-    hyphens: auto;
-    width: 300%;
-    max-width: 300%;
-    z-index: 1; /* stack above subsequent cells */
+.cell-comment {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    border: 1px;
+    border-radius: .4em;
+    background-color: #efefef;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #424242;
+    padding: 3px;
+    color: #000000;
+    width: auto;
+    left: 2em;
+    top: 2em;
+}
+
+.cell-with-comment:hover span.cell-comment {
+    display: block;
 }
 
 .button-wrapper {
@@ -48,7 +83,7 @@
     justify-content: center;
 }
 
-.toscatype-table-td:hover div:before{
+.toscatype-table-td:hover div:before {
     background-color: #ffffff;
     border: 1px solid #ddd;
     content: "";
@@ -58,9 +93,9 @@
     top: 0;
     width: 100%;
     position: absolute;
-    z-index:-1; /* stack below truncated text */
-    -webkit-user-select: all;  /* Chrome all / Safari all */
-    -moz-user-select: all;     /* Firefox all */
-    -ms-user-select: all;      /* IE 10+ */
+    z-index: -1; /* stack below truncated text */
+    -webkit-user-select: all; /* Chrome all / Safari all */
+    -moz-user-select: all; /* Firefox all */
+    -ms-user-select: all; /* IE 10+ */
     user-select: all;
 }

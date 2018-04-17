@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,10 +19,12 @@ export class GridTemplate {
     constructor(public gridDimension: number,
                 public selectionActive?: boolean,
                 public crosshair?: boolean,
+                public marginLeft?: number,
                 public pageX?: number,
                 public pageY?: number,
                 public initialW?: number,
                 public initialH?: number,
                 public selectionWidth?: number,
-                public selectionHeight?: number) { }
+                public selectionHeight?: number) {
+    }
 }

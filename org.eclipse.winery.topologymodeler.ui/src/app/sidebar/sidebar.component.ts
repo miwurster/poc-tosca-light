@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,20 +12,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {
-    Component,
-    OnDestroy,
-    OnInit
-} from '@angular/core';
-import {NgRedux} from '@angular-redux/store';
-import {IWineryState} from '../redux/store/winery.store';
-import {WineryActions} from '../redux/actions/winery.actions';
-import {Subject} from 'rxjs/Subject';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../redux/store/winery.store';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/map';
-import {animate, state, style, transition, trigger} from '@angular/animations';
-import {Subscription} from 'rxjs/Subscription';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Subscription } from 'rxjs/Subscription';
+import { QName } from '../models/qname';
+import { urlElement } from '../models/enums';
+import { BackendService } from '../services/backend.service';
 
 /**
  * This is the right sidebar, where attributes of nodes and relationships get displayed.
@@ -36,9 +35,9 @@ import {Subscription} from 'rxjs/Subscription';
     styleUrls: ['./sidebar.component.css'],
     animations: [
         trigger('sidebarAnimationStatus', [
-            state('in', style({transform: 'translateX(0)'})),
+            state('in', style({ transform: 'translateX(0)' })),
             transition('void => *', [
-                style({transform: 'translateX(100%)'}),
+                style({ transform: 'translateX(100%)' }),
                 animate('100ms cubic-bezier(0.86, 0, 0.07, 1)')
             ]),
             transition('* => void', [
@@ -63,14 +62,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public nodeMaxInstancesKeyUp: Subject<string> = new Subject<string>();
     subscription: Subscription;
 
-    constructor (private $ngRedux: NgRedux<IWineryState>,
-                 private actions: WineryActions) {
+    constructor(private $ngRedux: NgRedux<IWineryState>,
+                private actions: WineryActions,
+                private backendService: BackendService) {
     }
 
     /**
      * Closes the sidebar.
      */
-    closeSidebar () {
+    closeSidebar() {
         this.$ngRedux.dispatch(this.actions.openSidebar({
             sidebarContents: {
                 sidebarVisible: false,
@@ -87,7 +87,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     /**
      * CSS styling for "infinity button"
      */
-    getInfinityButtonStyle (): string {
+    getInfinityButtonStyle(): string {
         return !this.maxInputEnabled ? '#ffc0c0' : 'rgb(240, 240, 240)';
     }
 
@@ -95,7 +95,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * Angular lifecycle event.
      * initializes the sidebar with the correct data, also implements debounce time for a smooth user experience
      */
-    ngOnInit () {
+    ngOnInit() {
         this.sidebarSubscription = this.$ngRedux.select(wineryState => wineryState.wineryState.sidebarContents)
             .subscribe(sidebarContents => {
                     this.sidebarState = sidebarContents;
@@ -198,7 +198,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * Implements some checks, if the values from the user are correct, and updates the nodes
      * @param $event
      */
-    minInstancesChanged ($event) {
+    minInstancesChanged($event) {
         if ($event === 'inc') {
             this.$ngRedux.dispatch(this.actions.incMinInstances({
                 minInstances: {
@@ -234,12 +234,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
         }));
     }
 
-
     /**
      * Implements some checks, if the values from the user are correct, and updates the nodes
      * @param $event
      */
-    maxInstancesChanged ($event) {
+    maxInstancesChanged($event) {
         if (!(this.sidebarState.maxInstances === '\u221E')) {
             if ($event === 'inc') {
                 this.$ngRedux.dispatch(this.actions.incMaxInstances({
@@ -294,21 +293,51 @@ export class SidebarComponent implements OnInit, OnDestroy {
         }));
     }
 
-    onFocus ($event): void {
+    /**
+     * Unmarks the node or relationship template upon altering the name in the side bar. Guarantuees that upon clicking
+     * the 'del' key for intentionally clearing the node name the whole node template is not deleted. Upon putting focus
+     * the node template is unmarked
+     * @param $event
+     */
+    onFocus($event): void {
         this.$ngRedux.dispatch(this.actions.sendCurrentNodeId({
             id: this.sidebarState.id,
             focus: false
         }));
     }
 
-    onBlur ($event): void {
+    /**
+     * Unmarks the node or relationship template upon altering the name in the side bar. Guarantuees that upon clicking
+     * the 'del' key for intentionally clearing the node name the whole node template is not deleted. Upon blurring
+     * the node template is marked again
+     * @param $event
+     */
+    onBlur($event): void {
         this.$ngRedux.dispatch(this.actions.sendCurrentNodeId({
             id: this.sidebarState.id,
             focus: true
         }));
     }
 
-    ngOnDestroy () {
+    /**
+     * Navigates to the corresponding type in the management UI
+     * @param $event
+     */
+    linkType($event: any): void {
+        let typeURL;
+        const qName = new QName(this.sidebarState.type);
+        if (this.sidebarState.nodeClicked) {
+            typeURL = this.backendService.configuration.uiURL + '#' + urlElement.NodeTypeURL +
+                encodeURIComponent(encodeURIComponent(qName.nameSpace)) + '/' + qName.localName
+                + urlElement.ReadMe;
+        } else {
+            typeURL = this.backendService.configuration.uiURL + '#' + urlElement.RelationshipTypeURL +
+                encodeURIComponent(encodeURIComponent(qName.nameSpace)) + qName.localName + urlElement.ReadMe;
+        }
+        window.open(typeURL, '_blank');
+    }
+
+    ngOnDestroy() {
         this.subscription.unsubscribe();
     }
 }

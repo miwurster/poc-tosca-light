@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,17 +16,18 @@ import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { NodeComponent } from '../node/node.component';
 import { CanvasComponent } from '../canvas/canvas.component';
-import { LayoutDirective } from '../layout.directive';
+import { LayoutDirective } from '../layout/layout.directive';
 import { WineryAlertModule } from '../winery-alert/winery-alert.module';
 import { ToastModule, ToastOptions } from 'ng2-toastr/ng2-toastr';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { JsPlumbService } from '../jsPlumbService';
+import { JsPlumbService } from '../services/jsPlumbService';
 import { WineryCustomOption } from '../winery-alert/winery-alert-options';
 import { TopologyRendererComponent } from './topology-renderer.component';
 import { NgReduxModule } from '@angular-redux/store';
@@ -38,17 +39,19 @@ import { DeploymentArtifactsComponent } from '../node/deployment-artifacts/deplo
 import { WineryModalModule } from '../../repositoryUiDependencies/wineryModalModule/winery.modal.module';
 import { CapabilitiesComponent } from '../node/capabilities/capabilities.component';
 import { PropertiesContentComponent } from '../node/properties-content/properties-content.component';
-import { KeysPipe } from '../keys.pipe';
+import { KeysPipe } from '../pipes/keys.pipe';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import { ToscatypeTableComponent } from '../node/toscatype-table/toscatype-table.component';
 import { EntitiesModalComponent } from '../canvas/entities-modal/entities-modal.component';
-import { LocalnamePipe } from '../localname.pipe';
+import { LocalnamePipe } from '../pipes/localname.pipe';
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
         HttpModule,
+        HttpClientModule,
         BrowserAnimationsModule,
         BsDropdownModule.forRoot(),
         WineryAlertModule.forRoot(),
@@ -58,6 +61,7 @@ import { LocalnamePipe } from '../localname.pipe';
         RouterModule,
         WineryModalModule,
         TypeaheadModule.forRoot(),
+        TooltipModule.forRoot()
     ],
     declarations: [
         NavbarComponent,
@@ -88,7 +92,7 @@ export class TopologyRendererModule {
         return {
             ngModule: TopologyRendererModule,
             providers: [
-                {provide: ToastOptions, useClass: WineryCustomOption},
+                { provide: ToastOptions, useClass: WineryCustomOption },
                 JsPlumbService
             ]
         };

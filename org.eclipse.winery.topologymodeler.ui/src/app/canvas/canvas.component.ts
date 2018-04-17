@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,52 +12,40 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 import {
-    AfterViewInit,
-    Component,
-    DoCheck,
-    ElementRef,
-    HostListener,
-    Input,
-    KeyValueDiffers,
-    NgZone,
-    OnDestroy,
-    OnInit,
-    QueryList,
-    Renderer2,
-    ViewChild,
-    ViewChildren
+    AfterViewInit, Component, DoCheck, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnDestroy, OnInit,
+    QueryList, Renderer2, ViewChild, ViewChildren
 } from '@angular/core';
-import {JsPlumbService} from '../jsPlumbService';
-import {TNodeTemplate, TRelationshipTemplate} from '../models/ttopology-template';
-import {LayoutDirective} from '../layout.directive';
-import {WineryActions} from '../redux/actions/winery.actions';
-import {NgRedux} from '@angular-redux/store';
-import {IWineryState} from '../redux/store/winery.store';
-import {ButtonsStateModel} from '../models/buttonsState.model';
-import {TopologyRendererActions} from '../redux/actions/topologyRenderer.actions';
-import {NodeComponent} from '../node/node.component';
-import {Hotkey, HotkeysService} from 'angular2-hotkeys';
-import {ModalDirective} from 'ngx-bootstrap';
-import {GridTemplate} from 'app/models/gridTemplate';
-import {Subscription} from 'rxjs/Subscription';
-import {CapabilitiesModalData} from '../models/capabilitiesModalData';
-import {RequirementsModalData} from '../models/requirementsModalData';
-import {NodeIdAndFocusModel} from '../models/nodeIdAndFocusModel';
-import {ToggleModalDataModel} from '../models/toggleModalDataModel';
-import {WineryAlertService} from '../winery-alert/winery-alert.service';
-import {BackendService, TopologyModelerConfiguration} from '../backend.service';
-import {backendBaseURL, hostURL} from '../configuration';
-import {CapabilityModel} from '../models/capabilityModel';
-import {isNullOrUndefined} from 'util';
-import {RequirementModel} from '../models/requirementModel';
-import {EntityTypesModel} from '../models/entityTypesModel';
-import {ExistsService} from '../exists.service';
-import {GenerateArtifactApiData} from '../generateArtifactApiData';
-import {Subject} from 'rxjs/Subject';
-import {Observable} from 'rxjs/Rx';
-import {Headers, Http, RequestOptions} from '@angular/http';
-import {ModalVariant} from './entities-modal/modal-model';
-import {ModalVariantAndState} from './entities-modal/modal-model';
+import { JsPlumbService } from '../services/jsPlumbService';
+import { TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
+import { LayoutDirective } from '../layout/layout.directive';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../redux/store/winery.store';
+import { ButtonsStateModel } from '../models/buttonsState.model';
+import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
+import { NodeComponent } from '../node/node.component';
+import { Hotkey, HotkeysService } from 'angular2-hotkeys';
+import { ModalDirective } from 'ngx-bootstrap';
+import { GridTemplate } from 'app/models/gridTemplate';
+import { Subscription } from 'rxjs/Subscription';
+import { CapabilitiesModalData } from '../models/capabilitiesModalData';
+import { RequirementsModalData } from '../models/requirementsModalData';
+import { NodeIdAndFocusModel } from '../models/nodeIdAndFocusModel';
+import { ToggleModalDataModel } from '../models/toggleModalDataModel';
+import { WineryAlertService } from '../winery-alert/winery-alert.service';
+import { BackendService } from '../services/backend.service';
+import { hostURL } from '../models/configuration';
+import { CapabilityModel } from '../models/capabilityModel';
+import { isNullOrUndefined } from 'util';
+import { RequirementModel } from '../models/requirementModel';
+import { EntityTypesModel } from '../models/entityTypesModel';
+import { ExistsService } from '../services/exists.service';
+import { ModalVariant, ModalVariantAndState } from './entities-modal/modal-model';
+import { align, toggleModalType } from '../models/enums';
+import { QName } from '../models/qname';
+import { ImportTopologyModalData } from '../models/importTopologyModalData';
+import { ImportTopologyService } from '../services/import-topology.service';
+import { ReqCapService } from '../services/req-cap.service';
 
 @Component({
     selector: 'winery-canvas',
@@ -68,10 +56,13 @@ import {ModalVariantAndState} from './entities-modal/modal-model';
 export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoCheck {
 
     @ViewChildren(NodeComponent) nodeComponentChildren: QueryList<NodeComponent>;
+    @ViewChildren('KVTextareas') KVTextareas: QueryList<any>;
+    @ViewChildren('XMLTextareas') xmlTextareas: QueryList<any>;
     @ViewChild('nodes') child: ElementRef;
     @ViewChild('selection') selection: ElementRef;
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
+    @ViewChild('importTopologyModal') importTopologyModal: ModalDirective;
     @Input() entityTypes: EntityTypesModel;
     @Input() relationshipTypes: Array<any> = [];
     allNodeTemplates: Array<TNodeTemplate> = [];
@@ -101,23 +92,49 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     subscriptions: Array<Subscription> = [];
     // unbind mouse move and up functions
     unbindMouseActions: Array<Function> = [];
+
+    // variables which hold their corresponding modal data
     capabilities: CapabilitiesModalData;
     requirements: RequirementsModalData;
+    importTopologyData: ImportTopologyModalData;
+
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
+
+    // used for Angular DoCheck Lifecycle hook
     differ: any;
+
+    // scroll offset
+    scrollOffset = 0;
+
     // modalVariantAndState is passed to the entities-modal component and tells it which modal to render
     modalData: ModalVariantAndState = {
         modalVisible: true,
         modalVariant: ModalVariant.None,
         modalTitle: 'none'
     };
+
+    // used to display the correct modal sort
     showCurrentRequirement: boolean;
     showCurrentCapability: boolean;
 
-    // Logic for fetching the requirement, capability definitions of a node type
-    readonly headers = new Headers({'Accept': 'application/json'});
-    readonly options = new RequestOptions({headers: this.headers});
+    showDefaultProperties: boolean;
+    hideNavBarAndPalette = false;
+
+    // holds all Id's of the topology template
+    allIds: Array<String> = [];
+
+    // determines if a warning in the modal of having duplicate Id's is shown
+    duplicateId = false;
+
+    private longPressing: boolean;
+    private timeout: any;
+    duration: 300;
+
+    @HostListener('mouseup')
+    onMouseUp() {
+        this.endPress();
+    }
 
     constructor(private jsPlumbService: JsPlumbService,
                 private eref: ElementRef,
@@ -131,8 +148,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 private alert: WineryAlertService,
                 private differs: KeyValueDiffers,
                 private backendService: BackendService,
+                private importTopologyService: ImportTopologyService,
                 private existsService: ExistsService,
-                private http: Http) {
+                private reqCapService: ReqCapService) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
         console.log(this.newJsPlumbInstance);
@@ -144,6 +162,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             .subscribe(currentButtonsState => this.setButtonsState(currentButtonsState)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentNodeData)
             .subscribe(currentNodeData => this.toggleMarkNode(currentNodeData)));
+        this.gridTemplate = new GridTemplate(100, false, false, 30);
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened)));
         this.hotkeysService.add(new Hotkey('ctrl+a', (event: KeyboardEvent): boolean => {
@@ -151,9 +170,39 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             this.allNodeTemplates.forEach(node => this.enhanceDragSelection(node.id));
             return false; // Prevent bubbling
         }));
-        this.gridTemplate = new GridTemplate(100, false, false);
         this.capabilities = new CapabilitiesModalData();
         this.requirements = new RequirementsModalData();
+        this.importTopologyData = new ImportTopologyModalData();
+    }
+
+    @HostListener('mousedown', ['$event'])
+    onMouseDown(event) {
+        // don't do right/middle clicks
+        if (event.which !== 1) {
+            return;
+        }
+
+        this.longPressing = false;
+
+        this.timeout = setTimeout(() => {
+            this.longPressing = true;
+            this.loop(event);
+        }, this.duration);
+
+        this.loop(event);
+    }
+
+    loop(event) {
+        if (this.longPressing) {
+            this.timeout = setTimeout(() => {
+                this.loop(event);
+            }, 50);
+        }
+    }
+
+    endPress() {
+        clearTimeout(this.timeout);
+        this.longPressing = false;
     }
 
     /**
@@ -170,6 +219,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.handleNewNode(currentNodes);
             } else if (difference < 0) {
                 this.handleDeletedNodes(currentNodes);
+            } else if (difference === 1 && !this.paletteOpened) {
+                this.allNodeTemplates.push(currentNodes[currentNodes.length - 1]);
+                this.revalidateContainer();
             } else {
                 this.allNodeTemplates = currentNodes;
             }
@@ -206,6 +258,51 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     setPaletteState(currentPaletteOpened: boolean): void {
         if (currentPaletteOpened) {
             this.paletteOpened = currentPaletteOpened;
+            this.gridTemplate.marginLeft = 300;
+        } else {
+            this.gridTemplate.marginLeft = 30;
+        }
+    }
+
+    /**
+     * Gets all ID's of the topology template and saves them in an array
+     */
+    private getAllIds(): void {
+        this.allIds = [];
+        // get all Id's of the node templates
+        this.allNodeTemplates.forEach(node => {
+            if (this.allIds.length > 0) {
+                this.setId(node.id);
+                if (node.requirements) {
+                    if (node.requirements.requirement) {
+                        node.requirements.requirement.forEach(req => {
+                            this.setId(req.id);
+                        });
+                    }
+                }
+                if (node.capabilities) {
+                    if (node.capabilities.capability) {
+                        node.capabilities.capability.forEach(cap => {
+                            this.setId(cap.id);
+                        });
+                    }
+                }
+            } else {
+                this.allIds.push(node.id);
+            }
+        });
+        // get all relationship Id's
+        this.allRelationshipTemplates.forEach(rel => {
+            this.setId(rel.id);
+        });
+    }
+
+    /**
+     * Checks if the id is already in the array, if not the id is added
+     */
+    private setId(idOfElement: string): void {
+        if (!this.allIds.find(id => id === idOfElement)) {
+            this.allIds.push(idOfElement);
         }
     }
 
@@ -217,43 +314,91 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     public toggleModalHandler(currentNodeData: ToggleModalDataModel) {
         this.currentModalData = currentNodeData;
         this.modalData.modalVisible = true;
+        this.duplicateId = false;
+        this.getAllIds();
         switch (currentNodeData.currentNodePart) {
-            case 'DEPLOYMENT_ARTIFACTS':
+            case toggleModalType.DeploymentArtifacts:
                 this.modalData.modalVariant = ModalVariant.DeploymentArtifacts;
                 this.modalData.modalTitle = 'Deployment Artifact';
                 break;
-            case 'POLICIES':
+            case toggleModalType.Policies:
                 this.modalData.modalVariant = ModalVariant.Policies;
                 this.modalData.modalTitle = 'Policy';
                 break;
-            case 'REQUIREMENTS':
+            case toggleModalType.Requirements:
+                this.modalData.modalVariant = ModalVariant.Other;
+                this.modalData.modalVisible = false;
+                this.resetRequirements();
                 this.requirements.requirements = currentNodeData.requirements;
                 this.requirements.nodeId = currentNodeData.id;
-                console.log(currentNodeData);
+                // if a requirement in the table is clicked show the data in the modal
                 if (!isNullOrUndefined(currentNodeData.currentRequirement)) {
                     this.showCurrentRequirement = true;
                     this.requirements.reqId = currentNodeData.currentRequirement.id;
+                    this.requirements.oldReqId = currentNodeData.currentRequirement.id;
                     this.requirements.reqDefinitionName = currentNodeData.currentRequirement.name;
                     this.requirements.reqQName = currentNodeData.currentRequirement.type;
-                    if (currentNodeData.currentRequirement.properties) {
-                        if (currentNodeData.currentRequirement.properties.kvproperties) {
-                            this.requirements.propertyType = 'KV';
-                            this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
-                            console.log(this.requirements.properties);
-                        } else if (currentNodeData.currentRequirement.properties.any) {
-                            this.requirements.propertyType = 'XML';
+                    this.requirements.reqQNameLocalName = new QName(currentNodeData.currentRequirement.type).localName;
+                    // check which propertyType is defined by checking with the defined requirement type property types
+                    // from the repository
+                    this.entityTypes.requirementTypes.some(reqType => {
+                        if (currentNodeData.currentRequirement.type === reqType.qName) {
+                            // if any is defined with at least one element it's a KV property, sets default values if
+                            // there aren't any in the node template
+                            if (reqType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
+                                this.requirements.propertyType = 'KV';
+                                if (currentNodeData.currentRequirement.properties) {
+                                    if (currentNodeData.currentRequirement.properties.kvproperties) {
+                                        this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
+                                        return true;
+                                    } else {
+                                        this.requirements.properties = this.setKVProperties(reqType);
+                                        this.setDefaultReqKVProperties();
+                                        return true;
+                                    }
+                                } else {
+                                    this.requirements.properties = this.setKVProperties(reqType);
+                                    this.setDefaultReqKVProperties();
+                                    return true;
+                                }
+                                // if propertiesDefinition is defined it's a XML property
+                            } else if (reqType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
+                                if (reqType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                                    this.requirements.propertyType = 'XML';
+                                    const defaultXML = reqType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element;
+                                    if (currentNodeData.currentRequirement.properties) {
+                                        if (currentNodeData.currentRequirement.properties.any) {
+                                            this.requirements.properties = currentNodeData.currentRequirement.properties.any;
+                                            return true;
+                                        } else {
+                                            this.requirements.properties = defaultXML;
+                                            this.setDefaultReqKVProperties();
+                                            return true;
+                                        }
+                                    } else {
+                                        this.requirements.properties = defaultXML;
+                                        this.setDefaultReqKVProperties();
+                                        return true;
+                                    }
+                                }
+                            } else {
+                                // else no properties
+                                this.requirements.propertyType = '';
+                                return true;
+                            }
                         }
-                    }
+                    });
                 } else {
                     this.showCurrentRequirement = false;
                     try {
                         // request all valid requirement types for that node type for display as name select options in
                         // the modal
-                        this.requestRequirementDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
+                        this.reqCapService.requestRequirementDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
                             this.requirements.reqDefinitionNames = [];
+                            this.requirements.reqDefinitionName = '';
                             for (const reqType of data) {
-                                this.requirements.reqDefinitionNames.push(reqType.requirementType.substring(
-                                    reqType.requirementType.indexOf('}') + 1));
+                                const qNameOfType = new QName(reqType.requirementType);
+                                this.requirements.reqDefinitionNames.push(qNameOfType.localName);
                             }
                         });
                     } catch (e) {
@@ -262,33 +407,80 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 }
                 this.requirementsModal.show();
                 break;
-            case 'CAPABILITIES':
+            case toggleModalType.Capabilities:
+                this.modalData.modalVariant = ModalVariant.Other;
+                this.modalData.modalVisible = false;
+                this.resetCapabilities();
                 this.capabilities.capabilities = currentNodeData.capabilities;
                 this.capabilities.nodeId = currentNodeData.id;
+                // if a capability in the table is clicked show the data in the modal
                 if (!isNullOrUndefined(currentNodeData.currentCapability)) {
                     this.showCurrentCapability = true;
                     this.capabilities.capId = currentNodeData.currentCapability.id;
+                    this.capabilities.oldCapId = currentNodeData.currentCapability.id;
                     this.capabilities.capDefinitionName = currentNodeData.currentCapability.name;
                     this.capabilities.capQName = currentNodeData.currentCapability.type;
-                    console.log(currentNodeData.currentCapability);
-                    if (currentNodeData.currentCapability.properties) {
-                        if (currentNodeData.currentCapability.properties.kvproperties) {
-                            this.capabilities.propertyType = 'KV';
-                            this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
-                        } else if (currentNodeData.currentCapability.properties.any) {
-                            this.capabilities.propertyType = 'XML';
+                    this.capabilities.capQNameLocalName = new QName(currentNodeData.currentCapability.type).localName;
+                    // check which propertyType is defined by checking with the defined capability type property types
+                    // from the repository
+                    this.entityTypes.capabilityTypes.some(capType => {
+                        if (currentNodeData.currentCapability.type === capType.qName) {
+                            // if any is defined with at least one element it's a KV property, sets default values if
+                            // there aren't any in the node template
+                            if (capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
+                                this.capabilities.propertyType = 'KV';
+                                if (currentNodeData.currentCapability.properties) {
+                                    if (currentNodeData.currentCapability.properties.kvproperties) {
+                                        this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
+                                        return true;
+                                    } else {
+                                        this.capabilities.properties = this.setKVProperties(capType);
+                                        this.setDefaultCapKVProperties();
+                                        return true;
+                                    }
+                                } else {
+                                    this.capabilities.properties = this.setKVProperties(capType);
+                                    this.setDefaultCapKVProperties();
+                                    return true;
+                                }
+                                // if propertiesDefinition is defined it's a XML property
+                            } else if (capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
+                                if (capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                                    this.capabilities.propertyType = 'XML';
+                                    const defaultXML = capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element;
+                                    if (currentNodeData.currentCapability.properties) {
+                                        if (currentNodeData.currentCapability.properties.any) {
+                                            this.capabilities.properties = currentNodeData.currentCapability.properties.any;
+                                            return true;
+                                        } else {
+                                            this.capabilities.properties = defaultXML;
+                                            this.setDefaultCapXMLProperties();
+                                            return true;
+                                        }
+                                    } else {
+                                        this.capabilities.properties = defaultXML;
+                                        this.setDefaultCapXMLProperties();
+                                        return true;
+                                    }
+                                }
+                            } else {
+                                // else no properties
+                                this.capabilities.propertyType = '';
+                                return true;
+                            }
                         }
-                    }
+                    });
                 } else {
                     this.showCurrentCapability = false;
                     try {
                         // request all valid capability types for that node type for display as name select options in
                         // the modal
-                        this.requestCapabilityDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
+                        this.reqCapService.requestCapabilityDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
                             this.capabilities.capDefinitionNames = [];
+                            this.capabilities.capDefinitionName = '';
                             for (const capType of data) {
-                                this.capabilities.capDefinitionNames.push(capType.capabilityType.substring(
-                                    capType.capabilityType.indexOf('}') + 1));
+                                const qNameOfType = new QName(capType.capabilityType);
+                                this.capabilities.capDefinitionNames.push(qNameOfType.localName);
                             }
                         });
                     } catch (e) {
@@ -301,25 +493,143 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     }
 
     /**
-     * Requests all requirement definitions of a node type from the backend
-     * @returns {Observable<string>}
+     * This function sets the capability default KV properties
      */
-    requestRequirementDefinitionsOfNodeType(nodeType: string): Observable<any> {
-        const url = backendBaseURL + '/nodetypes/http%253A%252F%252Fplain.winery.opentosca.org%252Fnodetypes/'
-            + nodeType.substring(nodeType.indexOf('}') + 1) + '/requirementdefinitions/';
-        return this.http.get(url, this.options)
-            .map(res => res.json());
+    setDefaultCapKVProperties(): void {
+        this.capabilities.capabilities.capability.some(cap => {
+            if (cap.id === this.currentModalData.currentCapability.id) {
+                cap.properties = {
+                    kvproperties:
+                    this.capabilities.properties
+                };
+            }
+        });
     }
 
     /**
-     * Requests all capability definitions of a node type from the backend
-     * @returns {Observable<string>}
+     * This function sets the requirement default KV properties
      */
-    requestCapabilityDefinitionsOfNodeType(nodeType: string): Observable<any> {
-        const url = backendBaseURL + '/nodetypes/http%253A%252F%252Fplain.winery.opentosca.org%252Fnodetypes/'
-            + nodeType.substring(nodeType.indexOf('}') + 1) + '/capabilitydefinitions/';
-        return this.http.get(url, this.options)
-            .map(res => res.json());
+    setDefaultReqKVProperties(): void {
+        this.requirements.requirements.requirement.some(req => {
+            if (req.id === this.currentModalData.currentRequirement.id) {
+                req.properties = {
+                    kvproperties:
+                    this.requirements.properties
+                };
+            }
+        });
+    }
+
+    /**
+     * This function sets the capability default XML properties
+     */
+    setDefaultCapXMLProperties(): void {
+        this.capabilities.capabilities.capability.some(cap => {
+            if (cap.id === this.currentModalData.currentCapability.id) {
+                cap.properties = {
+                    any: this.capabilities.properties
+                };
+            }
+        });
+    }
+
+    /**
+     * This function sets the requirement default XML properties
+     */
+    setDefaultReqXMLProperties(): void {
+        this.requirements.requirements.requirement.some(req => {
+            if (req.id === this.currentModalData.currentCapability.id) {
+                req.properties = {
+                    any: this.requirements.properties
+                };
+            }
+        });
+    }
+
+    /**
+     * This function sets the node's KV properties
+     * @param any type : the element type, e.g. capabilityType, requirementType etc.
+     * @returns newKVProperties     KV Properties as Object
+     */
+    setKVProperties(type: any): any {
+        let newKVProperies;
+        const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+        for (const obj of kvProperties) {
+            const key = obj.key;
+            let value;
+            if (isNullOrUndefined(obj.value)) {
+                value = '';
+            } else {
+                value = obj.value;
+            }
+            const keyValuePair = {
+                [key]: value
+            };
+            newKVProperies = { ...newKVProperies, ...keyValuePair };
+        }
+        return newKVProperies;
+    }
+
+    /**
+     * Gets called from the modal to update all the capability data
+     */
+    updateCaps(): void {
+        let currentIndex;
+        // search for the kv property index within the requirement object of the requirements array of the current
+        // requirement
+        this.capabilities.capabilities.capability.some((cap, index) => {
+            if (cap.id === this.capabilities.oldCapId) {
+                currentIndex = index;
+                return true;
+            }
+        });
+        if (this.capabilities.propertyType === 'KV') {
+            this.KVTextareas.forEach(txtArea => {
+                const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
+                this.capabilities.capabilities.capability[currentIndex].properties.kvproperties[keyOfChangedTextArea] = txtArea.nativeElement.value;
+            });
+        } else if (this.capabilities.propertyType === 'XML') {
+            this.xmlTextareas.forEach(xmlTextArea => {
+                this.capabilities.capabilities.capability[currentIndex].properties.any = xmlTextArea.nativeElement.value;
+            });
+        }
+        this.capabilities.capabilities.capability[currentIndex].id = this.capabilities.capId;
+        const newCapabilityData = this.capabilities.capabilities;
+        newCapabilityData.nodeId = this.capabilities.nodeId;
+        this.ngRedux.dispatch(this.actions.setCapability(newCapabilityData));
+        this.resetCapabilities();
+        this.capabilitiesModal.hide();
+    }
+
+    /**
+     * Gets called from the modal to update all the requirement data
+     */
+    updateReqs(): void {
+        let currentIndex;
+        // search for the kv property index within the requirement object of the requirements array of the current
+        // requirement
+        this.requirements.requirements.requirement.some((req, index) => {
+            if (req.id === this.requirements.oldReqId) {
+                currentIndex = index;
+                return true;
+            }
+        });
+        if (this.requirements.propertyType === 'KV') {
+            this.KVTextareas.forEach(txtArea => {
+                const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
+                this.requirements.requirements.requirement[currentIndex].properties.kvproperties[keyOfChangedTextArea] = txtArea.nativeElement.value;
+            });
+        } else if (this.requirements.propertyType === 'XML') {
+            this.xmlTextareas.forEach(xmlTextArea => {
+                this.requirements.requirements.requirement[currentIndex].properties.any = xmlTextArea.nativeElement.value;
+            });
+        }
+        this.requirements.requirements.requirement[currentIndex].id = this.requirements.reqId;
+        const newRequirementData = this.requirements.requirements;
+        newRequirementData.nodeId = this.requirements.nodeId;
+        this.ngRedux.dispatch(this.actions.setRequirement(newRequirementData));
+        this.resetRequirements();
+        this.requirementsModal.hide();
     }
 
     getHostUrl(): string {
@@ -337,6 +647,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         newCapability.name = this.capabilities.capQName.substring(this.capabilities.capQName.indexOf('}') + 1);
         newCapability.otherAttributes = {};
         newCapability.type = this.capabilities.capQName;
+        // case that a capability type with KV properties was chosen in the model and the default KV properties are
+        // shown and modified by the user
+        if (this.capabilities.propertyType === 'KV') {
+            // get all values from the KV property textareas
+            this.KVTextareas.forEach(txtArea => {
+                const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
+                this.capabilities.properties[keyOfChangedTextArea] = txtArea.nativeElement.value;
+            });
+            newCapability.properties = {
+                kvproperties: this.capabilities.properties
+            };
+            // case that a capability type with XML properties was chosen in the model and the default XML properties
+            // are shown and modified by the user
+        } else if (this.capabilities.propertyType === 'XML') {
+            this.xmlTextareas.forEach(xmlTextArea => {
+                this.capabilities.properties = xmlTextArea.nativeElement.value;
+            });
+            newCapability.properties = {
+                any: this.capabilities.properties
+            };
+        }
+        // case when there are no capabilities on the node template
         if (isNullOrUndefined(this.capabilities.capabilities)) {
             const capabilityArray: Array<CapabilityModel> = [];
             this.capabilities.capabilities = {
@@ -348,6 +680,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         newCapabilityData.nodeId = this.capabilities.nodeId;
         this.ngRedux.dispatch(this.actions.setCapability(newCapabilityData));
         this.resetCapabilities();
+        this.capabilitiesModal.hide();
     }
 
     /**
@@ -358,6 +691,26 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             if (cap.name === capName) {
                 this.capabilities.capType = cap.namespace;
                 this.capabilities.capQName = cap.qName;
+                this.capabilities.capQNameLocalName = new QName(cap.qName).localName;
+                // check which propertyType is defined by checking with the defined capability types from the
+                // repository if any is defined with at least one element it's a KV property, sets default values if
+                // there aren't any in the node template
+                if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
+                    this.capabilities.propertyType = 'KV';
+                    this.showDefaultProperties = true;
+                    this.capabilities.properties = this.setKVProperties(cap);
+                    // if propertiesDefinition is defined it's a XML property
+                } else if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
+                    if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                        this.capabilities.propertyType = 'XML';
+                        this.showDefaultProperties = true;
+                        this.capabilities.properties = cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element;
+                    }
+                } else {
+                    // else no properties
+                    this.capabilities.propertyType = '';
+                    this.showDefaultProperties = false;
+                }
                 return true;
             }
         });
@@ -367,7 +720,12 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * saves the typed in capability id from the modal
      */
     onChangeCapId(capId: string) {
-        this.capabilities.capId = capId;
+        if (!this.allIds.find(id => id === capId)) {
+            this.capabilities.capId = capId;
+            this.duplicateId = false;
+        } else {
+            this.duplicateId = true;
+        }
     }
 
     /**
@@ -380,6 +738,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         };
         this.ngRedux.dispatch(this.actions.setCapability(capabilities));
         this.resetCapabilities();
+        this.capabilitiesModal.hide();
     }
 
     /**
@@ -393,6 +752,28 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         newRequirement.name = this.requirements.reqQName.substring(this.requirements.reqQName.indexOf('}') + 1);
         newRequirement.otherAttributes = {};
         newRequirement.type = this.requirements.reqQName;
+        // case that a requirement type with KV properties was chosen in the model and the default KV properties are
+        // shown and modified by the user
+        if (this.requirements.propertyType === 'KV') {
+            // get all values from the KV property textareas
+            this.KVTextareas.forEach(txtArea => {
+                const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
+                this.requirements.properties[keyOfChangedTextArea] = txtArea.nativeElement.value;
+            });
+            newRequirement.properties = {
+                kvproperties: this.requirements.properties
+            };
+            // case that a requirement type with XML properties was chosen in the model and the default XML properties
+            // are shown and modified by the user
+        } else if (this.requirements.propertyType === 'XML') {
+            this.xmlTextareas.forEach(xmlTextArea => {
+                this.requirements.properties = xmlTextArea.nativeElement.value;
+            });
+            newRequirement.properties = {
+                any: this.requirements.properties
+            };
+        }
+        // case when there are no requirements on the node template
         if (isNullOrUndefined(this.requirements.requirements)) {
             const requirementsArray: Array<RequirementModel> = [];
             this.requirements.requirements = {
@@ -404,6 +785,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         newRequirementData.nodeId = this.requirements.nodeId;
         this.ngRedux.dispatch(this.actions.setRequirement(newRequirementData));
         this.resetRequirements();
+        this.requirementsModal.hide();
     }
 
     /**
@@ -415,6 +797,27 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 // this.requirements.reqId = req.id;
                 this.requirements.reqType = req.namespace;
                 this.requirements.reqQName = req.qName;
+                this.requirements.reqQNameLocalName = new QName(req.qName).localName;
+                // check which propertyType is defined by checking with the defined requirement types from the
+                // repository if any is defined with at least one element it's a KV property, sets default values if
+                // there aren't any in the node template
+                if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
+                    this.requirements.propertyType = 'KV';
+                    this.showDefaultProperties = true;
+                    this.requirements.properties = this.setKVProperties(req);
+                    return true;
+                    // if propertiesDefinition is defined it's a XML property
+                } else if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
+                    if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                        this.requirements.propertyType = 'XML';
+                        this.showDefaultProperties = true;
+                        this.requirements.properties = req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element;
+                    }
+                } else {
+                    // else no properties
+                    this.requirements.propertyType = '';
+                    this.showDefaultProperties = false;
+                }
                 return true;
             }
         });
@@ -423,8 +826,13 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     /**
      * saves the typed in requirement id from the modal
      */
-    onChangeReqId(capId: string) {
-        this.requirements.reqId = capId;
+    onChangeReqId(reqId: string) {
+        if (!this.allIds.find(id => id === reqId)) {
+            this.requirements.reqId = reqId;
+            this.duplicateId = false;
+        } else {
+            this.duplicateId = true;
+        }
     }
 
     /**
@@ -437,26 +845,57 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         };
         this.ngRedux.dispatch(this.actions.setRequirement(requirements));
         this.resetRequirements();
-    }
-
-    resetRequirements(): void {
-        this.requirements.reqId = '';
-        this.requirements.reqDefinitionName = '';
-        this.requirements.reqType = '';
-        this.requirements.reqQName = '';
-        this.requirements.nodeId = '';
-        this.requirements.propertyType = '';
         this.requirementsModal.hide();
     }
 
+    /**
+     * Resets the requirements modal data
+     */
+    resetRequirements(): void {
+        this.requirements.reqId = '';
+        this.requirements.oldReqId = '';
+        this.requirements.reqDefinitionName = '';
+        this.requirements.reqDefinitionNames = [];
+        this.requirements.reqType = '';
+        this.requirements.reqQName = '';
+        this.requirements.reqQNameLocalName = '';
+        this.requirements.nodeId = '';
+        this.requirements.propertyType = '';
+        this.requirements.requirements = null;
+        this.requirements.properties = null;
+    }
+
+    /**
+     * Closes the requirements modal
+     */
+    closeAndResetRequirements(): void {
+        this.requirementsModal.hide();
+        this.resetRequirements();
+    }
+
+    /**
+     * Resets the capabilities modal data
+     */
     resetCapabilities(): void {
         this.capabilities.capId = '';
+        this.capabilities.oldCapId = '';
         this.capabilities.capDefinitionName = '';
+        this.capabilities.capDefinitionNames = [];
         this.capabilities.capType = '';
+        this.capabilities.capQNameLocalName = '';
         this.capabilities.capQName = '';
         this.capabilities.nodeId = '';
         this.capabilities.propertyType = '';
+        this.capabilities.capabilities = null;
+        this.capabilities.properties = null;
+    }
+
+    /**
+     * Closes the capabilities modal
+     */
+    closeAndResetCapabilities(): void {
         this.capabilitiesModal.hide();
+        this.resetCapabilities();
     }
 
     /**
@@ -468,9 +907,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         const x = (event.clientX - this.newNodePositionOffsetX).toString();
         const y = (event.clientY - this.newNodePositionOffsetY).toString();
         this.allNodeTemplates[this.indexOfNewNode].x = x;
-        this.allNodeTemplates[this.indexOfNewNode].otherAttributes.x = x;
         this.allNodeTemplates[this.indexOfNewNode].y = y;
-        this.allNodeTemplates[this.indexOfNewNode].otherAttributes.y = y;
     }
 
     /**
@@ -489,6 +926,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param currentRelationships  List of all displayed relationships.
      */
     updateRelationships(currentRelationships: Array<TRelationshipTemplate>): void {
+        // workaround for a jsPlumb connection bug, where upon loading node templates without relationships no
+        // creation of relationships possible; delete the dummy relationship upon creating a new one
+        if (this.newJsPlumbInstance.getAllConnections().length === 2 && this.allRelationshipTemplates.length === 0) {
+            this.newJsPlumbInstance.deleteConnection(this.newJsPlumbInstance.getAllConnections()[0]);
+        }
         const localRelationshipsCopyLength = this.allRelationshipTemplates.length;
         const storeRelationshipsLength = currentRelationships.length;
         if (storeRelationshipsLength !== localRelationshipsCopyLength) {
@@ -562,28 +1004,40 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             const alignmentButtonLayout = this.navbarButtonsState.buttonsState.layoutButton;
             const alignmentButtonAlignH = this.navbarButtonsState.buttonsState.alignHButton;
             const alignmentButtonAlignV = this.navbarButtonsState.buttonsState.alignVButton;
+            const importTopologyButton = this.navbarButtonsState.buttonsState.importTopologyButton;
             let selectedNodes;
             if (alignmentButtonLayout) {
-                this.layoutDirective.layoutNodes(this.allNodeTemplates, this.allRelationshipTemplates);
+                this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
                 this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
                 selectedNodes = false;
             } else if (alignmentButtonAlignH) {
                 if (this.selectedNodes.length >= 1) {
-                    this.layoutDirective.alignHorizontal(this.selectedNodes);
+                    this.layoutDirective.align(this.nodeChildrenArray, this.selectedNodes, align.Horizontal);
                     selectedNodes = true;
                 } else {
-                    this.layoutDirective.alignHorizontal(this.allNodeTemplates);
+                    this.layoutDirective.align(this.nodeChildrenArray, this.allNodeTemplates, align.Horizontal);
                     selectedNodes = false;
                 }
                 this.ngRedux.dispatch(this.topologyRendererActions.executeAlignH());
             } else if (alignmentButtonAlignV) {
                 if (this.selectedNodes.length >= 1) {
-                    this.layoutDirective.alignVertical(this.selectedNodes);
+                    this.layoutDirective.align(this.nodeChildrenArray, this.selectedNodes, align.Vertical);
                     selectedNodes = true;
                 } else {
-                    this.layoutDirective.alignVertical(this.allNodeTemplates);
+                    this.layoutDirective.align(this.nodeChildrenArray, this.allNodeTemplates, align.Vertical);
                 }
                 this.ngRedux.dispatch(this.topologyRendererActions.executeAlignV());
+            } else if (importTopologyButton) {
+                if (!this.importTopologyData.allTopologyTemplates) {
+                    this.importTopologyData.allTopologyTemplates = [];
+                    this.importTopologyService.requestAllTopologyTemplates().subscribe(allServiceTemplates => {
+                        for (const serviceTemplate of allServiceTemplates) {
+                            this.importTopologyData.allTopologyTemplates.push(serviceTemplate);
+                        }
+                    });
+                }
+                this.ngRedux.dispatch(this.topologyRendererActions.importTopology());
+                this.importTopologyModal.show();
             }
             setTimeout(() => {
                 if (selectedNodes === true) {
@@ -594,6 +1048,39 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.revalidateContainer();
             }, 1);
         }
+    }
+
+    /**
+     * Reacts on selection of a topology template in the import topology modal
+     */
+    onChangeTopologyTemplate(selectedTopologyTemplateId: string): void {
+        this.importTopologyData.selectedTopologyTemplateId = selectedTopologyTemplateId;
+    }
+
+    /**
+     * Closes the import Topology modal
+     */
+    closeImportTopology(): void {
+        this.importTopologyData.selectedTopologyTemplateId = null;
+        this.importTopologyModal.hide();
+    }
+
+    /**
+     * REST Call to the backend to get the selected topology
+     * After a window reload, the topology is added
+     */
+    importTopology(): void {
+        let selectedTopologyTemplate;
+        this.importTopologyData.allTopologyTemplates.some(topologyTemplate => {
+            if (topologyTemplate.id === this.importTopologyData.selectedTopologyTemplateId) {
+                selectedTopologyTemplate = topologyTemplate;
+                return true;
+            }
+        });
+        this.importTopologyService.importTopologyTemplate(selectedTopologyTemplate,
+            this.entityTypes.nodeVisuals, this.allNodeTemplates);
+        this.importTopologyData.selectedTopologyTemplateId = null;
+        this.importTopologyModal.hide();
     }
 
     /**
@@ -631,9 +1118,8 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
         });
         const nodeCoordinates = {
             id: nodeTemplate.firstChild.nextElementSibling.id,
-            location: '',
-            x: nodeTemplate.firstChild.nextElementSibling.offsetLeft,
-            y: nodeTemplate.firstChild.nextElementSibling.offsetTop
+            x: nodeTemplate.firstChild.nextElementSibling.offsetLeft.toString(),
+            y: nodeTemplate.firstChild.nextElementSibling.offsetTop.toString()
         };
         this.allNodeTemplates[nodeIndex].x = nodeCoordinates.x;
         this.allNodeTemplates[nodeIndex].y = nodeCoordinates.y;
@@ -722,7 +1208,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     }
 
     /**
-     * Cleanup after dragging operation - sets the endpoints invisible
+     * Upon clicking on a node template the connector endpoint/area from which connections can be dragged, is toggled
+     * and the connector endpoints from the other node templates are closed, so only the connector endpoint from the
+     * node template which was clicked on is visible
      * @param nodeId
      */
     toggleClosedEndpoint(nodeId: string): void {
@@ -850,6 +1338,13 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param $event
      */
     openSelector($event: any) {
+        if (this.longPressing) {
+            if (this.hideNavBarAndPalette === false) {
+                this.ngRedux.dispatch(this.actions.hideNavBarAndPalette(true));
+            }
+            this.hideNavBarAndPalette = true;
+        }
+        this.gridTemplate.marginLeft = 0;
         this.gridTemplate.selectionActive = true;
         this.gridTemplate.selectionWidth = Math.abs(this.gridTemplate.initialW - $event.pageX);
         this.gridTemplate.selectionHeight = Math.abs(this.gridTemplate.initialH - $event.pageY);
@@ -868,6 +1363,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param $event
      */
     selectElements($event: any) {
+        if (this.hideNavBarAndPalette) {
+            this.hideNavBarAndPalette = false;
+            this.ngRedux.dispatch(this.actions.hideNavBarAndPalette(false));
+        }
+        this.gridTemplate.marginLeft = 30;
         const aElem = this.selection.nativeElement;
         for (const node of this.child.nativeElement.children) {
             const bElem = node.firstChild;
@@ -899,6 +1399,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     @HostListener('window:scroll', ['event'])
     adjustGrid($event) {
         this.gridTemplate.gridDimension = window.innerWidth;
+        this.scrollOffset = window.scrollY;
     }
 
     /**
@@ -1124,6 +1625,11 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             this.allRelationshipTemplates.forEach(rel => {
                 setTimeout(() => this.manageRelationships(rel), 1);
             });
+            // workaround for a jsPlumb connection bug, where upon loading node templates without relationships
+            // no creation of relationships possible
+        } else if (this.allRelationshipTemplates.length === 0) {
+            const con = this.newJsPlumbInstance.connect({ source: 'dummy1', target: 'dummy2' });
+            con.setVisible(false);
         }
     }
 
@@ -1180,7 +1686,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
      * @param currentNodes  List of all displayed nodes.
      */
     private updateNodeAttributes(currentNodes: Array<TNodeTemplate>): void {
-        this.allNodeTemplates.forEach(nodeTemplate => {
+        this.allNodeTemplates.some(nodeTemplate => {
             const node = currentNodes.find(el => el.id === nodeTemplate.id);
             if (node) {
                 if (nodeTemplate.name !== node.name) {
@@ -1188,31 +1694,35 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                     this.nodeChildrenArray[nodeId].nodeTemplate.name = node.name;
                     this.nodeChildrenArray[nodeId].flash('name');
                     nodeTemplate.name = node.name;
+                    return true;
                 } else if (nodeTemplate.minInstances !== node.minInstances) {
                     const nodeId = this.nodeChildrenIdArray.indexOf(nodeTemplate.id);
                     nodeTemplate.minInstances = node.minInstances;
                     this.nodeChildrenArray[nodeId].flash('min');
+                    return true;
                 } else if (nodeTemplate.maxInstances !== node.maxInstances) {
                     const nodeId = this.nodeChildrenIdArray.indexOf(nodeTemplate.id);
                     nodeTemplate.maxInstances = node.maxInstances;
                     this.nodeChildrenArray[nodeId].flash('max');
+                    return true;
                 } else if (nodeTemplate.properties !== node.properties) {
-                    if (node.properties.kvproperties) {
-                        nodeTemplate.properties.kvproperties = node.properties.kvproperties;
-                    }
-                    if (node.properties.any) {
-                        nodeTemplate.properties.any = node.properties.any;
-                    }
+                    nodeTemplate.properties = node.properties;
+                    return true;
                 } else if (nodeTemplate.capabilities !== node.capabilities) {
                     nodeTemplate.capabilities = node.capabilities;
+                    return true;
                 } else if (nodeTemplate.requirements !== node.requirements) {
                     nodeTemplate.requirements = node.requirements;
+                    return true;
                 } else if (nodeTemplate.deploymentArtifacts !== node.deploymentArtifacts) {
                     nodeTemplate.deploymentArtifacts = node.deploymentArtifacts;
+                    return true;
                 } else if (nodeTemplate.policies !== node.policies) {
                     nodeTemplate.policies = node.policies;
-                } else if (nodeTemplate.targetLocations !== node.targetLocations) {
-                    nodeTemplate.targetLocations = node.targetLocations;
+                    return true;
+                } else if (nodeTemplate.otherAttributes !== node.otherAttributes) {
+                    nodeTemplate.otherAttributes = node.otherAttributes;
+                    return true;
                 }
             }
         });
@@ -1263,8 +1773,9 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
     private isObjectInSelection(selectionArea, object): boolean {
         const selectionRect = selectionArea.getBoundingClientRect();
         return (
-            ((selectionRect.top + selectionRect.height) > (object.nextElementSibling.offsetTop + object.nextElementSibling.offsetHeight)) &&
-            (selectionRect.top < (object.nextElementSibling.offsetTop)) &&
+            ((selectionRect.top + selectionRect.height) > (object.nextElementSibling.offsetTop +
+                object.nextElementSibling.offsetHeight - this.scrollOffset)) &&
+            (selectionRect.top < (object.nextElementSibling.offsetTop - this.scrollOffset)) &&
             ((selectionRect.left + selectionArea.getBoundingClientRect().width) > (object.nextElementSibling.offsetLeft +
                 object.nextElementSibling.offsetWidth)) &&
             (selectionRect.left < (object.nextElementSibling.offsetLeft))
@@ -1387,6 +1898,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             this.jsPlumbBindConnection = true;
             this.newJsPlumbInstance.bind('connection', info => {
                 const sourceElement = info.sourceId.substring(0, info.sourceId.indexOf('_E'));
+                info.sourceId = sourceElement;
                 const currentTypeValid = this.entityTypes.relationshipTypes.some(relType => relType.id === this.currentType);
                 const currentSourceIdValid = this.allNodeTemplates.some(node => node.id === sourceElement);
                 if (sourceElement && currentTypeValid && currentSourceIdValid) {

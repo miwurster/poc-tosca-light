@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,14 +12,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Action, ActionCreator} from 'redux';
-import {Injectable} from '@angular/core';
-import {TNodeTemplate, TRelationshipTemplate} from '../../models/ttopology-template';
+import { Action, ActionCreator } from 'redux';
+import { Injectable } from '@angular/core';
+import { TNodeTemplate, TRelationshipTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 import { TPolicy } from '../../models/policiesModalData';
 
 export interface SendPaletteOpenedAction extends Action {
     paletteOpened: boolean;
+}
+
+export interface HideNavBarAndPaletteAction extends Action {
+    hideNavBarAndPalette: boolean;
 }
 
 export interface SidebarStateAction extends Action {
@@ -114,46 +118,6 @@ export interface SetPropertyAction extends Action {
     };
 }
 
-export interface SetDepArtifactsPropertyAction extends Action {
-    nodeDepArtProperty: {
-        newDepArtProperty: any,
-        propertyType: string,
-        nodeId: string,
-    };
-}
-
-export interface SetReqPropertyAction extends Action {
-    nodeReqProperty: {
-        newReqProperty: any,
-        propertyType: string,
-        nodeId: string,
-    };
-}
-
-export interface SetCapPropertyAction extends Action {
-    nodeCapProperty: {
-        newCapProperty: any,
-        propertyType: string,
-        nodeId: string,
-    };
-}
-
-export interface SetPoliciesPropertyAction extends Action {
-    nodePoliciesProperty: {
-        newPoliciesProperty: any,
-        propertyType: string,
-        nodeId: string,
-    };
-}
-
-export interface SetTargetLocPropertyAction extends Action {
-    nodeTargetLocProperty: {
-        newTargetLocProperty: any,
-        propertyType: string,
-        nodeId: string,
-    };
-}
-
 export interface SetCababilityAction extends Action {
     nodeCapability: {
         nodeId: string,
@@ -176,10 +140,17 @@ export interface SetRequirementAction extends Action {
     };
 }
 
-export interface SetDeploymentArtifactsAction extends Action {
+export interface SetDeploymentArtifactAction extends Action {
     nodeDeploymentArtifact: {
         nodeId: string,
         newDeploymentArtifact: TDeploymentArtifact
+    };
+}
+
+export interface DeleteDeploymentArtifactAction extends Action {
+    nodeDeploymentArtifact: {
+        nodeId: string,
+        deletedDeploymentArtifact: any
     };
 }
 
@@ -187,6 +158,20 @@ export interface SetPolicyAction extends Action {
     nodePolicy: {
         nodeId: string,
         newPolicy: TPolicy
+    };
+}
+
+export interface SetTargetLocation extends Action {
+    nodeTargetLocation: {
+        nodeId: string,
+        newTargetLocation: string
+    };
+}
+
+export interface DeletePolicyAction extends Action {
+    nodePolicy: {
+        nodeId: string,
+        deletedPolicy: any
     };
 }
 
@@ -201,6 +186,7 @@ export interface SendCurrentNodeIdAction extends Action {
 export class WineryActions {
 
     static SEND_PALETTE_OPENED = 'SEND_PALETTE_OPENED';
+    static HIDE_NAVBAR_AND_PALETTE = 'HIDE_NAVBAR_AND_PALETTE';
     static SAVE_NODE_TEMPLATE = 'SAVE_NODE_TEMPLATE';
     static SAVE_RELATIONSHIP = 'SAVE_RELATIONSHIP';
     static DELETE_NODE_TEMPLATE = 'DELETE_NODE_TEMPLATE';
@@ -220,19 +206,22 @@ export class WineryActions {
     static SET_PROPERTY = 'SET_PROPERTY';
     static SET_CAPABILITY = 'SET_CAPABILITY';
     static SET_REQUIREMENT = 'SET_REQUIREMENT';
-    static SET_DEPLOYMENT_ARTIFACTS_PROPERTY = 'SET_DEPLOYMENT_ARTIFACTS_PROPERTY';
-    static SET_REQUIREMENT_PROPERTY = 'SET_REQUIREMENT_PROPERTY';
-    static SET_CAPABILITY_PROPERTY = 'SET_CAPABILITY_PROPERTY';
-    static SET_POLICIES_PROPERTY = 'SET_POLICIES_PROPERTY';
-    static SET_TARGET_LOCATIONS_PROPERTY = 'SET_TARGET_LOCATIONS_PROPERTY';
     static SET_DEPLOYMENT_ARTIFACT = 'SET_DEPLOYMENT_ARTIFACT';
+    static DELETE_DEPLOYMENT_ARTIFACT = 'DELETE_DEPLOYMENT_ARTIFACT';
     static SET_POLICY = 'SET_POLICY';
+    static SET_TARGET_LOCATION = 'SET_TARGET_LOCATION';
+    static DELETE_POLICY = 'DELETE_POLICY';
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
             type: WineryActions.SEND_PALETTE_OPENED,
             paletteOpened: paletteOpened
+        }));
+    hideNavBarAndPalette: ActionCreator<HideNavBarAndPaletteAction> =
+        ((hideNavBarAndPalette) => ({
+            type: WineryActions.HIDE_NAVBAR_AND_PALETTE,
+            hideNavBarAndPalette: hideNavBarAndPalette
         }));
     openSidebar: ActionCreator<SidebarStateAction> =
         ((newSidebarData) => ({
@@ -310,36 +299,6 @@ export class WineryActions {
             nodeProperty: newProperty.nodeProperty,
             propertyType: newProperty.propertyType
         }));
-    setDeploymentArtifactsProperty: ActionCreator<SetDepArtifactsPropertyAction> =
-        ((newDepArtifactsProperty) => ({
-            type: WineryActions.SET_DEPLOYMENT_ARTIFACTS_PROPERTY,
-            nodeDepArtProperty: newDepArtifactsProperty.nodeDepArtProperty,
-            propertyType: newDepArtifactsProperty.propertyType
-        }));
-    setRequirementsProperty: ActionCreator<SetReqPropertyAction> =
-        ((newReqProperty) => ({
-            type: WineryActions.SET_REQUIREMENT_PROPERTY,
-            nodeReqProperty: newReqProperty.nodeReqProperty,
-            propertyType: newReqProperty.propertyType
-        }));
-    setCapabilityProperty: ActionCreator<SetCapPropertyAction> =
-        ((newCapProperty) => ({
-            type: WineryActions.SET_CAPABILITY_PROPERTY,
-            nodeCapProperty: newCapProperty.nodeCapProperty,
-            propertyType: newCapProperty.propertyType
-        }));
-    setPoliciesProperty: ActionCreator<SetPoliciesPropertyAction> =
-        ((newPoliciesProperty) => ({
-            type: WineryActions.SET_POLICIES_PROPERTY,
-            nodePoliciesProperty: newPoliciesProperty.nodePoliciesProperty,
-            propertyType: newPoliciesProperty.propertyType
-        }));
-    setTargetLocProperty: ActionCreator<SetTargetLocPropertyAction> =
-        ((newTargetLocProperty) => ({
-            type: WineryActions.SET_TARGET_LOCATIONS_PROPERTY,
-            nodeTargetLocProperty: newTargetLocProperty.nodeTargetLocProperty,
-            propertyType: newTargetLocProperty.propertyType
-        }));
     setCapability: ActionCreator<SetCababilityAction> =
         ((newCapability) => ({
             type: WineryActions.SET_CAPABILITY,
@@ -350,15 +309,30 @@ export class WineryActions {
             type: WineryActions.SET_REQUIREMENT,
             nodeRequirement: newRequirement
         }));
-    setDeploymentArtifact: ActionCreator<SetDeploymentArtifactsAction> =
+    setDeploymentArtifact: ActionCreator<SetDeploymentArtifactAction> =
         ((newDepArt) => ({
             type: WineryActions.SET_DEPLOYMENT_ARTIFACT,
             nodeDeploymentArtifact: newDepArt
+        }));
+    deleteDeploymentArtifact: ActionCreator<DeleteDeploymentArtifactAction> =
+        ((deletedDeploymentArtifact) => ({
+            type: WineryActions.DELETE_DEPLOYMENT_ARTIFACT,
+            nodeDeploymentArtifact: deletedDeploymentArtifact
         }));
     setPolicy: ActionCreator<SetPolicyAction> =
         ((newPolicy) => ({
             type: WineryActions.SET_POLICY,
             nodePolicy: newPolicy
+        }));
+    setTargetLocation: ActionCreator<SetTargetLocation> =
+        ((newTargetLocation) => ({
+            type: WineryActions.SET_TARGET_LOCATION,
+            nodeTargetLocation: newTargetLocation
+        }));
+    deletePolicy: ActionCreator<DeletePolicyAction> =
+        ((deletedPolicy) => ({
+            type: WineryActions.DELETE_POLICY,
+            nodePolicy: deletedPolicy
         }));
     sendCurrentNodeId: ActionCreator<SendCurrentNodeIdAction> =
         ((currentNodeData) => ({

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,16 @@
 export class RequirementsModalData {
 
     constructor(public reqId?: string,
+                public oldReqId?: string,
                 public reqColor?: string,
                 public reqQName?: string,
+                public reqQNameLocalName?: string,
                 public reqType?: string,
                 public reqDefinitionName?: string,
                 public requirements?: any,
                 public reqDefinitionNames?: Array<string>,
                 public nodeId?: string,
                 public propertyType?: any,
-                public properties?: any) { }
+                public properties?: any) {
+    }
 }

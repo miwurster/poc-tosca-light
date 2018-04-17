@@ -27,16 +27,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <main.basedir>${project.parent.basedir}</main.basedir>
     </properties>
-    <dependencies>
-        <!-- Forces Maven to build org.eclipse.winery.repository.ui project beforehand -->
-        <dependency>
-            <groupId>org.eclipse.winery</groupId>
-            <artifactId>org.eclipse.winery.repository.ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
     <build>
         <plugins>
             <plugin>

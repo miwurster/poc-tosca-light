@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,10 +13,11 @@
  ********************************************************************************/
 
 /**
- * Encompasses the id, type and color of the new generated node
+ * Encompasses the id, type, color and properties of the new generated node
  */
-export interface NewNodeIdTypeColorModel {
+export interface NewNodeIdTypeColorPropertiesModel {
     id: string;
     type: string;
     color: string;
+    properties: any;
 }

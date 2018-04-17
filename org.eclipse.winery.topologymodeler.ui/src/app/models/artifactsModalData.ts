@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,8 +11,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
-
-import { QName } from '../qname';
 
 /**
  * Encompasses the artifacts data defined by the user when using the modal
@@ -28,7 +26,8 @@ export class DeploymentArtifactsModalData {
                 public artifactTemplateRef?: any,
                 public artifactTemplateNameSpace?: any,
                 public nodeTemplateId?: string,
-                public deploymentArtifacts?: any) { }
+                public deploymentArtifacts?: any) {
+    }
 }
 
 export class TDeploymentArtifact {
@@ -38,5 +37,6 @@ export class TDeploymentArtifact {
                 public otherAttributes?: any,
                 public name?: string,
                 public artifactType?: string,
-                public artifactRef?: string) { }
+                public artifactRef?: string) {
+    }
 }

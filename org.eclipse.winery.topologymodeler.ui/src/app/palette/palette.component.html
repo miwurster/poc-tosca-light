@@ -1,5 +1,5 @@
 <!--
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,8 +14,10 @@
 
 <div class="bootstrap-vertical-nav">
 
-    <button id="palette_root" class="btn btn-primary" type="button" (click)="toggleRootState()">
-        <div>Palette</div>
+    <button [@paletteButtonState]="paletteButtonRootState" id="palette_root" class="btn btn-primary" type="button"
+            (click)="toggleRootState()" style="transform: rotate(-90deg) translateY(-135px) translateX(-135px)">
+        <div *ngIf="paletteRootState === 'shrunk'">Open Palette</div>
+        <div *ngIf="paletteRootState === 'extended'">Hide Palette</div>
     </button>
 
     <div [@paletteItemState]="paletteRootState" class="palette-items-wrapper">
@@ -25,7 +27,8 @@
                 <ul class="nav flex-column nav-tabs">
                     <li *ngFor="let child of ns.children" class="nav-item">
                         <div class="btn btn-light btn-sm btn-block"
-                             (mousedown)="generateNewNode($event)">{{ child.text }}</div>
+                             (mousedown)="generateNewNode($event)">{{ child.text }}
+                        </div>
                     </li>
                 </ul>
             </accordion-group>

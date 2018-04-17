@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,8 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Injectable} from '@angular/core';
-import {Action} from 'redux';
+import { Injectable } from '@angular/core';
+import { Action } from 'redux';
 
 /**
  * Actions of the topologyRenderer
@@ -30,44 +30,49 @@ export class TopologyRendererActions {
     static EXECUTE_LAYOUT = 'EXECUTE_LAYOUT';
     static EXECUTE_ALIGN_H = 'EXECUTE_ALIGN_H';
     static EXECUTE_ALIGN_V = 'EXECUTE_ALIGN_V';
+    static IMPORT_TOPOLOGY = 'IMPORT_TOPOLOGY';
 
-    togglePolicies (): Action {
-        return {type: TopologyRendererActions.TOGGLE_POLICIES};
+    togglePolicies(): Action {
+        return { type: TopologyRendererActions.TOGGLE_POLICIES };
     }
 
-    toggleTargetLocations (): Action {
-        return {type: TopologyRendererActions.TOGGLE_TARGET_LOCATIONS};
+    toggleTargetLocations(): Action {
+        return { type: TopologyRendererActions.TOGGLE_TARGET_LOCATIONS };
     }
 
-    toggleProperties (): Action {
-        return {type: TopologyRendererActions.TOGGLE_PROPERTIES};
+    toggleProperties(): Action {
+        return { type: TopologyRendererActions.TOGGLE_PROPERTIES };
     }
 
-    toggleRequirementsCapabilities (): Action {
-        return {type: TopologyRendererActions.TOGGLE_REQUIREMENTS_CAPABILITIES};
+    toggleRequirementsCapabilities(): Action {
+        return { type: TopologyRendererActions.TOGGLE_REQUIREMENTS_CAPABILITIES };
     }
 
-    toggleDeploymentArtifacts (): Action {
-        return {type: TopologyRendererActions.TOGGLE_DEPLOYMENT_ARTIFACTS};
+    toggleDeploymentArtifacts(): Action {
+        return { type: TopologyRendererActions.TOGGLE_DEPLOYMENT_ARTIFACTS };
     }
 
-    toggleIds (): Action {
-        return {type: TopologyRendererActions.TOGGLE_IDS};
+    toggleIds(): Action {
+        return { type: TopologyRendererActions.TOGGLE_IDS };
     }
 
-    toggleTypes (): Action {
-        return {type: TopologyRendererActions.TOGGLE_TYPES};
+    toggleTypes(): Action {
+        return { type: TopologyRendererActions.TOGGLE_TYPES };
     }
 
-    executeLayout (): Action {
-        return {type: TopologyRendererActions.EXECUTE_LAYOUT};
+    executeLayout(): Action {
+        return { type: TopologyRendererActions.EXECUTE_LAYOUT };
     }
 
-    executeAlignH (): Action {
-        return {type: TopologyRendererActions.EXECUTE_ALIGN_H};
+    executeAlignH(): Action {
+        return { type: TopologyRendererActions.EXECUTE_ALIGN_H };
     }
 
-    executeAlignV (): Action {
-        return {type: TopologyRendererActions.EXECUTE_ALIGN_V};
+    executeAlignV(): Action {
+        return { type: TopologyRendererActions.EXECUTE_ALIGN_V };
+    }
+
+    importTopology(): Action {
+        return { type: TopologyRendererActions.IMPORT_TOPOLOGY };
     }
 }

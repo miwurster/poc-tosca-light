@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,9 +12,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Injectable, ViewContainerRef} from '@angular/core';
-import {ToastsManager} from 'ng2-toastr/ng2-toastr';
-import {DatePipe} from '@angular/common';
+import { Injectable, ViewContainerRef } from '@angular/core';
+import { ToastsManager } from 'ng2-toastr/ng2-toastr';
+import { DatePipe } from '@angular/common';
 
 /**
  * This is the own internal notify service of the topology renderer - may be replaced by the winery one.
@@ -26,8 +26,8 @@ export class WineryAlertService {
     toastr: ToastsManager;
     alerts: Array<WineryAlert> = [];
 
-    constructor (private pToastr: ToastsManager,
-                 private datePipe: DatePipe) {
+    constructor(private pToastr: ToastsManager,
+                private datePipe: DatePipe) {
         this.toastr = pToastr;
     }
 
@@ -37,7 +37,7 @@ export class WineryAlertService {
      *
      * @param rootVcr - View Container Reference of the root component
      */
-    init (rootVcr: ViewContainerRef) {
+    init(rootVcr: ViewContainerRef) {
         this.toastr.setRootViewContainerRef(rootVcr);
 
     }
@@ -47,9 +47,9 @@ export class WineryAlertService {
      * @param message
      * @param title
      */
-    success (message: string, title = 'Success') {
+    success(message: string, title = 'Success') {
         this.toastr.success(message, title);
-        this.alerts.push({title: title, message: message, type: 'success', createdOn: this.getCurrentDate()});
+        this.alerts.push({ title: title, message: message, type: 'success', createdOn: this.getCurrentDate() });
 
     }
 
@@ -58,9 +58,9 @@ export class WineryAlertService {
      * @param message
      * @param title
      */
-    info (message: string, title = 'Information') {
+    info(message: string, title = 'Information') {
         this.toastr.info(message, title);
-        this.alerts.push({title: title, message: message, type: 'info', createdOn: this.getCurrentDate()});
+        this.alerts.push({ title: title, message: message, type: 'info', createdOn: this.getCurrentDate() });
 
     }
 
@@ -68,7 +68,7 @@ export class WineryAlertService {
      * returns the current date
      * @returns {string}
      */
-    getCurrentDate () {
+    getCurrentDate() {
         return this.datePipe.transform(Date.now(), 'short');
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,11 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {
-    Component,
-    Input
-} from '@angular/core';
-import { EntityTypesModel } from '../../models/entityTypesModel';
+import { Component, Input } from '@angular/core';
 
 @Component({
     selector: 'winery-properties',
@@ -26,7 +22,7 @@ import { EntityTypesModel } from '../../models/entityTypesModel';
 export class PropertiesComponent {
     @Input() currentNodeData: any;
 
-    constructor () {
+    constructor() {
     }
 
 }

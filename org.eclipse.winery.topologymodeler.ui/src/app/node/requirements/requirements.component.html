@@ -1,5 +1,5 @@
 <!--
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,40 +13,18 @@
 -->
 
 <div id="requirementDiv" *ngIf="requirementsExist">
-    <table>
-        <thead>
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Type</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let req of requirements; let index=index"
-            (click)="checkForProperties($event)"
-            (click)="saveIndex(index)"
-            (click)="toggleModal($event)">
-            <td class="dataId">{{req.id}}</td>
-            <td class="dataName">{{req.name}}</td>
-            <td class="dataType"><a href="{{req.type}}">{{req.type}}</a></td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div *ngIf="tblRowClicked">
-        <winery-properties-content
-            [currentTableRowIndex]= "currentTableRowIndex"
-            [currentNodeData]=currentNodeData
-            [currentElement]="currentRequirement">
-        </winery-properties-content>
-    </div>
-
+    <winery-toscatype-table
+        [toscaType]="'Requirements'"
+        [currentNodeData]="currentNodeData"
+        [toscaTypeData]="requirements"
+        (showClickedReqOrCapModal)="toggleModal($event)">
+    </winery-toscatype-table>
 </div>
 
 <div *ngIf="!requirementsExist" style="color: dimgray; text-align: center">
     <span>No requirements defined <br> at the NodeType.</span></div>
 
 <div (click)="toggleModal($event);" class="btn btn-sm btn-modal" style="display: block;">
-    Add new
+    Add new Requirement
 </div>
 

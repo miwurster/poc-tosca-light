@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -36,13 +36,17 @@
     user-select: none;
 }
 
+.accordion-root {
+}
+
 accordion-group {
-    font-size: small;
+    font-size: medium;
     max-width: 300px;
     text-overflow: ellipsis !important;
     overflow: hidden !important;
     white-space: nowrap !important;
     text-align: start !important;
+
 }
 
 .card-header {
@@ -65,6 +69,10 @@ accordion-group:hover {
     padding-bottom: 0.6em;
 }
 
+ul {
+
+}
+
 li div {
     text-overflow: ellipsis !important;
     overflow: hidden !important;
@@ -81,7 +89,7 @@ li div {
 .bootstrap-vertical-nav {
     position: fixed;
     float: left;
-    z-index: 500;
+    height: 100vh;
 }
 
 .btn-light {
@@ -101,4 +109,6 @@ li div {
 
 .nav-tabs {
     border-bottom: none;
+    overflow-y: scroll;
+    max-height: 50vh;
 }

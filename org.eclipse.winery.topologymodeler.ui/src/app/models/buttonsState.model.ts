@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,16 +16,17 @@
  * Internal representation of navbar buttons
  */
 export interface ButtonsStateModel {
-  buttonsState: {
-    targetLocationsButton?: boolean;
-    policiesButton?: boolean;
-    requirementsCapabilitiesButton?: boolean;
-    deploymentArtifactsButton?: boolean;
-    propertiesButton?: boolean;
-    typesButton?: boolean;
-    idsButton?: boolean;
-    layoutButton?: boolean;
-    alignHButton?: boolean;
-    alignVButton?: boolean
-  };
+    buttonsState: {
+        targetLocationsButton?: boolean;
+        policiesButton?: boolean;
+        requirementsCapabilitiesButton?: boolean;
+        deploymentArtifactsButton?: boolean;
+        propertiesButton?: boolean;
+        typesButton?: boolean;
+        idsButton?: boolean;
+        layoutButton?: boolean;
+        alignHButton?: boolean;
+        alignVButton?: boolean;
+        importTopologyButton?: boolean;
+    };
 }

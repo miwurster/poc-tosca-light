@@ -13,17 +13,17 @@
  ********************************************************************************/
 
 import { Injectable } from '@angular/core';
-import { backendBaseURL } from '../../configuration';
+import { backendBaseURL } from '../../models/configuration';
 import { Observable } from 'rxjs/Rx';
 import { Headers, Http, RequestOptions } from '@angular/http';
-import { TopologyModelerConfiguration } from '../../backend.service';
+import { TopologyModelerConfiguration } from '../../services/backend.service';
 import { Subject } from 'rxjs/Subject';
 import { ModalVariant } from './modal-model';
 
 @Injectable()
 export class EntitiesModalService {
-    readonly headers = new Headers({'Accept': 'application/json'});
-    readonly options = new RequestOptions({headers: this.headers});
+    readonly headers = new Headers({ 'Accept': 'application/json' });
+    readonly options = new RequestOptions({ headers: this.headers });
 
     openModalEvent = new Subject<OpenModalEvent>();
     openModalEvent$ = this.openModalEvent.asObservable();
@@ -56,5 +56,6 @@ export class OpenModalEvent {
                 public modalName: string,
                 public modalTemplateName: string,
                 public modalTemplateNameSpace: string,
-                public modalType: string) {}
+                public modalType: string) {
+    }
 }

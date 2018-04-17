@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
     selector: 'winery-policies',
@@ -27,7 +27,7 @@ export class PoliciesComponent implements OnInit {
     @Input() currentNodeData: any;
     @Input() policies;
 
-    constructor () {
+    constructor() {
         this.toggleModalHandler = new EventEmitter();
     }
 
@@ -35,11 +35,11 @@ export class PoliciesComponent implements OnInit {
      * Propagates the click event to node.component, where policies modal gets opened.
      * @param $event
      */
-    public toggleModal ($event) {
+    public toggleModal($event) {
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 
-    ngOnInit () {
+    ngOnInit() {
     }
 
 }

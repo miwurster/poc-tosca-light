@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,8 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Action} from 'redux';
-import {TopologyRendererActions} from '../actions/topologyRenderer.actions';
+import { Action } from 'redux';
+import { TopologyRendererActions } from '../actions/topologyRenderer.actions';
 
 export interface TopologyRendererState {
     buttonsState: {
@@ -26,7 +26,8 @@ export interface TopologyRendererState {
         idsButton?: boolean;
         layoutButton?: boolean;
         alignHButton?: boolean;
-        alignVButton?: boolean
+        alignVButton?: boolean;
+        importTopologyButton?: boolean;
     };
 }
 
@@ -41,7 +42,8 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
         idsButton: true,
         layoutButton: false,
         alignHButton: false,
-        alignVButton: false
+        alignVButton: false,
+        importTopologyButton: false
     }
 };
 /**
@@ -51,7 +53,8 @@ export const TopologyRendererReducer =
     function (lastState: TopologyRendererState = INITIAL_TOPOLOGY_RENDERER_STATE, action: Action): TopologyRendererState {
         switch (action.type) {
             case TopologyRendererActions.TOGGLE_POLICIES:
-                // console.log({...lastState, buttonsState: { ...lastState.buttonsState, policiesButton: !lastState.buttonsState.policiesButton}});
+                // console.log({...lastState, buttonsState: { ...lastState.buttonsState, policiesButton:
+                // !lastState.buttonsState.policiesButton}});
                 return {
                     ...lastState,
                     buttonsState: {
@@ -129,6 +132,14 @@ export const TopologyRendererReducer =
                     buttonsState: {
                         ...lastState.buttonsState,
                         alignVButton: !lastState.buttonsState.alignVButton
+                    }
+                };
+            case TopologyRendererActions.IMPORT_TOPOLOGY:
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        importTopologyButton: !lastState.buttonsState.importTopologyButton
                     }
                 };
         }

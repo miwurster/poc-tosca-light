@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,13 +18,16 @@
 export class CapabilitiesModalData {
 
     constructor(public capId?: string,
+                public oldCapId?: string,
                 public capColor?: string,
                 public capQName?: string,
                 public capType?: string,
+                public capQNameLocalName?: string,
                 public capDefinitionName?: string,
                 public capabilities?: any,
                 public capDefinitionNames?: Array<string>,
                 public nodeId?: string,
                 public propertyType?: any,
-                public properties?: any) { }
+                public properties?: any) {
+    }
 }

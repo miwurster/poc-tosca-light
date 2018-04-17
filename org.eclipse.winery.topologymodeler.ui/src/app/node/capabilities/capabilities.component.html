@@ -1,5 +1,5 @@
 <!--
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,39 +13,17 @@
 -->
 
 <div *ngIf="capabilitiesExist">
-    <table>
-        <thead>
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Type</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let cap of capabilities; let index=index"
-            (click)="checkForProperties($event)"
-            (click)="saveIndex(index)"
-            (click)="toggleModal($event)">
-            <td class="dataId">{{cap.id}}</td>
-            <td class="dataName">{{cap.name}}</td>
-            <td class="dataType"><a href="{{cap.type}}">{{cap.type}}</a></td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div *ngIf="tblRowClicked">
-        <winery-properties-content
-            [currentTableRowIndex]="currentTableRowIndex"
-            [currentNodeData]="currentNodeData"
-            [currentElement]="currentCapability">
-        </winery-properties-content>
-    </div>
-
+    <winery-toscatype-table
+        [toscaType]="'Capabilities'"
+        [currentNodeData]="currentNodeData"
+        [toscaTypeData]="capabilities"
+        (showClickedReqOrCapModal)="toggleModal($event)">
+    </winery-toscatype-table>
 </div>
 
 <div *ngIf="!capabilitiesExist" style="color: dimgray; text-align: center">
     <span>No capabilities defined <br> at the NodeType.</span></div>
 
 <div (click)="toggleModal($event);" class="btn btn-sm btn-modal" style="display: block;">
-    Add new
+    Add new Capability
 </div>

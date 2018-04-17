@@ -1,9 +1,27 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+
 /* You can add global styles to this file, and also import other style files */
 
 body {
     overflow-x: hidden;
     overflow-y: scroll;
     /*background-color: #303030;*/
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 .modal {
@@ -15,10 +33,19 @@ body {
 }
 
 .btn-modal {
-    border: 1px solid;
+    cursor: pointer;
+    border: 1px solid #cccccc;
+    border-radius: .4em;
     font-size: x-small;
-    margin: auto;
-    background-color: rgba(0, 0, 0, 0.2) !important;
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, rgb(216, 216, 216)));
+    background-image: -webkit-linear-gradient(top, #FFFFFF 0%, rgb(216, 216, 216) 100%);
+    background-image: linear-gradient(to bottom, #FFFFFF 0%, rgb(216, 216, 216) 100%);
+}
+
+.btn-modal:hover {
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #EEEEEE), color-stop(1, rgb(216, 216, 216)));
+    background-image: -webkit-linear-gradient(top, #EEEEEE 0%, rgb(216, 216, 216) 100%);
+    background-image: linear-gradient(to bottom, #EEEEEE 0%, rgb(216, 216, 216) 100%);
 }
 
 .help-block {
@@ -49,8 +76,8 @@ label {
 }
 
 .btn-modal:focus, .btn-modal:hover {
-    background-color: rgba(0, 0, 0, 0.6) !important;
-    color: #ffffff !important;
+    background-color: #cccccc !important;
+    color: #424242 !important;
     -webkit-box-shadow: initial;
     -moz-box-shadow: initial;
     box-shadow: initial;
@@ -70,8 +97,9 @@ label {
 }
 
 .card-header {
-    background-color: #F8F6F5 !important;
-    color: #212121 !important;
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, rgb(216, 216, 216)));
+    background-image: -webkit-linear-gradient(top, #FFFFFF 0%, rgb(216, 216, 216) 100%);
+    background-image: linear-gradient(to bottom, #FFFFFF 0%, rgb(216, 216, 216) 100%);
 }
 
 .card-header:first-child {
@@ -93,7 +121,7 @@ input[type=number]::-webkit-outer-spin-button {
         background-color: rgba(255, 255, 255, 0.2);
     }
     20% {
-        background-color: rgba(0, 246, 146, 0.9);
+        background-color: rgba(170, 238, 170, 0.9);
     }
     100% {
         background-color: rgba(0, 226, 147, 0.1);
@@ -116,20 +144,15 @@ input[type=number]::-webkit-outer-spin-button {
     }
 }
 
-.card-header {
-    background-color: rgba(5, 5, 5, 0.4);
-}
-
 .card-block {
     padding: .1em !important;
 }
 
 .card {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 .panel.accordionGroupPanel .panel-body {
-    background-color: rgb(237, 234, 230);
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
 }
@@ -168,35 +191,50 @@ table tr {
 
 }
 
+td {
+    padding: 0 !important;
+}
+
 .td-key {
     text-align: left !important;
     padding-left: 10px !important;
 }
 
 .td-maxinstances {
-    padding-top: -5px !important;
+    padding-top: 0px !important;
     padding-left: 3px !important;
     border: 0 !important;
     border-radius: 0 !important;
 }
 
 .td-mininstances {
-    padding-top: 5px !important;
+    padding-top: 0px !important;
     padding-left: 3px !important;
     border: 0 !important;
     border-radius: 0 !important;
 }
 
 .td-value {
-    text-align: right !important;
-    padding-right: 10px !important;
+}
+
+.td-value div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: x-small;
+    white-space: nowrap;
+    position: relative;
+    width: auto;
+    max-width: 100%;
+    -webkit-transition: max-width linear 1ms;
+    transition: max-width linear 1ms;
 }
 
 .header-table {
-    width: 100%;
+    width: 125px;
+    table-layout: fixed;
 }
 
-.header-table td {
+/*.header-table td {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin: 0 !important;
@@ -206,13 +244,58 @@ table tr {
     overflow: hidden;
     white-space: nowrap;
     max-width: 140px;
+}*/
+
+.td-value:hover div:before {
+    border: 1px solid #ddd;
+    content: "";
+    height: 100%;
+    display: block;
+    left: 0;
+    top: 0;
+    width: 100%;
+    position: absolute;
+    z-index: -1; /* stack below truncated text */
+    -webkit-user-select: all; /* Chrome all / Safari all */
+    -moz-user-select: all; /* Firefox all */
+    -ms-user-select: all; /* IE 10+ */
+    user-select: all;
 }
 
-.header-table td:hover{
+/*.header-table td:hover{
     max-width: 100%;
     overflow: visible;
     background-color: rgb(237, 232, 228);
     white-space: normal;
+}*/
+
+.cell-with-comment {
+    position: relative;
+}
+
+td {
+    cursor: pointer;
+}
+
+.cell-comment {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    border: 1px;
+    border-radius: .4em;
+    background-color: #efefef;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #424242;
+    padding: 3px;
+    color: #000000;
+    width: auto;
+    left: 2em;
+    top: 2em;
+}
+
+.cell-with-comment:hover span.cell-comment {
+    display: block;
 }
 
 .card-block {
@@ -269,7 +352,7 @@ tr.row.col-sm-12 {
 .table-spacer {
     border: 0 !important;
     border-radius: 0 !important;
-    height: 22px !important;
+    height: 0px !important;
 }
 
 .col-sm-9 {

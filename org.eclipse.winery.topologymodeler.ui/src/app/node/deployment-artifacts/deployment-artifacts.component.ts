@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,7 +15,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { IWineryState } from '../../redux/store/winery.store';
 import { NgRedux } from '@angular-redux/store';
-import { WineryState } from '../../redux/reducers/winery.reducer';
 
 @Component({
     selector: 'winery-deployment-artifacts',
@@ -31,7 +30,7 @@ export class DeploymentArtifactsComponent implements OnInit {
     @Input() deploymentArtifacts;
     latestNodeTemplate;
 
-    constructor (private $ngRedux: NgRedux<IWineryState>) {
+    constructor(private $ngRedux: NgRedux<IWineryState>) {
         this.toggleModalHandler = new EventEmitter();
     }
 
@@ -39,10 +38,10 @@ export class DeploymentArtifactsComponent implements OnInit {
      * Propagates the click event to node.component, where deployment artifact modal gets opened.
      * @param $event
      */
-    public toggleModal ($event) {
+    public toggleModal($event) {
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 
-    ngOnInit () {
+    ngOnInit() {
     }
 }

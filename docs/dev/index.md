@@ -545,6 +545,11 @@ Deployment Artifacts (DAs) may be attached at
 * NodeType
 * NodeTemplate
 
+## More readings
+
+- [How to test the repository](howtoTestRepository.md)
+- [Handling of Properties](property-handling.md)
+
 ## Example repository
 
 An example repository is available at <files.opentosca.org/third-party/v2.0.0/winery-repository.zip>.
@@ -581,7 +586,8 @@ The static HTML API documentation is generated using [bootprint-openapi](https:/
 
 ## Recommended programming literature
 
-* Joshua Bloch. Effective Java, 2nd edition. Addison-Wesley
+* Simon Harrer et al. [Java by Comparison](http://java.by-comparison.com/). The Pgramatic Programmers, 2018.
+* Joshua Bloch. [Effective Java, 3rd edition](https://www.safaribooksonline.com/library/view/effective-java-third/9780134686097/). Addison-Wesley Professional, 2017.
 
 ## Abbreviations
 

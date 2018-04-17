@@ -1,5 +1,5 @@
 <!--
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,17 +16,17 @@
      style="padding: 3px; position: absolute; user-select: none;"
      [style.top]="nodeTemplate.y + 'px'"
      [style.left]="nodeTemplate.x + 'px'"
+     [class.selected]="makeSelectionVisible"
+     [class.unselected]="!makeSelectionVisible"
      id={{nodeTemplate.id}} [style.borderColor]="nodeTemplate.color" [style.shadowColor]="nodeTemplate.color"
      (mousedown)="mouseDownHandler($event)"
      (mouseup)="mouseUpHandler($event)"
      [@onCreateNodeTemplateAnimation]='visibilityState'
      [class.removeZIndex]="removeZIndex">
-    <div class="row rounded col-sm-12"
-         [class.selected]="makeSelectionVisible"
-         [class.unselected]="!makeSelectionVisible"
+    <div class="row rounded col-sm-12 node-template-header"
          (click)="openSidebar($event); closeConnectorEndpoints($event)">
         <div class="col-sm-1" style="padding: 0;">
-            <table class="table table-responsive table-active table-border--grey table-sm header-table">
+            <table class="table table-responsive table-active table-border--grey table-sm">
                 <tr style="padding: 0">
                     <td class="td-maxinstances"
                         [class.flashminmax]="setMaxFlash">{{nodeTemplate.maxInstances}}
@@ -48,30 +48,43 @@
             <img *ngIf="nodeTemplate.imageUrl" src="{{hostURL}}{{nodeTemplate.imageUrl}}">
         </div>
         <div id="specifierDiv" class="col-sm-8" style="padding-left: 0; padding-right: 0;">
-            <table class="table table-active table-sm header-table">
-                <tr [class.flashit]="setFlash" class="row col-sm-12">
-                    <td class="text-right td-value col-sm-12">{{nodeTemplate.name}}</td>
-                </tr>
-                <tr *ngIf="navbarButtonsState.buttonsState.idsButton" class="row col-sm-12">
-                    <td class="text-right td-value col-sm-12" style="text-decoration: underline;">{{nodeTemplate.id}}
+            <table class="header-table" style="margin-left: 6px">
+                <tr *ngIf="navbarButtonsState.buttonsState.idsButton" class="">
+                    <td class="td-value" style="text-decoration: underline;"
+                        [class.cell-with-comment]="isEllipsisActive(headerTableId)">
+                        <div #headerTableId>{{nodeTemplate.id}}</div>
+                        <span class="cell-comment">{{nodeTemplate.id}}</span>
                     </td>
                 </tr>
-                <tr *ngIf="navbarButtonsState.buttonsState.typesButton" class="row col-sm-12">
-                    <td class="text-right btn-link td-value col-sm-12">({{nodeTypeLocalName}})</td>
+                <tr [class.flashit]="setFlash" class="">
+                    <td class="td-value"
+                        [class.cell-with-comment]="isEllipsisActive(headerTableName)">
+                        <div #headerTableName>{{nodeTemplate.name}}</div>
+                        <span class="cell-comment">{{nodeTemplate.name}}</span>
+                    </td>
+                </tr>
+                <tr *ngIf="navbarButtonsState.buttonsState.typesButton" class="">
+                    <td class="td-value"
+                        (click)="linkType($event)"
+                        style="color: #0275d8;"
+                        [class.cell-with-comment]="isEllipsisActive(headerTableType)">
+                        <div #headerTableType>({{nodeTypeLocalName}})</div>
+                        <span class="cell-comment">{{ (nodeTypeLocalName)}}</span>
+                    </td>
                 </tr>
             </table>
         </div>
     </div>
-    <div class="endpointContainer container rounded" style="border: 0; width: 205px; box-shadow: none"
+    <div class="endpointContainer center-block row" style="border: 0; box-shadow: none"
          *ngIf="connectorEndpointVisible"
          (mouseover)="makeSource($event)">
-        <div class="btn-group-vertical btn-group-sm" role="group" id={{dragSource}}
+        <div class="btn-group-vertical btn-group-sm center-block" role="group" id={{dragSource}}
              (mousedown)="passCurrentType($event)">
             <button *ngFor="let rel of allRelationshipTypesColors"
-                    type="button" class="btn btn-sm btn-outline-secondary relationship-button sm"
+                    type="button" class="btn btn-sm btn-outline-secondary btn-block"
                     [style.border-color]="this.nodeTemplate.color" [style.color]="rel.color"
                     style="font-size: x-small;">
-                <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> {{rel.type}}
+                <i class="fa fa-arrow-circle-o-right" aria-hidden="true" style="padding-left: 1em;"></i> {{rel.type}}
             </button>
         </div>
     </div>
@@ -126,8 +139,8 @@
             <div accordion-heading>
                 Requirements
                 <i class="pull-sm-0 float-sm-right fa icon-styling padding-top--2px"
-                   [ngClass]="{'fa-chevron-down': navbarButtonsState.buttonsState.requirementsCapabilitiesButton,
-           'fa-chevron-right': !navbarButtonsState.buttonsState.requirementsCapabilitiesButton}"
+                   [ngClass]="{'fa-chevron-down': requirementsgroup?.isOpen,
+           'fa-chevron-right': !requirementsgroup?.isOpen}"
                 ></i>
             </div>
             <winery-requirements
@@ -146,8 +159,8 @@
             <div accordion-heading>
                 Capabilities
                 <i class="pull-sm-0 float-sm-right fa icon-styling padding-top--2px"
-                   [ngClass]="{'fa-chevron-down': navbarButtonsState.buttonsState.requirementsCapabilitiesButton,
-           'fa-chevron-right': !navbarButtonsState.buttonsState.requirementsCapabilitiesButton}"
+                   [ngClass]="{'fa-chevron-down': capabilitiesgroup?.isOpen,
+           'fa-chevron-right': !capabilitiesgroup?.isOpen}"
                 ></i>
             </div>
             <winery-capabilities
@@ -193,7 +206,7 @@
             <winery-target-locations
                 [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'TARGET_LOCATIONS',
-                                    currentProperties: nodeTemplate.targetLocations}">
+                                    currentTargetLocation: nodeTemplate.otherAttributes}">
             </winery-target-locations>
         </accordion-group>
     </accordion>

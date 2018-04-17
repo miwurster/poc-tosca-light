@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -47,8 +47,7 @@ export class TNodeTemplate extends AbstractTTemplate {
                 public capabilities?: any,
                 public requirements?: any,
                 public deploymentArtifacts?: any,
-                public policies?: any,
-                public targetLocations?: any) {
+                public policies?: any) {
         super(documentation, any, otherAttributes);
     }
 
@@ -63,16 +62,35 @@ export class TNodeTemplate extends AbstractTTemplate {
     generateNewNodeTemplateWithUpdatedAttribute(updatedAttribute: string, updatedValue: any): TNodeTemplate {
         const nodeTemplate = new TNodeTemplate(this.properties, this.id, this.type, this.name, this.minInstances, this.maxInstances, this.color,
             this.imageUrl, this.documentation, this.any, this.otherAttributes, this.x, this.y, this.capabilities,
-            this.requirements, this.deploymentArtifacts, this.policies, this.targetLocations);
-        if (updatedAttribute === 'otherAttributes') {
-            for (const key in nodeTemplate.otherAttributes) {
-                if (nodeTemplate.otherAttributes.hasOwnProperty(key)) {
-                    const trimmedKey = key.substring(key.indexOf('}') + 1);
-                    nodeTemplate.otherAttributes[key] = updatedValue[trimmedKey];
-                }
-            }
+            this.requirements, this.deploymentArtifacts, this.policies);
+        if (updatedAttribute === 'coordinates') {
             nodeTemplate.x = updatedValue.x;
             nodeTemplate.y = updatedValue.y;
+        } else if (updatedAttribute === 'location') {
+            let newOtherAttributesAssigned: boolean;
+            let nameSpace: string;
+            for (const key in nodeTemplate.otherAttributes) {
+                if (nodeTemplate.otherAttributes.hasOwnProperty(key)) {
+                    nameSpace = key.substring(key.indexOf('{'), key.indexOf('}') + 1);
+                    if (nameSpace) {
+                        const otherAttributes = {
+                            [nameSpace + 'location']: updatedValue,
+                            [nameSpace + 'x']: nodeTemplate.x,
+                            [nameSpace + 'y']: nodeTemplate.y
+                        };
+                        nodeTemplate.otherAttributes = otherAttributes;
+                        newOtherAttributesAssigned = true;
+                        break;
+                    }
+                }
+            }
+            if (!newOtherAttributesAssigned) {
+                const otherAttributes = {
+                    'location': updatedValue,
+                };
+                nodeTemplate.otherAttributes = otherAttributes;
+            }
+            console.log(nodeTemplate);
         } else if (updatedAttribute === ('minInstances') || updatedAttribute === ('maxInstances')) {
             if (Number.isNaN(+updatedValue)) {
                 nodeTemplate[updatedAttribute] = updatedValue;

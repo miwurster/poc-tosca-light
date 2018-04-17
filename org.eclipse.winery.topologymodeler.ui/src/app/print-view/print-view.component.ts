@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
     selector: 'winery-print-view',
@@ -21,10 +21,10 @@ import {Component, OnInit} from '@angular/core';
 })
 export class PrintViewComponent implements OnInit {
 
-    constructor () {
+    constructor() {
     }
 
-    ngOnInit () {
+    ngOnInit() {
     }
 
 }

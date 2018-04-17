@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,15 +12,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import {combineReducers, Reducer} from 'redux';
+import { combineReducers, Reducer } from 'redux';
+import { INITIAL_WINERY_STATE, WineryReducer, WineryState } from '../reducers/winery.reducer';
 import {
-    WineryReducer,
-    WineryState,
-    INITIAL_WINERY_STATE
-} from '../reducers/winery.reducer';
-import {
-    INITIAL_TOPOLOGY_RENDERER_STATE, TopologyRendererReducer,
-    TopologyRendererState
+    INITIAL_TOPOLOGY_RENDERER_STATE, TopologyRendererReducer, TopologyRendererState
 } from '../reducers/topologyRenderer.reducer';
 
 /**

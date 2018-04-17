@@ -1,5 +1,5 @@
 <!--
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,7 +12,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
 <div *ngIf="loader?.generatedReduxState">
-    <winery-navbar></winery-navbar>
+    <winery-navbar
+        [hideNavBarState]="hideNavBarState">
+    </winery-navbar>
     <winery-canvas [entityTypes]="this.entityTypes"
                    [relationshipTypes]="relationshipTypes">
     </winery-canvas>

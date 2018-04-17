@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,13 +12,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, OnDestroy } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { WineryAlertService } from '../winery-alert/winery-alert.service';
 import { NgRedux } from '@angular-redux/store';
 import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
 import { ButtonsStateModel } from '../models/buttonsState.model';
 import { IWineryState } from '../redux/store/winery.store';
-import { BackendService } from '../backend.service';
+import { BackendService } from '../services/backend.service';
+import { Subscription } from 'rxjs/Subscription';
+import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 
 /**
  * The navbar of the topologymodeler.
@@ -26,7 +29,18 @@ import { BackendService } from '../backend.service';
 @Component({
     selector: 'winery-navbar',
     templateUrl: './navbar.component.html',
-    styleUrls: ['./navbar.component.css']
+    styleUrls: ['./navbar.component.css'],
+    animations: [
+        trigger('navbarInOut', [
+            transition('void => *', [
+                style({ transform: 'translateY(-100%)' }),
+                animate('200ms ease-out')
+            ]),
+            transition('* => void', [
+                animate('200ms ease-in', style({ transform: 'translateY(-100%)' }))
+            ])
+        ])
+    ]
 })
 export class NavbarComponent implements OnDestroy {
 
@@ -34,19 +48,31 @@ export class NavbarComponent implements OnDestroy {
      * Boolean variables that hold the state {pressed vs. !pressed} of the navbar buttons.
      * @type {boolean}
      */
+    @Input() hideNavBarState;
+
+    @ViewChild('exportCsarButton')
+    private exportCsarButtonRef: ElementRef;
+
     navbarButtonsState: ButtonsStateModel;
-    navBarButtonsStateSubscription;
     unformattedTopologyTemplate;
-    topologyTemplateSubscription;
+    subscriptions: Array<Subscription> = [];
+    exportCsarUrl: string;
 
     constructor(private alert: WineryAlertService,
                 private ngRedux: NgRedux<IWineryState>,
                 private actions: TopologyRendererActions,
-                private backendService: BackendService) {
-        this.navBarButtonsStateSubscription = ngRedux.select(state => state.topologyRendererState)
-            .subscribe(newButtonsState => this.setButtonsState(newButtonsState));
-        this.topologyTemplateSubscription = ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
-            .subscribe(topologyTemplate => this.unformattedTopologyTemplate = topologyTemplate);
+                private backendService: BackendService,
+                private hotkeysService: HotkeysService) {
+        this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
+            .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
+        this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
+            .subscribe(topologyTemplate => this.unformattedTopologyTemplate = topologyTemplate));
+        this.hotkeysService.add(new Hotkey('ctrl+s', (event: KeyboardEvent): boolean => {
+            event.stopPropagation();
+            this.saveTopologyTemplateToRepository();
+            return false; // Prevent bubbling
+        }));
+        this.exportCsarUrl = this.backendService.topologyTemplateURL + '/?csar';
     }
 
     /**
@@ -63,8 +89,17 @@ export class NavbarComponent implements OnDestroy {
      */
     getStyle(buttonPressed: boolean): string {
         if (buttonPressed) {
-            return '#929292';
+            return '#AAEEAA';
         }
+    }
+
+    exportCsar(event) {
+        let url = this.exportCsarUrl;
+        if (event.ctrlKey) {
+            url = url.replace(/csar$/, 'definitions');
+            console.log(url);
+        }
+        window.open(url);
     }
 
     /**
@@ -115,6 +150,11 @@ export class NavbarComponent implements OnDestroy {
             }
             case 'alignv': {
                 this.ngRedux.dispatch(this.actions.executeAlignV());
+                break;
+            }
+            case 'importTopology': {
+                this.ngRedux.dispatch(this.actions.importTopology());
+                break;
             }
         }
     }
@@ -149,9 +189,9 @@ export class NavbarComponent implements OnDestroy {
         this.backendService.saveTopologyTemplate(topologyToBeSaved)
             .subscribe(res => {
                 res.ok === true ? this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
-                        + res.statusText + ' ' + res.status + '</p>')
+                    + res.statusText + ' ' + res.status + '</p>')
                     : this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
-                        + res.statusText + ' ' + res.status + '</p>');
+                    + res.statusText + ' ' + res.status + '</p>');
             });
     }
 
@@ -159,6 +199,6 @@ export class NavbarComponent implements OnDestroy {
      * Angular lifecycle event.
      */
     ngOnDestroy() {
-        this.navBarButtonsStateSubscription.unsubscribe();
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
     }
 }

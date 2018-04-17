@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,28 +13,19 @@
  ********************************************************************************/
 
 import {
-    AfterViewInit,
-    Component,
-    ComponentRef,
-    DoCheck,
-    ElementRef,
-    EventEmitter,
-    Input,
-    KeyValueDiffers,
-    NgZone,
-    OnDestroy,
-    OnInit,
-    Output,
-    Renderer2, ViewChild
+    AfterViewInit, Component, ComponentRef, DoCheck, ElementRef, EventEmitter, Input, KeyValueDiffers, NgZone,
+    OnDestroy, OnInit, Output, Renderer2
 } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
 import { ButtonsStateModel } from '../models/buttonsState.model';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { WineryActions } from '../redux/actions/winery.actions';
-import { hostURL } from '../configuration';
+import { hostURL } from '../models/configuration';
 import { TNodeTemplate } from '../models/ttopology-template';
-import { ModalDirective } from 'ngx-bootstrap';
+import { QName } from '../models/qname';
+import { urlElement } from '../models/enums';
+import { BackendService } from '../services/backend.service';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -44,12 +35,12 @@ import { ModalDirective } from 'ngx-bootstrap';
     templateUrl: './node.component.html',
     styleUrls: ['./node.component.css'],
     animations: [trigger('onCreateNodeTemplateAnimation', [
-        state('hidden', style({opacity: 0, transform: 'translateX(0)'})),
-        state('visible', style({opacity: 1, transform: 'scale'})),
+        state('hidden', style({ opacity: 0, transform: 'translateX(0)' })),
+        state('visible', style({ opacity: 1, transform: 'scale' })),
         transition('hidden => visible', animate('300ms', keyframes([
-            style({opacity: 0, transform: 'scale(0.2)', offset: 0}),
-            style({opacity: 0.3, transform: 'scale(1.1)', offset: 0.7}),
-            style({opacity: 1, transform: 'scale(1.0)', offset: 1.0})
+            style({ opacity: 0, transform: 'scale(0.2)', offset: 0 }),
+            style({ opacity: 0.3, transform: 'scale(1.1)', offset: 0.7 }),
+            style({ opacity: 1, transform: 'scale(1.0)', offset: 1.0 })
         ]))),
     ]),
     ]
@@ -103,7 +94,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     constructor(private zone: NgZone,
                 private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
-                private elRef: ElementRef,
+                public elRef: ElementRef,
+                private backendService: BackendService,
                 private renderer: Renderer2,
                 private differs: KeyValueDiffers) {
         this.sendId = new EventEmitter();
@@ -152,7 +144,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Triggered when opening a modal to send node data to the canvas for handling the addition of modal data.
      */
     sendToggleAction(nodeData: any): void {
-        const currentNodeData = {...this.nodeTemplate, ...nodeData};
+        const currentNodeData = { ...this.nodeTemplate, ...nodeData };
         this.sendNodeData.emit(currentNodeData);
     }
 
@@ -161,6 +153,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      */
     ngAfterViewInit(): void {
         this.sendId.emit(this.nodeTemplate.id);
+
         this.visibilityState = 'visible';
     }
 
@@ -208,8 +201,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
             this.parentEl = $event.target.parentElement.className;
         }
         if (this.parentEl !== 'accordion-toggle' && this.parentEl !== 'ng-tns-c6-2' && this.parentEl) {
-            const offsetLeft = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetLeft;
-            const offsetTop = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetTop;
+            const offsetLeft = this.elRef.nativeElement.firstChild.nextElementSibling.offsetLeft;
+            const offsetTop = this.elRef.nativeElement.firstChild.nextElementSibling.offsetTop;
             this.previousPosition = {
                 x: offsetLeft,
                 y: offsetTop
@@ -225,10 +218,9 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * @param $event
      */
     mouseMove($event): void {
-        const offsetLeft = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetLeft;
-        const offsetTop = this.elRef.nativeElement.querySelector('#' + this.nodeTemplate.id).offsetTop;
+        const offsetLeft = this.elRef.nativeElement.firstChild.nextElementSibling.offsetLeft;
+        const offsetTop = this.elRef.nativeElement.firstChild.nextElementSibling.offsetTop;
         this.currentPosition = {
-            id: this.nodeTemplate.id,
             x: offsetLeft,
             y: offsetTop
         };
@@ -315,25 +307,38 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                 }
             }));
         } else {
-            let type;
-            const id = this.nodeTemplate.id;
-            if (id.includes('_')) {
-                type = id.substring(0, id.indexOf('_'));
-            } else {
-                type = id;
-            }
             this.$ngRedux.dispatch(this.actions.openSidebar({
                 sidebarContents: {
                     sidebarVisible: true,
                     nodeClicked: true,
                     id: this.nodeTemplate.id,
                     nameTextFieldValue: this.nodeTemplate.name,
-                    type: type,
+                    type: this.nodeTemplate.type,
                     minInstances: this.nodeTemplate.minInstances,
                     maxInstances: this.nodeTemplate.maxInstances
                 }
             }));
         }
+    }
+
+    /**
+     * Navigates to the corresponding node type in the management UI
+     * @param $event
+     */
+    linkType($event: any): void {
+        const qName = new QName(this.nodeTemplate.type);
+        const typeURL = this.backendService.configuration.uiURL + '#' + urlElement.NodeTypeURL +
+            encodeURIComponent(encodeURIComponent(qName.nameSpace)) + '/' + qName.localName
+            + urlElement.ReadMe;
+        window.open(typeURL, '_blank');
+    }
+
+    /**
+     * Displays a box of the whole text if the text doesn't fit in the original element
+     * @param cell
+     */
+    isEllipsisActive(cell) {
+        return (cell.offsetWidth < cell.scrollWidth);
     }
 
     /**

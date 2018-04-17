@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,38 +14,19 @@
 
 import { Action } from 'redux';
 import {
-    DecMaxInstances,
-    DecMinInstances,
-    DeleteNodeAction, DeleteRelationshipAction,
-    IncMaxInstances,
-    IncMinInstances,
-    SaveNodeTemplateAction,
-    SaveRelationshipAction,
-    SendCurrentNodeIdAction,
-    SendPaletteOpenedAction,
-    SetCababilityAction,
-    SetCapPropertyAction,
-    SetDepArtifactsPropertyAction,
-    SetDeploymentArtifactsAction,
-    SetPoliciesPropertyAction,
-    SetPolicyAction,
-    SetPropertyAction,
-    SetReqPropertyAction,
-    SetRequirementAction,
-    SetTargetLocPropertyAction,
-    SidebarMaxInstanceChanges,
-    SidebarMinInstanceChanges,
-    SidebarNodeNamechange,
-    SidebarStateAction,
-    UpdateNodeCoordinatesAction,
-    UpdateRelationshipNameAction,
-    WineryActions
+    DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
+    DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
+    SaveRelationshipAction, SendCurrentNodeIdAction, SendPaletteOpenedAction, SetCababilityAction,
+    SetDeploymentArtifactAction, SetPolicyAction, SetPropertyAction, SetRequirementAction, SetTargetLocation,
+    SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
+    UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
 } from '../actions/winery.actions';
 import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from 'app/models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;
+    hideNavBarAndPaletteState: boolean;
     sidebarContents: any;
     currentJsonTopology: TTopologyTemplate;
     currentNodeData: any;
@@ -53,6 +34,7 @@ export interface WineryState {
 
 export const INITIAL_WINERY_STATE: WineryState = {
     currentPaletteOpenedState: false,
+    hideNavBarAndPaletteState: false,
     sidebarContents: {
         sidebarVisible: false,
         nodeClicked: false,
@@ -80,6 +62,12 @@ export const WineryReducer =
                 return <WineryState>{
                     ...lastState,
                     currentPaletteOpenedState: paletteOpened
+                };
+            case WineryActions.HIDE_NAVBAR_AND_PALETTE:
+                const hideNavBarAndPalette: boolean = (<HideNavBarAndPaletteAction>action).hideNavBarAndPalette;
+                return <WineryState>{
+                    ...lastState,
+                    hideNavBarAndPaletteState: hideNavBarAndPalette
                 };
             case WineryActions.OPEN_SIDEBAR:
                 const newSidebarData: any = (<SidebarStateAction>action).sidebarContents;
@@ -189,203 +177,23 @@ export const WineryReducer =
                             )
                     }
                 };
-            /*case WineryActions.SET_DEPLOYMENT_ARTIFACTS_PROPERTY:
-                const newPropertyDepArt: any = (<SetDepArtifactsPropertyAction>action).nodeDepArtProperty;
-                const depArtPropertyType = newPropertyDepArt.propertyType;
-                const indexOfNodeDepArtProp = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newPropertyDepArt.nodeId);
-
-                const nodeDepArtPropertyTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newPropertyDepArt.nodeId);
-                let currentDepArtProperties;
-                let newDepArtPropObject;
-                let newDepArtProperties: Array<any>;
-                let newXMLDepArtProperty: string;
-                if (depArtPropertyType === 'KV') {
-                    try {
-                        currentDepArtProperties = nodeDepArtPropertyTemplate.deploymentArtifacts.properties.kvproperties;
-                    } catch (e) {
-                    }
-                    newDepArtPropObject = {
-                        key: newPropertyDepArt.newDepArtProperty.key,
-                        value: newPropertyDepArt.newDepArtProperty.value
-                    };
-                    newDepArtProperties = [];
-                    newDepArtProperties.push(newDepArtPropObject);
-                    if (currentDepArtProperties) {
-                        for (const obj of currentDepArtProperties) {
-                            if (!newDepArtProperties.find(node => node.key === obj.key)) {
-                                newDepArtProperties.push(obj);
-                            }
-                        }
-                    }
-                } else {
-                    newXMLDepArtProperty = newPropertyDepArt.newDepArtProperty;
-                }
+            case WineryActions.SET_REQUIREMENT:
+                const newRequirement: any = (<SetRequirementAction>action).nodeRequirement;
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newPropertyDepArt.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('deploymentArtifacts',
-                                    depArtPropertyType === 'KV' ?
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
-                                            properties: {kvproperties: newDepArtProperties}
-                                        } :
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeDepArtProp].deploymentArtifacts,
-                                            properties: {any: newXMLDepArtProperty}
-                                        }) : nodeTemplate
-                            )
-                    }
-                };*/
-            case WineryActions.SET_REQUIREMENT_PROPERTY:
-                const newReqProperty: any = (<SetReqPropertyAction>action).nodeReqProperty;
-                const newReqProperties = newReqProperty.newReqProperty;
-                return <WineryState>{
-                    ...lastState,
-                    currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
-                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newReqProperty.nodeId ?
+                            .map(nodeTemplate => nodeTemplate.id === newRequirement.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('requirements',
-                                    newReqProperties) : nodeTemplate
-                            )
-                    }
-                };
-            case WineryActions.SET_CAPABILITY_PROPERTY:
-                const newCapProperty: any = (<SetCapPropertyAction>action).nodeCapProperty;
-                const newCapProperties = newCapProperty.newCapProperty;
-                return <WineryState>{
-                    ...lastState,
-                    currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
-                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newCapProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('capabilities',
-                                    newCapProperties) : nodeTemplate
-                            )
-                    }
-                };
-            case WineryActions.SET_POLICIES_PROPERTY:
-                const newPoliciesProperty: any = (<SetPoliciesPropertyAction>action).nodePoliciesProperty;
-                const indexOfNodePolProp = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newPoliciesProperty.nodeId);
-                const policiesPropertyType = newPoliciesProperty.propertyType;
-                const nodePolicyPropertyTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newPoliciesProperty.nodeId);
-                let currentPolicyProperties;
-                let newPolicyPropObject;
-                let newPolicyProperties: Array<any>;
-                let newXMLPolicyProperty: string;
-                if (policiesPropertyType === 'KV') {
-                    try {
-                        currentPolicyProperties = nodePolicyPropertyTemplate.policies.properties.kvproperties;
-                    } catch (e) {
-                    }
-                    newPolicyPropObject = {
-                        key: newPoliciesProperty.newPoliciesProperty.key,
-                        value: newPoliciesProperty.newPoliciesProperty.value
-                    };
-                    newPolicyProperties = [];
-                    newPolicyProperties.push(newPolicyPropObject);
-                    if (currentPolicyProperties) {
-                        for (const obj of currentPolicyProperties) {
-                            if (!newPolicyProperties.find(node => node.key === obj.key)) {
-                                newPolicyProperties.push(obj);
-                            }
-                        }
-                    }
-                } else {
-                    newXMLPolicyProperty = newPoliciesProperty.newPoliciesProperty;
-                }
-                return <WineryState>{
-                    ...lastState,
-                    currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
-                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newPoliciesProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('policies',
-                                    policiesPropertyType === 'KV' ?
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
-                                            properties: { kvproperties: newPolicyProperties }
-                                        } :
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolProp].policies,
-                                            properties: { any: newXMLPolicyProperty }
-                                        }) : nodeTemplate
-                            )
-                    }
-                };
-            case WineryActions.SET_TARGET_LOCATIONS_PROPERTY:
-                const newTargetLocProperty: any = (<SetTargetLocPropertyAction>action).nodeTargetLocProperty;
-                const indexOfNodeTargetLocProp = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newTargetLocProperty.nodeId);
-                const targetLocationsPropertyType = newTargetLocProperty.propertyType;
-                const nodeTarLocPropertyTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newTargetLocProperty.nodeId);
-                let currentTarLocProperties;
-                let newTarLocPropObject;
-                let newTarLocProperties: Array<any>;
-                let newXMLTarLocProperty: string;
-                if (targetLocationsPropertyType === 'KV') {
-                    try {
-                        currentTarLocProperties = nodeTarLocPropertyTemplate.targetLocations.properties.kvproperties;
-                    } catch (e) {
-                    }
-                    newTarLocPropObject = {
-                        key: newTargetLocProperty.newTargetLocProperty.key,
-                        value: newTargetLocProperty.newTargetLocProperty.value
-                    };
-                    newTarLocProperties = [];
-                    newTarLocProperties.push(newTarLocPropObject);
-                    if (currentTarLocProperties) {
-                        for (const obj of currentTarLocProperties) {
-                            if (!newTarLocProperties.find(node => node.key === obj.key)) {
-                                newTarLocProperties.push(obj);
-                            }
-                        }
-                    }
-                } else {
-                    newXMLTarLocProperty = newTargetLocProperty.newTargetLocProperty;
-                }
-                return <WineryState>{
-                    ...lastState,
-                    currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
-                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newTargetLocProperty.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('targetLocations',
-                                    targetLocationsPropertyType === 'KV' ?
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
-                                            properties: { kvproperties: newTarLocProperties }
-                                        } :
-                                        {
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeTargetLocProp].targetLocations,
-                                            properties: { any: newXMLTarLocProperty }
-                                        }) : nodeTemplate
+                                    {
+                                        requirement: newRequirement.requirement
+                                    }) : nodeTemplate
                             )
                     }
                 };
             case WineryActions.SET_PROPERTY:
                 const newProperty: any = (<SetPropertyAction>action).nodeProperty;
-                const propertyType = newProperty.propertyType;
-                const indexOfNodeProp = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newProperty.nodeId);
-
-                const nodePropertyTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newProperty.nodeId);
-                let newProperties: Array<any>;
-                let newXMLProperty: string;
-                if (propertyType === 'KV') {
-                    newProperties = newProperty.newProperty;
-                } else {
-                    newXMLProperty = newProperty.newProperty;
-                }
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
@@ -393,8 +201,8 @@ export const WineryReducer =
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === newProperty.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('properties',
-                                    propertyType === 'KV' ?
-                                        { kvproperties: newProperty.newProperty } : { any: newXMLProperty }) : nodeTemplate
+                                    newProperty.propertyType === 'KV' ?
+                                        { kvproperties: newProperty.newProperty } : { any: newProperty.newProperty }) : nodeTemplate
                             )
                     }
                 };
@@ -413,23 +221,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SET_REQUIREMENT:
-                const newRequirement: any = (<SetRequirementAction>action).nodeRequirement;
-                return <WineryState>{
-                    ...lastState,
-                    currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
-                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newRequirement.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('requirements',
-                                    {
-                                        requirement: newRequirement.requirement
-                                    }) : nodeTemplate
-                            )
-                    }
-                };
             case WineryActions.SET_DEPLOYMENT_ARTIFACT:
-                const newDepArt: any = (<SetDeploymentArtifactsAction>action).nodeDeploymentArtifact;
+                const newDepArt: any = (<SetDeploymentArtifactAction>action).nodeDeploymentArtifact;
                 const newDeploymentArtifact: TDeploymentArtifact = newDepArt.newDeploymentArtifact;
                 const indexOfNodeDepArt = lastState.currentJsonTopology.nodeTemplates
                     .map(node => node.id).indexOf(newDepArt.nodeId);
@@ -459,6 +252,31 @@ export const WineryReducer =
                             )
                     }
                 };
+            case WineryActions.DELETE_DEPLOYMENT_ARTIFACT:
+                const deletedDeploymentArtifact: any = (<DeleteDeploymentArtifactAction>action).nodeDeploymentArtifact.deletedDeploymentArtifact;
+                const indexOfNodeWithDeletedDeploymentArtifact = lastState.currentJsonTopology.nodeTemplates
+                    .map((node) => {
+                        return node.id;
+                    })
+                    .indexOf((<DeleteDeploymentArtifactAction>action).nodeDeploymentArtifact.nodeId);
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                            .map((nodeTemplate) => nodeTemplate.id === (<DeleteDeploymentArtifactAction>action).nodeDeploymentArtifact.nodeId ?
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('deploymentArtifacts',
+                                    {
+                                        deploymentArtifact: [
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeWithDeletedDeploymentArtifact]
+                                                .deploymentArtifacts.deploymentArtifact
+                                                .filter(da => da.name !== deletedDeploymentArtifact)
+                                        ]
+                                    }) : nodeTemplate
+                            )
+                    }
+                };
+
             case WineryActions.SET_POLICY:
                 const newPolicy: any = (<SetPolicyAction>action).nodePolicy;
                 const policy = newPolicy.newPolicy;
@@ -490,6 +308,43 @@ export const WineryReducer =
                             )
                     }
                 };
+            case WineryActions.SET_TARGET_LOCATION:
+                const newTargetLocation: any = (<SetTargetLocation>action).nodeTargetLocation;
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                            .map(nodeTemplate => nodeTemplate.id === newTargetLocation.nodeId ?
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('location',
+                                    newTargetLocation.newTargetLocation) : nodeTemplate
+                            )
+                    }
+                };
+            case WineryActions.DELETE_POLICY:
+                const deletedPolicy: any = (<DeletePolicyAction>action).nodePolicy.deletedPolicy;
+                const indexOfNodeWithDeletedPolicy = lastState.currentJsonTopology.nodeTemplates
+                    .map((node) => {
+                        return node.id;
+                    })
+                    .indexOf((<DeletePolicyAction>action).nodePolicy.nodeId);
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                            .map((nodeTemplate) => nodeTemplate.id === (<DeletePolicyAction>action).nodePolicy.nodeId ?
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('policies',
+                                    {
+                                        policy: [
+                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodeWithDeletedPolicy]
+                                                .policies.policy
+                                                .filter(da => da.name !== deletedPolicy)
+                                        ]
+                                    }) : nodeTemplate
+                            )
+                    }
+                };
             case WineryActions.CHANGE_NODE_NAME:
                 const newNodeName: any = (<SidebarNodeNamechange>action).nodeNames;
                 const indexChangeNodeName = lastState.currentJsonTopology.nodeTemplates
@@ -509,7 +364,6 @@ export const WineryReducer =
                 const currentNodeCoordinates: any = (<UpdateNodeCoordinatesAction>action).otherAttributes;
                 const nodeId = currentNodeCoordinates.id;
                 const otherAttributes = {
-                    location: currentNodeCoordinates.location,
                     x: currentNodeCoordinates.x,
                     y: currentNodeCoordinates.y
                 };
@@ -521,7 +375,7 @@ export const WineryReducer =
                         ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .map(nodeTemplate => nodeTemplate.id === nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('otherAttributes', otherAttributes)
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('coordinates', otherAttributes)
                                 : nodeTemplate
                             )
                     }
@@ -583,7 +437,7 @@ export const WineryReducer =
                 };
             case WineryActions.SEND_CURRENT_NODE_ID :
                 const currentNodeData: string = (<SendCurrentNodeIdAction>action).currentNodeData;
-                console.log({ ...lastState, currentNodeId: currentNodeData });
+                // console.log({...lastState, currentNodeId: currentNodeData});
                 return <WineryState>{
                     ...lastState,
                     currentNodeData: currentNodeData
