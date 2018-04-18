@@ -30,4 +30,4 @@ Negative consequences:
 
 ## Links 
 
-* See also [ADR-0018](0018-use-p2-maven-plugin-for-update-site-generation.md) 
+* See also [ADR-1001](1001-use-p2-maven-plugin-for-update-site-generation.md)
