@@ -1,5 +1,5 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  ~ Copyright (c) 2017 Contributors to the Eclipse Foundation
+  ~ Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
   ~
   ~ See the NOTICE file(s) distributed with this work for additional
   ~ information regarding copyright ownership.
@@ -15,15 +15,18 @@
     <div class="flash">
         Help people interested in this {{ toscaType | toscaTypeToReadableName }} understand this {{ toscaType |
         toscaTypeToReadableName }} by adding a README.
-        <button class="btn btn-sm btn-primary flash-action" (click)="readmeAvailable=true;isEditable=true;">Add a
-            README
+        <button class="btn btn-sm btn-primary flash-action" [disabled]="!sharedData?.currentVersion?.editable"
+                (click)="readmeAvailable=true;isEditable=true;">
+            Add a README
         </button>
     </div>
 </div>
 
 <div *ngIf="!isEditable && readmeAvailable">
     <div class="right">
-        <button class="btn fa fa-pencil" aria-hidden="true" name="edit" (click)="isEditable = true;"></button>
+        <button class="btn fa fa-pencil" aria-hidden="true" name="edit"
+                [disabled]="!sharedData?.currentVersion?.editable"
+                (click)="isEditable = true;"></button>
     </div>
     <winery-markdown [markdownContent]="readmeContent"></winery-markdown>
 
@@ -32,8 +35,7 @@
 <div *ngIf="isEditable">
     <div class="right">
         <button class="btn fa fa-floppy-o" aria-hidden="true" name="save" (click)="saveReadmeFile()"> Save</button>
-        <button class="btn fa fa-ban" name="cancel" aria-hidden="true" (click)="cancelEdit()">
-            Cancel</button>
+        <button class="btn fa fa-ban" name="cancel" aria-hidden="true" (click)="cancelEdit()"> Cancel</button>
     </div>
 
     <div>
