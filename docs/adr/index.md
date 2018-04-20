@@ -37,5 +37,5 @@ This lists the architectural decisions for OpenTOSCA Winery.
 
 <!-- aderlogstop -->
 
-[template.md](template) contains the template.
+[template.md](template.md) contains the template.
 More information on MADR is available at <https://adr.github.io/madr/>.
