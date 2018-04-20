@@ -31,7 +31,9 @@ RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && rm -rf ${CATALINA_HOME}/webapps/* \
     && sed -ie "s/securerandom.source=file:\/dev\/random/securerandom.source=file:\/dev\/.\/urandom/g" /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/java.security \
     && git lfs install \
-    && mkdir -p /var/opentosca/repository
+    && mkdir -p /var/opentosca/repository \
+    && cd /var/opentosca/repository \
+    && git init
 
 COPY --from=builder /opt/winery ${CATALINA_HOME}/webapps/winery
 COPY --from=builder /tmp/winery/org.eclipse.winery.repository.ui/target/winery-ui.war ${CATALINA_HOME}/webapps/ROOT.war
