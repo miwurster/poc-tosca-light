@@ -26,16 +26,13 @@ This lists the architectural decisions for Eclipse Winery.
 - [ADR-0019](0019-version-in-the-name.md) - Version Identifier in the Name
 
 <!-- adrlogstop -->
-# OpenTOSCA internal ADRs
 
-This lists the architectural decisions for OpenTOSCA Winery.
+## OpenTOSCA internal ADRs
 
-<!-- adrlog -->
+The USTUTT fork of Eclipse Winery needs additional ADs caused by the fork:
 
 - [ADR-1001](1001-use-p2-maven-plugin-for-update-site-generation.md) - Use p2-maven-plugin for Eclipse update-site generation 
 - [ADR-1002](1002-publish-maven-artifacts-to-github.md) - Publish Maven artifacts to GitHub
-
-<!-- aderlogstop -->
 
 [template.md](template.md) contains the template.
 More information on MADR is available at <https://adr.github.io/madr/>.
