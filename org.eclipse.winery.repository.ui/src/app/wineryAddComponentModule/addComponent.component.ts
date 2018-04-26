@@ -22,7 +22,7 @@ import { AbstractControl, NgForm, ValidatorFn } from '@angular/forms';
 import { Utils } from '../wineryUtils/utils';
 import { isNullOrUndefined } from 'util';
 import { SectionData } from '../section/sectionData';
-import { ModalDirective } from 'ngx-bootstrap';
+import { ModalDirective, TooltipConfig } from 'ngx-bootstrap';
 import { WineryNamespaceSelectorComponent } from '../wineryNamespaceSelector/wineryNamespaceSelector.component';
 import { InheritanceService } from '../instance/sharedComponents/inheritance/inheritance.service';
 import { WineryVersion } from '../wineryInterfaces/wineryVersion';
@@ -31,12 +31,20 @@ import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ExistService } from '../wineryUtils/existService';
 import { catchError, retry } from 'rxjs/operators';
 
+export function getToolTip(): TooltipConfig {
+    return Object.assign(new TooltipConfig(), { placement: 'right' });
+}
+
 @Component({
     selector: 'winery-add-component',
     templateUrl: 'addComponent.component.html',
     providers: [
         SectionService,
         InheritanceService,
+        {
+            provide: TooltipConfig,
+            useFactory: getToolTip
+        }
     ]
 })
 
