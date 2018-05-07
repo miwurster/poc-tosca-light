@@ -40,7 +40,7 @@ usage: winery
  -h,--help         prints this help
  -p,--path <arg>   use given path as repository path
  -v,--verbose      be verbose: Output the checked elements
- ```
+```
 
 ## Differences to Eclipse Winery
 
