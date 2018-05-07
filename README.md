@@ -16,7 +16,7 @@ The source for the documentation can be found at [docs/](docs).
 
 1. `docker build -t winery .`.
    In case, there are issues, you can also try `docker build --no-cache -t winery Dockerfiles/full`
-2. `docker run -p 9999:8080 winery` to run winery on http://localhost:9999/
+2. `docker run -p 8080:8080 winery` to run winery on http://localhost:8080/
 
 ## Running CLI via docker
 
