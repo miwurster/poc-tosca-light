@@ -18,6 +18,10 @@ The source for the documentation can be found at [docs/](docs).
    In case, there are issues, you can also try `docker build --no-cache -t winery Dockerfiles/full`
 2. `docker run -p 8080:8080 winery` to run winery on http://localhost:8080/
 
+You can also use the pre-built image and bin it to a local repository:
+
+    docker run -it -p 8080:8080 -v C:/winery-repository:/root/winery-repository opentosca/winery
+
 ## Running CLI via docker
 
 1. `docker build -t winery-consistencycheck -f Dockerfile.consistencycheck .`
