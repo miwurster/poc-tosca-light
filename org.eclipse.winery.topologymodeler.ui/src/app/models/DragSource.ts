@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,17 +12,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.rest.resources.admin;
-
-import org.eclipse.winery.repository.rest.resources.AbstractResourceTest;
-import org.junit.Test;
-
-public class NamespaceResourceTest extends AbstractResourceTest {
-
-    @Test
-    public void getNamespaceList() throws Exception {
-        this.setRevisionTo("8b57ea031ea0786a46ef8338ed322db886a77cd6");
-        this.assertGet("admin/namespaces/?all", "entitytypes/admin/namspacesList.json");
-    }
-
+/**
+ * Internal representation of drag source infos
+ */
+export interface DragSource {
+    dragSource: string;
+    nodeId: string;
 }
