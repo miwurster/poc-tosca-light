@@ -50,7 +50,9 @@ usage: winery
 
 The branch `ustutt` differs from eclipse/winery in the following files:
 
+- [.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) - extended for USTUTT students
 - [README.md](README.md) - This text file
+- [.dockerignore](dockerignore) - Introduced because of Docker support
 - [.travis.settings.yml](.travis.settings.yml) - Different Travis settings
 - [.travis.yml](.travis.yml) - Different AWS S3 upload directory
 - [Dockerfile](Dockerfile) - Custom Docker build for the OpenTOSCA organization
