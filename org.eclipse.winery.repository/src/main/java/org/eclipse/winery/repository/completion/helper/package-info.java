@@ -13,6 +13,7 @@
  *******************************************************************************/
 
 /**
- * this package contains classes to complete a topology template
+ * This package contains helper classes and methods to assist the completion.
  */
-package org.eclipse.winery.topologymodeler.addons.topologycompleter;
+package org.eclipse.winery.repository.completion.helper;
+

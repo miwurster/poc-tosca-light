@@ -12,10 +12,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer;
+package org.eclipse.winery.repository.completion.analyzer;
 
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.model.tosca.*;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.Utils;
+import org.eclipse.winery.repository.completion.helper.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ public class RequirementAnalyzer {
 
             List<TRequirement> requirements = new ArrayList<>();
 
-            TNodeType nodeType = Utils.getNodeTypeForId(toscaAnalyzer.getNodeTypes(), nodeTemplate.getType());
+            TNodeType nodeType = toscaAnalyzer.getRepository().getElement(new NodeTypeId(nodeTemplate.getType()));
 
             if (nodeType.getRequirementDefinitions() != null && !nodeType.getRequirementDefinitions().getRequirementDefinition().isEmpty()) {
 

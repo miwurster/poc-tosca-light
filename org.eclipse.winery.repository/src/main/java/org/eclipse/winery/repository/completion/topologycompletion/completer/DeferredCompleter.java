@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion.completer;
+package org.eclipse.winery.repository.completion.topologycompletion.completer;
 
 import org.eclipse.winery.model.tosca.*;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.TOSCAAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.NodeTemplateConnector;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.Utils;
+import org.eclipse.winery.repository.completion.analyzer.TOSCAAnalyzer;
+import org.eclipse.winery.repository.completion.helper.NodeTemplateConnector;
+import org.eclipse.winery.repository.completion.helper.Utils;
 
 import java.util.*;
 

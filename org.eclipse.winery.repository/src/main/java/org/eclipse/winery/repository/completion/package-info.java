@@ -13,7 +13,6 @@
  *******************************************************************************/
 
 /**
- * This package contains classes and methods to analyze a TOSCA {@link org.opentosca.model.tosca.TTopologyTemplate} for its content.
+ * this package contains classes to complete a topology template
  */
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer;
-
+package org.eclipse.winery.repository.completion;

@@ -12,10 +12,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.helper;
+package org.eclipse.winery.repository.completion.helper;
 
 import org.eclipse.winery.model.tosca.*;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.TOSCAAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.TOSCAAnalyzer;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
@@ -60,14 +60,9 @@ public class Utils {
 
         return possibleNodeTypes;
     }
-
-    /**
-     * Generates a random {@link UUID} exclusively used by the {@link TemplateBuilder}.
-     *
-     * @return the generated {@link UUID} id
-     */
+    
     public static String createRandomID() {
-        return UUID.randomUUID().toString();
+        return UUID.randomUUID().toString().replaceAll("-", "");
     }
 
     /**

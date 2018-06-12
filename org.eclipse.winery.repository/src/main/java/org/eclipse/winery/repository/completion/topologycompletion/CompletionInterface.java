@@ -12,22 +12,26 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion;
+package org.eclipse.winery.repository.completion.topologycompletion;
 
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
+import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
+import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
+import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.*;
-import org.eclipse.winery.repository.client.IWineryRepositoryClient;
-import org.eclipse.winery.repository.client.WineryRepositoryClientFactory;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.DeferredAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.PlaceHolderAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.RequirementAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.TOSCAAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.Constants;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.JAXBHelper;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.RESTHelper;
+import org.eclipse.winery.repository.backend.IRepository;
+import org.eclipse.winery.repository.completion.analyzer.DeferredAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.PlaceHolderAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.RequirementAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.TOSCAAnalyzer;
+import org.eclipse.winery.repository.completion.helper.Constants;
+
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 /**
  * This class is the entry point of the TOSCA topology completion which is called by the Winery Topology Modeler.
@@ -74,15 +78,15 @@ public class CompletionInterface {
      * @param serviceTemplateName the name of the ServiceTemplate for REST calls
      * @param topologyTemplateURL the URL where the template is saved to
      * @param overwriteTopology   determines in which way the {@link TTopologyTemplate} is saved. The current {@link TTopologyTemplate} can either be overwritten or a new topology can be created.
-     * @param topologyName        the name of the {@link TTopologyTemplate} when a new {@link TTopologyTemplate} shall be created
+     * @param newServiceTemplateId        the name of the {@link TTopologyTemplate} when a new {@link TTopologyTemplate} shall be created
      * @param topologyNamespace   the namespace of the {@link TTopologyTemplate} when a new {@link TTopologyTemplate} shall be created
      * @param repositoryURL       the URL to the repository to receive and write TOSCA specific information
      * @param stepByStep          whether the topology completion is processed step-by-step or not
      * @param restarted           whether the topology completion is restarted or started for the first time
      * @return a message to Winery that contains information whether the topology is complete, the user has to interact or an error occurred.
      */
-    public String complete(String topology, String serviceTemplateName, String topologyTemplateURL, Boolean overwriteTopology,
-                           String topologyName, String topologyNamespace, String repositoryURL, boolean stepByStep, boolean restarted) {
+    public String complete(ServiceTemplateId serviceTemplateID, IRepository repository, boolean overwriteTopology,
+                           ServiceTemplateId newServiceTemplateId, boolean stepByStep, boolean restarted) {
 
         LOGGER.info("Starting completion...");
 
@@ -90,32 +94,24 @@ public class CompletionInterface {
         // STEP 1: Receive topology from Winery
         ////////////////////////////////////////
 
-        LOGGER.info("Saving to: " + topologyTemplateURL);
-
-        LOGGER.info("The service template to be completed is: " + serviceTemplateName);
-
+        LOGGER.info("Saving to: " + serviceTemplateID.toReadableString());
+        
         // receive types from repository
-        IWineryRepositoryClient client = WineryRepositoryClientFactory.getWineryRepositoryClient();
-        client.addRepository(repositoryURL);
-
-        List<TNodeType> nodeTypeList = (List<TNodeType>) client.getAllTypes(TNodeType.class);
-        List<TRelationshipType> relationshipTypeList = (List<TRelationshipType>) client.getAllTypes(TRelationshipType.class);
-        List<TRequirementType> requirementTypeList = (List<TRequirementType>) client.getAllTypes(TRequirementType.class);
-
+        SortedSet<NodeTypeId> nodeTypeList = repository.getAllDefinitionsChildIds(NodeTypeId.class);
+        SortedSet<RelationshipTypeId> relationshipTypeList = repository.getAllDefinitionsChildIds(RelationshipTypeId.class);
+        SortedSet<RequirementTypeId> requirementTypeList = repository.getAllDefinitionsChildIds(RequirementTypeId.class);
+        
         /////////////////////////////////////
         // Step 2: Analyze topology content
         /////////////////////////////////////
 
-        LOGGER.info("The modelled topology as XML: " + topology);
-
-        TTopologyTemplate topologyTemplate = JAXBHelper.getTopologyAsJaxBObject(topology);
+        TTopologyTemplate topologyTemplate = repository.getElement(serviceTemplateID).getTopologyTemplate();
 
         LOGGER.info("Analyzing topology...");
 
         // analyze the received topology
-        TOSCAAnalyzer toscaAnalyzer = new TOSCAAnalyzer();
+        TOSCAAnalyzer toscaAnalyzer = new TOSCAAnalyzer(repository);
         toscaAnalyzer.analyzeTOSCATopology(topologyTemplate);
-        toscaAnalyzer.setTypes(nodeTypeList, relationshipTypeList, requirementTypeList);
 
         // if the topology is already complete, a message is displayed
         if (checkCompletnessOfTopology(toscaAnalyzer) && !restarted) {
@@ -164,8 +160,16 @@ public class CompletionInterface {
 
             if (completedTopology.size() == 1) {
                 // solution is unique, save the topology
-                RESTHelper.saveCompleteTopology(completedTopology.get(0), topologyTemplateURL, overwriteTopology, topologyName, topologyNamespace, repositoryURL);
+
+                TServiceTemplate completedServiceTemplate = repository.getElement(serviceTemplateID);
+                completedServiceTemplate.setTopologyTemplate(completedTopology.get(0));
+                try {
+                    repository.setElement(serviceTemplateID, completedServiceTemplate);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return Constants.CompletionMessages.SUCCESS.toString();
+                
             } else if (completedTopology.size() > 1) {
                 // if there are several topology solutions, let the user choose
                 this.topologyTemplateChoices = completedTopology;

@@ -12,12 +12,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.placeholderhandling;
+package org.eclipse.winery.repository.completion.placeholderhandling;
 
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeType;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.TOSCAAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.Constants;
+import org.eclipse.winery.repository.completion.analyzer.TOSCAAnalyzer;
+import org.eclipse.winery.repository.completion.helper.Constants;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -39,6 +39,8 @@ import org.eclipse.winery.model.tosca.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
+import org.eclipse.winery.repository.backend.RepositoryFactory;
+import org.eclipse.winery.repository.completion.topologycompletion.CompletionInterface;
 import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.composeadapter.CompositionData;
@@ -296,5 +298,18 @@ public class TopologyTemplateResource {
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
+    }
+    
+    @POST
+    @Path("complete/")
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    public Response complete () {
+        CompletionInterface completionInterface = new CompletionInterface();
+        ServiceTemplateId serviceTemplateId = (ServiceTemplateId)  this.serviceTemplateRes.getId();
+        completionInterface.complete(serviceTemplateId, RepositoryFactory.getRepository(),true,null,false,false);
+
+        return null;
+        
     }
 }

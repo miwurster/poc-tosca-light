@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.helper;
+package org.eclipse.winery.repository.completion.helper;
 
 import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TRelationshipType;
 import org.eclipse.winery.model.tosca.TRequirement;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.TOSCAAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.TOSCAAnalyzer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +40,7 @@ public class NodeTemplateConnector {
     public static List<TRelationshipType> findRelationshipType(TNodeTemplate source, TNodeTemplate target, TOSCAAnalyzer toscaAnalyzer, TRequirement requirement) {
 
         List<TRelationshipType> suitableRelationshipTypes = new ArrayList<TRelationshipType>();
+        
         List<TRelationshipType> allRelationshipTypes = toscaAnalyzer.getRelationshipTypes();
 
         // in case the connection to a placeholder is searched, no requirement exists

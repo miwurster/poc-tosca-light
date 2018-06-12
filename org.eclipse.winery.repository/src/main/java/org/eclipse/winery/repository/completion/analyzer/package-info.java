@@ -13,7 +13,7 @@
  *******************************************************************************/
 
 /**
- * This package contains helper classes and methods to assist the completion.
+ * This package contains classes and methods to analyze a TOSCA {@link org.opentosca.model.tosca.TTopologyTemplate} for its content.
  */
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.helper;
+package org.eclipse.winery.repository.completion.analyzer;
 

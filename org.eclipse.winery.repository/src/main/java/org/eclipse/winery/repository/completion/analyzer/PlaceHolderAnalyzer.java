@@ -12,12 +12,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer;
+package org.eclipse.winery.repository.completion.analyzer;
 
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeType;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.Constants;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.helper.Utils;
+import org.eclipse.winery.repository.completion.helper.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class PlaceHolderAnalyzer {
         // Check the type of the NodeTemplates, write them to a list if the type is derived from the common place holder type.
         for (TNodeTemplate nodeTemplate : toscaAnalyzer.getNodeTemplates()) {
 
-            TNodeType nodeType = Utils.getNodeTypeForId(toscaAnalyzer.getNodeTypes(), nodeTemplate.getType());
+            TNodeType nodeType = toscaAnalyzer.getRepository().getElement(new NodeTypeId(nodeTemplate.getType()));
 
             if (nodeType != null && nodeType.getDerivedFrom() != null && nodeType.getDerivedFrom().getTypeRef().getLocalPart().equals(Constants.PLACE_HOLDER_QNAME.getLocalPart()) &&
                 nodeType.getDerivedFrom().getTypeRef().getNamespaceURI().equals(Constants.PLACE_HOLDER_QNAME.getNamespaceURI())) {

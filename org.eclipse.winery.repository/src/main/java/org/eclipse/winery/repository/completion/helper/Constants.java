@@ -12,9 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.helper;
-
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion.CompletionInterface;
+package org.eclipse.winery.repository.completion.helper;
 
 import javax.xml.namespace.QName;
 

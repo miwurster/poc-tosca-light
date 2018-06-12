@@ -12,12 +12,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer;
+package org.eclipse.winery.repository.completion.analyzer;
 
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
+import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
+import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.model.tosca.*;
+import org.eclipse.winery.repository.backend.IRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This class contains several methods to analyze the content of a TOSCA {@link TTopologyTemplate} and to fill a data model
@@ -25,14 +30,30 @@ import java.util.List;
  */
 public class TOSCAAnalyzer {
 
-    // lists containing the elements of a topology
-    List<TNodeTemplate> nodeTemplates = new ArrayList<TNodeTemplate>();
-    List<TRelationshipTemplate> relationshipTemplates = new ArrayList<TRelationshipTemplate>();
-    List<TRequirement> requirements = new ArrayList<TRequirement>();
+    private IRepository repository;
+    private List<TRequirementType> requirementTypes;
+    private List<TRelationshipType> relationshipTypes;
+    private List<TNodeType> nodeTypes;
 
-    List<TNodeType> nodeTypes;
-    List<TRelationshipType> relationshipTypes;
-    List<TRequirementType> requirementTypes;
+    private List <TNodeTemplate> nodeTemplates;
+    private List<TRelationshipTemplate> relationshipTemplates;
+    private List<TRequirement> requirements;
+
+    public TOSCAAnalyzer(IRepository repository) {
+
+        requirementTypes = repository.getAllDefinitionsChildIds(RequirementTypeId.class).stream().map(id -> repository.getElement(id)).collect(Collectors.toList());
+        relationshipTypes = repository.getAllDefinitionsChildIds(RelationshipTypeId.class).stream().map(id -> repository.getElement(id)).collect(Collectors.toList());
+        nodeTypes = repository.getAllDefinitionsChildIds(NodeTypeId.class).stream().map(id -> repository.getElement(id)).collect(Collectors.toList());
+
+        // lists containing the elements of a topology
+        nodeTemplates = new ArrayList<TNodeTemplate>();
+        relationshipTemplates = new ArrayList<TRelationshipTemplate>();
+        requirements = new ArrayList<TRequirement>();
+        
+        this.repository = repository;
+    }
+    
+
 
     /**
      * This method analyzes the TOSCA {@link TTopologyTemplate} for {@link TNodeTemplate}s, {@link TRelationshipTemplate}s
@@ -57,19 +78,6 @@ public class TOSCAAnalyzer {
                 relationshipTemplates.add((TRelationshipTemplate) entityTemplate);
             }
         }
-    }
-
-    /**
-     * Setter for the types received from the Winery repository.
-     *
-     * @param nodeTypeXMLStrings         a list of {@link TNodeType}s from the Winery repository
-     * @param relationshipTypeXMLStrings a list of {@link TRelationshipType}s from the Winery repository
-     * @param requirementTypeList        a list of {@link TRequirementType}s from the Winery repository
-     */
-    public void setTypes(List<TNodeType> nodeTypes, List<TRelationshipType> relationshipTypes, List<TRequirementType> requirementTypes) {
-        this.nodeTypes = nodeTypes;
-        this.relationshipTypes = relationshipTypes;
-        this.requirementTypes = requirementTypes;
     }
 
     /**
@@ -98,34 +106,7 @@ public class TOSCAAnalyzer {
     public List<TRequirement> getRequirements() {
         return requirements;
     }
-
-    /**
-     * Returns the {@link TRelationshipType}s of the topology.
-     *
-     * @return the {@link TRelationshipType}s as a list
-     */
-    public List<TRelationshipType> getRelationshipTypes() {
-        return relationshipTypes;
-    }
-
-    /**
-     * Returns the {@link TNodeType}s of the topology.
-     *
-     * @return the {@link TNodeType}s as a list
-     */
-    public List<TNodeType> getNodeTypes() {
-        return nodeTypes;
-    }
-
-    /**
-     * Returns the {@link TRequirementType}s of the topology.
-     *
-     * @return the {@link TRequirementType}s as a list
-     */
-    public List<TRequirementType> getRequirementTypes() {
-        return requirementTypes;
-    }
-
+    
     /**
      * Clears all the templates from the data model before the analysis of a topology is restarted.
      */
@@ -133,5 +114,21 @@ public class TOSCAAnalyzer {
         nodeTemplates.clear();
         relationshipTemplates.clear();
         requirements.clear();
+    }
+
+    public IRepository getRepository() {
+        return repository;
+    }
+
+    public List<TRequirementType> getRequirementTypes() {
+        return requirementTypes;
+    }
+
+    public List<TRelationshipType> getRelationshipTypes() {
+        return relationshipTypes;
+    }
+
+    public List<TNodeType> getNodeTypes() {
+        return nodeTypes;
     }
 }

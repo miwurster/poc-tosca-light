@@ -15,5 +15,5 @@
 /**
  * This package contains classes and methods to actually execute the completion for several use cases.
  */
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion.completer;
+package org.eclipse.winery.repository.completion.topologycompletion.completer;
 

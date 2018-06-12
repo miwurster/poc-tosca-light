@@ -12,17 +12,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion;
+package org.eclipse.winery.repository.completion.topologycompletion;
 
 import org.eclipse.winery.model.tosca.*;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.DeferredAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.PlaceHolderAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.RequirementAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.analyzer.TOSCAAnalyzer;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion.completer.DeferredCompleter;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion.completer.PlaceHolderCompleter;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion.completer.RequirementCompleter;
-import org.eclipse.winery.topologymodeler.addons.topologycompleter.topologycompletion.completer.StepByStepCompleter;
+import org.eclipse.winery.repository.completion.analyzer.DeferredAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.PlaceHolderAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.RequirementAnalyzer;
+import org.eclipse.winery.repository.completion.analyzer.TOSCAAnalyzer;
+import org.eclipse.winery.repository.completion.topologycompletion.completer.DeferredCompleter;
+import org.eclipse.winery.repository.completion.topologycompletion.completer.PlaceHolderCompleter;
+import org.eclipse.winery.repository.completion.topologycompletion.completer.RequirementCompleter;
+import org.eclipse.winery.repository.completion.topologycompletion.completer.StepByStepCompleter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
