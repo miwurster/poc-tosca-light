@@ -30,6 +30,8 @@ RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf ${CATALINA_HOME}/webapps/* \
     && sed -ie "s/securerandom.source=file:\/dev\/random/securerandom.source=file:\/dev\/.\/urandom/g" /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/java.security \
+    && echo "CATALINA_OPTS=-Djava.security.egd=file:/dev/./urandom" > ${CATALINA_HOME}/bin/setenv.sh \
+    && chmod a+x ${CATALINA_HOME}/bin/setenv.sh \
     && git lfs install \
     && mkdir -p /var/opentosca/repository \
     && cd /var/opentosca/repository \

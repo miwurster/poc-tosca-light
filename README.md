@@ -85,7 +85,7 @@ You are solely responsible for determining the appropriateness of using or redis
 
 ## License
 
-Copyright (c) 2012-2017 Contributors to the Eclipse Foundation
+Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
 
 See the NOTICE file(s) distributed with this work for additional
 information regarding copyright ownership.
