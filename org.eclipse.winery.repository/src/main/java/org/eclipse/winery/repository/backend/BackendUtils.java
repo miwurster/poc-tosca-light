@@ -1366,4 +1366,77 @@ public class BackendUtils {
         }
         repository.setElement(serviceTemplateIdB, serviceTemplateB);
     }
+
+    public static ArtifactTemplateId generateArtifactTemplate(IRepository repository, QName artifactType, String id, boolean overwrite) {
+        ArtifactTemplateId atId = BackendUtils.getDefinitionsChildId(ArtifactTemplateId.class, Namespaces.URI_OPENTOSCA_ARTIFACTTEMPLATE, id, false);
+        try {
+            if (repository.exists(atId)) {
+                if (overwrite) {
+                    repository.forceDelete(atId);
+                }
+                else {
+                    return atId;
+                }
+            }
+            repository.flagAsExisting(atId);
+            final TArtifactTemplate artifactTemplate = repository.getElement(atId);
+            artifactTemplate.setType(artifactType);
+            artifactTemplate.setName(id);
+            BackendUtils.initializeProperties(repository, artifactTemplate);
+            BackendUtils.persist(atId, artifactTemplate);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return atId;
+    }
+
+    public static RepositoryFileReference addFileToArtifactTemplate(ArtifactTemplateId atId, TArtifactTemplate artifactTemplate, String name, Object content) {
+        DirectoryId fileDir = new ArtifactTemplateFilesDirectoryId(atId);
+
+        if (Objects.isNull(artifactTemplate.getArtifactReferences())) {
+            artifactTemplate.setArtifactReferences(new TArtifactTemplate.ArtifactReferences());
+        }
+        List<TArtifactReference> artRefList = artifactTemplate.getArtifactReferences().getArtifactReference();
+
+        RepositoryFileReference ref = new RepositoryFileReference(fileDir, name);
+        String path = Util.getUrlPath(ref);
+        
+        if (content instanceof String) {
+            putTextToFileInRepository(ref,(String) content);
+        }
+        else {
+            ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) content);
+            putBytesToFileInRepository(ref,bis);
+        }
+
+        TArtifactReference artRef = new TArtifactReference();
+        artRef.setReference(path);
+        artRefList.add(artRef);
+
+        try {
+            BackendUtils.persist(atId, artifactTemplate);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return ref;
+    }
+
+    private static void putTextToFileInRepository(RepositoryFileReference ref, String content) {
+        try {
+            RepositoryFactory.getRepository().putContentToFile(ref,content, MediaType.TEXT_PLAIN);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void putBytesToFileInRepository(RepositoryFileReference ref, InputStream is) {
+        try {
+            RepositoryFactory.getRepository().putContentToFile(ref,is, MediaType.OCTET_STREAM);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
 }

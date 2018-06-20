@@ -19,10 +19,8 @@ import org.eclipse.winery.common.ids.definitions.*;
 import org.eclipse.winery.common.ids.definitions.imports.GenericImportId;
 import org.eclipse.winery.common.ids.elements.PlanId;
 import org.eclipse.winery.common.ids.elements.PlansId;
-import org.eclipse.winery.model.tosca.Definitions;
-import org.eclipse.winery.model.tosca.TEntityType;
+import org.eclipse.winery.model.tosca.*;
 import org.eclipse.winery.model.tosca.TEntityType.PropertiesDefinition;
-import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.model.tosca.constants.QNames;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
@@ -35,6 +33,7 @@ import org.eclipse.winery.repository.datatypes.ids.elements.ArtifactTemplateFile
 import org.eclipse.winery.repository.datatypes.ids.elements.DirectoryId;
 import org.eclipse.winery.repository.datatypes.ids.elements.VisualAppearanceId;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
+import org.eclipse.winery.repository.security.csar.*;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.w3c.dom.Document;
@@ -43,8 +42,7 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.*;
 
@@ -62,13 +60,15 @@ public class ToscaExportUtil {
     // this allows to use other paths in the CSAR than on the local storage
     private Map<RepositoryFileReference, String> referencesToPathInCSARMap = null;
 
+    private Map<String, String> definitionsDigests = new HashMap<>();
+
     /**
      * Currently a very simple approach to configure the export
      */
     private Map<String, Object> exportConfiguration;
 
     public enum ExportProperties {
-        INCLUDEXYCOORDINATES, REPOSITORY_URI
+        INCLUDEXYCOORDINATES, REPOSITORY_URI, APPLY_SECURITY_POLICIES
     }
 
     /**
@@ -160,7 +160,7 @@ public class ToscaExportUtil {
                 if (!loc.startsWith("../")) {
                     LOGGER.warn("Location is not relative for id " + tcId.toReadableString());
                 }
-                ;
+
                 loc = loc.substring(3);
                 loc = uri + loc;
                 // now the location is an absolute URL
@@ -250,9 +250,35 @@ public class ToscaExportUtil {
 
         // END: Definitions modification
 
+        // Enforce security policies for properties and artifacts 
+        if (this.exportConfiguration.containsKey(ExportProperties.APPLY_SECURITY_POLICIES.name()) &&
+            (Boolean) this.exportConfiguration.get(ExportProperties.APPLY_SECURITY_POLICIES.name())) {
+
+            SecurityRequirementsExportEnforcer enforcer = new SecurityRequirementsExportEnforcer(repository);
+            enforcer.enforceSecurityPolicies(tcId, entryDefinitions, referencedDefinitionsChildIds);
+            
+            // add new imports for processing
+            Collection<DefinitionsChildId> addedIds = enforcer.getAddedIdsForImports();
+            Collection<TImport> addedImports = new ArrayList<>();
+            addAllToImports(repository, addedIds, addedImports);
+            entryDefinitions.getImport().addAll(addedImports);
+            
+            // add all generated files for processing
+            referencesToPathInCSARMap.putAll(enforcer.getAddedReferencesToPathInCSARMap());
+            
+            // calculate digests of a definition
+            // this is required for subsequent generation of the manifest's signature files 
+            Map.Entry<String, String> entry = enforcer.calculateDefinitionDigest(entryDefinitions, tcId);
+            definitionsDigests.put(entry.getKey(), entry.getValue());
+        }
+
         this.writeDefinitionsElement(entryDefinitions, out);
 
         return referencedDefinitionsChildIds;
+    }
+
+    public Map<String, String> getDefinitionsDigests() {
+        return this.definitionsDigests;
     }
 
     /**
@@ -269,6 +295,12 @@ public class ToscaExportUtil {
             this.addVisualAppearanceToCSAR(repository, (NodeTypeId) id);
         } else if (id instanceof ArtifactTemplateId) {
             this.prepareForExport(repository, (ArtifactTemplateId) id);
+        }
+    }
+
+    private void addAllToImports(IRepository repository, Collection<DefinitionsChildId> ids, Collection<TImport> imports) {
+        for (DefinitionsChildId id : ids) {
+            addToImports(repository, id, imports);
         }
     }
 

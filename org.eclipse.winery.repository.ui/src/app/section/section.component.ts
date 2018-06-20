@@ -52,6 +52,7 @@ export class SectionComponent implements OnInit, OnDestroy {
     componentData: SectionData[];
     elementToRemove: SectionData;
     overwriteValue = false;
+    secure = false;
 
     importXsdSchemaType: string;
 
@@ -129,11 +130,14 @@ export class SectionComponent implements OnInit, OnDestroy {
     onRemoveElement() {
     }
 
-    overwriteValueChanged() {
+    parametersValueChanged() {
 
         this.fileUploader.getUploader().setOptions({
             url: this.fileUploadUrl,
-            additionalParameter: {'overwrite': this.overwriteValue}
+            additionalParameter: {
+                'overwrite': this.overwriteValue,
+                'secure' : this.secure
+            }
         });
     }
 

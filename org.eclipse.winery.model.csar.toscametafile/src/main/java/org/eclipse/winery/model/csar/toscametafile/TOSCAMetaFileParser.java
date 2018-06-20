@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Parses and validates a TOSCA meta file.
@@ -33,7 +34,6 @@ import java.util.Map;
 public class TOSCAMetaFileParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TOSCAMetaFileParser.class);
-
 
     /**
      * Parses and validates the <code>toscaMetaFile</code>.
@@ -48,8 +48,8 @@ public class TOSCAMetaFileParser {
         int numErrors = 0;
 
         FileReader reader = null;
-        ManifestParser parser = null;
-        ManifestContents manifestContent = null;
+        ManifestParser parser;
+        ManifestContents manifestContent;
         TOSCAMetaFile toscaMetaFileContent = null;
 
         try {
@@ -64,9 +64,32 @@ public class TOSCAMetaFileParser {
                 numErrors++;
             }
 
-            numErrors += this.validateBlock0(manifestContent);
-            numErrors += this.validateFileBlocks(manifestContent);
+            Map<String, String> mainAttr = manifestContent.getMainAttributes();
 
+            // signature file block 0 validation
+            if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION)) {
+                numErrors += this.validateSignatureBlock0(manifestContent);
+            }
+            // properties manifest file block 0 validation
+            else if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION)) {
+                numErrors += this.validatePropsManifestBlock0(manifestContent);
+            }
+            // properties signature file block 0 validation
+            else if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION)) {
+                numErrors += this.validatePropsSignatureBlock0(manifestContent);
+            }
+            // standard block 0 validation
+            else {
+                numErrors += this.validateBlock0(manifestContent);
+            }
+            
+            if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION) || mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION)) {
+                numErrors += this.validatePropsManifestFileBlocks(manifestContent);
+            }
+            else {
+                numErrors += this.validateFileBlocks(manifestContent);
+            }
+            
             if (numErrors == 0) {
                 TOSCAMetaFileParser.LOGGER.debug("Parsing TOSCA meta file \"{}\" completed without errors. TOSCA meta file is valid.", toscaMetaFile.getFileName().toString());
                 toscaMetaFileContent = new TOSCAMetaFile(manifestContent);
@@ -114,12 +137,12 @@ public class TOSCAMetaFileParser {
     private int validateBlock0(ManifestContents mf) {
         int numErrors = 0;
 
-        String metaFileVersion = null;
-        String csarVersion = null;
-        String createdBy = null;
-        String entryDefinitions = null;
-        String description = null;
-        String topology = null;
+        String metaFileVersion;
+        String csarVersion;
+        String createdBy;
+        String entryDefinitions;
+        String description;
+        String topology;
 
         Map<String, String> mainAttr = mf.getMainAttributes();
 
@@ -128,7 +151,7 @@ public class TOSCAMetaFileParser {
         if (metaFileVersion == null) {
             this.logAttrMissing(TOSCAMetaFileAttributes.TOSCA_META_VERSION, 0);
             numErrors++;
-        } else if (!(metaFileVersion = metaFileVersion.trim()).equals(TOSCAMetaFileAttributes.TOSCA_META_VERSION_VALUE)) {
+        } else if (!(metaFileVersion.trim()).equals(TOSCAMetaFileAttributes.TOSCA_META_VERSION_VALUE)) {
             this.logAttrWrongVal(TOSCAMetaFileAttributes.TOSCA_META_VERSION, 0, TOSCAMetaFileAttributes.TOSCA_META_VERSION_VALUE);
             numErrors++;
         }
@@ -138,7 +161,7 @@ public class TOSCAMetaFileParser {
         if (csarVersion == null) {
             this.logAttrMissing(TOSCAMetaFileAttributes.CSAR_VERSION, 0);
             numErrors++;
-        } else if (!(csarVersion = csarVersion.trim()).equals(TOSCAMetaFileAttributes.TOSCA_META_VERSION_VALUE)) {
+        } else if (!(csarVersion.trim()).equals(TOSCAMetaFileAttributes.TOSCA_META_VERSION_VALUE)) {
             this.logAttrWrongVal(TOSCAMetaFileAttributes.CSAR_VERSION, 0, TOSCAMetaFileAttributes.CSAR_VERSION_VALUE);
             numErrors++;
         }
@@ -148,7 +171,7 @@ public class TOSCAMetaFileParser {
         if (createdBy == null) {
             this.logAttrMissing(TOSCAMetaFileAttributes.CREATED_BY, 0);
             numErrors++;
-        } else if ((createdBy = createdBy.trim()).isEmpty()) {
+        } else if ((createdBy.trim()).isEmpty()) {
             this.logAttrValEmpty(TOSCAMetaFileAttributes.CREATED_BY, 0);
             numErrors++;
         }
@@ -175,6 +198,109 @@ public class TOSCAMetaFileParser {
         }
 
         return numErrors;
+    }
+
+    /**
+     * Validates block 0 of the signature of TOSCA meta file.
+     * <p>
+     * Required attributes in block 0:
+     * <ul>
+     * <li><code>Signature-Version</code> (value must be <code>1.0</code>)</li>
+     * <li><code>Created-By</code></li>
+     * <li><code>Entry-Definitions</code></li>
+     * <li><code>Digest-Algorithm</code></li>
+     * <li><code>Digest-Manifest</code></li>
+     * </ul>
+     * <p>
+     * Further, arbitrary attributes are also allowed.
+     *
+     * @param manifestContent to validate
+     * @return Number of errors occurred during validation.
+     */
+    private int validateSignatureBlock0(ManifestContents manifestContent) {
+        int numErrors = 0;
+        Map<String, String> attributes = manifestContent.getMainAttributes();
+        
+        // Validate signature header attributes
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION, TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION_VALUE, 0);
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.CREATED_BY, 0);
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.ENTRY_DEFINITIONS, 0);
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.DIGEST_ALGORITHM, 0);
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.DIGEST_MANIFEST, 0);
+
+        return numErrors;
+    }
+
+    private int validatePropsManifestBlock0(ManifestContents manifestContent) {
+        int numErrors = 0;
+        Map<String, String> attributes = manifestContent.getMainAttributes();
+
+        // Validate signature header attributes
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION, TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION_VALUE, 0);
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.CREATED_BY, 0);
+
+        return numErrors;
+    }
+    
+    private int validatePropsSignatureBlock0(ManifestContents manifestContent) {
+        int numErrors = 0;
+        Map<String, String> attributes = manifestContent.getMainAttributes();
+
+        // Validate signature header attributes
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION, TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION_VALUE, 0);
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.CREATED_BY, 0);
+
+        return numErrors;
+    }
+
+    private int validatePropsManifestFileBlocks(ManifestContents manifestContent) {
+        int blockNr = 0;
+        int numErrors = 0;
+
+        for (String name : manifestContent.getSectionNames()) {
+            blockNr++;
+            if ((name != null) && name.trim().isEmpty()) {
+                this.logAttrValEmpty(name, blockNr);
+                numErrors++;
+            }
+            Map<String, String> attributes = manifestContent.getAttributesForSection(name);
+            numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.DIGEST_ALGORITHM, blockNr);
+            numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.DIGEST, blockNr);
+            // digest of encrypted property is not always the case
+            // => no validation for TOSCAMetaFileAttributes.DIGEST_PROP_ENCRYPTED
+        }
+
+        return numErrors;
+    }
+
+    private int validateAttributeValue(Map<String, String> mainAttr, String attrName, int blockNr) {
+        String attribute = mainAttr.get(attrName);
+        if (Objects.isNull(attribute)) {
+            this.logAttrMissing(attrName, blockNr);
+            return 1;
+        }
+        else if (attribute.trim().isEmpty()) {
+            this.logAttrValEmpty(attrName, blockNr);
+            return 1;
+        }
+        return 0;
+    }
+
+    private int validateAttributeValue(Map<String, String> mainAttr, String attrName, String correctValue, int blockNr) {
+        String attribute = mainAttr.get(attrName);
+        if (Objects.isNull(attribute)) {
+            this.logAttrMissing(attrName, blockNr);
+            return 1;
+        }
+        else if (attribute.trim().isEmpty()) {
+            this.logAttrValEmpty(attrName, blockNr);
+            return 1;
+        }
+        else if (!attribute.trim().equals(correctValue)) {
+            this.logAttrWrongVal(attrName, blockNr, correctValue);
+            return 1;
+        }
+        return 0;
     }
 
     /**
@@ -229,8 +355,8 @@ public class TOSCAMetaFileParser {
      * Logs that attribute <code>attributeName</code> in block
      * <code>blockNr</code> is missing.
      *
-     * @param attributeName
-     * @param blockNr
+     * @param attributeName missing attribute's name.
+     * @param blockNr       block number.
      */
     private void logAttrMissing(String attributeName, int blockNr) {
         TOSCAMetaFileParser.LOGGER.warn("Required attribute {} in block {} is missing.", attributeName, blockNr);
@@ -241,9 +367,9 @@ public class TOSCAMetaFileParser {
      * <code>blockNr</code> has an invalid value. Correct is
      * <code>correctValue</code>.
      *
-     * @param attributeName
-     * @param blockNr
-     * @param correctValue
+     * @param attributeName attribute's name.
+     * @param blockNr       block number.
+     * @param correctValue  correct value.
      */
     private void logAttrWrongVal(String attributeName, int blockNr, String correctValue) {
         TOSCAMetaFileParser.LOGGER.warn("Attribute {} in block {} has an invalid value. Must be {}.", attributeName, blockNr, correctValue);

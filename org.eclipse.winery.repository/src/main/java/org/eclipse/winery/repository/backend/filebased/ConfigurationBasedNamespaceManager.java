@@ -37,6 +37,10 @@ public class ConfigurationBasedNamespaceManager implements NamespaceManager {
         // example namespaces opened for users to create new types
         this.configuration.setProperty(Namespaces.EXAMPLE_NAMESPACE_URI, "ex");
         this.configuration.setProperty(Namespaces.URI_OPENTOSCA_NODETYPE, "otnt");
+
+        // security policy types and templates
+        this.configuration.setProperty(Namespaces.URI_OPENTOSCA_SECURE_POLICYTYPE, "sptype");
+        this.configuration.setProperty(Namespaces.URI_OPENTOSCA_SECURE_POLICYTEMPLATE, "sptemplate");
     }
 
     @Override

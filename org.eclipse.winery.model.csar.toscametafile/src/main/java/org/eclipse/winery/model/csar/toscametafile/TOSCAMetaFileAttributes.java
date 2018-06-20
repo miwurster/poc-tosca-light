@@ -24,12 +24,33 @@ public class TOSCAMetaFileAttributes {
     final public static String CSAR_VERSION = "CSAR-Version";
     final public static String CSAR_VERSION_VALUE = "1.0";
     final public static String CREATED_BY = "Created-By";
+    final public static String CREATOR_NAME = "Winery";
     final public static String ENTRY_DEFINITIONS = "Entry-Definitions";
     final public static String TOPOLOGY = "Topology";
     final public static String DESCRIPTION = "Description";
+    
+    // of properties meta block 0
+    final public static String TOSCA_PROPS_META_VERSION = "Properties-Meta-Version";
+    final public static String TOSCA_PROPS_META_VERSION_VALUE = "1.0";
+    
+    // of signature file block 0
+    final public static String TOSCA_SIGNATURE_VERSION = "Signature-Version";
+    final public static String TOSCA_SIGNATURE_VERSION_VALUE = "1.0";
+    final public static String DIGEST_MANIFEST = "Digest-Manifest";
+
+    // of signature file block 0
+    final public static String TOSCA_PROPSSIGNATURE_VERSION = "Properties-Signature-Version";
+    final public static String TOSCA_PROPSSIGNATURE_VERSION_VALUE = "1.0";
 
     // of blocks > 0 (file blocks)
     final public static String NAME = "Name";
     final public static String CONTENT_TYPE = "Content-Type";
+    final public static String DIGEST_ALGORITHM = "Digest-Algorithm";
+    final public static String DIGEST = "Digest";
+    final public static String DIGEST_PROP_ENCRYPTED = "Encrypted-Property-Digest";
+    
+    // separators
+    final public static String NAME_VALUE_SEPARATOR = ": ";
+    final public static String NAME_VERSION_SEPARATOR = " ";
 
 }

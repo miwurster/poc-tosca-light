@@ -21,6 +21,7 @@ export class ToscaComponent {
     readonly xmlPath: string;
     readonly yamlPath: string;
     readonly xmlCsarPath: string;
+    readonly xmlSecureCsarPath: string;
     readonly yamlCsarPath: string;
 
     constructor(public readonly toscaType: ToscaTypes,
@@ -35,6 +36,7 @@ export class ToscaComponent {
                 this.xmlPath = backendBaseURL + this.path;
                 this.yamlPath = this.xmlPath + '/?yaml';
                 this.xmlCsarPath = this.xmlPath + '/?csar';
+                this.xmlSecureCsarPath = this.xmlPath + '/?csar&secure';
                 this.yamlCsarPath = this.xmlPath + '/?yaml&csar';
             }
         }

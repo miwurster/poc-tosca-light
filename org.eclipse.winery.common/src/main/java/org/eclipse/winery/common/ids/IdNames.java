@@ -48,4 +48,6 @@ public class IdNames {
     public static final String NAMESPACES = "namespaces";
     public static final String PLANLANGUAGES = "planlanguages";
     public static final String PLANTYPES = "plantypes";
+    public static final String KEYSTORE = "keystore";
+    public static final String ACCESSCONTROL = "aclist";
 }

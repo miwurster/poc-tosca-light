@@ -26,6 +26,7 @@ import org.eclipse.winery.common.ids.definitions.imports.XSDImportId;
 import org.eclipse.winery.common.ids.elements.PlanId;
 import org.eclipse.winery.common.ids.elements.PlansId;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFile;
+import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileParser;
 import org.eclipse.winery.model.tosca.*;
 import org.eclipse.winery.model.tosca.TArtifactReference.Exclude;
@@ -35,6 +36,7 @@ import org.eclipse.winery.model.tosca.TDefinitions.Types;
 import org.eclipse.winery.model.tosca.TEntityType.PropertiesDefinition;
 import org.eclipse.winery.model.tosca.TPlan.PlanModelReference;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.model.tosca.constants.QNames;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.Constants;
@@ -51,6 +53,9 @@ import org.eclipse.winery.repository.datatypes.ids.elements.DirectoryId;
 import org.eclipse.winery.repository.datatypes.ids.elements.SelfServiceMetaDataId;
 import org.eclipse.winery.repository.datatypes.ids.elements.VisualAppearanceId;
 import org.eclipse.winery.repository.export.CsarExporter;
+import org.eclipse.winery.repository.security.csar.*;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -59,6 +64,7 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -66,6 +72,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -89,7 +96,7 @@ import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
  * One instance for each import
  */
 public class CsarImporter {
-
+    public static final String SECURE_CSAR_IMPORT = "secure";
     private static final Logger LOGGER = LoggerFactory.getLogger(CsarImporter.class);
 
     // ExecutorService for XSD schema initialization
@@ -100,6 +107,10 @@ public class CsarImporter {
 
     private static final Pattern GENERATED_PREFIX_PATTERN = Pattern.compile("^ns\\d+$");
 
+    private static final String NAMESPACE_PROPERTIES_PATH = "winery/Namespaces.properties";
+
+    private Map<String, Object> importConfigurations;
+
     /**
      * Reads the CSAR from the given inputstream
      *
@@ -108,11 +119,11 @@ public class CsarImporter {
      * @param asyncWPDParsing true if WPD should be parsed asynchronously to speed up the import. Required, because
      *                        JUnit terminates the used ExecutorService
      */
-    public ImportMetaInformation readCSAR(InputStream in, boolean overwrite, final boolean asyncWPDParsing) throws IOException {
+    public ImportMetaInformation readCSAR(InputStream in, boolean overwrite, final boolean asyncWPDParsing, Map<String, Object> importConfigurations) throws IOException {
         // we have to extract the file to a temporary directory as
         // the .definitions file does not necessarily have to be the first entry in the archive
         Path csarDir = Files.createTempDirectory("winery");
-
+        this.importConfigurations = importConfigurations;
         try (ZipInputStream zis = new ZipInputStream(in)) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
@@ -143,16 +154,75 @@ public class CsarImporter {
     public ImportMetaInformation importFromDir(final Path path, final boolean overwrite, final boolean asyncWPDParsing) throws IOException {
         final ImportMetaInformation importMetaInformation = new ImportMetaInformation();
         Path toscaMetaPath = path.resolve("TOSCA-Metadata/TOSCA.meta");
+        KeystoreManager km = new JCEKSKeystoreManager();
+        SecurityProcessor sp = new BCSecurityProcessor();
+        Boolean isSecureImport = (Boolean) importConfigurations.get(SECURE_CSAR_IMPORT);
+
         if (!Files.exists(toscaMetaPath)) {
             importMetaInformation.errors.add("TOSCA.meta does not exist");
             return importMetaInformation;
         }
         final TOSCAMetaFileParser tmfp = new TOSCAMetaFileParser();
+        TOSCAMetaFile signatureFile;
         final TOSCAMetaFile tmf = tmfp.parse(toscaMetaPath);
 
-        // we do NOT do any sanity checks, of TOSAC.meta
-        // and just start parsing
+        // External signature verification
+        if (isSecureImport) {
+            Path sigFileToscaMetaPath = path.resolve("TOSCA-Metadata/TOSCA.sf");
+            Path sigBlockFileToscaMetaPath = path.resolve("TOSCA-Metadata/TOSCA.sig");
+            Path certToscaMetaPath = path.resolve("TOSCA-Metadata/TOSCA.crt");
+            try {
+                if (!Files.exists(certToscaMetaPath) || !Files.exists(sigFileToscaMetaPath) || !Files.exists(sigBlockFileToscaMetaPath)) {
+                    importMetaInformation.errors.add("Incomplete external signature");
+                    LOGGER.error("Incomplete external signature: required files are missing");
+                    // return importMetaInformation;
+                }
+                byte[] sigFileToscaMeta = Files.readAllBytes(sigFileToscaMetaPath);
+                byte[] sigBlockFileToscaMeta = Files.readAllBytes(sigBlockFileToscaMetaPath);
+                FileInputStream fis = new FileInputStream(certToscaMetaPath.toFile());
+                Certificate c = km.storeCertificate(SecureCSARConstants.MASTER_IMPORT_CERT_NAME, fis);
+                boolean isSFSignatureCorrect = sp.verifyBytes(c, sigFileToscaMeta, sigBlockFileToscaMeta);
+                fis.close();
+                // Verify the signature file
+                if (!isSFSignatureCorrect) {
+                    importMetaInformation.errors.add("Corrupt external signature: The signature file is invalid");
+                    LOGGER.error("Corrupt external signature: The signature file is invalid");
+                    // return importMetaInformation;
+                } else {
+                    // Parse signature file to perform comparison with original meta
+                    signatureFile = tmfp.parse(sigFileToscaMetaPath);
+                    String manifestDigestAlgorithm = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.DIGEST_ALGORITHM);
 
+                    // Validate TOSCAMetaFile against its digest in SignatureFile 
+                    String manifestDigest = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.DIGEST_MANIFEST);
+                    byte[] toscaMetaFile = Files.readAllBytes(toscaMetaPath);
+                    String digest = sp.calculateDigest(toscaMetaFile, manifestDigestAlgorithm);
+                    if (!manifestDigest.equals(digest)) {
+                        importMetaInformation.errors.add("Corrupt external signature: TOSCAMetFile is invalid");
+                        LOGGER.error("Corrupt external signature: TOSCAMetFile is invalid");
+                        // return importMetaInformation;
+                    } else {
+                        // Validate digests of all files against their digests in TOSCAMetaFile
+                        for (Map<String, String> fileBlock : tmf.getFileBlocks()) {
+                            Path p = path.resolve(fileBlock.get(TOSCAMetaFileAttributes.NAME));
+                            byte[] bytes = Files.readAllBytes(p);
+                            String fileDigestAlgorithm = fileBlock.get(TOSCAMetaFileAttributes.DIGEST_ALGORITHM);
+                            String fileDigest = sp.calculateDigest(bytes, fileDigestAlgorithm);
+                            if (!fileBlock.get(TOSCAMetaFileAttributes.DIGEST).equals(fileDigest)) {
+                                importMetaInformation.errors.add("Corrupt external signature: the content of CSAR is invalid");
+                                LOGGER.error("Corrupt external signature: the content of CSAR is invalid");
+                                // return importMetaInformation;
+                            }
+                        }
+                    }
+                }
+            } catch (GenericKeystoreManagerException | GenericSecurityProcessorException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // we do NOT do any sanity checks, of TOSCA.meta
+        // and just start parsing
         if (tmf.getEntryDefinitions() != null) {
             // we obey the entry definitions and "just" import that
             // imported definitions are added recursively
@@ -353,6 +423,7 @@ public class CsarImporter {
             return Optional.empty();
         }
 
+        Boolean isSecureImport = (Boolean) importConfigurations.get(SECURE_CSAR_IMPORT);
         Unmarshaller um = JAXBSupport.createUnmarshaller();
         TDefinitions defs;
         try {
@@ -373,6 +444,228 @@ public class CsarImporter {
         } catch (ClassCastException e) {
             errors.add("Definitions " + defsPath.getFileName() + " is not a TDefinitions " + e.getMessage());
             return Optional.empty();
+        }
+
+        // Internal signatures validation
+        if (isSecureImport) {
+            // Verify signatures of properties
+            for (TExtensibleElements e : defs.getServiceTemplateOrNodeTypeOrNodeTypeImplementation()) {
+                if (e instanceof TServiceTemplate) {
+                    Path csarRoot = defsPath.getParent().getParent();
+                    // TODO define file paths using namespaces instead of CsarExporter.getDefinitionsPathInsideCSAR()
+                    Properties namespaces = parseCSARNamespaceProperties(csarRoot);
+
+                    for (TNodeTemplate nodeTemplate : ((TServiceTemplate) e).getTopologyTemplate().getNodeTemplates()) {
+
+                        TNodeType nodeType = parseTypeOfNodeTemplate(nodeTemplate, csarRoot);
+                        if (Objects.nonNull(nodeType) && Objects.nonNull(nodeType.getPolicies())) {
+
+                            TPolicy typeLevelSigningPolicy = nodeType.getPolicyByQName(QNames.WINERY_SIGNING_POLICY_TYPE);
+                            TPolicy typeLevelSignedPropsPolicy = nodeType.getPolicyByQName(QNames.WINERY_SIGNEDPROP_POLICY_TYPE);
+                            TPolicy templateLevelSigningPolicy = nodeTemplate.getPolicyByQName(QNames.WINERY_SIGNING_POLICY_TYPE);
+
+                            TPolicy typeLevelEncryptionPolicy = nodeType.getPolicyByQName(QNames.WINERY_ENCRYPTION_POLICY_TYPE);
+                            TPolicy typeLevelEncryptedPropsPolicy = nodeType.getPolicyByQName(QNames.WINERY_ENCRYPTEDPROP_POLICY_TYPE);
+                            TPolicy templateLevelEncryptionPolicy = nodeTemplate.getPolicyByQName(QNames.WINERY_ENCRYPTION_POLICY_TYPE);
+
+                            // perform verification for NodeTemplate only if security policy is attached to NodeType
+                            if (Objects.nonNull(typeLevelSigningPolicy) && Objects.nonNull(typeLevelSignedPropsPolicy)) {
+                                // NodeTemplate MUST have a signing policy and a corresponding DA
+                                if (Objects.nonNull(templateLevelSigningPolicy)
+                                    && typeLevelSigningPolicy.getName().equals(templateLevelSigningPolicy.getName())
+                                    && Objects.nonNull(nodeTemplate.getDeploymentArtifacts())) {
+
+                                    List<String> encryptedPropNames = new ArrayList<>();
+                                    // check encryption enforcement if encryption policy is specified for Node Type
+                                    if (Objects.nonNull(typeLevelEncryptionPolicy) && Objects.nonNull(typeLevelEncryptedPropsPolicy)) {
+                                        if (Objects.isNull(templateLevelEncryptionPolicy) || !typeLevelEncryptionPolicy.getName().equals(templateLevelEncryptionPolicy.getName())) {
+                                            errors.add("Encryption policy is specified but nor enforced for entity : " + nodeTemplate.getName());
+                                            LOGGER.error("Encryption policy is specified but nor enforced for entity : " + nodeTemplate.getName());
+                                        }
+                                        encryptedPropNames = getPropertyNamesFromGroupingPolicy(typeLevelEncryptedPropsPolicy, csarRoot);
+                                    }
+
+                                    String daName = SecureCSARConstants.DA_PREFIX.concat(typeLevelSignedPropsPolicy.getName());
+                                    TDeploymentArtifact da = nodeTemplate.getDeploymentArtifacts().getDeploymentArtifact(daName);
+                                    TArtifactTemplate signatureArtifactTemplate = parseArtifactTemplateOfDA(da, csarRoot);
+                                    if (Objects.nonNull(signatureArtifactTemplate) && Objects.nonNull(signatureArtifactTemplate.getArtifactReferences())) {
+                                        Path propsMetaPath = null;
+                                        Path sigFilePropsMetaPath = null;
+                                        Path sigBlockFilePropsMetaPath = null;
+
+                                        for (TArtifactReference ref : signatureArtifactTemplate.getArtifactReferences().getArtifactReference()) {
+                                            String currentRef = Util.URLdecode(ref.getReference());
+                                            if (currentRef.contains(SecureCSARConstants.ARTIFACT_SIGNPROP_MANIFEST_EXTENSION)) {
+                                                propsMetaPath = csarRoot.resolve(currentRef);
+                                            } else if (currentRef.contains(SecureCSARConstants.ARTIFACT_SIGNPROP_SF_EXTENSION)) {
+                                                sigFilePropsMetaPath = csarRoot.resolve(currentRef);
+                                            } else if (currentRef.contains(SecureCSARConstants.ARTIFACT_SIGNEXTENSION)) {
+                                                sigBlockFilePropsMetaPath = csarRoot.resolve(currentRef);
+                                            }
+                                        }
+
+                                        if (Objects.nonNull(propsMetaPath) && Objects.nonNull(sigFilePropsMetaPath) && Objects.nonNull(sigBlockFilePropsMetaPath)) {
+                                            SecurityProcessor sp = new BCSecurityProcessor();
+                                            TOSCAMetaFileParser tmfp = new TOSCAMetaFileParser();
+                                            Certificate c = loadPolicyCertificate(typeLevelSigningPolicy, csarRoot);
+                                            if (Objects.nonNull(c)) {
+                                                try {
+                                                    TOSCAMetaFile signatureFile;
+                                                    final TOSCAMetaFile propsMetaFile = tmfp.parse(propsMetaPath);
+                                                    byte[] sigFileToscaMeta = Files.readAllBytes(sigFilePropsMetaPath);
+                                                    byte[] sigBlockFileToscaMeta = Files.readAllBytes(sigBlockFilePropsMetaPath);
+
+                                                    // Verify signature block file
+                                                    boolean isSFSignatureCorrect = sp.verifyBytes(c, sigFileToscaMeta, sigBlockFileToscaMeta);
+                                                    if (!isSFSignatureCorrect) {
+                                                        errors.add("Corrupt properties signature file for entity: " + nodeTemplate.getName());
+                                                        LOGGER.error("Corrupt properties signature file for entity: " + nodeTemplate.getName());
+                                                    } else {
+                                                        // Parse signature file to perform comparison with original meta
+                                                        signatureFile = tmfp.parse(sigFilePropsMetaPath);
+                                                        String manifestDigestAlgorithm = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.DIGEST_ALGORITHM);
+
+                                                        // Validate TOSCAMetaFile against its digest in SignatureFile 
+                                                        String manifestDigest = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.DIGEST_MANIFEST);
+                                                        byte[] propsMetaFileBytes = Files.readAllBytes(propsMetaPath);
+                                                        String digest;
+                                                        digest = sp.calculateDigest(propsMetaFileBytes, manifestDigestAlgorithm);
+                                                        if (!manifestDigest.equals(digest)) {
+                                                            errors.add("Corrupt properties manifest file for entity: " + nodeTemplate.getName());
+                                                            LOGGER.error("Corrupt properties manifest file for entity: " + nodeTemplate.getName());
+                                                        } else {
+                                                            if (Objects.isNull(nodeTemplate.getProperties()) && Objects.isNull(nodeTemplate.getProperties().getKVProperties())) {
+                                                                errors.add("No properties found for entity: " + nodeTemplate.getName());
+                                                                LOGGER.error("No properties found for entity: " + nodeTemplate.getName());
+                                                            } else {
+                                                                Map<String, String> ntprops = nodeTemplate.getProperties().getKVProperties();
+
+                                                                // Validate digests of all files against their digests in TOSCAMetaFile
+                                                                for (Map<String, String> fileBlock : propsMetaFile.getFileBlocks()) {
+                                                                    String propName = fileBlock.get(TOSCAMetaFileAttributes.NAME);
+                                                                    String nodeTemplatePropertyValue = ntprops.get(propName);
+                                                                    String fileDigestAlgorithm = fileBlock.get(TOSCAMetaFileAttributes.DIGEST_ALGORITHM);
+                                                                    String propDigest = sp.calculateDigest(nodeTemplatePropertyValue.getBytes(), fileDigestAlgorithm);
+                                                                    if (!encryptedPropNames.isEmpty() && encryptedPropNames.contains(propName)) {
+                                                                        if (!fileBlock.get(TOSCAMetaFileAttributes.DIGEST_PROP_ENCRYPTED).equals(propDigest)) {
+                                                                            errors.add("Corrupt encrypted property (propname=" + propName + ") digest for entity: " + nodeTemplate.getName());
+                                                                            LOGGER.error("Corrupt encrypted property (propname=" + propName + ") digest for entity: " + nodeTemplate.getName());
+                                                                        }
+                                                                    } else {
+                                                                        if (!fileBlock.get(TOSCAMetaFileAttributes.DIGEST).equals(propDigest)) {
+                                                                            errors.add("Corrupt property (propname=" + propName + ") digest for entity: " + nodeTemplate.getName());
+                                                                            LOGGER.error("Corrupt property (propname=" + propName + ") digest for entity: " + nodeTemplate.getName());
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                } catch (GenericSecurityProcessorException e1) {
+                                                    e1.printStackTrace();
+                                                    errors.add(e1.getMessage());
+                                                }
+                                            }
+                                            else {
+                                                errors.add("Certificate for verification is not found for entity: " + nodeTemplate.getName());
+                                                LOGGER.error("Certificate for verification is not found for entity: " + nodeTemplate.getName());
+                                            }
+                                        } else {
+                                            // not all signature files are present 
+                                            // => error
+                                            errors.add("not all signature files are present");
+                                            LOGGER.error("not all signature files are present");
+                                        }
+                                    } else {
+                                        // no corresponding Artifact Template present with included signature files
+                                        // => error
+                                        errors.add("no corresponding Artifact Template present with included signature files");
+                                        LOGGER.error("no corresponding Artifact Template present with included signature files");
+                                    }
+
+                                } else {
+                                    // NodeTemplate does not have a signing policy with a matching name
+                                    // although the corresponding NodeType has the signing requirements
+                                    // => not compatible with secure import mode
+                                    errors.add("NodeTemplate does not have a signing policy with a name matching to a policy in Node Type");
+                                    LOGGER.error("NodeTemplate does not have a signing policy with a name matching to a policy in Node Type");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Verify signatures of artifacts        
+            for (TArtifactTemplate at : defs.getArtifactTemplates()) {
+                Path csarRoot = defsPath.getParent().getParent();
+
+                TPolicy encPolicy = at.getEncryptionPolicy();
+                boolean encPolicyAttached = Objects.nonNull(encPolicy);
+                TPolicy signPolicy = at.getSigningPolicy();
+                boolean signPolicyAttached = Objects.nonNull(signPolicy);
+                if (encPolicyAttached && !encPolicy.getIsApplied()) {
+                    errors.add("Encryption policy is set but not applied for entity: " + at.getId());
+                    LOGGER.error("Encryption policy is set but not applied for entity: " + at.getId());
+                }
+                if (signPolicyAttached && !signPolicy.getIsApplied()) {
+                    errors.add("Signing policy is set but not applied for entity: " + at.getId());
+                    LOGGER.error("Signing policy is set but not applied for entity: " + at.getId());
+                }
+                if ((signPolicyAttached || encPolicyAttached) && Objects.isNull(at.getArtifactReferences())) {
+                    errors.add("Security policy is set but no artifact references exist for entity: " + at.getId());
+                    LOGGER.error("Security policy is set but no artifact references exist for entity: " + at.getId());
+                    continue;
+                }
+
+                if (signPolicyAttached) {
+                    List<TArtifactReference> filesToVerify = getPlainArtifactReferences(at);
+                    Path artifactFilePath;
+                    Path sigFilePath;
+
+                    for (TArtifactReference ref : filesToVerify) {
+                        String artifactFile = Util.URLdecode(ref.getReference());
+                        String sigFile;
+                        if (encPolicyAttached) {
+                            sigFile = ref.getReference().concat(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED).concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
+                        } else {
+                            sigFile = ref.getReference().concat(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN).concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
+                        }
+                        sigFile = Util.URLdecode(sigFile);
+                        artifactFilePath = csarRoot.resolve(artifactFile);
+                        sigFilePath = csarRoot.resolve(sigFile);
+                        
+                        if (Files.exists(artifactFilePath) && Files.exists(sigFilePath)) {
+                            SecurityProcessor sp = new BCSecurityProcessor();
+                            Certificate c = loadPolicyCertificate(signPolicy, csarRoot);
+                            if (Objects.nonNull(c)) {
+                                try {
+                                    byte[] artifactFileBytes = Files.readAllBytes(artifactFilePath);
+                                    byte[] sigFileBytes = Files.readAllBytes(sigFilePath);
+                                    // Verify signature block file
+                                    boolean isSFSignatureCorrect = sp.verifyBytes(c, artifactFileBytes, sigFileBytes);
+                                    if (!isSFSignatureCorrect) {
+                                        errors.add("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());
+                                        LOGGER.error("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());
+                                    }
+                                } catch (GenericSecurityProcessorException e1) {
+                                    e1.printStackTrace();
+                                    errors.add(e1.getMessage());
+                                }
+                            }
+                            else {
+                                errors.add("Certificate for verification is not found for entity: " + at.getId());
+                                LOGGER.error("Certificate for verification is not found for entity: " + at.getId());
+                            }
+                        } else {
+                            // not all signature files are present 
+                            // => error
+                            errors.add("Missing signature files for entity: " + at.getName());
+                            LOGGER.error("Missing signature files for entity: " + at.getName());
+                        }
+                    }
+                }
+            }
         }
 
         List<TImport> imports = defs.getImport();
@@ -458,6 +751,120 @@ public class CsarImporter {
         return entryServiceTemplate;
     }
 
+    private TDefinitions parseDefinitions(Path defsPath) {
+        Unmarshaller um = JAXBSupport.createUnmarshaller();
+        try {
+            return (TDefinitions) um.unmarshal(defsPath.toFile());
+        } catch (JAXBException | ClassCastException e) {
+            CsarImporter.LOGGER.debug("Unmarshalling error", e);
+            return null;
+        }
+    }
+
+    private Properties parseCSARNamespaceProperties(Path csarRoot) {
+        Properties properties = new Properties();
+        try {
+            Path propsPath = csarRoot.resolve(NAMESPACE_PROPERTIES_PATH);
+            FileInputStream fis = new FileInputStream(propsPath.toString());
+            properties.load(fis);
+            fis.close();
+            return properties;
+        } catch (IOException e) {
+            CsarImporter.LOGGER.debug("Error parsing namespace properties file", e);
+            return null;
+        }
+    }
+    
+    private Certificate loadPolicyCertificate(TPolicy signPolicy, Path csarRoot) {
+        KeystoreManager km = new JCEKSKeystoreManager();
+        Certificate c = null;
+        try {
+            // if the corresponding keypair does not exist, import certificate from policy template
+            if (!km.entityExists(signPolicy.getPolicyRef().getLocalPart())) {
+                String certChain = getCertificateFromPolicy(signPolicy, csarRoot);
+                String certAlias = SecureCSARConstants.CERT_IMPORT_PREFIX.concat(signPolicy.getPolicyRef().getLocalPart());
+                c = km.storeCertificate(certAlias, certChain);
+            } else {
+                c = km.loadCertificateOfKeypair(signPolicy.getPolicyRef().getLocalPart());
+            }
+        } catch (GenericKeystoreManagerException e) {
+            e.printStackTrace();
+        }
+        return c;
+    }
+
+    private List<TArtifactReference> getPlainArtifactReferences(TArtifactTemplate at) {
+        List<TArtifactReference> result = new ArrayList<>();
+        for (TArtifactReference ref : at.getArtifactReferences().getArtifactReference()) {
+            String currentRef = Util.URLdecode(ref.getReference());
+            if (!currentRef.contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) && !currentRef.contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED)) {
+                result.add(ref);
+            }
+        }
+        return result;
+    }
+
+    private TNodeType parseTypeOfNodeTemplate(TNodeTemplate nodeTemplate, Path csarRoot) {
+        NodeTypeId nodeTypeId = new NodeTypeId(nodeTemplate.getType());
+        String nodeTypeDefRelPath = CsarExporter.getDefinitionsPathInsideCSAR(RepositoryFactory.getRepository(), nodeTypeId);
+        Path nodeTypeDefFilePath = csarRoot.resolve(nodeTypeDefRelPath);
+        TDefinitions defContainingNodeType = parseDefinitions(nodeTypeDefFilePath);
+        if (Objects.nonNull(defContainingNodeType)
+            && Objects.nonNull(defContainingNodeType.getNodeTypes())
+            && !defContainingNodeType.getNodeTypes().isEmpty()) {
+
+            return defContainingNodeType.getNodeTypes().get(0);
+        }
+        return null;
+    }
+
+    private TArtifactTemplate parseArtifactTemplateOfDA(TDeploymentArtifact da, Path csarRoot) {
+        ArtifactTemplateId artifactTemplateId = new ArtifactTemplateId(da.getArtifactRef());
+        String artifactTemplateDefRelPath = CsarExporter.getDefinitionsPathInsideCSAR(RepositoryFactory.getRepository(), artifactTemplateId);
+        Path artifactTemplateFilePath = csarRoot.resolve(artifactTemplateDefRelPath);
+        TDefinitions defContainingArtifactTemplate = parseDefinitions(artifactTemplateFilePath);
+        if (Objects.nonNull(defContainingArtifactTemplate)
+            && Objects.nonNull(defContainingArtifactTemplate.getArtifactTemplates())
+            && !defContainingArtifactTemplate.getArtifactTemplates().isEmpty()) {
+
+            return defContainingArtifactTemplate.getArtifactTemplates().get(0);
+        }
+        return null;
+    }
+
+    private String getCertificateFromPolicy(TPolicy policy, Path csarRoot) {
+        PolicyTemplateId policyTemplateId = new PolicyTemplateId(policy.getPolicyRef());
+        String policyTemplateDefRelPath = CsarExporter.getDefinitionsPathInsideCSAR(RepositoryFactory.getRepository(), policyTemplateId);
+        Path policyTemplateFilePath = csarRoot.resolve(policyTemplateDefRelPath);
+        TDefinitions defContainingPolicyTemplate = parseDefinitions(policyTemplateFilePath);
+        if (Objects.nonNull(defContainingPolicyTemplate)
+            && Objects.nonNull(defContainingPolicyTemplate.getPolicyTemplates())
+            && !defContainingPolicyTemplate.getPolicyTemplates().isEmpty()) {
+            TPolicyTemplate pt = defContainingPolicyTemplate.getPolicyTemplates().get(0);
+            if (Objects.nonNull(pt.getProperties()) && Objects.nonNull(pt.getProperties().getKVProperties())) {
+                return pt.getProperties().getKVProperties().get(SecureCSARConstants.SIGN_POL_CERT_PROPERTY);
+            }
+        }
+        return null;
+    }
+
+    private List<String> getPropertyNamesFromGroupingPolicy(TPolicy policy, Path csarRoot) {
+        PolicyTemplateId policyTemplateId = new PolicyTemplateId(policy.getPolicyRef());
+        String policyTemplateDefRelPath = CsarExporter.getDefinitionsPathInsideCSAR(RepositoryFactory.getRepository(), policyTemplateId);
+        Path policyTemplateFilePath = csarRoot.resolve(policyTemplateDefRelPath);
+        TDefinitions defContainingPolicyTemplate = parseDefinitions(policyTemplateFilePath);
+        if (Objects.nonNull(defContainingPolicyTemplate)
+            && Objects.nonNull(defContainingPolicyTemplate.getPolicyTemplates())
+            && !defContainingPolicyTemplate.getPolicyTemplates().isEmpty()) {
+            TPolicyTemplate pt = defContainingPolicyTemplate.getPolicyTemplates().get(0);
+            if (Objects.nonNull(pt.getProperties()) && Objects.nonNull(pt.getProperties().getKVProperties())) {
+                String spaceSeparatedNames = pt.getProperties().getKVProperties().get(SecureCSARConstants.SEC_POL_PROPGROUPING_PROPERTY);
+                return new ArrayList<>(Arrays.asList(spaceSeparatedNames.split("\\s+")));
+            }
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * Imports the specified types into the repository. The types are converted to an import statement
      *
@@ -537,7 +944,8 @@ public class CsarImporter {
      * @param newDefs the definitions, the entiy type is contained in. The imports might be adjusted here
      * @param errors  Used to collect the errors
      */
-    private static void adjustEntityType(TEntityType ci, EntityTypeId wid, Definitions newDefs, final List<String> errors) {
+    private static void adjustEntityType(TEntityType ci, EntityTypeId wid, Definitions newDefs,
+                                         final List<String> errors) {
         PropertiesDefinition propertiesDefinition = ci.getPropertiesDefinition();
         if (propertiesDefinition != null) {
             WinerysPropertiesDefinition winerysPropertiesDefinition = ModelUtilities.getWinerysPropertiesDefinition(ci);
@@ -611,7 +1019,8 @@ public class CsarImporter {
      * @param wid      Winery's internal id of the service template
      * @param st       the the service template to be imported {@inheritDoc}
      */
-    private void adjustServiceTemplate(Path rootPath, TOSCAMetaFile tmf, ServiceTemplateId wid, TServiceTemplate st, final List<String> errors) {
+    private void adjustServiceTemplate(Path rootPath, TOSCAMetaFile tmf, ServiceTemplateId wid, TServiceTemplate st,
+                                       final List<String> errors) {
         TPlans plans = st.getPlans();
         if (plans != null) {
             for (TPlan plan : plans.getPlan()) {
@@ -667,12 +1076,14 @@ public class CsarImporter {
     /**
      * Adds a color to the given relationship type
      */
-    private void adjustRelationshipType(Path rootPath, TRelationshipType ci, RelationshipTypeId wid, TOSCAMetaFile tmf, final List<String> errors) {
+    private void adjustRelationshipType(Path rootPath, TRelationshipType ci, RelationshipTypeId wid, TOSCAMetaFile
+        tmf, final List<String> errors) {
         VisualAppearanceId visId = new VisualAppearanceId(wid);
         this.importIcons(rootPath, visId, tmf, errors);
     }
 
-    private void adjustNodeType(Path rootPath, TNodeType ci, NodeTypeId wid, TOSCAMetaFile tmf, final List<String> errors) {
+    private void adjustNodeType(Path rootPath, TNodeType ci, NodeTypeId wid, TOSCAMetaFile tmf,
+                                final List<String> errors) {
         VisualAppearanceId visId = new VisualAppearanceId(wid);
         this.importIcons(rootPath, visId, tmf, errors);
     }
@@ -683,7 +1094,8 @@ public class CsarImporter {
         this.importIcon(visId, visPath, Filename.FILENAME_BIG_ICON, tmf, rootPath, errors);
     }
 
-    private void importIcon(VisualAppearanceId visId, Path visPath, String fileName, TOSCAMetaFile tmf, Path rootPath, final List<String> errors) {
+    private void importIcon(VisualAppearanceId visId, Path visPath, String fileName, TOSCAMetaFile tmf, Path
+        rootPath, final List<String> errors) {
         Path file = visPath.resolve(fileName);
         if (Files.exists(file)) {
             RepositoryFileReference ref = new RepositoryFileReference(visId, fileName);
@@ -696,7 +1108,8 @@ public class CsarImporter {
      * <p>
      * We import the files given at the artifact references
      */
-    private void adjustArtifactTemplate(Path rootPath, TOSCAMetaFile tmf, ArtifactTemplateId atid, TArtifactTemplate ci, final List<String> errors) {
+    private void adjustArtifactTemplate(Path rootPath, TOSCAMetaFile tmf, ArtifactTemplateId
+        atid, TArtifactTemplate ci, final List<String> errors) {
         ArtifactReferences refs = ci.getArtifactReferences();
         if (refs == null) {
             // no references stored - break
@@ -781,7 +1194,8 @@ public class CsarImporter {
      * @param rootPath                used to make the path p relative in order to determine the mime type
      * @param errors                  list where import errors should be stored to
      */
-    private static void importFile(Path p, RepositoryFileReference repositoryFileReference, TOSCAMetaFile tmf, Path rootPath, final List<String> errors) {
+    private static void importFile(Path p, RepositoryFileReference repositoryFileReference, TOSCAMetaFile tmf, Path
+        rootPath, final List<String> errors) {
         Objects.requireNonNull(p);
         Objects.requireNonNull(repositoryFileReference);
         Objects.requireNonNull(tmf);
@@ -823,7 +1237,8 @@ public class CsarImporter {
      * @param tmf         the TOSCAMetaFile object used to determine the mimetype. Must not be null.
      * @param errors      list where import errors should be stored to
      */
-    private void importAllFiles(Path rootPath, Collection<Path> files, DirectoryId directoryId, TOSCAMetaFile tmf, final List<String> errors) {
+    private void importAllFiles(Path rootPath, Collection<Path> files, DirectoryId directoryId, TOSCAMetaFile
+        tmf, final List<String> errors) {
         // remove the filePathInsideRepo to correctly store the files in the files folder inside an artifact template
         // otherwise, the files are saved in the sub directory of the artifact template
         // this is required, to enable the cycle CSAR export, clean , import CSAR
@@ -834,14 +1249,8 @@ public class CsarImporter {
                 errors.add(String.format("File %1$s does not exist", p.toString()));
                 return;
             }
-            Path subDirectory = rootPath.relativize(p).getParent();
-            RepositoryFileReference fref;
-            // files are stored in "files/" or in "sources/"
-            if ((subDirectory == null) || (subDirectory.getParent().toString().endsWith(pathInsideRepo))) {
-                fref = new RepositoryFileReference(directoryId, p.getFileName().toString());
-            } else {
-                fref = new RepositoryFileReference(directoryId, subDirectory, p.getFileName().toString());
-            }
+            // directoryId already identifies the subdirectory 
+            RepositoryFileReference fref = new RepositoryFileReference(directoryId, p.getFileName().toString());
             importFile(p, fref, tmf, rootPath, errors);
         }
     }
@@ -957,7 +1366,8 @@ public class CsarImporter {
      * @param imports  the list of imports to import. SIDE EFFECT: this list is modified. After this method has run, the
      *                 list contains the imports to be put into the wrapper element
      */
-    private void importImports(Path basePath, TOSCAMetaFile tmf, List<TImport> imports, final List<String> errors, boolean overwrite, final boolean asyncWPDParsing) throws IOException {
+    private void importImports(Path basePath, TOSCAMetaFile tmf, List<TImport> imports,
+                               final List<String> errors, boolean overwrite, final boolean asyncWPDParsing) throws IOException {
         for (Iterator<TImport> iterator = imports.iterator(); iterator.hasNext(); ) {
             TImport imp = iterator.next();
             String importType = imp.getImportType();
@@ -1003,7 +1413,8 @@ public class CsarImporter {
      *
      * @param rootPath the absolute path where to resolve files from
      */
-    private void importOtherImport(Path rootPath, TImport imp, final List<String> errors, String type, boolean overwrite) {
+    private void importOtherImport(Path rootPath, TImport imp, final List<String> errors, String type,
+                                   boolean overwrite) {
         assert (!type.equals(Namespaces.TOSCA_NAMESPACE));
         String loc = imp.getLocation();
 

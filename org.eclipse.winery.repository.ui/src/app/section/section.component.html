@@ -79,8 +79,12 @@
                          (onSuccess)="getSectionsData()"></winery-uploader>
         <div class="checkbox">
             <label>
-                <input [(ngModel)]="overwriteValue" (change)="overwriteValueChanged()" type="checkbox" value="">
+                <input [(ngModel)]="overwriteValue" (change)="parametersValueChanged()" type="checkbox" value="">
                 Overwrite existing content
+            </label>
+            <label>
+                <input [(ngModel)]="secure" (change)="parametersValueChanged()" type="checkbox" value="">
+                Perform secure import
             </label>
         </div>
     </winery-modal-body>

@@ -29,6 +29,8 @@ import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyChecker
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyErrorLogger;
 import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.configuration.GitHubConfiguration;
+import org.eclipse.winery.repository.rest.resources.admin.keypermissions.AccessControlListAdminResource;
+import org.eclipse.winery.repository.rest.resources.admin.keystore.KeyStoreAdminResource;
 import org.eclipse.winery.repository.rest.resources.admin.types.ConstraintTypesManager;
 import org.eclipse.winery.repository.rest.resources.admin.types.PlanLanguagesManager;
 import org.eclipse.winery.repository.rest.resources.admin.types.PlanTypesManager;
@@ -69,6 +71,16 @@ public class AdminTopResource {
         return ConstraintTypesManager.INSTANCE;
     }
 
+    @Path("keystore/")    
+    public KeyStoreAdminResource getKeystoreAdminResource() {
+        return new KeyStoreAdminResource();
+    }
+
+    @Path("keypermissions/")
+    public AccessControlListAdminResource getACLAdminResource() {
+        return new AccessControlListAdminResource();
+    }
+    
     @GET
     @Path("consistencycheck")
     @Produces(MediaType.APPLICATION_JSON)
