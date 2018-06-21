@@ -14,22 +14,39 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.eclipse.winery.model.tosca.constants.Namespaces;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.github.adr.embedded.ADR;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.*;
-
-import javax.xml.bind.annotation.*;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.*;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tEntityTemplate", propOrder = {
@@ -89,8 +106,7 @@ public abstract class TEntityTemplate extends HasId implements HasType, HasName 
         return Objects.hash(super.hashCode(), properties, propertyConstraints, type);
     }
 
-    /*@Nullable*/
-    public TEntityTemplate.Properties getProperties() {
+    public TEntityTemplate.@Nullable Properties getProperties() {
         return properties;
     }
 
@@ -98,12 +114,11 @@ public abstract class TEntityTemplate extends HasId implements HasType, HasName 
         this.properties = value;
     }
 
-    /*@Nullable*/
-    public TEntityTemplate.PropertyConstraints getPropertyConstraints() {
+    public TEntityTemplate.@Nullable PropertyConstraints getPropertyConstraints() {
         return propertyConstraints;
     }
 
-    public void setPropertyConstraints(TEntityTemplate.PropertyConstraints value) {
+    public void setPropertyConstraints(TEntityTemplate.@Nullable PropertyConstraints value) {
         this.propertyConstraints = value;
     }
 
@@ -301,6 +316,19 @@ public abstract class TEntityTemplate extends HasId implements HasType, HasName 
                 }
             }
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Properties that = (Properties) o;
+            return Objects.equals(any, that.any);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(any);
+        }
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
@@ -333,6 +361,19 @@ public abstract class TEntityTemplate extends HasId implements HasType, HasName 
                 propertyConstraint = new ArrayList<TPropertyConstraint>();
             }
             return this.propertyConstraint;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PropertyConstraints that = (PropertyConstraints) o;
+            return Objects.equals(propertyConstraint, that.propertyConstraint);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(propertyConstraint);
         }
     }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,10 +18,12 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import java.util.Objects;
-
 
 /**
  * <p>Java class for tPolicy complex type.
@@ -43,7 +45,7 @@ import java.util.Objects;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tPolicy")
-public class TPolicy extends TExtensibleElements {
+public class TPolicy extends TExtensibleElements implements HasName {
     @XmlAttribute(name = "applied", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE)
     protected boolean isApplied;
     @XmlAttribute(name = "name")
@@ -85,6 +87,7 @@ public class TPolicy extends TExtensibleElements {
      * @return possible object is {@link String }
      */
     @Nullable
+    @Override
     public String getName() {
         return name;
     }
@@ -94,6 +97,7 @@ public class TPolicy extends TExtensibleElements {
      *
      * @param value allowed object is {@link String }
      */
+    @Override
     public void setName(String value) {
         this.name = value;
     }
@@ -106,7 +110,7 @@ public class TPolicy extends TExtensibleElements {
     public boolean getIsApplied() {
         return isApplied;
     }
-    
+
     /**
      * Sets the value of the isApplied property.
      *
@@ -115,7 +119,7 @@ public class TPolicy extends TExtensibleElements {
     public void setIsApplied(boolean value) {
         this.isApplied = value;
     }
-    
+
     /**
      * Gets the value of the policyType property.
      *

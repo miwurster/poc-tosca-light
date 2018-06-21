@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,48 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-
-/**
- * <p>Java class for tEntityType complex type.
- * <p>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p>
- * <pre>
- * &lt;complexType name="tEntityType">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;sequence>
- *         &lt;element name="Tags" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tTags" minOccurs="0"/>
- *         &lt;element name="DerivedFrom" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="typeRef" use="required" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="PropertiesDefinition" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="element" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *                 &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *       &lt;attribute name="abstract" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tBoolean" default="no" />
- *       &lt;attribute name="final" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tBoolean" default="no" />
- *       &lt;attribute name="targetNamespace" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tEntityType", propOrder = {
     "policies",
@@ -87,6 +45,8 @@ import java.util.Objects;
     TPolicyType.class
 })
 public class TEntityType extends TExtensibleElements implements HasName, HasInheritance, HasTargetNamespace {
+    public static final String NS_SUFFIX_PROPERTIESDEFINITION_WINERY = "propertiesdefinition/winery";
+
     @XmlElement(name = "Policies", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE)
     protected TEntityType.Policies policies;
     @XmlElement(name = "Tags")
@@ -164,8 +124,7 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
      *
      * @return possible object is {@link TEntityType.DerivedFrom }
      */
-    /*@Nullable*/
-    public TEntityType.DerivedFrom getDerivedFrom() {
+    public TEntityType.@Nullable DerivedFrom getDerivedFrom() {
         return derivedFrom;
     }
 
@@ -183,8 +142,7 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
      *
      * @return possible object is {@link TEntityType.PropertiesDefinition }
      */
-    /*@Nullable*/
-    public TEntityType.PropertiesDefinition getPropertiesDefinition() {
+    public TEntityType.@Nullable PropertiesDefinition getPropertiesDefinition() {
         return propertiesDefinition;
     }
 
@@ -197,14 +155,16 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
         this.propertiesDefinition = value;
     }
 
-    @NonNull
+    @ADR(22)
+    @Nullable
     @Override
     public String getName() {
         return name;
     }
 
+    @ADR(22)
     @Override
-    public void setName(String value) {
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
@@ -301,7 +261,7 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
                 if (!ns.endsWith("/")) {
                     ns += "/";
                 }
-                ns += "propertiesdefinition/winery";
+                ns += NS_SUFFIX_PROPERTIESDEFINITION_WINERY;
                 res.setNamespace(ns);
             }
         }
@@ -359,7 +319,7 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
     public TPolicy getPolicyByQName(QName qname) {
         if (Objects.isNull(policies)) {
             return null;
-        }        
+        }
         for (TPolicy p : policies.getPolicy()) {
             if (qname.equals(p.getPolicyType())) {
                 return p;
@@ -367,7 +327,7 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
         }
         return null;
     }
-    
+
     /**
      * <p>Java class for anonymous complex type.
      * <p>
@@ -422,8 +382,20 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
         public QName getTypeAsQName() {
             return this.getType();
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DerivedFrom that = (DerivedFrom) o;
+            return Objects.equals(typeRef, that.typeRef);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(typeRef);
+        }
+    }
 
     /**
      * <p>Java class for anonymous complex type.
@@ -486,6 +458,20 @@ public class TEntityType extends TExtensibleElements implements HasName, HasInhe
          */
         public void setType(QName value) {
             this.type = value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PropertiesDefinition that = (PropertiesDefinition) o;
+            return Objects.equals(element, that.element) &&
+                Objects.equals(type, that.type);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(element, type);
         }
     }
 

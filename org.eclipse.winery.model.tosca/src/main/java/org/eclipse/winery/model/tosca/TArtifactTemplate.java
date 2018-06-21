@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,37 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-
-/**
- * <p>Java class for tArtifactTemplate complex type.
- * <p>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p>
- * <pre>
- * &lt;complexType name="tArtifactTemplate">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tEntityTemplate">
- *       &lt;sequence>
- *         &lt;element name="ArtifactReferences" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="ArtifactReference" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tArtifactReference"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tArtifactTemplate", propOrder = {
     "policies", "artifactReferences"
@@ -65,10 +34,10 @@ public class TArtifactTemplate
 
     @XmlElement(name = "Policies", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE)
     protected TArtifactTemplate.Policies policies;
-    
+
     @XmlElement(name = "ArtifactReferences")
     protected TArtifactTemplate.ArtifactReferences artifactReferences;
-    
+
     @XmlAttribute(name = "name")
     protected String name;
 
@@ -119,7 +88,7 @@ public class TArtifactTemplate
             if (QNames.WINERY_ENCRYPTION_POLICY_TYPE.equals(p.getPolicyType())) {
                 return p;
             }
-        }        
+        }
         return null;
     }
 
@@ -148,14 +117,13 @@ public class TArtifactTemplate
     public void setPolicies(TArtifactTemplate.Policies value) {
         this.policies = value;
     }
-    
+
     /**
      * Gets the value of the artifactReferences property.
      *
      * @return possible object is {@link TArtifactTemplate.ArtifactReferences }
      */
-    /*@Nullable*/
-    public TArtifactTemplate.ArtifactReferences getArtifactReferences() {
+    public TArtifactTemplate.@Nullable ArtifactReferences getArtifactReferences() {
 
         return artifactReferences;
     }
@@ -168,7 +136,7 @@ public class TArtifactTemplate
     public void setArtifactReferences(TArtifactTemplate.ArtifactReferences value) {
         this.artifactReferences = value;
     }
-    
+
     /**
      * Gets the value of the name property.
      *
@@ -188,25 +156,6 @@ public class TArtifactTemplate
         this.name = value;
     }
 
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * <p>
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * <p>
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="ArtifactReference" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tArtifactReference"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "artifactReference"
@@ -230,11 +179,6 @@ public class TArtifactTemplate
          * <pre>
          *    getArtifactReference().add(newItem);
          * </pre>
-         * <p>
-         * <p>
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TArtifactReference }
          */
         @NonNull
         public List<TArtifactReference> getArtifactReference() {
@@ -243,8 +187,21 @@ public class TArtifactTemplate
             }
             return this.artifactReference;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ArtifactReferences that = (ArtifactReferences) o;
+            return Objects.equals(artifactReference, that.artifactReference);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(artifactReference);
+        }
     }
-    
+
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "policy"
@@ -287,8 +244,8 @@ public class TArtifactTemplate
         private String name;
         private TArtifactTemplate.ArtifactReferences artifactReferences;
         private TArtifactTemplate.Policies policies;
-        
-        
+
+
         public Builder(String id, QName type) {
             super(id, type);
         }

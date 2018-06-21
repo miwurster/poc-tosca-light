@@ -39,6 +39,7 @@ public class Namespaces {
     public static final String URI_OPENTOSCA_ARTIFACTTEMPLATE = "http://opentosca.org/artifacttemplates";
     public static final String URI_OPENTOSCA_SECURE_POLICYTYPE = "http://opentosca.org/policytypes/security";
     public static final String URI_OPENTOSCA_SECURE_POLICYTEMPLATE = "http://opentosca.org/policytemplates/security";
+    public static final String URI_START_OPENTOSCA = "http://opentosca.org/";
 
     // XML Schema namespace is defined at Java7's XMLConstants.W3C_XML_SCHEMA_NS_URI
     public static final String W3C_XML_SCHEMA_NS_URI = XMLConstants.W3C_XML_SCHEMA_NS_URI;

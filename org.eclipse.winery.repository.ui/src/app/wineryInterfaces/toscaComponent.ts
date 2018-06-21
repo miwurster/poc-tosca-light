@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,9 +14,12 @@
 import {isNullOrUndefined} from 'util';
 import {ToscaTypes} from './enums';
 import {backendBaseURL} from '../configuration';
+import {Utils} from '../wineryUtils/utils';
 
 export class ToscaComponent {
 
+    readonly localNameWithoutVersion: string;
+    readonly backendPath: string;
     readonly path: string;
     readonly xmlPath: string;
     readonly yamlPath: string;
@@ -33,12 +36,16 @@ export class ToscaComponent {
             this.path += '/' + encodeURIComponent(encodeURIComponent(this.namespace));
             if (!isNullOrUndefined(this.localName)) {
                 this.path += '/' + this.localName;
-                this.xmlPath = backendBaseURL + this.path;
-                this.yamlPath = this.xmlPath + '/?yaml';
-                this.xmlCsarPath = this.xmlPath + '/?csar';
-                this.xmlSecureCsarPath = this.xmlPath + '/?csar&secure';
-                this.yamlCsarPath = this.xmlPath + '/?yaml&csar';
+                this.backendPath =  backendBaseURL + this.path;
+                this.xmlPath = this.backendPath + '/?xml';
+                this.yamlPath = this.backendPath + '/?yaml';
+                this.xmlCsarPath = this.backendPath + '/?csar';
+                this.yamlCsarPath = this.backendPath + '/?yaml&csar';
+                this.xmlSecureCsarPath = this.backendPath + '/?csar&secure';
             }
+        }
+        if (!isNullOrUndefined(this.localName)) {
+            this.localNameWithoutVersion = Utils.getNameWithoutVersion(this.localName);
         }
     }
 

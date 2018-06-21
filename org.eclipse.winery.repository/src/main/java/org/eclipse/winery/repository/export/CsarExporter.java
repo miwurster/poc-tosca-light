@@ -90,9 +90,9 @@ public class CsarExporter {
     private static final String TOSCA_META_SIGN_FILE_PATH = "TOSCA-Metadata/TOSCA.sf";
     private static final String TOSCA_META_SIGN_BLOCK_FILE_PATH = "TOSCA-Metadata/TOSCA.sig";
     private static final String TOSCA_META_CERT_PATH = "TOSCA-Metadata/TOSCA.crt";
-    
+
     private final Map<RepositoryFileReference, String> refMap = new HashMap<>();
-    
+
     /**
      * Returns a unique name for the given definitions to be used as filename
      */
@@ -162,8 +162,7 @@ public class CsarExporter {
                 } catch (TransformerException | GenericSecurityProcessorException | GenericKeystoreManagerException e) {
                     CsarExporter.LOGGER.debug(e.getMessage(), e);
                 }
-            }
-            else {
+            } else {
                 this.addManifest(entryDefinitionsReference, definitionNames, zos);
             }
 
@@ -276,7 +275,7 @@ public class CsarExporter {
         ArchiveEntry archiveEntry = new ZipArchiveEntry(archivePath);
         zos.putArchiveEntry(archiveEntry);
         CsarExporter.LOGGER.trace("Special treatment for generated XSDs");
-        Document document = ref.getDocument(); 
+        Document document = ref.getDocument();
         DOMSource source = new DOMSource(document);
         StreamResult result = new StreamResult(zos);
         try {
@@ -413,7 +412,9 @@ public class CsarExporter {
     /**
      * Adds all self service meta data to the targetDir
      *
-     * @param targetDir the directory in the CSAR where to put the content to
+     * @param repository the repository to work from
+     * @param entryId    the service template to export for
+     * @param targetDir  the directory in the CSAR where to put the content to
      */
     private void addSelfServiceMetaData(IRepository repository, ServiceTemplateId entryId, String targetDir) throws IOException {
         final SelfServiceMetaDataId selfServiceMetaDataId = new SelfServiceMetaDataId(entryId);
@@ -483,7 +484,7 @@ public class CsarExporter {
     }
 
     private void addSelfServiceMetaData(IRepository repository, ServiceTemplateId serviceTemplateId) throws IOException {
-        // We add the selfservice information regardless of the existance. - i.e., no "if (repository.exists(id)) {"
+        // We add the selfservice information regardless of the existence. - i.e., no "if (repository.exists(id)) {"
         // This ensures that the name of the application is
         // add everything in the root of the CSAR
         String targetDir = Constants.DIRNAME_SELF_SERVICE_METADATA + "/";
@@ -518,7 +519,7 @@ public class CsarExporter {
         byte[] dummyPropertiesContent = bos.toByteArray();
         return securityProcessor.calculateDigest(dummyPropertiesContent, digestAlgorithm);
     }
-    
+
     // Add a plain TOSCAMetaFile
     private void addManifest(String entryDefinitionsReference, Collection<String> definitionNames, ArchiveOutputStream out) throws IOException {
         out.putArchiveEntry(new ZipArchiveEntry(TOSCA_META_FILE_PATH));
@@ -542,7 +543,7 @@ public class CsarExporter {
         out.write(sb.toString().getBytes());
         out.closeArchiveEntry();
     }
-    
+
     // Add a TOSCAMetaFile with enforced signing requirements
     private void addManifest(String entryDefinitionsReference, Collection<String> definitionNames, Map<String, String> definitionsDigests, ArchiveOutputStream out) throws IOException, TransformerException, GenericSecurityProcessorException, GenericKeystoreManagerException {
         SecurityProcessor securityProcessor = new BCSecurityProcessor();
@@ -551,7 +552,7 @@ public class CsarExporter {
         List<ToscaMetaEntry> entries = new ArrayList<>();
 
         out.putArchiveEntry(new ZipArchiveEntry(TOSCA_META_FILE_PATH));
-        
+
         StringBuilder sb = new StringBuilder();
         appendToscaMetaFirstBlock(sb, entryDefinitionsReference);
         // Append definitions with their digests
@@ -578,8 +579,7 @@ public class CsarExporter {
                     .digestAlgorithm(digestAlgorithm)
                     .digestValue(digest)
                     .build();
-            }
-            else {
+            } else {
                 String digest = getDummyRepositoryFileDigest(ref, securityProcessor, digestAlgorithm);
                 entry = new ToscaMetaEntry.Builder(archivePath)
                     .contentType(mimeType)
@@ -600,15 +600,15 @@ public class CsarExporter {
         StringBuilder sigFileBuilder = new StringBuilder();
         // Set signature file's first block
         appendSignatureFileFirstBlock(sigFileBuilder, entryDefinitionsReference, digestAlgorithm, manifestDigest);
-        
+
         for (ToscaMetaEntry e : entries) {
             String digestOfTheDigest = securityProcessor.calculateDigest(e.getDigestValue(), digestAlgorithm);
             e.setDigestValue(digestOfTheDigest);
             sigFileBuilder.append(e.toString());
-        }        
+        }
         out.write(sigFileBuilder.toString().getBytes());
         out.closeArchiveEntry();
-        
+
         // add ToscaMetaFile's signature block file and certificate
         Key signingKey = keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
         // TODO: notify a user if no master key is set
@@ -616,7 +616,7 @@ public class CsarExporter {
             byte[] blockSignatureFileContent = securityProcessor.signBytes(signingKey, sigFileBuilder.toString().getBytes());
             out.putArchiveEntry(new ZipArchiveEntry(TOSCA_META_SIGN_BLOCK_FILE_PATH));
             out.write(blockSignatureFileContent);
-            out.closeArchiveEntry();            
+            out.closeArchiveEntry();
             byte[] cert = keystoreManager.loadCertificateAsByteArray(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
             out.putArchiveEntry(new ZipArchiveEntry(TOSCA_META_CERT_PATH));
             out.write(cert);
@@ -635,10 +635,10 @@ public class CsarExporter {
             // name of the service template
             .entryDefinitionsReference(entryDefinitionsReference)
             .build();
-        
+
         sb.append(firstBlock.toString());
     }
-    
+
     private void appendSignatureFileFirstBlock(StringBuilder sb, String entryDefinitionsReference, String digestAlgorithm, String manifestDigest) {
         ToscaMetaFirstBlockEntry firstBlock = new ToscaMetaFirstBlockEntry.Builder(TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION, TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION_VALUE)
             .createdBy(TOSCAMetaFileAttributes.CREATED_BY)

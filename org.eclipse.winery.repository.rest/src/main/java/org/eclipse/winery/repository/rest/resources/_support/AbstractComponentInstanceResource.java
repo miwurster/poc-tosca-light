@@ -13,37 +13,23 @@
  ********************************************************************************/
 package org.eclipse.winery.repository.rest.resources._support;
 
-import com.sun.jersey.api.NotFoundException;
-import org.eclipse.winery.common.RepositoryFileReference;
-import org.eclipse.winery.common.ToscaDocumentBuilderFactory;
-import org.eclipse.winery.common.Util;
-import org.eclipse.winery.common.constants.MimeTypes;
-import org.eclipse.winery.common.ids.Namespace;
-import org.eclipse.winery.common.ids.XmlId;
-import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
-import org.eclipse.winery.model.tosca.*;
-import org.eclipse.winery.repository.JAXBSupport;
-import org.eclipse.winery.repository.backend.BackendUtils;
-import org.eclipse.winery.repository.backend.IRepository;
-import org.eclipse.winery.repository.backend.RepositoryFactory;
-import org.eclipse.winery.repository.backend.constants.MediaTypes;
-import org.eclipse.winery.repository.configuration.Environment;
-import org.eclipse.winery.repository.export.ToscaExportUtil;
-import org.eclipse.winery.repository.rest.RestUtils;
-import org.eclipse.winery.repository.rest.resources.apiData.QNameApiData;
-import org.eclipse.winery.repository.rest.resources.documentation.DocumentationResource;
-import org.eclipse.winery.repository.rest.resources.entitytypeimplementations.nodetypeimplementations.NodeTypeImplementationResource;
-import org.eclipse.winery.repository.rest.resources.entitytypeimplementations.relationshiptypeimplementations.RelationshipTypeImplementationResource;
-import org.eclipse.winery.repository.rest.resources.entitytypes.EntityTypeResource;
-import org.eclipse.winery.repository.rest.resources.imports.genericimports.GenericImportResource;
-import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
-import org.eclipse.winery.repository.rest.resources.tags.TagsResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -52,12 +38,52 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+
+import org.eclipse.winery.common.RepositoryFileReference;
+import org.eclipse.winery.common.ToscaDocumentBuilderFactory;
+import org.eclipse.winery.common.Util;
+import org.eclipse.winery.common.constants.MimeTypes;
+import org.eclipse.winery.common.ids.Namespace;
+import org.eclipse.winery.common.ids.XmlId;
+import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
+import org.eclipse.winery.common.version.ToscaDiff;
+import org.eclipse.winery.common.version.VersionUtils;
+import org.eclipse.winery.common.version.WineryVersion;
+import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.HasIdInIdOrNameField;
+import org.eclipse.winery.model.tosca.TComplianceRule;
+import org.eclipse.winery.model.tosca.TEntityType;
+import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
+import org.eclipse.winery.model.tosca.TRelationshipTypeImplementation;
+import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.TTags;
+import org.eclipse.winery.repository.JAXBSupport;
+import org.eclipse.winery.repository.backend.BackendUtils;
+import org.eclipse.winery.repository.backend.IRepository;
+import org.eclipse.winery.repository.backend.RepositoryFactory;
+import org.eclipse.winery.repository.backend.constants.MediaTypes;
+import org.eclipse.winery.repository.configuration.Environment;
+import org.eclipse.winery.repository.export.ToscaExportUtil;
+import org.eclipse.winery.repository.rest.RestUtils;
+import org.eclipse.winery.repository.rest.resources.apiData.NewVersionApiData;
+import org.eclipse.winery.repository.rest.resources.apiData.QNameWithTypeApiData;
+import org.eclipse.winery.repository.rest.resources.apiData.RenameApiData;
+import org.eclipse.winery.repository.rest.resources.compliancerules.ComplianceRuleResource;
+import org.eclipse.winery.repository.rest.resources.documentation.DocumentationResource;
+import org.eclipse.winery.repository.rest.resources.entitytypeimplementations.nodetypeimplementations.NodeTypeImplementationResource;
+import org.eclipse.winery.repository.rest.resources.entitytypeimplementations.relationshiptypeimplementations.RelationshipTypeImplementationResource;
+import org.eclipse.winery.repository.rest.resources.entitytypes.EntityTypeResource;
+import org.eclipse.winery.repository.rest.resources.imports.genericimports.GenericImportResource;
+import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
+import org.eclipse.winery.repository.rest.resources.tags.TagsResource;
+
+import com.sun.jersey.api.NotFoundException;
+import io.swagger.annotations.ApiParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Resource for a component (
@@ -168,6 +194,20 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         return this.getId().hashCode();
     }
 
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response createNewVersion(NewVersionApiData newVersionApiData, @QueryParam("release") String release, @QueryParam("freeze") String freeze) {
+        if (Objects.nonNull(freeze)) {
+            return RestUtils.freezeVersion(this.id).getResponse();
+        } else if (Objects.nonNull(release)) {
+            return RestUtils.releaseVersion(this.id);
+        } else {
+            String newId = VersionUtils.getNameWithoutVersion(this.id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersionApiData.version.toString();
+            DefinitionsChildId newComponent = BackendUtils.getDefinitionsChildId(this.id.getClass(), this.id.getNamespace().getDecoded(), newId, false);
+            return RestUtils.addNewVersion(this.id, newComponent, newVersionApiData.componentsToUpdate);
+        }
+    }
+
     @GET
     @Path("id")
     public String getTOSCAId() {
@@ -177,22 +217,23 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
     @POST
     @Path("localName")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response putId(QNameApiData data) {
+    public Response putId(RenameApiData data) {
         DefinitionsChildId newId;
-        if (data.namespace == null) {
-            newId = BackendUtils.getDefinitionsChildId(this.getId().getClass(), this.getId().getNamespace().getDecoded(), data.localname, false);
+        newId = BackendUtils.getDefinitionsChildId(this.getId().getClass(), this.getId().getNamespace().getDecoded(), data.localname, false);
+
+        if (data.renameAllComponents) {
+            return RestUtils.renameAllVersionsOfOneDefinition(this.getId(), newId);
         } else {
-            newId = BackendUtils.getDefinitionsChildId(this.getId().getClass(), data.namespace, this.getId().getXmlId().toString(), false);
+            return RestUtils.rename(this.getId(), newId).getResponse();
         }
-        return RestUtils.rename(this.getId(), newId);
     }
 
     @POST
     @Path("namespace")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response putNamespace(QNameApiData data) {
+    public Response putNamespace(RenameApiData data) {
         DefinitionsChildId newId = BackendUtils.getDefinitionsChildId(this.getId().getClass(), data.namespace, this.getId().getXmlId().getDecoded(), false);
-        return RestUtils.rename(this.getId(), newId);
+        return RestUtils.rename(this.getId(), newId).getResponse();
     }
 
     @GET
@@ -203,7 +244,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         }
         Map<String, Object> exportConfigurations = new HashMap<>();
         exportConfigurations.put(ToscaExportUtil.ExportProperties.APPLY_SECURITY_POLICIES.name(), Objects.nonNull(secure));
-        
+
         return RestUtils.getCSARofSelectedResource(this, exportConfigurations);
     }
 
@@ -250,15 +291,15 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         @QueryParam(value = "csar") String csar,
         @QueryParam(value = "yaml") String yaml,
         @QueryParam(value = "secure") String secure,
+        @QueryParam(value = "xml") String xml,
         @Context UriInfo uriInfo) {
         // in case there is an URL requested directly via the browser UI, the accept cannot be put at the link.
         // thus, there is the hack with ?csar and ?yaml
         // the hack is implemented at getDefinitionsAsResponse
-        if ((csar != null) || (yaml != null)) {
+        if ((csar != null) || (yaml != null) || (xml != null)) {
             return this.getDefinitionsAsResponse(csar, yaml, secure, uriInfo);
         }
         String repositoryUiUrl = Environment.getUrlConfiguration().getRepositoryUiUrl();
-        String uri = uriInfo.getAbsolutePath().toString();
         String uiUrl = uriInfo.getAbsolutePath().toString().replaceAll(Environment.getUrlConfiguration().getRepositoryApiUrl(), repositoryUiUrl);
         return Response.temporaryRedirect(URI.create(uiUrl)).build();
     }
@@ -271,13 +312,36 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Definitions getElementAsJson() {
+    public Object getElementAsJson(@QueryParam("versions") @ApiParam("If set, a list of availbale versions is returned.") String versions,
+                                   @QueryParam("subComponents") String subComponents,
+                                   @QueryParam("compareTo") String compareTo, @QueryParam("asChangeLog") String asChangeLog) {
         final IRepository repository = RepositoryFactory.getRepository();
         if (!repository.exists(this.id)) {
             throw new NotFoundException();
         }
         try {
-            return BackendUtils.getDefinitionsHavingCorrectImports(repository, this.id);
+            if (Objects.nonNull(versions)) {
+                return BackendUtils.getAllVersionsOfOneDefinition(this.id);
+            } else if (Objects.nonNull(subComponents)) {
+                return repository.getReferencedDefinitionsChildIds(this.id)
+                    .stream()
+                    .map(item -> new QNameWithTypeApiData(
+                        item.getXmlId().getDecoded(),
+                        item.getNamespace().getDecoded(),
+                        item.getGroup())
+                    )
+                    .collect(Collectors.toList());
+            } else if (Objects.nonNull(compareTo)) {
+                WineryVersion version = VersionUtils.getVersion(compareTo);
+                ToscaDiff compare = BackendUtils.compare(this.id, version);
+                if (Objects.nonNull(asChangeLog)) {
+                    return compare.getChangeLog();
+                } else {
+                    return compare;
+                }
+            } else {
+                return BackendUtils.getDefinitionsHavingCorrectImports(repository, this.id);
+            }
         } catch (Exception e) {
             throw new WebApplicationException(e);
         }
@@ -478,6 +542,12 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
                 tags = new TTags();
                 ((RelationshipTypeImplementationResource) this).getRTI().setTags(tags);
             }
+        } else if (this.element instanceof TComplianceRule) {
+            tags = ((TComplianceRule) this.element).getTags();
+            if (tags == null) {
+                tags = new TTags();
+                ((ComplianceRuleResource) this).getCompliancerule().setTags(tags);
+            }
         } else {
             throw new IllegalStateException("tags was called on a resource not supporting tags");
         }
@@ -495,7 +565,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
 
     @PUT
     @Path("LICENSE")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
     public Response putLicense(String data) {
         RepositoryFileReference ref = new RepositoryFileReference(this.id, Util.URLdecode("LICENSE"));
         return RestUtils.putContentToFile(ref, data, MediaType.TEXT_PLAIN_TYPE);
@@ -511,7 +581,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
 
     @PUT
     @Path("README.md")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.TEXT_PLAIN)
     public Response putFile(String data) {
         RepositoryFileReference ref = new RepositoryFileReference(this.id, Util.URLdecode("README.md"));
         return RestUtils.putContentToFile(ref, data, MediaType.TEXT_PLAIN_TYPE);

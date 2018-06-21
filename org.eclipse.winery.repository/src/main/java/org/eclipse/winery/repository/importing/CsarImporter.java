@@ -297,7 +297,7 @@ public class CsarImporter {
             while (namespaces.hasNext()) {
                 boolean addToStorage = false;
                 String namespace = namespaces.next();
-                if (namespaceManager.hasPrefix(namespace)) {
+                if (namespaceManager.hasPermanentPrefix(namespace)) {
                     String storedPrefix = namespaceManager.getPrefix(namespace);
                     // QUICK HACK to check whether the prefix is a generated one
                     // We assume we know the internal generation routine
@@ -312,7 +312,7 @@ public class CsarImporter {
                 }
                 if (addToStorage) {
                     String prefix = pconf.getString(namespace);
-                    namespaceManager.setPrefix(namespace, prefix);
+                    namespaceManager.setPermanentPrefix(namespace, prefix);
                 }
             }
         }
@@ -1249,7 +1249,7 @@ public class CsarImporter {
                 errors.add(String.format("File %1$s does not exist", p.toString()));
                 return;
             }
-            // directoryId already identifies the subdirectory 
+            // directoryId already identifies the subdirectory
             RepositoryFileReference fref = new RepositoryFileReference(directoryId, p.getFileName().toString());
             importFile(p, fref, tmf, rootPath, errors);
         }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,15 +14,17 @@
 
 package org.eclipse.winery.model.tosca;
 
-import org.eclipse.jdt.annotation.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tNodeType", propOrder = {
@@ -69,8 +71,7 @@ public class TNodeType extends TEntityType {
         return Objects.hash(super.hashCode(), requirementDefinitions, capabilityDefinitions, instanceStates, interfaces);
     }
 
-    /*@Nullable*/
-    public TNodeType.RequirementDefinitions getRequirementDefinitions() {
+    public TNodeType.@Nullable RequirementDefinitions getRequirementDefinitions() {
         return requirementDefinitions;
     }
 
@@ -78,8 +79,7 @@ public class TNodeType extends TEntityType {
         this.requirementDefinitions = value;
     }
 
-    /*@Nullable*/
-    public TNodeType.CapabilityDefinitions getCapabilityDefinitions() {
+    public TNodeType.@Nullable CapabilityDefinitions getCapabilityDefinitions() {
         return capabilityDefinitions;
     }
 
@@ -87,7 +87,7 @@ public class TNodeType extends TEntityType {
         this.capabilityDefinitions = value;
     }
 
-    /*@Nullable*/
+    @Nullable
     public TTopologyElementInstanceStates getInstanceStates() {
         return instanceStates;
     }
@@ -96,8 +96,7 @@ public class TNodeType extends TEntityType {
         this.instanceStates = value;
     }
 
-    /*@Nullable*/
-    public TNodeType.Interfaces getInterfaces() {
+    public TNodeType.@Nullable Interfaces getInterfaces() {
         return interfaces;
     }
 
@@ -140,6 +139,19 @@ public class TNodeType extends TEntityType {
                 capabilityDefinition = new ArrayList<TCapabilityDefinition>();
             }
             return this.capabilityDefinition;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CapabilityDefinitions that = (CapabilityDefinitions) o;
+            return Objects.equals(capabilityDefinition, that.capabilityDefinition);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(capabilityDefinition);
         }
     }
 
@@ -198,6 +210,19 @@ public class TNodeType extends TEntityType {
             }
             return this._interface;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Interfaces that = (Interfaces) o;
+            return Objects.equals(_interface, that._interface);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(_interface);
+        }
     }
 
 
@@ -254,6 +279,19 @@ public class TNodeType extends TEntityType {
                 requirementDefinition = new ArrayList<TRequirementDefinition>();
             }
             return this.requirementDefinition;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RequirementDefinitions that = (RequirementDefinitions) o;
+            return Objects.equals(requirementDefinition, that.requirementDefinition);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(requirementDefinition);
         }
     }
 

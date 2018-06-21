@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,89 +14,27 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.w3c.dom.Element;
 
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-
-/**
- * <p>Java class for tPlan complex type.
- * <p>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p>
- * <pre>
- * &lt;complexType name="tPlan">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;sequence>
- *         &lt;element name="Precondition" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tCondition"
- * minOccurs="0"/>
- *         &lt;element name="InputParameters" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="InputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="OutputParameters" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="OutputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;choice>
- *           &lt;element name="PlanModel">
- *             &lt;complexType>
- *               &lt;complexContent>
- *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                   &lt;sequence>
- *                     &lt;any processContents='lax' namespace='##other'/>
- *                   &lt;/sequence>
- *                 &lt;/restriction>
- *               &lt;/complexContent>
- *             &lt;/complexType>
- *           &lt;/element>
- *           &lt;element name="PlanModelReference">
- *             &lt;complexType>
- *               &lt;complexContent>
- *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                   &lt;attribute name="reference" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *                 &lt;/restriction>
- *               &lt;/complexContent>
- *             &lt;/complexType>
- *           &lt;/element>
- *         &lt;/choice>
- *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="planType" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *       &lt;attribute name="planLanguage" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tPlan", propOrder = {
     "precondition",
@@ -194,8 +132,7 @@ public class TPlan extends TExtensibleElements {
      *
      * @return possible object is {@link TPlan.InputParameters }
      */
-    /*@Nullable*/
-    public TPlan.InputParameters getInputParameters() {
+    public TPlan.@Nullable InputParameters getInputParameters() {
         return inputParameters;
     }
 
@@ -213,8 +150,7 @@ public class TPlan extends TExtensibleElements {
      *
      * @return possible object is {@link TPlan.OutputParameters }
      */
-    /*@Nullable*/
-    public TPlan.OutputParameters getOutputParameters() {
+    public TPlan.@Nullable OutputParameters getOutputParameters() {
         return outputParameters;
     }
 
@@ -232,8 +168,7 @@ public class TPlan extends TExtensibleElements {
      *
      * @return possible object is {@link TPlan.PlanModel }
      */
-    /*@Nullable*/
-    public TPlan.PlanModel getPlanModel() {
+    public TPlan.@Nullable PlanModel getPlanModel() {
         return planModel;
     }
 
@@ -251,8 +186,7 @@ public class TPlan extends TExtensibleElements {
      *
      * @return possible object is {@link TPlan.PlanModelReference }
      */
-    /*@Nullable*/
-    public TPlan.PlanModelReference getPlanModelReference() {
+    public TPlan.@Nullable PlanModelReference getPlanModelReference() {
         return planModelReference;
     }
 
@@ -341,7 +275,6 @@ public class TPlan extends TExtensibleElements {
         this.planLanguage = value;
     }
 
-
     /**
      * <p>Java class for anonymous complex type.
      * <p>
@@ -396,8 +329,20 @@ public class TPlan extends TExtensibleElements {
             }
             return this.inputParameter;
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            InputParameters that = (InputParameters) o;
+            return Objects.equals(inputParameter, that.inputParameter);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(inputParameter);
+        }
+    }
 
     /**
      * <p>Java class for anonymous complex type.
@@ -453,8 +398,20 @@ public class TPlan extends TExtensibleElements {
             }
             return this.outputParameter;
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            OutputParameters that = (OutputParameters) o;
+            return Objects.equals(outputParameter, that.outputParameter);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(outputParameter);
+        }
+    }
 
     /**
      * <p>Java class for anonymous complex type.
@@ -500,8 +457,21 @@ public class TPlan extends TExtensibleElements {
         public void setAny(Object value) {
             this.any = value;
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PlanModel planModel = (PlanModel) o;
+            return Objects.equals(any, planModel.any);
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(any);
+        }
+    }
 
     /**
      * <p>Java class for anonymous complex type.
@@ -543,6 +513,19 @@ public class TPlan extends TExtensibleElements {
          */
         public void setReference(String value) {
             this.reference = value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PlanModelReference that = (PlanModelReference) o;
+            return Objects.equals(reference, that.reference);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(reference);
         }
     }
 

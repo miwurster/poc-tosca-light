@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,6 +14,7 @@
 package org.eclipse.winery.repository.rest.resources.entitytypes.nodetypes;
 
 import org.eclipse.winery.repository.rest.resources.AbstractResourceTest;
+
 import org.junit.Test;
 
 public class NodeTypesResourceTest extends AbstractResourceTest {
@@ -25,4 +26,17 @@ public class NodeTypesResourceTest extends AbstractResourceTest {
         this.assertGet("nodetypes/?grouped&full", "entitytypes/nodetypes/all-nodetypes-of-commit-67bb1650522ced3872220ad2d17c1afd82e7e1f3.json");
     }
 
+    @Test
+    public void createNodeType() throws Exception {
+        this.setRevisionTo("origin/plain");
+        this.assertPost("nodetypes/", "entitytypes/nodetypes/addNodeType.json");
+        this.assertGet("nodetypes/http%253A%252F%252Fexample.org%252Ftosca%252F/myLittleExample_1.0.0-w1-1", "entitytypes/nodetypes/addedNodeType.json");
+    }
+
+    @Test
+    public void getAllVisualAppearanceData() throws Exception {
+        // we use the concrete Id as this test lists all available PLAIN node types. If these are changed, this test will fail if "origin/plain" was used.
+        this.setRevisionTo("3a3fb30e37c08800c96b71b3f03ae88c1cf874d1");
+        this.assertGet("nodetypes/allvisualappearancedata", "entitytypes/nodetypes/all-nodetypes-visualappearancedata-of-commit-3a3fb30e37c08800c96b71b3f03ae88c1cf874d1.json");
+    }
 }

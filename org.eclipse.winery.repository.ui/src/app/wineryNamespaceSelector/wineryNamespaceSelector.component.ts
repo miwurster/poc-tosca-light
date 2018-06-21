@@ -18,14 +18,9 @@ import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import {NamespaceWithPrefix} from '../wineryInterfaces/namespaceWithPrefix';
 import {StartNamespaces, ToscaTypes} from '../wineryInterfaces/enums';
 import {isNullOrUndefined} from 'util';
+import { HttpErrorResponse } from '@angular/common/http';
 
 const noop = () => {
-};
-
-const customInputControl: any = {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => WineryNamespaceSelectorComponent),
-    multi: true,
 };
 
 /**
@@ -69,7 +64,11 @@ const customInputControl: any = {
     templateUrl: './wineryNamespaceSelector.component.html',
     providers: [
         WineryNamespaceSelectorService,
-        customInputControl
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => WineryNamespaceSelectorComponent),
+            multi: true,
+        }
     ]
 })
 export class WineryNamespaceSelectorComponent implements OnInit, ControlValueAccessor {
@@ -80,6 +79,7 @@ export class WineryNamespaceSelectorComponent implements OnInit, ControlValueAcc
     @Input() useStartNamespace = true;
 
     loading = true;
+    isCollapsed = true;
     allNamespaces: NamespaceWithPrefix[] = [];
 
     @ViewChild('namespaceInput') namespaceInput: ElementRef;
@@ -101,7 +101,10 @@ export class WineryNamespaceSelectorComponent implements OnInit, ControlValueAcc
                     this.allNamespaces = data;
                     this.loading = false;
                 },
-                error => this.notify.error(error.toString())
+                (error: HttpErrorResponse) => {
+                    this.notify.error(error.message);
+                    this.loading = false;
+                }
             );
     }
 
@@ -146,6 +149,12 @@ export class WineryNamespaceSelectorComponent implements OnInit, ControlValueAcc
 
     registerOnTouched(fn: any) {
         this.onTouchedCallback = fn;
+    }
+
+    collapsed(event: any): void {
+    }
+
+    expanded(event: any): void {
     }
 
     // endregion

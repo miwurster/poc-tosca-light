@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,23 +13,24 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources;
 
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import org.eclipse.jetty.server.Server;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Scanner;
+
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.repository.TestWithGitBackedRepository;
 import org.eclipse.winery.repository.rest.server.WineryUsingHttpServer;
+
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
+import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.xmlunit.matchers.CompareMatcher;
-
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.Scanner;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -45,11 +46,13 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
     public static void init() throws Exception {
         server = WineryUsingHttpServer.createHttpServer(9080);
         server.start();
+        LOGGER.debug("Winery server started");
     }
 
     @AfterClass
     public static void shutdown() throws Exception {
         server.stop();
+        LOGGER.debug("Winery server stopped");
     }
 
     public static String readFromClasspath(String fileName) {
@@ -175,6 +178,24 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
         }
     }
 
+    protected void assertPostExpectBadRequestResponse(String restURL, String fileName) {
+        try {
+            start()
+                .contentType(getAccept(fileName))
+                .post(callURL(restURL))
+                .then()
+                .log()
+                .ifValidationFails()
+                .statusCode(400)
+                .extract()
+                .response()
+                .getBody()
+                .asString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected void assertGetSize(String restURL, int size) {
         start()
             .accept(ContentType.JSON)
@@ -262,5 +283,4 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
     public static String replacePathStringEncoding(String toConvert) {
         return toConvert.replace("%3A", "%253A").replace("%2F", "%252F");
     }
-
 }
