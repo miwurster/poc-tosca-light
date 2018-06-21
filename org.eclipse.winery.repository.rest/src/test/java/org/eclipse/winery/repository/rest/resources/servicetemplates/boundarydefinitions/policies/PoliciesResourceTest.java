@@ -35,7 +35,7 @@ public class PoliciesResourceTest extends AbstractResourceTest {
     @Test
     public void deletePolicies() throws Exception {
         this.setRevisionTo("3cad4e459a8af6082097eab8f978c80b4f5a512e");
-        this.assertDelete("servicetemplates/http%253A%252F%252Fwinery.opentosca.org%252Ftest%252Fservicetemplates%252Ffruits/baobab_serviceTemplate/boundarydefinitions/policies/1400281569/");
+        this.assertDelete("servicetemplates/http%253A%252F%252Fwinery.opentosca.org%252Ftest%252Fservicetemplates%252Ffruits/baobab_serviceTemplate/boundarydefinitions/policies/-926105316/");
         this.assertGet("servicetemplates/http%253A%252F%252Fwinery.opentosca.org%252Ftest%252Fservicetemplates%252Ffruits/baobab_serviceTemplate/boundarydefinitions/policies/", "entitytypes/empty_array.json");
     }
 }

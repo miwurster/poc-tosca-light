@@ -12,6 +12,14 @@
         "namespace": "http://docs.oasis-open.org/tosca/ns/2011/12/ToscaSpecificTypes"
     },
     {
+        "prefix": "sptemplate",
+        "namespace": "http://opentosca.org/policytemplates/security"
+    },
+    {
+        "prefix": "sptype",
+        "namespace": "http://opentosca.org/policytypes/security"
+    },
+    {
         "prefix": "wfc",
         "namespace": "http://winery.opentosca.org/test/capabilitytypes/fruits"
     },
@@ -34,6 +42,10 @@
     {
         "prefix": "ex",
         "namespace": "http://www.example.org"
+    },
+    {
+        "prefix": "otnt",
+        "namespace": "http://www.opentosca.org/nodetypes"
     },
     {
         "prefix": "winery",

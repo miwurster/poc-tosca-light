@@ -129,8 +129,8 @@
                         "name": "NodeTypeWithThreeReqCapPairsCoveringAllReqCapVariants",
                         "minInstances": 1,
                         "maxInstances": "1",
-                        "x": "786",
-                        "y": "451"
+                        "y": "451",
+                        "x": "786"
                     },
                     {
                         "id": "NodeTypeWithOneReqCapPairWithoutProperties",
@@ -153,6 +153,7 @@
                                     ],
                                     "otherAttributes": {
                                     },
+                                    "isApplied": false,
                                     "name": "sdf",
                                     "policyType": "{http://plain.winery.opentosca.org/policytypes}PolicyTypeWithXmlElementProperty",
                                     "policyRef": "{http://plain.winery.opentosca.org/policytemplates}PolicyTemplateWithXmlElementProperty-PolicyTypeWithXmlElementProperty"
@@ -162,8 +163,8 @@
                         "name": "NodeTypeWithOneReqCapPairWithoutProperties",
                         "minInstances": 1,
                         "maxInstances": "1",
-                        "x": "782",
-                        "y": "147"
+                        "y": "147",
+                        "x": "782"
                     }
                 ],
                 "relationshipTemplates": [
