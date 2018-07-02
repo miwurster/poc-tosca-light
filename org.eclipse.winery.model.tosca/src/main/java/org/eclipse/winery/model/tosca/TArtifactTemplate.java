@@ -84,7 +84,7 @@ public class TArtifactTemplate
         if (Objects.isNull(policies)) {
             return null;
         }
-        for (TPolicy p : policies.getPolicies()) {
+        for (TPolicy p : policies.getPolicy()) {
             if (QNames.WINERY_ENCRYPTION_POLICY_TYPE.equals(p.getPolicyType())) {
                 return p;
             }
@@ -101,7 +101,7 @@ public class TArtifactTemplate
         if (Objects.isNull(policies)) {
             return null;
         }
-        for (TPolicy p : policies.getPolicies()) {
+        for (TPolicy p : policies.getPolicy()) {
             if (QNames.WINERY_SIGNING_POLICY_TYPE.equals(p.getPolicyType())) {
                 return p;
             }
@@ -223,7 +223,7 @@ public class TArtifactTemplate
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
-         *    getPolicies().add(newItem);
+         *    getPolicy().add(newItem);
          * </pre>
          * <p>
          * <p>
@@ -232,7 +232,7 @@ public class TArtifactTemplate
          * {@link TPolicy }
          */
         @NonNull
-        public List<TPolicy> getPolicies() {
+        public List<TPolicy> getPolicy() {
             if (policy == null) {
                 policy = new ArrayList<>();
             }
@@ -303,14 +303,14 @@ public class TArtifactTemplate
         }
 
         public Builder addPolicies(TArtifactTemplate.Policies policies) {
-            if (policies == null || policies.getPolicies().isEmpty()) {
+            if (policies == null || policies.getPolicy().isEmpty()) {
                 return this;
             }
 
             if (this.policies == null) {
                 this.policies = policies;
             } else {
-                this.policies.getPolicies().addAll(policies.policy);
+                this.policies.getPolicy().addAll(policies.policy);
             }
             return this;
         }
@@ -321,7 +321,7 @@ public class TArtifactTemplate
             }
 
             TArtifactTemplate.Policies tmp = new TArtifactTemplate.Policies();
-            tmp.getPolicies().addAll(policies);
+            tmp.getPolicy().addAll(policies);
             return addPolicies(tmp);
         }
 
@@ -331,7 +331,7 @@ public class TArtifactTemplate
             }
 
             TArtifactTemplate.Policies tmp = new TArtifactTemplate.Policies();
-            tmp.getPolicies().add(policy);
+            tmp.getPolicy().add(policy);
             return addPolicies(tmp);
         }
 

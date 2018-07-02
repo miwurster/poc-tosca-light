@@ -432,6 +432,18 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                 ids.add(capTypeId);
             }
         }
+        
+        // add all referenced policy types/templates
+        TNodeType.Policies policiesContainer = nodeType.getPolicies();
+        if (Objects.nonNull(policiesContainer)) {
+            List<TPolicy> policies = policiesContainer.getPolicy();
+            for (TPolicy p : policies) {
+                PolicyTypeId policyTypeId = new PolicyTypeId(p.getPolicyType());
+                PolicyTemplateId policyTemplateId = new PolicyTemplateId(p.getPolicyRef());
+                ids.add(policyTypeId);
+                ids.add(policyTemplateId);
+            }
+        }
 
         return ids;
     }
@@ -577,6 +589,17 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
             throw new RepositoryCorruptException("Type is null for " + id.toReadableString());
         } else {
             ids.add(new ArtifactTypeId(type));
+        }
+
+        // add all referenced policy types/templates
+        TArtifactTemplate.Policies policiesContainer = artifactTemplate.getPolicies();
+        if (Objects.nonNull(policiesContainer)) {
+            for (TPolicy p : policiesContainer.getPolicy()) {
+                PolicyTypeId policyTypeId = new PolicyTypeId(p.getPolicyType());
+                PolicyTemplateId policyTemplateId = new PolicyTemplateId(p.getPolicyRef());
+                ids.add(policyTypeId);
+                ids.add(policyTemplateId);
+            }
         }
 
         return ids;
