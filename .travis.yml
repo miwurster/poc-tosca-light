@@ -16,10 +16,10 @@ before_install:
   #- java -jar jpm4j.jar -u init
   # - ~/jpm/bin/jpm install com.codacy:codacy-coverage-reporter:assembly
   - cp .travis.settings.xml $HOME/.m2/settings.xml
-  - mvn resources:resources -pl org.eclipse.winery.repository.configuration
+  - mvn -q resources:resources -pl org.eclipse.winery.repository.configuration
 
 script:
-  - mvn deploy
+  - mvn -q package
   # - mvn jacoco:report-aggregate
 
 deploy:
