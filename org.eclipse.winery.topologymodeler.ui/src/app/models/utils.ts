@@ -96,8 +96,8 @@ export class Utils {
                     imageUrl = imageUrl.replace('appearance', 'visualappearance');
                 }
                 const nodeVisualsObject = {
-                  color: color,
-                  imageUrl: imageUrl,
+                    color: color,
+                    imageUrl: imageUrl,
                 };
                 return nodeVisualsObject;
             }

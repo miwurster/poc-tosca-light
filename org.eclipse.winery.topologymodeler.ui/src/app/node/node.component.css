@@ -170,3 +170,26 @@ button.btn.btn-sm.btn-outline-secondary:hover, button.btn.btn-sm.btn-outline-sec
     width: 100%;
 }
 
+:host >>> .popover {
+    background-color: #1DC58A;
+    color: #000;
+}
+
+:host >>> .popover > .arrow:after {
+    border-top-color: #009688;
+}
+
+.popover-component {
+    padding: 0.5em;
+    margin: -0.4em -0.7em;
+    border: 1px solid #69F0AE;
+    border-radius: 2px;
+    color: #000;
+    cursor: help;
+}
+
+.popover-component:hover {
+    background-color: #00E676;
+    border-radius: 2px;
+    color: #000;
+}
