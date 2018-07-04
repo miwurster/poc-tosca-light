@@ -215,6 +215,9 @@
 
                     This takes the content of 'target/mvn-repo' and publishes it to the repository 
                     'OpenTOSCA/mvn-repo/master'.
+
+                    This is needed for manual intervention only. TravisCI generates the gh-pages by a TravisCI plugin
+                    independent of this configuration.
                 -->
                 <plugin>
                     <groupId>com.github.github</groupId>
