@@ -27,6 +27,7 @@ before_install:
 
 script:
   - mvn -q package
+  - mvn -DskipTests deploy
   # - mvn jacoco:report-aggregate
 
 deploy:
