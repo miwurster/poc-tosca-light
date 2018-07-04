@@ -16,7 +16,7 @@ RUN unzip /tmp/winery/org.eclipse.winery.repository.rest/target/winery.war -d /o
     && sed -i "sX#repositoryPath=.*XrepositoryPath=/var/opentosca/repositoryX" /opt/winery/WEB-INF/classes/winery.properties
 
 
-FROM tomcat:8.5-jre8
+FROM tomcat:8.5.31
 LABEL maintainer "Oliver Kopp <kopp.dev@gmail.com>, Michael Wurster <miwurster@gmail.com>"
 
 ENV WINERY_REPOSITORY_URL=
