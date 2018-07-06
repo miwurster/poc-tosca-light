@@ -13,11 +13,7 @@
  ********************************************************************************/
 
 import { Component, Input, OnInit } from '@angular/core';
-import { EntityType,
-    TNodeTemplate,
-    TRelationshipTemplate,
-    TTopologyTemplate,
-    Visuals } from './models/ttopology-template';
+import { EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate, Visuals } from './models/ttopology-template';
 import { ILoaded, LoadedService } from './services/loaded.service';
 import { AppReadyEventService } from './services/app-ready-event.service';
 import { BackendService, TopologyModelerConfiguration } from './services/backend.service';
@@ -40,7 +36,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class WineryComponent implements OnInit {
 
-    // if this input variable is not null, it means that data is passed to the topologymodeler to be rendered
+    // If this input variable is not null, it means that data is passed to the topologymodeler to be rendered.
     @Input() topologyModelerData: TopologyModelerInputDataFormat;
 
     sidebarDeleteButtonClickEvent: any;
@@ -230,7 +226,7 @@ export class WineryComponent implements OnInit {
         // init rendering
         this.entityTypes.nodeVisuals = tmData.visuals;
         this.initTopologyTemplate(nodeTemplateArray, relationshipTemplateArray);
-        this.loaded = {loadedData: true, generatedReduxState: false};
+        this.loaded = { loadedData: true, generatedReduxState: false };
         this.appReadyEvent.trigger();
     }
 

@@ -22,6 +22,9 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { urlElement } from '../models/enums';
 import { ToscaDiff } from '../models/ToscaDiff';
 import { ToastrService } from 'ngx-toastr';
+import { Observable } from 'rxjs/Observable';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/internal/operators';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -66,9 +69,8 @@ export class BackendService {
      * This is required
      * @returns data  The JSON from the server
      */
-    private requestAllEntitiesAtOnce(): Observable<Object> {
+    private requestAllEntitiesAtOnce(): Observable<any> {
         if (this.configuration) {
-            // Observable.forkJoin (RxJS 5) changes to just forkJoin() in RxJS 6
             return forkJoin(
                 this.requestGroupedNodeTypes(),
                 this.requestArtifactTemplates(),
@@ -130,13 +132,16 @@ export class BackendService {
             const url = this.configuration.repositoryURL + '/relationshiptypes/'
                 + encodeURIComponent(encodeURIComponent(namespace)) + '/'
                 + id + '/visualappearance/';
-            return this.http.get<EntityType>(url, { headers: this.headers }).pipe(
-                map(relationship => {
-                    if (!isNullOrUndefined(this.configuration.compareTo)) {
-                        relationship.color = 'grey';
-                    }
-                    return relationship;
-                }));
+            return this.http
+                .get<EntityType>(url, { headers: this.headers })
+                .pipe(
+                    map(relationship => {
+                        if (!isNullOrUndefined(this.configuration.compareTo)) {
+                            relationship.color = 'grey';
+                        }
+                        return relationship;
+                    })
+                );
         }
     }
 

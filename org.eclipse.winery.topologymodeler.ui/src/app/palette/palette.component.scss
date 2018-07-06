@@ -16,9 +16,9 @@
     border-radius: 1px;
     box-shadow: initial;
     /*background-color: #424242;*/
-    background-color: #424242;
+    background-color: #dfdfdf;
     border: 1px solid #c0c0c0;
-    color: #fff;
+    color: black;
     min-width: 300px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
@@ -26,12 +26,13 @@
 }
 
 #palette_root:hover {
-    background-color: #616161;
+    background-color: #EAF2F5;
 }
 
 .palette-items-wrapper {
-    height: 100%;
+    height: 90%;
     background: #eee;
+    overflow: scroll;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -42,16 +43,12 @@
 }
 
 accordion-group {
-    font-size: x-small !important;
+    font-size: x-small;
     max-width: 300px;
-    text-overflow: ellipsis !important;
-    overflow: hidden !important;
+    text-overflow: ellipsis;
+    overflow: scroll;
     white-space: nowrap !important;
     text-align: start !important;
-}
-
-ul {
-    background-color: #757575 !important;
 }
 
 accordion-group:hover {

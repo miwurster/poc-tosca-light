@@ -12,22 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 import {
-    AfterViewInit,
-    Component,
-    DoCheck,
-    ElementRef,
-    HostListener,
-    Input,
-    KeyValueDiffers,
-    NgZone,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    QueryList,
-    Renderer2,
-    SimpleChanges,
-    ViewChild,
-    ViewChildren
+    AfterViewInit, Component, DoCheck, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnChanges, OnDestroy, OnInit, QueryList,
+    Renderer2, SimpleChanges, ViewChild, ViewChildren
 } from '@angular/core';
 import { JsPlumbService } from '../services/jsPlumb.service';
 import { EntityType, TNodeTemplate, TRelationshipTemplate } from '../models/ttopology-template';
@@ -99,7 +85,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     currentModalData: any;
     dragSourceActive = false;
     event;
-    currentType: string;
     selectedRelationshipType: EntityType;
     nodeChildrenIdArray: Array<string>;
     nodeChildrenArray: Array<NodeComponent>;
@@ -544,7 +529,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             const keyValuePair = {
                 [key]: value
             };
-            newKVProperies = {...newKVProperies, ...keyValuePair};
+            newKVProperies = { ...newKVProperies, ...keyValuePair };
         }
         return newKVProperies;
     }
@@ -1127,7 +1112,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             const conn = this.newJsPlumbInstance.connect({
                 source: newRelationship.sourceElement.ref,
                 target: newRelationship.targetElement.ref,
-                overlays: [['Arrow', {width: 15, length: 15, location: 1, id: 'arrow', direction: 1}],
+                overlays: [['Arrow', { width: 15, length: 15, location: 1, id: 'arrow', direction: 1 }],
                     ['Label', {
                         label: labelString,
                         id: 'label',
@@ -1230,7 +1215,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         if (!this.dragSourceActive && !currentNodeIsSource && nodeArrayLength > 1) {
             this.newJsPlumbInstance.makeSource(dragSourceInfo.dragSource, {
                 connectorOverlays: [
-                    ['Arrow', {location: 1}],
+                    ['Arrow', { location: 1 }],
                 ],
             });
             this.dragSourceInfos = dragSourceInfo;
@@ -1476,7 +1461,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     stroke: relType.color,
                     strokeWidth: 2
                 },
-                hoverPaintStyle: {stroke: relType.color, strokeWidth: 5}
+                hoverPaintStyle: { stroke: relType.color, strokeWidth: 5 }
             });
     }
 
@@ -1557,9 +1542,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * @param nodeId
      */
     activateNewNode(nodeId: string): void {
-        this.newJsPlumbInstance.draggable(nodeId);
-        if (this.paletteOpened) {
-            this.bindNewNode();
+        console.log(nodeId)
+        if (nodeId) {
+            this.newJsPlumbInstance.draggable(nodeId);
+            if (this.paletteOpened) {
+                this.bindNewNode();
+            }
         }
     }
 
@@ -1621,7 +1609,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             // workaround for a jsPlumb connection bug, where upon loading node templates without relationships
             // no creation of relationships possible
         } else if (this.allRelationshipTemplates.length === 0) {
-            const con = this.newJsPlumbInstance.connect({source: 'dummy1', target: 'dummy2'});
+            const con = this.newJsPlumbInstance.connect({ source: 'dummy1', target: 'dummy2' });
             con.setVisible(false);
         }
         if (this.diffMode) {
@@ -1956,8 +1944,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
                     if (relTypeExists === false && sourceElement !== targetElement) {
                         const newRelationship = new TRelationshipTemplate(
-                            {ref: sourceElement},
-                            {ref: targetElement},
+                            { ref: sourceElement },
+                            { ref: targetElement },
                             relationshipId,
                             relationshipId,
                             this.selectedRelationshipType.qName
@@ -1975,13 +1963,15 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * Handles the new node by binding to mouse move and mouse up actions
      */
     private bindNewNode(): void {
-        setTimeout(() => this.handleNodePressActions(this.newNode.id), 1);
-        this.zone.run(() => {
-            this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mousemove',
-                (event) => this.moveNewNode(event)));
-            this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mouseup',
-                ($event) => this.positionNewNode()));
-        });
+        if (this.newNode) {
+            setTimeout(() => this.handleNodePressActions(this.newNode.id), 1);
+            this.zone.run(() => {
+                this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mousemove',
+                    (event) => this.moveNewNode(event)));
+                this.unbindMouseActions.push(this.renderer.listen(this.eref.nativeElement, 'mouseup',
+                    ($event) => this.positionNewNode()));
+            });
+        }
     }
 
     /**
