@@ -23,7 +23,7 @@ export interface EntityTypesModel {
     artifactTypes: any;
     capabilityTypes: any;
     groupedNodeTypes: any;
-    nodeVisuals: any;
+    nodeVisuals: Visuals[];
     policyTemplates: any;
     policyTypes: any;
     relationshipTypes: any;

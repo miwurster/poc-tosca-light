@@ -13,13 +13,11 @@
  ********************************************************************************/
 
 import { Component, Input, OnInit } from '@angular/core';
-import {
-    EntityType,
+import { EntityType,
     TNodeTemplate,
     TRelationshipTemplate,
     TTopologyTemplate,
-    Visuals
-} from './models/ttopology-template';
+    Visuals } from './models/ttopology-template';
 import { ILoaded, LoadedService } from './services/loaded.service';
 import { AppReadyEventService } from './services/app-ready-event.service';
 import { BackendService, TopologyModelerConfiguration } from './services/backend.service';
@@ -44,14 +42,15 @@ export class WineryComponent implements OnInit {
 
     // if this input variable is not null, it means that data is passed to the topologymodeler to be rendered
     @Input() topologyModelerData: TopologyModelerInputDataFormat;
+
     sidebarDeleteButtonClickEvent: any;
     nodeTemplates: Array<TNodeTemplate> = [];
     relationshipTemplates: Array<TRelationshipTemplate> = [];
-    artifactTypes: Array<any> = [];
-    policyTypes: Array<any> = [];
+    artifactTypes: Array<EntityType> = [];
+    policyTypes: Array<EntityType> = [];
     policyTemplates: Array<any> = [];
-    capabilityTypes: Array<any> = [];
-    requirementTypes: Array<any> = [];
+    capabilityTypes: Array<EntityType> = [];
+    requirementTypes: Array<EntityType> = [];
     groupedNodeTypes: Array<any> = [];
     relationshipTypes: Array<EntityType> = [];
     entityTypes: any = {};
@@ -63,6 +62,8 @@ export class WineryComponent implements OnInit {
     topologyDifferences: [ToscaDiff, TTopologyTemplate];
 
     public loaded: ILoaded;
+    private loadedRelationshipVisuals = 0;
+    private requiredRelationshipVisuals: number;
 
     constructor(private loadedService: LoadedService,
                 private appReadyEvent: AppReadyEventService,
@@ -108,8 +109,8 @@ export class WineryComponent implements OnInit {
     /**
      * Save the received Array of Entity Types inside the respective variables in the entityTypes array of arrays
      * which is getting passed to the palette and the topology renderer
-     * @param entityTypeJSON
-     * @param entityType
+     * @param {Array<any>} entityTypeJSON
+     * @param {string} entityType
      */
     initEntityType(entityTypeJSON: Array<any>, entityType: string): void {
         switch (entityType) {
@@ -196,25 +197,24 @@ export class WineryComponent implements OnInit {
                 break;
             }
             case 'relationshipTypes': {
+                this.requiredRelationshipVisuals = entityTypeJSON.length;
                 entityTypeJSON.forEach(relationshipType => {
+                    const relType = new EntityType(
+                        relationshipType.id,
+                        relationshipType.qName,
+                        relationshipType.name,
+                        relationshipType.namespace);
+                    this.relationshipTypes.push(relType);
+
                     // get relationship type visualappearances
-                    let visualAppearance;
                     this.backendService
-                    // returns Observable
-                        .requestRelationshipTypeVisualappearance(
-                            relationshipType.namespace,
-                            relationshipType.id)
-                        .subscribe((JSON) => {
-                            visualAppearance = JSON;
-                            this.relationshipTypes
-                                .push(new EntityType(
-                                    relationshipType.id,
-                                    relationshipType.qName,
-                                    relationshipType.name,
-                                    relationshipType.namespace,
-                                    visualAppearance.color
-                                ));
-                        });
+                        .requestRelationshipTypeVisualappearance(relationshipType.namespace, relationshipType.id)
+                        .subscribe(
+                            (visualAppearance) => {
+                                relType.color = visualAppearance.color;
+                                this.triggerLoaded('relationshipVisuals');
+                            }
+                        );
                 });
                 this.entityTypes.relationshipTypes = this.relationshipTypes;
                 break;
@@ -246,76 +246,61 @@ export class WineryComponent implements OnInit {
         }
         // init relationship templates
         if (relationshipTemplateArray.length > 0) {
-            let relIdCount = 1;
             relationshipTemplateArray.forEach(relationship => {
+                const state = isNullOrUndefined(this.topologyDifferences) ? null : DifferenceStates.UNCHANGED;
                 this.relationshipTemplates.push(
-                    Utils.createTRelationshipTemplateFromObject(relationship, relIdCount)
+                    Utils.createTRelationshipTemplateFromObject(relationship, state)
                 );
-                relIdCount += 1;
             });
         }
     }
 
     initiateBackendCalls(): void {
-        // Grouped NodeTypes
-        this.backendService.groupedNodeTypes$.subscribe(JSON => {
-            this.initEntityType(JSON, 'groupedNodeTypes');
-        });
-        // Artifact Templates
-        this.backendService.artifactTemplates$.subscribe(JSON => {
-            this.initEntityType(JSON, 'artifactTemplates');
-        });
+        this.backendService.allEntities$.subscribe(JSON => {
+            // Grouped NodeTypes
+            this.initEntityType(JSON[0], 'groupedNodeTypes');
 
-        /**
-         * This subscriptionProperties receives an Observable of [string, string], the former value being
-         * the JSON representation of the topologyTemplate and the latter value being the JSON
-         * representation of the node types' visual appearances
-         * the backendService makes sure that both get requests finish before pushing data onto this Observable
-         * by using Observable.forkJoin(1$, 2$);
-         */
-        this.backendService.topologyTemplatesDiffAndVisuals$.subscribe((JSON: [TTopologyTemplate, Visuals, ToscaDiff, TTopologyTemplate]) => {
-            const topologyTemplate = JSON[0];
-            this.entityTypes.nodeVisuals = JSON[1];
+            // Artifact Templates
+            this.initEntityType(JSON[1], 'artifactTemplates');
 
-            if (JSON.length === 4 && !isNullOrUndefined(JSON[2]) && !isNullOrUndefined(JSON[3])) {
-                this.topologyDifferences = [JSON[2], JSON[3]];
+            /**
+             * This subscriptionProperties receives an Observable of [string, string], the former value being
+             * the JSON representation of the topologyTemplate and the latter value being the JSON
+             * representation of the node types' visual appearances
+             * the backendService makes sure that both get requests finish before pushing data onto this Observable
+             * by using Observable.forkJoin(1$, 2$);
+             * */
+            const topologyData = JSON[2];
+            const topologyTemplate = topologyData[0];
+            this.entityTypes.nodeVisuals = topologyData[1];
+            if (topologyData.length === 4 && !isNullOrUndefined(topologyData[2]) && !isNullOrUndefined(topologyData[3])) {
+                this.topologyDifferences = [topologyData[2], topologyData[3]];
             }
-
             // init the NodeTemplates and RelationshipTemplates to start their rendering
             this.initTopologyTemplate(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
 
-            this.loaded = {loadedData: true, generatedReduxState: false};
-            this.appReadyEvent.trigger();
-        });
+            // Artifact types
+            this.initEntityType(JSON[3], 'artifactTypes');
 
-        // Get other entity types
-        // Artifact Types
-        this.backendService.artifactTypes$.subscribe(JSON => {
-            this.initEntityType(JSON, 'artifactTypes');
-        });
-        // Policy Types
-        this.backendService.policyTypes$.subscribe(JSON => {
-            this.initEntityType(JSON, 'policyTypes');
-        });
-        // Capability Types
-        this.backendService.capabilityTypes$.subscribe(JSON => {
-            this.initEntityType(JSON, 'capabilityTypes');
-        });
-        // Requirement Types
-        this.backendService.requirementTypes$.subscribe(JSON => {
-            this.initEntityType(JSON, 'requirementTypes');
-        });
-        // PolicyTemplates
-        this.backendService.policyTemplates$.subscribe(JSON => {
-            this.initEntityType(JSON, 'policyTemplates');
-        });
-        // Relationship Types
-        this.backendService.relationshipTypes$.subscribe(JSON => {
-            this.initEntityType(JSON, 'relationshipTypes');
-        });
-        // NodeTypes
-        this.backendService.nodeTypes$.subscribe(JSON => {
-            this.initEntityType(JSON, 'unGroupedNodeTypes');
+            // Policy types
+            this.initEntityType(JSON[4], 'policyTypes');
+
+            // Capability Types
+            this.initEntityType(JSON[5], 'capabilityTypes');
+
+            // Requirement Types
+            this.initEntityType(JSON[6], 'requirementTypes');
+
+            // PolicyTemplates
+            this.initEntityType(JSON[7], 'policyTemplates');
+
+            // Relationship Types
+            this.initEntityType(JSON[8], 'relationshipTypes');
+
+            // NodeTypes
+            this.initEntityType(JSON[9], 'unGroupedNodeTypes');
+
+            this.triggerLoaded('everything');
         });
     }
 
@@ -336,6 +321,17 @@ export class WineryComponent implements OnInit {
 
     sidebarDeleteButtonClicked($event) {
         this.sidebarDeleteButtonClickEvent = $event;
+    }
+
+    private triggerLoaded(what?: string) {
+        if (what === 'relationshipVisuals') {
+            this.loadedRelationshipVisuals++;
+        }
+        this.loaded = {
+            loadedData: this.loadedRelationshipVisuals === this.requiredRelationshipVisuals,
+            generatedReduxState: false
+        };
+        this.appReadyEvent.trigger();
     }
 }
 
