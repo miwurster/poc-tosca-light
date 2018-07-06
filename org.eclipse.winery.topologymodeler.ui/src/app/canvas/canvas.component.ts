@@ -1249,7 +1249,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      */
     @HostListener('document:keydown', ['$event'])
     handleDeleteKeyEvent(event?: KeyboardEvent) {
-        if (event.key === 'Backspace' || event.key === 'Delete') {
+        if (event && (event.key === 'Backspace' || event.key === 'Delete')) {
             this.unbindConnection();
             // if name, min or max instances has changed, do not delete the node.
             if (this.selectedNodes.length > 0) {
