@@ -31,13 +31,20 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>${ch.qos.logback.logback-classic.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.25</version>
+            <version>${org.slf4j}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- jersey 1.x uses java.util.logging - we want to take care about these outputs, too -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>${org.slf4j}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -67,7 +74,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.8.0</version>
+            <version>${com.fasterxml.jackson.core.jackson-annotations}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -217,7 +224,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-ext</artifactId>
-            <version>1.7.25</version>
+            <version>${org.slf4j}</version>
             <scope>compile</scope>
             <!-- not approved by Eclipse legal -->
             <exclusions>
@@ -293,7 +300,7 @@
         <dependency>
             <groupId>io.github.adr</groupId>
             <artifactId>e-adr</artifactId>
-            <version>1.0.0</version>
+            <version>${io.github.adr.e-adr.version}</version>
         </dependency>
         <!-- jetty is required for WineryUsingHttpServer only -->
         <dependency>
@@ -373,11 +380,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>2.17</version>
                 <executions>
@@ -445,7 +447,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.2.0</version>
                 <configuration>
-                    <attachClasses>true</attachClasses>
+                    <attachClasses>true</attachClasses> <!-- see https://stackoverflow.com/a/10090564/873282 -->
                     <classesClassifier>classes</classesClassifier>
                     <webResources>
                         <resource>
@@ -491,6 +493,18 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>org.eclipse.winery.repository.rest*</excludePackageNames>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
         </plugins>
         <finalName>winery</finalName>
@@ -655,28 +669,13 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
                 </plugin>
             </plugins>
         </pluginManagement>

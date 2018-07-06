@@ -298,9 +298,9 @@ public class SecurityRequirementsExportEnforcer {
                     // signify that a policy was applied on the level of the node template
                     signTypeLevelPolicy.setIsApplied(true);
                     addPolicyToNodeTemplate(nodeTemplate, signTypeLevelPolicy);
-
+                    
                     // update the service template
-                    BackendUtils.persist(tcId, serviceTemplate);
+                    BackendUtils.persist(repository, tcId, serviceTemplate);
 
                     // prepare generate signature artifact for export
                     referencedDefinitionsChildIds.add(signatureArtifactTypeId);
@@ -322,7 +322,7 @@ public class SecurityRequirementsExportEnforcer {
     private RepositoryFileReference generateSignedPropertiesManifest(ArtifactTemplateId sigArtifactTemplateId, TArtifactTemplate sigArtifactTemplate, String manifestContent) {
         // generate Properties Digests Manifest
         String manifestName = generateSignedPropertiesManifestName(sigArtifactTemplate.getId());
-        RepositoryFileReference manifestPathRef = BackendUtils.addFileToArtifactTemplate(sigArtifactTemplateId, sigArtifactTemplate, manifestName, manifestContent);
+        RepositoryFileReference manifestPathRef = BackendUtils.addFileToArtifactTemplate(repository, sigArtifactTemplateId, sigArtifactTemplate, manifestName, manifestContent);
         String manifestPath = BackendUtils.getPathInsideRepo(manifestPathRef);
         this.addedReferencesToPathInCSARMap.put(manifestPathRef, manifestPath);
 
@@ -334,7 +334,7 @@ public class SecurityRequirementsExportEnforcer {
         String manifestDigest = this.securityProcessor.calculateDigest(manifestBytes, this.digestAlgorithm);
         String signedPropertiesSignatureFileContent = generateSignedPropertiesSignatureFile(manifestDigest, propertiesDigests, plainDigests);
         String signedPropertiesSignatureFileName = generatePropertiesSignatureFileName(sigArtifactTemplate.getId());
-        RepositoryFileReference signedPropertiesSignatureFileRef = BackendUtils.addFileToArtifactTemplate(sigArtifactTemplateId, sigArtifactTemplate, signedPropertiesSignatureFileName, signedPropertiesSignatureFileContent);
+        RepositoryFileReference signedPropertiesSignatureFileRef = BackendUtils.addFileToArtifactTemplate(repository, sigArtifactTemplateId, sigArtifactTemplate, signedPropertiesSignatureFileName, signedPropertiesSignatureFileContent);
         String signedPropertiesSignatureFilePath = BackendUtils.getPathInsideRepo(signedPropertiesSignatureFileRef);
         this.addedReferencesToPathInCSARMap.put(signedPropertiesSignatureFileRef, signedPropertiesSignatureFilePath);
 
@@ -345,7 +345,7 @@ public class SecurityRequirementsExportEnforcer {
         byte[] signatureFileBytes = Files.readAllBytes(((FilebasedRepository) repository).ref2AbsolutePath(signatureFile));
         byte[] blockSignatureFileContent = this.securityProcessor.signBytes(signingKey, signatureFileBytes);
         String blockSignatureFileName = sigArtifactTemplate.getId().concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
-        RepositoryFileReference blockSignatureFileRef = BackendUtils.addFileToArtifactTemplate(sigArtifactTemplateId, sigArtifactTemplate, blockSignatureFileName, blockSignatureFileContent);
+        RepositoryFileReference blockSignatureFileRef = BackendUtils.addFileToArtifactTemplate(repository, sigArtifactTemplateId, sigArtifactTemplate, blockSignatureFileName, blockSignatureFileContent);
         String blockSignatureFilePath = BackendUtils.getPathInsideRepo(blockSignatureFileRef);
         this.addedReferencesToPathInCSARMap.put(blockSignatureFileRef, blockSignatureFilePath);
     }
@@ -401,7 +401,7 @@ public class SecurityRequirementsExportEnforcer {
                     byte[] blockSignatureFileContent = this.securityProcessor.signBytes(signingKey, fileBytes);
                     // generate signature block file                
                     String blockSignatureFileName = fileRef.getFileName().concat(mode).concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
-                    RepositoryFileReference blockSignatureFileRef = BackendUtils.addFileToArtifactTemplate(tcId, artifactTemplate, blockSignatureFileName, blockSignatureFileContent);
+                    RepositoryFileReference blockSignatureFileRef = BackendUtils.addFileToArtifactTemplate(repository, tcId, artifactTemplate, blockSignatureFileName, blockSignatureFileContent);
                     String blockSignatureFilePath = BackendUtils.getPathInsideRepo(blockSignatureFileRef);
                     this.addedReferencesToPathInCSARMap.put(blockSignatureFileRef, blockSignatureFilePath);
 

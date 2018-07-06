@@ -124,24 +124,13 @@ public class TArtifactTemplate
      * @return possible object is {@link TArtifactTemplate.ArtifactReferences }
      */
     public TArtifactTemplate.@Nullable ArtifactReferences getArtifactReferences() {
-
         return artifactReferences;
     }
 
-    /**
-     * Sets the value of the artifactReferences property.
-     *
-     * @param value allowed object is {@link TArtifactTemplate.ArtifactReferences }
-     */
     public void setArtifactReferences(TArtifactTemplate.ArtifactReferences value) {
         this.artifactReferences = value;
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @Nullable
     public String getName() {
         return name;
@@ -156,6 +145,17 @@ public class TArtifactTemplate
         this.name = value;
     }
 
+    @Override
+    public String toString() {
+        return "TArtifactTemplate{" +
+            "artifactReferences=" + artifactReferences +
+            ", name='" + name + '\'' +
+            ", properties=" + properties +
+            ", propertyConstraints=" + propertyConstraints +
+            ", type=" + type +
+            '}';
+    }
+
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "artifactReference"
@@ -164,6 +164,13 @@ public class TArtifactTemplate
 
         @XmlElement(name = "ArtifactReference", required = true)
         protected List<TArtifactReference> artifactReference;
+
+        @Override
+        public String toString() {
+            return "ArtifactReferences{" +
+                "artifactReference=" + artifactReference +
+                '}';
+        }
 
         /**
          * Gets the value of the artifactReference property.
