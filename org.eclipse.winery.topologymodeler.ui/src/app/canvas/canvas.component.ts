@@ -1542,7 +1542,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * @param nodeId
      */
     activateNewNode(nodeId: string): void {
-        console.log(nodeId)
         if (nodeId) {
             this.newJsPlumbInstance.draggable(nodeId);
             if (this.paletteOpened) {
