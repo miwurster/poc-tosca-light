@@ -44,10 +44,7 @@ import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 })
 export class NavbarComponent implements OnDestroy {
 
-    /**
-     * Boolean variables that hold the state (pressed vs. !pressed) of the navbar buttons.
-     */
-    @Input() hideNavBarState;
+    @Input() hideNavBarState: boolean;
     @Input() readonly: boolean;
 
     @ViewChild('exportCsarButton')
@@ -227,5 +224,9 @@ export class NavbarComponent implements OnDestroy {
      */
     ngOnDestroy() {
         this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    }
+
+    openManagementUi() {
+        window.open(this.backendService.serviceTemplateUiUrl, '_blank');
     }
 }

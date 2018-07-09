@@ -31,10 +31,12 @@ import { map } from 'rxjs/internal/operators';
  */
 @Injectable()
 export class BackendService {
+
     readonly headers = new HttpHeaders().set('Accept', 'application/json');
 
     configuration: TopologyModelerConfiguration;
-    topologyTemplateURL;
+    topologyTemplateURL: string;
+    serviceTemplateUiUrl: string;
 
     endpointConfiguration = new Subject<any>();
     endpointConfiguration$ = this.endpointConfiguration.asObservable();
@@ -50,9 +52,11 @@ export class BackendService {
                 isNullOrUndefined(params.repositoryURL) &&
                 isNullOrUndefined(params.uiURL))) {
                 this.configuration = params;
-                this.topologyTemplateURL = this.configuration.repositoryURL + '/servicetemplates/'
+                const url = 'servicetemplates/'
                     + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
                     + this.configuration.id;
+                this.topologyTemplateURL = this.configuration.repositoryURL + '/' + url;
+                this.serviceTemplateUiUrl = this.configuration.uiURL + url;
 
                 // All Entity types
                 this.requestAllEntitiesAtOnce().subscribe(data => {

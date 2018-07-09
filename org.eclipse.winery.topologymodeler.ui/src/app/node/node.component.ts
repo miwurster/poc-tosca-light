@@ -13,18 +13,7 @@
  ********************************************************************************/
 
 import {
-    AfterViewInit,
-    Component,
-    ComponentRef,
-    DoCheck,
-    ElementRef,
-    EventEmitter,
-    Input,
-    KeyValueDiffers,
-    NgZone,
-    OnDestroy,
-    OnInit,
-    Output,
+    AfterViewInit, Component, ComponentRef, DoCheck, ElementRef, EventEmitter, Input, KeyValueDiffers, NgZone, OnDestroy, OnInit, Output,
     Renderer2
 } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
@@ -48,20 +37,19 @@ import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
     templateUrl: './node.component.html',
     styleUrls: ['./node.component.css'],
     animations: [trigger('onCreateNodeTemplateAnimation', [
-        state('hidden', style({opacity: 0, transform: 'translateX(0)'})),
-        state('visible', style({opacity: 1, transform: 'scale'})),
+        state('hidden', style({ opacity: 0, transform: 'translateX(0)' })),
+        state('visible', style({ opacity: 1, transform: 'scale' })),
         transition('hidden => visible', animate('300ms', keyframes([
-            style({opacity: 0, transform: 'scale(0.2)', offset: 0}),
-            style({opacity: 0.3, transform: 'scale(1.1)', offset: 0.7}),
-            style({opacity: 1, transform: 'scale(1.0)', offset: 1.0})
+            style({ opacity: 0, transform: 'scale(0.2)', offset: 0 }),
+            style({ opacity: 0.3, transform: 'scale(1.1)', offset: 0.7 }),
+            style({ opacity: 1, transform: 'scale(1.0)', offset: 1.0 })
         ]))),
     ]),
     ]
 })
 export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck {
+
     public items: string[] = ['Item 1', 'Item 2', 'Item 3'];
-    public accordionGroupPanel = 'accordionGroupPanel';
-    public customClass = 'customClass';
     visibilityState = 'hidden';
     connectorEndpointVisible = false;
     startTime;
@@ -76,10 +64,13 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     artifactTypes: any;
     removeZIndex: any;
     propertyDefinitionType: string;
+
     @Input() readonly: boolean;
     @Input() entityTypes: any;
     @Input() dragSource: string;
     @Input() navbarButtonsState: ButtonsStateModel;
+    @Input() relationshipTypes: Array<EntityType>;
+    @Input() nodeTemplate: TNodeTemplate;
     @Output() sendId: EventEmitter<string>;
     @Output() askForRepaint: EventEmitter<string>;
     @Output() setDragSource: EventEmitter<any>;
@@ -92,8 +83,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     @Output() saveNodeRequirements: EventEmitter<any>;
     @Output() sendPaletteStatus: EventEmitter<any>;
     @Output() sendNodeData: EventEmitter<any>;
-    @Input() relationshipTypes: Array<EntityType>;
-    @Input() nodeTemplate: TNodeTemplate;
 
     previousPosition: any;
     currentPosition: any;
@@ -196,7 +185,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Triggered when opening a modal to send node data to the canvas for handling the addition of modal data.
      */
     sendToggleAction(nodeData: any): void {
-        const currentNodeData = {...this.nodeTemplate, ...nodeData};
+        const currentNodeData = { ...this.nodeTemplate, ...nodeData };
         this.sendNodeData.emit(currentNodeData);
     }
 
