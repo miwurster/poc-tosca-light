@@ -15,7 +15,7 @@
 <router-outlet *ngIf="!readonly"></router-outlet>
 
 <winery-topology-renderer *ngIf="loaded?.loadedData"
-                          [readonly]="readonly"
+                          [readonly]="backendService.configuration.isReadonly"
                           [entityTypes]="this.entityTypes"
                           [relationshipTypes]="relationshipTypes"
                           [differencesData]="topologyDifferences"

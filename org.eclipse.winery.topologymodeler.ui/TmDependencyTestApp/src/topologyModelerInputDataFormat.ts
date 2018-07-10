@@ -15,10 +15,7 @@
 import {TTopologyTemplate, Visuals} from "./ttopology-template";
 
 export interface TopologyModelerInputDataFormat {
-  configuration: {
-    readonly: boolean,
-    endpointConfig?: any;
-  };
+  configuration: any;
   topologyTemplate: any;
   visuals: any;
 }

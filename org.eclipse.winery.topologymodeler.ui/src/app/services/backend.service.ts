@@ -47,11 +47,12 @@ export class BackendService {
     constructor(private http: HttpClient,
                 private alert: ToastrService) {
         this.endpointConfiguration$.subscribe((params: TopologyModelerConfiguration) => {
-            if (!(isNullOrUndefined(params.id) &&
-                isNullOrUndefined(params.ns) &&
-                isNullOrUndefined(params.repositoryURL) &&
-                isNullOrUndefined(params.uiURL))) {
-                this.configuration = params;
+            if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
+                isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {
+
+                this.configuration = new TopologyModelerConfiguration(params.id,params.ns, params.repositoryURL, params.uiURL,
+                    params.compareTo, params.compareTo ? true : params.isReadonly);
+
                 const url = 'servicetemplates/'
                     + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
                     + this.configuration.id;
@@ -353,9 +354,12 @@ export class BackendService {
  * Defines config of TopologyModeler.
  */
 export class TopologyModelerConfiguration {
-    readonly id: string;
-    readonly ns: string;
-    readonly repositoryURL: string;
-    readonly uiURL: string;
-    readonly compareTo: string;
+    constructor(public readonly id: string,
+                public readonly ns: string,
+                public readonly repositoryURL: string,
+                public readonly uiURL: string,
+                public readonly compareTo?: string,
+                public readonly isReadonly?: boolean) {
+
+    }
 }

@@ -63,7 +63,7 @@ export class WineryComponent implements OnInit {
 
     constructor(private loadedService: LoadedService,
                 private appReadyEvent: AppReadyEventService,
-                private backendService: BackendService,
+                public backendService: BackendService,
                 private ngRedux: NgRedux<IWineryState>,
                 private activatedRoute: ActivatedRoute) {
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.hideNavBarAndPaletteState)
@@ -78,15 +78,15 @@ export class WineryComponent implements OnInit {
      */
     ngOnInit() {
         if (this.topologyModelerData) {
-            if (this.topologyModelerData.configuration.readonly) {
+            if (this.topologyModelerData.configuration.isReadonly) {
                 this.readonly = true;
             }
             // If data is passed to the topologymodeler directly, rendering is initiated immediately without backend calls
             if (this.topologyModelerData.topologyTemplate) {
                 this.initiateLocalRendering(this.topologyModelerData);
             } else {
-                if (this.topologyModelerData.configuration.endpointConfig) {
-                    this.backendService.endpointConfiguration.next(this.topologyModelerData.configuration.endpointConfig);
+                if (this.topologyModelerData.configuration.repositoryURL) {
+                    this.backendService.endpointConfiguration.next(this.topologyModelerData.configuration);
                 } else {
                     this.activatedRoute.queryParams.subscribe((params: TopologyModelerConfiguration) => {
                         this.backendService.endpointConfiguration.next(params);

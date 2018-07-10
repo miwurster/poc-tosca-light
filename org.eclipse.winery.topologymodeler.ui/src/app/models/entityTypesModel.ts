@@ -36,10 +36,7 @@ export interface EntityTypesModel {
  * How data passed to the TopologyModeler has to look
  */
 export interface TopologyModelerInputDataFormat {
-    configuration: {
-        readonly: boolean,
-        endpointConfig?: TopologyModelerConfiguration;
-    };
+    configuration: TopologyModelerConfiguration;
     topologyTemplate: TTopologyTemplate;
     visuals: Visuals;
 }
