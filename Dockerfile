@@ -32,10 +32,11 @@ RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && sed -ie "s/securerandom.source=file:\/dev\/random/securerandom.source=file:\/dev\/.\/urandom/g" /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/java.security \
     && echo "CATALINA_OPTS=-Djava.security.egd=file:/dev/./urandom" > ${CATALINA_HOME}/bin/setenv.sh \
     && chmod a+x ${CATALINA_HOME}/bin/setenv.sh \
-    && git lfs install \
     && mkdir -p /var/opentosca/repository \
     && cd /var/opentosca/repository \
-    && git init
+    && git init \
+    && git config core.fscache true \
+    && git lfs install
 
 COPY --from=builder /opt/winery ${CATALINA_HOME}/webapps/winery
 COPY --from=builder /tmp/winery/org.eclipse.winery.repository.ui/target/winery-ui.war ${CATALINA_HOME}/webapps/ROOT.war
