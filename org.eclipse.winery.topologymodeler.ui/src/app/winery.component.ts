@@ -16,7 +16,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate, Visuals } from './models/ttopology-template';
 import { ILoaded, LoadedService } from './services/loaded.service';
 import { AppReadyEventService } from './services/app-ready-event.service';
-import { BackendService, TopologyModelerConfiguration } from './services/backend.service';
+import { BackendService } from './services/backend.service';
 import { Subscription } from 'rxjs';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from './redux/store/winery.store';
@@ -25,6 +25,7 @@ import { isNullOrUndefined } from 'util';
 import { Utils } from './models/utils';
 import { TopologyModelerInputDataFormat } from './models/entityTypesModel';
 import { ActivatedRoute } from '@angular/router';
+import { TopologyModelerConfiguration } from './models/topologyModelerConfiguration';
 
 /**
  * This is the root component of the topology modeler.

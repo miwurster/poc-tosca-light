@@ -13,7 +13,7 @@
  ********************************************************************************/
 
 import { TTopologyTemplate, Visuals } from './ttopology-template';
-import { TopologyModelerConfiguration } from '../services/backend.service';
+import { TopologyModelerConfiguration } from './topologyModelerConfiguration';
 
 /**
  * Internal representation of entity Types

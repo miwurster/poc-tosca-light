@@ -16,9 +16,9 @@ import { Injectable } from '@angular/core';
 import { backendBaseURL } from '../../models/configuration';
 import { Observable } from 'rxjs/Rx';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { TopologyModelerConfiguration } from '../../services/backend.service';
 import { Subject } from 'rxjs';
 import { ModalVariant } from './modal-model';
+import { TopologyModelerConfiguration } from '../../models/topologyModelerConfiguration';
 
 @Injectable()
 export class EntitiesModalService {
