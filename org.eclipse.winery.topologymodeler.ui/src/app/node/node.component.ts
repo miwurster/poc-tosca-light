@@ -13,18 +13,7 @@
  ********************************************************************************/
 
 import {
-    AfterViewInit,
-    Component,
-    ComponentRef,
-    DoCheck,
-    ElementRef,
-    EventEmitter,
-    Input,
-    KeyValueDiffers,
-    NgZone,
-    OnDestroy,
-    OnInit,
-    Output,
+    AfterViewInit, Component, ComponentRef, DoCheck, ElementRef, EventEmitter, Input, KeyValueDiffers, NgZone, OnDestroy, OnInit, Output,
     Renderer2
 } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
@@ -48,20 +37,19 @@ import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
     templateUrl: './node.component.html',
     styleUrls: ['./node.component.css'],
     animations: [trigger('onCreateNodeTemplateAnimation', [
-        state('hidden', style({opacity: 0, transform: 'translateX(0)'})),
-        state('visible', style({opacity: 1, transform: 'scale'})),
+        state('hidden', style({ opacity: 0, transform: 'translateX(0)' })),
+        state('visible', style({ opacity: 1, transform: 'scale' })),
         transition('hidden => visible', animate('300ms', keyframes([
-            style({opacity: 0, transform: 'scale(0.2)', offset: 0}),
-            style({opacity: 0.3, transform: 'scale(1.1)', offset: 0.7}),
-            style({opacity: 1, transform: 'scale(1.0)', offset: 1.0})
+            style({ opacity: 0, transform: 'scale(0.2)', offset: 0 }),
+            style({ opacity: 0.3, transform: 'scale(1.1)', offset: 0.7 }),
+            style({ opacity: 1, transform: 'scale(1.0)', offset: 1.0 })
         ]))),
     ]),
     ]
 })
 export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck {
+
     public items: string[] = ['Item 1', 'Item 2', 'Item 3'];
-    public accordionGroupPanel = 'accordionGroupPanel';
-    public customClass = 'customClass';
     visibilityState = 'hidden';
     connectorEndpointVisible = false;
     startTime;
@@ -76,9 +64,13 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     artifactTypes: any;
     removeZIndex: any;
     propertyDefinitionType: string;
+
+    @Input() readonly: boolean;
     @Input() entityTypes: any;
     @Input() dragSource: string;
     @Input() navbarButtonsState: ButtonsStateModel;
+    @Input() relationshipTypes: Array<EntityType>;
+    @Input() nodeTemplate: TNodeTemplate;
     @Output() sendId: EventEmitter<string>;
     @Output() askForRepaint: EventEmitter<string>;
     @Output() setDragSource: EventEmitter<any>;
@@ -91,8 +83,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     @Output() saveNodeRequirements: EventEmitter<any>;
     @Output() sendPaletteStatus: EventEmitter<any>;
     @Output() sendNodeData: EventEmitter<any>;
-    @Input() relationshipTypes: Array<EntityType>;
-    @Input() nodeTemplate: TNodeTemplate;
 
     previousPosition: any;
     currentPosition: any;
@@ -102,6 +92,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     hostURL = hostURL;
     flashTimer = 300;
     parentEl: string;
+    popoverHtml = `<div class="">Open NodeType in a separate tab</div>`;
     // differ object for detecting changes made to the nodeTemplate object for DoCheck
     differ: any;
 
@@ -141,7 +132,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     /**
      * This function determines which kind of properties the nodeType embodies.
      * We have 3 possibilities: none, XML element, or Key value pairs.
-     * @param {string} type
      */
     findOutPropertyDefinitionTypeForProperties(type: string, groupedNodeTypes: Array<GroupedNodeTypeModel>): void {
         let propertyDefinitionTypeAssigned: boolean;
@@ -176,7 +166,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Angular lifecycle event.
      */
     ngOnInit() {
-        this.differ = this.differs.find([]).create(null);
+        this.differ = this.differs.find([]).create();
     }
 
     /**
@@ -195,7 +185,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * Triggered when opening a modal to send node data to the canvas for handling the addition of modal data.
      */
     sendToggleAction(nodeData: any): void {
-        const currentNodeData = {...this.nodeTemplate, ...nodeData};
+        const currentNodeData = { ...this.nodeTemplate, ...nodeData };
         this.sendNodeData.emit(currentNodeData);
     }
 
@@ -210,7 +200,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Stops the event propagation to the canvas etc. and repaints.
-     * @param $event
      */
     repaint($event) {
         $event.stopPropagation();
@@ -219,7 +208,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Sets the current type of a node.
-     * @param $event
      */
     passCurrentType($event): void {
         $event.stopPropagation();
@@ -240,7 +228,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Handler for mousedown events, toggles visibility of node attributes
-     * @param $event
      */
     mouseDownHandler($event): void {
         this.unmarkConnections.emit();
@@ -257,8 +244,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
             this.parentEl = $event.target.parentElement.className;
         }
         if (this.parentEl !== 'accordion-toggle' && this.parentEl !== 'ng-tns-c6-2' && this.parentEl) {
-            const offsetLeft = this.elRef.nativeElement.firstChild.nextElementSibling.offsetLeft;
-            const offsetTop = this.elRef.nativeElement.firstChild.nextElementSibling.offsetTop;
+            const offsetLeft = this.elRef.nativeElement.firstChild.offsetLeft;
+            const offsetTop = this.elRef.nativeElement.firstChild.offsetTop;
             this.previousPosition = {
                 x: offsetLeft,
                 y: offsetTop
@@ -271,11 +258,10 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * If a node is moved, this saves the current position of the node into the store.
-     * @param $event
      */
     mouseMove($event): void {
-        const offsetLeft = this.elRef.nativeElement.firstChild.nextElementSibling.offsetLeft;
-        const offsetTop = this.elRef.nativeElement.firstChild.nextElementSibling.offsetTop;
+        const offsetLeft = this.elRef.nativeElement.firstChild.offsetLeft;
+        const offsetTop = this.elRef.nativeElement.firstChild.offsetTop;
         this.currentPosition = {
             x: offsetLeft,
             y: offsetTop
@@ -284,7 +270,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Checks if it was a click or a drag operation on the node.
-     * @param $event
      */
     mouseUpHandler($event): void {
         // mouseup
@@ -320,7 +305,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * If it was a click operation, close the connector endpoints for relations
-     * @param $event
      */
     closeConnectorEndpoints($event): void {
         $event.stopPropagation();
@@ -332,7 +316,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Creates a dragoperation for nodes
-     * @param $event
      */
     makeSource($event): void {
         const dragSourceInfo = {
@@ -344,7 +327,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Only display the sidebar if the click is no longpress (drag)
-     * @param $event
      */
     openSidebar($event): void {
         $event.stopPropagation();
@@ -379,19 +361,19 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Navigates to the corresponding node type in the management UI
-     * @param $event
+     *  $event
      */
     linkType($event: any): void {
         const qName = new QName(this.nodeTemplate.type);
-        const typeURL = this.backendService.configuration.uiURL + '#' + urlElement.NodeTypeURL +
+        const typeURL = this.backendService.configuration.uiURL + urlElement.NodeTypeURL +
             encodeURIComponent(encodeURIComponent(qName.nameSpace)) + '/' + qName.localName
             + urlElement.ReadMe;
+        console.log(typeURL);
         window.open(typeURL, '_blank');
     }
 
     /**
      * Displays a box of the whole text if the text doesn't fit in the original element
-     * @param cell
      */
     isEllipsisActive(cell) {
         return (cell.offsetWidth < cell.scrollWidth);
@@ -409,7 +391,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     /**
      * Checks if it was a click or a drag operation on the node.
-     * @param $event
+     *  $event
      */
     private testTimeDifference($event): void {
         if ((this.endTime - this.startTime) < 200) {

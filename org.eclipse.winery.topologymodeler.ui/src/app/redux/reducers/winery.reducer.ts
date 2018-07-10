@@ -14,14 +14,34 @@
 
 import { Action } from 'redux';
 import {
-    DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
-    DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
-    SaveRelationshipAction, SendCurrentNodeIdAction, SendPaletteOpenedAction, SetCababilityAction,
-    SetDeploymentArtifactAction, SetPolicyAction, SetPropertyAction, SetRequirementAction, SetTargetLocation,
-    SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
-    UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
+    DecMaxInstances,
+    DecMinInstances,
+    DeleteDeploymentArtifactAction,
+    DeleteNodeAction,
+    DeletePolicyAction,
+    DeleteRelationshipAction,
+    HideNavBarAndPaletteAction,
+    IncMaxInstances,
+    IncMinInstances,
+    SaveNodeTemplateAction,
+    SaveRelationshipAction,
+    SendCurrentNodeIdAction,
+    SendPaletteOpenedAction,
+    SetCababilityAction,
+    SetDeploymentArtifactAction,
+    SetPolicyAction,
+    SetPropertyAction,
+    SetRequirementAction,
+    SetTargetLocation,
+    SidebarMaxInstanceChanges,
+    SidebarMinInstanceChanges,
+    SidebarNodeNamechange,
+    SidebarStateAction,
+    UpdateNodeCoordinatesAction,
+    UpdateRelationshipNameAction,
+    WineryActions
 } from '../actions/winery.actions';
-import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from 'app/models/ttopology-template';
+import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 
 export interface WineryState {
@@ -202,7 +222,7 @@ export const WineryReducer =
                             .map(nodeTemplate => nodeTemplate.id === newProperty.nodeId ?
                                 nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('properties',
                                     newProperty.propertyType === 'KV' ?
-                                        { kvproperties: newProperty.newProperty } : { any: newProperty.newProperty }) : nodeTemplate
+                                        {kvproperties: newProperty.newProperty} : {any: newProperty.newProperty}) : nodeTemplate
                             )
                     }
                 };
