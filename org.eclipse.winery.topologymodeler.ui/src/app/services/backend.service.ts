@@ -25,6 +25,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs/Observable';
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/internal/operators';
+import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -50,7 +51,7 @@ export class BackendService {
             if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
                 isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {
 
-                this.configuration = new TopologyModelerConfiguration(params.id,params.ns, params.repositoryURL, params.uiURL,
+                this.configuration = new TopologyModelerConfiguration(params.id, params.ns, params.repositoryURL, params.uiURL,
                     params.compareTo, params.compareTo ? true : params.isReadonly);
 
                 const url = 'servicetemplates/'
@@ -347,19 +348,5 @@ export class BackendService {
     requestAllTopologyTemplates(): Observable<EntityType[]> {
         const url = hostURL + urlElement.Winery + urlElement.ServiceTemplates;
         return this.http.get<EntityType[]>(url + '/', { headers: this.headers });
-    }
-}
-
-/**
- * Defines config of TopologyModeler.
- */
-export class TopologyModelerConfiguration {
-    constructor(public readonly id: string,
-                public readonly ns: string,
-                public readonly repositoryURL: string,
-                public readonly uiURL: string,
-                public readonly compareTo?: string,
-                public readonly isReadonly?: boolean) {
-
     }
 }
