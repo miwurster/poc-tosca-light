@@ -45,8 +45,7 @@ export class BackendService {
     private allEntities = new Subject<any>();
     allEntities$ = this.allEntities.asObservable();
 
-    constructor(private http: HttpClient,
-                private alert: ToastrService) {
+    constructor(private http: HttpClient) {
         this.endpointConfiguration$.subscribe((params: TopologyModelerConfiguration) => {
             if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
                 isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {

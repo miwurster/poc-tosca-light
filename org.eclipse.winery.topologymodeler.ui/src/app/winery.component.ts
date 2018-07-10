@@ -26,6 +26,7 @@ import { Utils } from './models/utils';
 import { TopologyModelerInputDataFormat } from './models/entityTypesModel';
 import { ActivatedRoute } from '@angular/router';
 import { TopologyModelerConfiguration } from './models/topologyModelerConfiguration';
+import { ToastrService } from 'ngx-toastr';
 
 /**
  * This is the root component of the topology modeler.
@@ -66,6 +67,7 @@ export class WineryComponent implements OnInit {
                 private appReadyEvent: AppReadyEventService,
                 public backendService: BackendService,
                 private ngRedux: NgRedux<IWineryState>,
+                private alert: ToastrService,
                 private activatedRoute: ActivatedRoute) {
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.hideNavBarAndPaletteState)
             .subscribe(hideNavBar => this.hideNavBarState = hideNavBar));
@@ -110,6 +112,10 @@ export class WineryComponent implements OnInit {
      * @param {string} entityType
      */
     initEntityType(entityTypeJSON: Array<any>, entityType: string): void {
+        if (!entityTypeJSON || entityTypeJSON.length === 0) {
+            this.alert.info('No ' + entityType + ' available!');
+        }
+
         switch (entityType) {
             case 'artifactTypes': {
                 entityTypeJSON.forEach(artifactType => {
