@@ -22,7 +22,7 @@
 
     <div [@paletteItemState]="paletteRootState" class="palette-items-wrapper">
         <accordion [closeOthers]="oneAtATime">
-            <accordion-group heading="{{ns?.text}}" panelClass="panel-info"
+            <accordion-group [isOpen]="i === 0" heading="{{ns?.text}}" panelClass="panel-info"
                              *ngFor="let ns of entityTypes.groupedNodeTypes; let i = index;">
                 <ul class="palette-ul">
                     <li *ngFor="let child of ns.children" class="nav-item">
