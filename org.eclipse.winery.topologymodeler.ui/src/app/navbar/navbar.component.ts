@@ -76,7 +76,7 @@ export class NavbarComponent implements OnDestroy {
             this.ngRedux.dispatch(this.actions.executeLayout());
             return false; // Prevent bubbling
         }, undefined, 'Apply the layout directive to the Node Templates'));
-        this.exportCsarUrl = this.backendService.serviceTemplateUrl + '/?csar';
+        this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
     }
 
     /**
