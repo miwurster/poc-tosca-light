@@ -110,7 +110,6 @@
         </div>
         <div class="btn-group" data-toggle="buttons" style="margin-left: 4px">
             <button
-                *ngIf="!readonly"
                 class="btn btn-sm align-middle dark-button-style"
                 type="button"
                 id="split"
@@ -120,7 +119,6 @@
                 {{splittingOngoing? 'Splitting...' : 'Split'}}
             </button>
             <button
-                *ngIf="!readonly"
                 class="btn btn-sm align-middle dark-button-style"
                 type="button"
                 id="match"
