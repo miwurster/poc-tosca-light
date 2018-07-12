@@ -24,18 +24,18 @@ You can also use the pre-built image and bin it to a local repository:
 
 ## Running CLI via docker
 
-1. `docker build -t winery-consistencycheck -f Dockerfile.consistencycheck .`
-2. `docker run -v ${pwd}:/root/winery-repository -it winery-consistencycheck` to check `${pwd}` for consistency.
+1. `docker build -t winery-cli -f Dockerfile.winery-cli .`
+2. `docker run -v ${pwd}:/root/winery-repository -it winery-cli` to check `${pwd}` for consistency.
 
 You can also use the pre-built image:
 
-- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery:consistencycheck`
-- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery:consistencycheck`
+- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery-cli`
+- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery`
 
 In case you want to have verbose information, you can execute following:
 
-- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery:consistencycheck winery -v`
-- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery:consistencycheck winery -v`
+- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery winery -v`
+- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery winery -v`
 
 Currently supported CLI arguments:
 
@@ -56,7 +56,7 @@ The branch `ustutt` differs from eclipse/winery in the following files:
 - [.travis.settings.yml](.travis.settings.yml) - Different Travis settings
 - [.travis.yml](.travis.yml) - Different AWS S3 upload directory
 - [Dockerfile](Dockerfile) - Custom Docker build for the OpenTOSCA organization
-- [Dockerfile.consistencycheck](Dockerfile.consistencycheck) - Custom Docker build for the OpenTOSCA organization
+- [Dockerfile.winery-cli](Dockerfile.winery-cli) - Custom Docker build for the OpenTOSCA organization
 - [pom.xml](pom.xml) - Upload to opentosca/mvn-repo
 - [winery](winery) - Executable required to launch Winery CLI
 
