@@ -13,11 +13,23 @@
  ********************************************************************************/
 package org.eclipse.winery.compliance.model;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jgrapht.EdgeFactory;
+import org.jgrapht.graph.DefaultDirectedGraph;
 
-public class TOSCAEdgeFactory implements EdgeFactory<TOSCANode, TOSCAEdge> {
+public class ToscaGraph extends DefaultDirectedGraph<ToscaNode, ToscaEdge> {
 
-	public TOSCAEdge createEdge(TOSCANode sourceVertex, TOSCANode targetVertex) {
-		return new TOSCAEdge(sourceVertex, targetVertex);
+	private static final long serialVersionUID = 1L;
+
+	public ToscaGraph(EdgeFactory<ToscaNode, ToscaEdge> ef) {
+		super(ef);
+	}
+
+	public ToscaNode getNode(String id) {
+		return vertexSet().stream().filter(n -> StringUtils.equals(id, n.getId())).findFirst().orElse(null);
+	}
+
+	public ToscaNode getReferenceNode() {
+		return vertexSet().stream().findAny().orElse(null);
 	}
 }

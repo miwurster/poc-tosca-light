@@ -18,7 +18,9 @@ export class TopologyModelerConfiguration {
                 public readonly repositoryURL: string,
                 public readonly uiURL: string,
                 public readonly compareTo?: string,
-                public readonly isReadonly?: boolean) {
+                public readonly isReadonly?: boolean,
+                public readonly parentPath = 'servicetemplates',
+                public readonly elementPath = 'topologytemplate') {
 
     }
 }
