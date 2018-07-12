@@ -174,6 +174,10 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             this.allNodeTemplates.forEach(node => this.enhanceDragSelection(node.id));
             return false; // Prevent bubbling
         }, undefined, 'Select all Node Templates'));
+        this.hotkeysService.add(new Hotkey('del', (event: KeyboardEvent): boolean => {
+            this.handleDeleteKeyEvent();
+            return false;
+        }, undefined, 'Delete an element.'));
         this.capabilities = new CapabilitiesModalData();
         this.requirements = new RequirementsModalData();
         this.importTopologyData = new ImportTopologyModalData();
@@ -1232,39 +1236,36 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * Handler for the DEL-Key - removes a node and resets everything associated with that deleted node
      * @param event Keyboard event.
      */
-    @HostListener('document:keydown', ['$event'])
     handleDeleteKeyEvent(event?: KeyboardEvent) {
-        if (event && (event.key === 'Backspace' || event.key === 'Delete')) {
-            this.unbindConnection();
-            // if name, min or max instances has changed, do not delete the node.
-            if (this.selectedNodes.length > 0) {
-                let selectedNodeSideBarVisible = false;
-                this.nodeChildrenArray.forEach(node => {
-                    if (node.makeSelectionVisible === true) {
-                        if (!selectedNodeSideBarVisible) {
-                            this.hideSidebar();
-                        }
-                        selectedNodeSideBarVisible = true;
-                        this.newJsPlumbInstance.deleteConnectionsForElement(node.nodeTemplate.id);
-                        this.newJsPlumbInstance.removeAllEndpoints(node.nodeTemplate.id);
-                        this.newJsPlumbInstance.removeFromAllPosses(node.nodeTemplate.id);
-                        if (node.connectorEndpointVisible === true) {
-                            if (this.newJsPlumbInstance.isSource(node.dragSource)) {
-                                this.newJsPlumbInstance.unmakeSource(node.dragSource);
-                            }
-                        }
-                        this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id));
+        this.unbindConnection();
+        // if name, min or max instances has changed, do not delete the node.
+        if (this.selectedNodes.length > 0) {
+            let selectedNodeSideBarVisible = false;
+            this.nodeChildrenArray.forEach(node => {
+                if (node.makeSelectionVisible === true) {
+                    if (!selectedNodeSideBarVisible) {
+                        this.hideSidebar();
                     }
-                });
-                this.selectedNodes.length = 0;
-            } else {
-                if (this.newJsPlumbInstance.getAllConnections().length > 0) {
-                    for (const con of this.newJsPlumbInstance.getAllConnections()) {
-                        if (con.hasType('marked')) {
-                            this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(con.id));
-                            this.newJsPlumbInstance.deleteConnection(con);
-                            this.hideSidebar();
+                    selectedNodeSideBarVisible = true;
+                    this.newJsPlumbInstance.deleteConnectionsForElement(node.nodeTemplate.id);
+                    this.newJsPlumbInstance.removeAllEndpoints(node.nodeTemplate.id);
+                    this.newJsPlumbInstance.removeFromAllPosses(node.nodeTemplate.id);
+                    if (node.connectorEndpointVisible === true) {
+                        if (this.newJsPlumbInstance.isSource(node.dragSource)) {
+                            this.newJsPlumbInstance.unmakeSource(node.dragSource);
                         }
+                    }
+                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id));
+                }
+            });
+            this.selectedNodes.length = 0;
+        } else {
+            if (this.newJsPlumbInstance.getAllConnections().length > 0) {
+                for (const con of this.newJsPlumbInstance.getAllConnections()) {
+                    if (con.hasType('marked')) {
+                        this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(con.id));
+                        this.newJsPlumbInstance.deleteConnection(con);
+                        this.hideSidebar();
                     }
                 }
             }
