@@ -74,7 +74,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
     public toggleModal($event) {
         this.currentCapability = null;
         const currentCapId = $event.srcElement.textContent;
-        if(this.capabilities) {
+        if (this.capabilities) {
             this.capabilities.some(cap => {
                 if (cap.id === currentCapId) {
                     this.currentCapability = cap;
