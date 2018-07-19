@@ -15,6 +15,7 @@
 package org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -52,7 +53,6 @@ public class BoundaryDefinitionsResource {
     private final ServiceTemplateResource serviceTemplateResource;
     private final TBoundaryDefinitions boundaryDefinitions;
 
-
     public BoundaryDefinitionsResource(ServiceTemplateResource serviceTemplateResource, TBoundaryDefinitions boundaryDefinitions) {
         this.serviceTemplateResource = serviceTemplateResource;
         this.boundaryDefinitions = boundaryDefinitions;
@@ -81,9 +81,12 @@ public class BoundaryDefinitionsResource {
 
     @Path("properties/")
     @GET
-    @Produces(MediaType.APPLICATION_XML)
-    public String getProperties(@Context UriInfo uriInfo) {
-        return new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getPropertiesAsXMLString();
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getProperties(@Context UriInfo uriInfo) {
+        return Response.ok()
+            .entity(new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getPropertiesAsXMLString())
+            .type(MediaType.APPLICATION_JSON)
+            .build();
     }
 
     /**
@@ -97,6 +100,15 @@ public class BoundaryDefinitionsResource {
     public Response putProperties(@ApiParam(value = "Stored properties. The XSD allows a single element only. Therefore, we go for the contained element") Document doc) {
         org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
         properties.setAny(doc.getDocumentElement());
+        return RestUtils.persist(this.serviceTemplateResource);
+    }
+
+    @Path("properties/")
+    @PUT
+    @Consumes( {MediaType.APPLICATION_JSON})
+    @ApiOperation(value = "saves properties of boundary definitions", notes = "Models the user-defined properties. The property mappings go into a separate resource propertymappings.")
+    public Response putCustomProperties(@ApiParam(value = "Stored properties. The XSD allows a single element only. Therefore, we go for the contained element") Map<String, String> props) {
+        this.boundaryDefinitions.getProperties().setKVProperties(props);
         return RestUtils.persist(this.serviceTemplateResource);
     }
 

@@ -35,6 +35,7 @@ import { WinerySourceModule } from '../../instance/sharedComponents/artifactSour
 import { ConstraintCheckingComponent } from '../../instance/serviceTemplates/constraintChecking/constraintChecking.component';
 import { WineryEditorModule } from '../../wineryEditorModule/wineryEditor.module';
 import { TopologyTemplateModule } from '../../instance/serviceTemplates/topologyTemplate/topologyTemplate.module';
+import { PropertiesDefinitionModule } from '../../instance/sharedComponents/propertiesDefinition/propertiesDefinition.module';
 
 @NgModule({
     imports: [
@@ -56,7 +57,8 @@ import { TopologyTemplateModule } from '../../instance/serviceTemplates/topology
         WineryTableModule,
         ServiceTemplateRouterModule,
         WineryReadmeModule,
-        WineryLicenseModule
+        WineryLicenseModule,
+        PropertiesDefinitionModule
     ],
     declarations: [
         PlansComponent,

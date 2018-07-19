@@ -21,20 +21,34 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.eclipse.jdt.annotation.Nullable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tServiceTemplate", propOrder = {
+    "propertiesDefinition",
     "tags",
     "boundaryDefinitions",
     "topologyTemplate",
     "plans"
 })
 public class TServiceTemplate extends HasId implements HasName, HasTargetNamespace {
+    public static final String NS_SUFFIX_PROPERTIESDEFINITION_WINERY = "propertiesdefinition/winery";
+    
+    @XmlElements( {
+        @XmlElement(name = "PropertiesDefinition", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, type = TServiceTemplate.PropertiesDefinition.class),
+        @XmlElement(name = "PropertiesDefinition", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, type = WinerysPropertiesDefinition.class)
+    })
+    protected Object propertiesDefinition;
 
     @XmlElement(name = "Tags")
     protected TTags tags;
@@ -158,6 +172,74 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
         this.substitutableNodeType = value;
     }
 
+    public Object getPropertiesDefinition() {
+        return propertiesDefinition;
+    }
+
+    public void setPropertiesDefinition(Object value) {
+        this.propertiesDefinition = value;
+    }
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * <p>
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * <p>
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;attribute name="element" type="{http://www.w3.org/2001/XMLSchema}QName" />
+     *       &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}QName" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class PropertiesDefinition extends TEntityType.PropertiesDefinition {
+    }
+
+    /**
+     * This is a special method for Winery. Winery allows to define a property definition by specifying name/type
+     * values. Instead of parsing the extensible elements returned TDefinitions, this method is a convenience method to
+     * access this information
+     *
+     * @return a WinerysPropertiesDefinition object, which includes a map of name/type-pairs denoting the associated
+     * property definitions. A default element name and namespace is added if it is not defined in the underlying XML.
+     * null if no Winery specific KV properties are defined for the given entity type
+     */
+    @XmlTransient
+    @JsonIgnore
+    public WinerysPropertiesDefinition getWinerysPropertiesDefinition() {
+        // similar implementation as org.eclipse.winery.repository.resources.entitytypes.properties.PropertiesDefinitionResource.getListFromEntityType(TEntityType)
+        WinerysPropertiesDefinition res = null;
+        if (this.getPropertiesDefinition() instanceof WinerysPropertiesDefinition) {
+            res = (WinerysPropertiesDefinition) this.getPropertiesDefinition();
+        }
+
+        if (res != null) {
+            // we put defaults if elementname and namespace have not been set
+
+            if (res.getElementName() == null) {
+                res.setElementName("Properties");
+            }
+
+            if (res.getNamespace() == null) {
+                // we use the targetnamespace of the original element
+                String ns = this.getTargetNamespace();
+                if (!ns.endsWith("/")) {
+                    ns += "/";
+                }
+                ns += NS_SUFFIX_PROPERTIESDEFINITION_WINERY;
+                res.setNamespace(ns);
+            }
+        }
+
+        return res;
+    }
+    
     public static class Builder extends HasId.Builder<Builder> {
         private final TTopologyTemplate topologyTemplate;
 

@@ -43,4 +43,23 @@ public class PropertiesDefinitionResourceApiData {
             this.selectedValue = PropertiesDefinitionEnum.None;
         }
     }
+
+    public PropertiesDefinitionResourceApiData(Object propertiesDefinition) {
+        if (propertiesDefinition instanceof TEntityType.PropertiesDefinition) {
+            this.propertiesDefinition = (TEntityType.PropertiesDefinition) propertiesDefinition;
+        }
+        if (propertiesDefinition instanceof WinerysPropertiesDefinition) {
+            this.winerysPropertiesDefinition = (WinerysPropertiesDefinition) propertiesDefinition;
+        }        
+
+        if ((winerysPropertiesDefinition != null) && (winerysPropertiesDefinition.getIsDerivedFromXSD() == null)) {
+            this.selectedValue = PropertiesDefinitionEnum.Custom;
+        } else if ((this.propertiesDefinition != null) && (this.propertiesDefinition.getElement() != null)) {
+            this.selectedValue = PropertiesDefinitionEnum.Element;
+        } else if ((this.propertiesDefinition != null) && (this.propertiesDefinition.getType() != null)) {
+            this.selectedValue = PropertiesDefinitionEnum.Type;
+        } else {
+            this.selectedValue = PropertiesDefinitionEnum.None;
+        }
+    }
 }

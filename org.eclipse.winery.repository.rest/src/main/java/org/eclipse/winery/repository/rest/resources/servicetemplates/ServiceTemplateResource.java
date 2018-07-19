@@ -52,8 +52,10 @@ import org.eclipse.winery.repository.rest.resources._support.AbstractComponentIn
 import org.eclipse.winery.repository.rest.resources._support.IHasName;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.injectionadapter.InjectorReplaceData;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.injectionadapter.InjectorReplaceOptions;
+import org.eclipse.winery.repository.rest.resources.apiData.PropertiesDefinitionResourceApiData;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions.BoundaryDefinitionsResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.plans.PlansResource;
+import org.eclipse.winery.repository.rest.resources.servicetemplates.propertiesdefinition.BoundaryDefsPropertiesDefinitionResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.selfserviceportal.SelfServicePortalResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.topologytemplates.TopologyTemplateResource;
 import org.eclipse.winery.repository.splitting.Splitting;
@@ -117,6 +119,11 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
             this.getServiceTemplate().setBoundaryDefinitions(boundaryDefinitions);
         }
         return new BoundaryDefinitionsResource(this, boundaryDefinitions);
+    }
+
+    @Path("propertiesdefinition/")
+    public BoundaryDefsPropertiesDefinitionResource getJson() {
+        return new BoundaryDefsPropertiesDefinitionResource(this);
     }
 
     @Override
