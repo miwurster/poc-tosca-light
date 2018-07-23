@@ -17,7 +17,7 @@ import { animate, keyframes, state, style, transition, trigger } from '@angular/
 import { WineryActions } from '../redux/actions/winery.actions';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
-import { EntityType, TNodeTemplate } from '../models/ttopology-template';
+import { EntityType, TNodeTemplate, Visuals } from '../models/ttopology-template';
 import { NewNodeIdTypeColorPropertiesModel } from '../models/newNodeIdTypeColorModel';
 import { isNullOrUndefined } from 'util';
 import { Subscription } from 'rxjs';
@@ -73,7 +73,9 @@ import { hostURL } from '../models/configuration';
     ]
 })
 export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
+
     @Input() entityTypes: EntityTypesModel;
+
     paletteRootState = 'extended';
     paletteButtonRootState = 'left';
     subscriptions: Array<Subscription> = [];
@@ -147,9 +149,8 @@ export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
         const x = $event.pageX - this.newNodePositionOffsetX;
         const y = $event.pageY - this.newNodePositionOffsetY;
 
-        const newIdTypeColorProperties = this.generateIdTypeColorProperties(child.text);
-        const nodeVisuals: NodeVisualsModel = Utils.getNodeVisualsForNodeTemplate(newIdTypeColorProperties.type,
-            this.entityTypes.nodeVisuals);
+        const newIdTypeColorProperties = this.generateIdTypeAndProperties(child.text);
+        const nodeVisuals: Visuals = Utils.getNodeVisualsForNodeTemplate(newIdTypeColorProperties.type, this.entityTypes.nodeVisuals);
         const newNode: TNodeTemplate = new TNodeTemplate(
             newIdTypeColorProperties.properties,
             newIdTypeColorProperties.id,
@@ -157,8 +158,7 @@ export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
             child.text,
             1,
             1,
-            newIdTypeColorProperties.color,
-            nodeVisuals.imageUrl,
+            nodeVisuals,
             [],
             [],
             {},
@@ -177,14 +177,14 @@ export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
      * @param name
      * @return result
      */
-    generateIdTypeColorProperties(name: string): NewNodeIdTypeColorPropertiesModel {
+    generateIdTypeAndProperties(name: string): NewNodeIdTypeColorPropertiesModel {
         if (this.allNodeTemplates.length > 0) {
             // iterate from back to front because only the last added instance of a node type is important
             // e.g. Node_8 so to increase to Node_9 only the 8 is important which is in the end of the array
             for (let i = this.allNodeTemplates.length - 1; i >= 0; i--) {
                 // get type of node Template
                 const type = this.allNodeTemplates[i].type;
-                const color = this.allNodeTemplates[i].color;
+                const color = this.allNodeTemplates[i].visuals.color;
                 // split it to get a string like "NodeTypeWithTwoProperties"
                 let typeOfCurrentNode = type.split('}').pop();
                 // eliminate whitespaces from both strings, important for string comparison
@@ -199,13 +199,11 @@ export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
                     } else {
                         newId = name.concat('_', '2');
                     }
-                    const result = {
+                    return {
                         id: newId,
                         type: type,
-                        properties: this.getDefaultPropertiesFromNodeTypes(name),
-                        color: color,
+                        properties: this.getDefaultPropertiesFromNodeTypes(name)
                     };
-                    return result;
                 }
             }
             return this.getNewNodeDataFromNodeTypes(name);
@@ -233,7 +231,7 @@ export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
             const keyValuePair = {
                 [key]: value
             };
-            newKVProperies = {...newKVProperies, ...keyValuePair};
+            newKVProperies = { ...newKVProperies, ...keyValuePair };
         }
         return newKVProperies;
     }

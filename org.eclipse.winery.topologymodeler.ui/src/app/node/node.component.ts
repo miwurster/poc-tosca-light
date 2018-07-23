@@ -28,6 +28,7 @@ import { PropertyDefinitionType, urlElement } from '../models/enums';
 import { BackendService } from '../services/backend.service';
 import { isNullOrUndefined } from 'util';
 import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
+import { EntityTypesModel } from '../models/entityTypesModel';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -50,6 +51,7 @@ import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
 export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck {
 
     public items: string[] = ['Item 1', 'Item 2', 'Item 3'];
+    nodeClass: string;
     visibilityState = 'hidden';
     connectorEndpointVisible = false;
     startTime;
@@ -66,11 +68,11 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     propertyDefinitionType: string;
 
     @Input() readonly: boolean;
-    @Input() entityTypes: any;
+    @Input() entityTypes: EntityTypesModel;
     @Input() dragSource: string;
     @Input() navbarButtonsState: ButtonsStateModel;
-    @Input() relationshipTypes: Array<EntityType>;
     @Input() nodeTemplate: TNodeTemplate;
+
     @Output() sendId: EventEmitter<string>;
     @Output() askForRepaint: EventEmitter<string>;
     @Output() setDragSource: EventEmitter<any>;
@@ -167,6 +169,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      */
     ngOnInit() {
         this.differ = this.differs.find([]).create();
+        this.nodeClass = this.nodeTemplate.visuals.pattern ? 'pattern' : 'nodeTemplate';
     }
 
     /**
@@ -218,7 +221,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         } catch (e) {
             currentType = $event.target.innerText.replace(/\n/g, '').replace(/\s+/g, '');
         }
-        this.relationshipTypes.some(relType => {
+        this.entityTypes.relationshipTypes.some(relType => {
             if (relType.qName.includes(currentType)) {
                 this.sendSelectedRelationshipType.emit(relType);
                 return true;
@@ -347,7 +350,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         } else {
             this.$ngRedux.dispatch(this.actions.openSidebar({
                 sidebarContents: {
-                    sidebarVisible: true,
+                    sidebarVisible: this.nodeClass === 'nodeTemplate',
                     nodeClicked: true,
                     id: this.nodeTemplate.id,
                     nameTextFieldValue: this.nodeTemplate.name,
@@ -368,7 +371,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         const typeURL = this.backendService.configuration.uiURL + urlElement.NodeTypeURL +
             encodeURIComponent(encodeURIComponent(qName.nameSpace)) + '/' + qName.localName
             + urlElement.ReadMe;
-        console.log(typeURL);
         window.open(typeURL, '_blank');
     }
 

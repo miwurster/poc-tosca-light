@@ -23,7 +23,7 @@ import { IWineryState } from './redux/store/winery.store';
 import { DifferenceStates, ToscaDiff } from './models/ToscaDiff';
 import { isNullOrUndefined } from 'util';
 import { Utils } from './models/utils';
-import { TopologyModelerInputDataFormat } from './models/entityTypesModel';
+import { EntityTypesModel, TopologyModelerInputDataFormat } from './models/entityTypesModel';
 import { ActivatedRoute } from '@angular/router';
 import { TopologyModelerConfiguration } from './models/topologyModelerConfiguration';
 import { ToastrService } from 'ngx-toastr';
@@ -51,7 +51,7 @@ export class WineryComponent implements OnInit {
     requirementTypes: Array<EntityType> = [];
     groupedNodeTypes: Array<any> = [];
     relationshipTypes: Array<EntityType> = [];
-    entityTypes: any = {};
+    entityTypes: EntityTypesModel;
     hideNavBarState: boolean;
     subscriptions: Array<Subscription> = [];
     // This variable is set via the topologyModelerData input and decides if the editing functionalities are enabled
@@ -80,6 +80,8 @@ export class WineryComponent implements OnInit {
      * inside the Redux store of this application.
      */
     ngOnInit() {
+        this.entityTypes = new EntityTypesModel();
+
         if (this.topologyModelerData) {
             if (this.topologyModelerData.configuration.isReadonly) {
                 this.readonly = true;

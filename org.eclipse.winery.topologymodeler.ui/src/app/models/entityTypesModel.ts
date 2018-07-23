@@ -18,7 +18,7 @@ import { TopologyModelerConfiguration } from './topologyModelerConfiguration';
 /**
  * Internal representation of entity Types
  */
-export interface EntityTypesModel {
+export class EntityTypesModel {
     artifactTemplates: any;
     artifactTypes: any;
     capabilityTypes: any;
@@ -38,5 +38,5 @@ export interface EntityTypesModel {
 export interface TopologyModelerInputDataFormat {
     configuration: TopologyModelerConfiguration;
     topologyTemplate: TTopologyTemplate;
-    visuals: Visuals;
+    visuals: Visuals[];
 }
