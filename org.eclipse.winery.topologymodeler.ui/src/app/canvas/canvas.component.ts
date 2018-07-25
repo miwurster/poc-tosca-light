@@ -637,7 +637,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             };
         }
         // case when there are no capabilities on the node template
-        if (isNullOrUndefined(this.capabilities.capabilities)) {
+        if (!this.capabilities.capabilities || !this.capabilities.capabilities.capability) {
             const capabilityArray: Array<CapabilityModel> = [];
             this.capabilities.capabilities = {
                 capability: capabilityArray
@@ -743,7 +743,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             };
         }
         // case when there are no requirements on the node template
-        if (isNullOrUndefined(this.requirements.requirements)) {
+        if (!this.requirements.requirements || !this.requirements.requirements.requirement) {
             const requirementsArray: Array<RequirementModel> = [];
             this.requirements.requirements = {
                 requirement: requirementsArray

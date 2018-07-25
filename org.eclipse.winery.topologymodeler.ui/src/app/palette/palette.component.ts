@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { NgRedux } from '@angular-redux/store';
@@ -72,7 +72,7 @@ import { hostURL } from '../models/configuration';
         ])
     ]
 })
-export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
+export class PaletteComponent implements OnDestroy {
 
     @Input() entityTypes: EntityTypesModel;
 
@@ -105,18 +105,6 @@ export class PaletteComponent implements OnInit, OnDestroy, AfterViewInit {
             this.paletteRootState = 'extended';
             this.paletteButtonRootState = 'top';
         }
-    }
-
-    /**
-     * Angular lifecycle event.
-     */
-    ngOnInit() {
-    }
-
-    /**
-     * Angular lifecycle event.
-     */
-    ngAfterViewInit() {
     }
 
     /**

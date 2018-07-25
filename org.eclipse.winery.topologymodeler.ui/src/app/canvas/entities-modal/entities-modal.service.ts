@@ -23,7 +23,7 @@ import { TopologyModelerConfiguration } from '../../models/topologyModelerConfig
 @Injectable()
 export class EntitiesModalService {
 
-    readonly headers = new HttpHeaders({ 'Accept': 'application/json' });
+    readonly headers = new HttpHeaders({'Accept': 'application/json'});
 
     openModalEvent = new Subject<OpenModalEvent>();
     openModalEvent$ = this.openModalEvent.asObservable();
@@ -44,7 +44,7 @@ export class EntitiesModalService {
         } else {
             URL = backendBaseURL + '/admin/namespaces/';
         }
-        return this.http.get(URL, { headers: this.headers });
+        return this.http.get(URL, {headers: this.headers});
     }
 
 }

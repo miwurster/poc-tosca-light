@@ -50,8 +50,16 @@ export class BackendService {
             if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
                 isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {
 
-                this.configuration = new TopologyModelerConfiguration(params.id, params.ns, params.repositoryURL, params.uiURL,
-                    params.compareTo, params.compareTo ? true : params.isReadonly, params.parentPath, params.elementPath);
+                this.configuration = new TopologyModelerConfiguration(
+                    params.id,
+                    params.ns,
+                    params.repositoryURL,
+                    params.uiURL,
+                    params.compareTo,
+                    params.compareTo ? true : params.isReadonly,
+                    params.parentPath,
+                    params.elementPath
+                );
 
                 const url = this.configuration.parentPath + '/'
                     + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
