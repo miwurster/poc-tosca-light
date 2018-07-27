@@ -15,10 +15,16 @@ package org.eclipse.winery.model.tosca.kvproperties;
 
 import java.util.Objects;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class PropertyKV {
 
     private String key;
     private String value;
+
+    public PropertyKV() {
+    }
 
     public PropertyKV(String key, String value) {
         this.key = key;
@@ -64,5 +70,4 @@ public class PropertyKV {
     public int hashCode() {
         return Objects.hash(key, value);
     }
-
 }

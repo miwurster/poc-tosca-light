@@ -15,6 +15,8 @@
 package org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -35,6 +37,7 @@ import org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties.PropertyMa
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions.Requirements;
 import org.eclipse.winery.model.tosca.TCapabilityRef;
 import org.eclipse.winery.model.tosca.TRequirementRef;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyKV;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
@@ -86,6 +89,17 @@ public class BoundaryDefinitionsResource {
         return new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getPropertiesAsXMLString();
     }
 
+    @Path("properties/")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getKVProperties(@Context UriInfo uriInfo) {
+        List result = new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getKVProperties();
+        return Response.ok()
+            .entity(Objects.isNull(result) ? "{}" : result)
+            .type(MediaType.APPLICATION_JSON)
+            .build();
+    }
+
     /**
      * The well-formedness of the XML element is done using the framework. If you see <code>[Fatal Error] :1:19: The
      * prefix "tosca" for element "tosca:properties" is not bound.</code> in the console, it is an indicator that the XML element is not well-formed.
@@ -97,6 +111,16 @@ public class BoundaryDefinitionsResource {
     public Response putProperties(@ApiParam(value = "Stored properties. The XSD allows a single element only. Therefore, we go for the contained element") Document doc) {
         org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
         properties.setAny(doc.getDocumentElement());
+        return RestUtils.persist(this.serviceTemplateResource);
+    }
+
+    @Path("properties/")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "saves KV properties of boundary definitions")
+    public Response putKVProperties(List<PropertyKV> kv) {
+        org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
+        properties.setAny(kv);
         return RestUtils.persist(this.serviceTemplateResource);
     }
 

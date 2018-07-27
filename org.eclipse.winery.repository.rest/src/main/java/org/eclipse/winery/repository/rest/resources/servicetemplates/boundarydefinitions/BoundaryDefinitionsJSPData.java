@@ -33,6 +33,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 
 public class BoundaryDefinitionsJSPData {
@@ -61,6 +62,14 @@ public class BoundaryDefinitionsJSPData {
             // something stored --> return that
             return BackendUtils.getXMLAsString(p.getAny());
         }
+    }
+    
+    public List getKVProperties() {
+        Properties p = ModelUtilities.getProperties(this.defs);
+        if (p.getAny() instanceof List) {
+            return (List) p.getAny();
+        }
+        return null;
     }
 
     public String getPropertiesAsXMLString() {
