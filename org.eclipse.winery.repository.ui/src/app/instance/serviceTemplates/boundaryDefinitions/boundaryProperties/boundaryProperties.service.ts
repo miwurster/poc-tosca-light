@@ -32,7 +32,7 @@ export class BoundaryPropertiesService {
     getBoundaryDefinitionsProperties(): Observable<KeyValueItem[]> {
         const headers = new HttpHeaders({ 'Accept': 'application/json' });
 
-        return this.http.get<KeyValueItem[]>(this.path,{ headers: headers });
+        return this.http.get<KeyValueItem[]>(this.path, { headers: headers });
     }
 
     addBoundaryProperty(kv: KeyValueItem) {
@@ -70,9 +70,6 @@ export class BoundaryPropertiesService {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         const kvPath = this.path.replace('properties/', 'propertymappings/' + kv.key);
         return this.http
-            .delete(
-                kvPath,
-                { headers: headers, observe: 'response', responseType: 'text' }
-            );
+            .delete(kvPath, { headers: headers, observe: 'response', responseType: 'text' });
     }
 }

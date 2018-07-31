@@ -41,7 +41,7 @@ export class BoundaryPropertiesComponent implements OnInit {
     @ViewChild('boundaryPropertyForm') boundaryPropertyForm: NgForm;
     @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
     addOrUpdate = 'Add';
-    currentSelectedItem: KeyValueItem = { "key": '', "value": '' };
+    currentSelectedItem: KeyValueItem = { 'key': '', 'value': '' };
 
     constructor(private service: BoundaryPropertiesService,
                 private notify: WineryNotificationService,
@@ -66,8 +66,7 @@ export class BoundaryPropertiesComponent implements OnInit {
                     data => this.handleSuccess('Added new boundary defintions property'),
                     error => this.handleError(error)
                 );
-        }
-        else {
+        } else {
             this.service.editBoundaryProperty(this.currentSelectedItem)
                 .subscribe(
                     data => this.handleSuccess('Added new boundary defintions property'),
@@ -78,7 +77,7 @@ export class BoundaryPropertiesComponent implements OnInit {
     }
 
     onCellSelected(selectedItem: WineryRowData) {
-        let kv: KeyValueItem = { key: selectedItem.row.key, value: selectedItem.row.value };
+        const kv: KeyValueItem = { key: selectedItem.row.key, value: selectedItem.row.value };
         this.currentSelectedItem = kv;
     }
 
@@ -92,7 +91,7 @@ export class BoundaryPropertiesComponent implements OnInit {
 
     onAddClick() {
         this.addOrUpdate = 'Add';
-        this.currentSelectedItem = { "key": '', "value": '' };
+        this.currentSelectedItem = { 'key': '', 'value': '' };
         this.boundaryPropertyForm.reset();
         this.addPropertyModal.show();
     }
@@ -111,10 +110,10 @@ export class BoundaryPropertiesComponent implements OnInit {
             data => {
                 this.handleSuccess('Deleted boundary property');
                 this.service.removeBoundaryPropertyMapping(this.currentSelectedItem).subscribe(
-                    data => this.handleSuccess('Deleted corresponding boundary property mapping'),
+                    res => this.handleSuccess('Deleted corresponding boundary property mapping'),
                     error => {
                         if (error.status !== 404) {
-                            this.handleError(error)
+                            this.handleError(error);
                         }
                     }
                 );
