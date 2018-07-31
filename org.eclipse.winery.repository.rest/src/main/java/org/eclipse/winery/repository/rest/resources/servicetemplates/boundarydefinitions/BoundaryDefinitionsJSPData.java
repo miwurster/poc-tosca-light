@@ -13,14 +13,23 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.taglibs.standard.functions.Functions;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+
+import javax.xml.namespace.QName;
+
 import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties;
 import org.eclipse.winery.model.tosca.TPlan;
 import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyKV;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
@@ -28,13 +37,8 @@ import org.eclipse.winery.repository.rest.datatypes.TypeWithShortName;
 import org.eclipse.winery.repository.rest.datatypes.select2.Select2DataItem;
 import org.eclipse.winery.repository.rest.resources.admin.types.ConstraintTypesManager;
 
-import javax.xml.namespace.QName;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.taglibs.standard.functions.Functions;
 
 public class BoundaryDefinitionsJSPData {
 
@@ -54,20 +58,20 @@ public class BoundaryDefinitionsJSPData {
 
     private String getDefinedProperties() {
         Properties p = ModelUtilities.getProperties(this.defs);
-        Object o = p.getAny();
+        Object o = p.getKeyValueProperties();
         if (o == null) {
             // nothing stored -> return empty string
             return "";
         } else {
             // something stored --> return that
-            return BackendUtils.getXMLAsString(p.getAny());
+            return BackendUtils.getXMLAsString(p.getKeyValueProperties().getKeyValueProperty());
         }
     }
-    
-    public List getKVProperties() {
+
+    public Set<PropertyKV> getKVProperties() {
         Properties p = ModelUtilities.getProperties(this.defs);
-        if (p.getAny() instanceof List) {
-            return (List) p.getAny();
+        if (Objects.nonNull(p) && Objects.nonNull(p.getKeyValueProperties())) {
+            return p.getKeyValueProperties().getKeyValueProperty();
         }
         return null;
     }

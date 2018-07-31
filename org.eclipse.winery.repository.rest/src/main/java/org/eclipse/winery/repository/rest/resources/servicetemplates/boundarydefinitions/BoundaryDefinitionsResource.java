@@ -15,13 +15,16 @@
 package org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -47,14 +50,11 @@ import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydef
 import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions.reqscaps.RequirementsResource;
 
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.w3c.dom.Document;
 
 public class BoundaryDefinitionsResource {
 
     private final ServiceTemplateResource serviceTemplateResource;
     private final TBoundaryDefinitions boundaryDefinitions;
-
 
     public BoundaryDefinitionsResource(ServiceTemplateResource serviceTemplateResource, TBoundaryDefinitions boundaryDefinitions) {
         this.serviceTemplateResource = serviceTemplateResource;
@@ -93,34 +93,61 @@ public class BoundaryDefinitionsResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getKVProperties(@Context UriInfo uriInfo) {
-        List result = new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getKVProperties();
+        Set<PropertyKV> result = new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getKVProperties();
         return Response.ok()
-            .entity(Objects.isNull(result) ? "{}" : result)
+            .entity(Objects.isNull(result) ? "[]" : result)
             .type(MediaType.APPLICATION_JSON)
             .build();
-    }
-
-    /**
-     * The well-formedness of the XML element is done using the framework. If you see <code>[Fatal Error] :1:19: The
-     * prefix "tosca" for element "tosca:properties" is not bound.</code> in the console, it is an indicator that the XML element is not well-formed.
-     */
-    @Path("properties/")
-    @PUT
-    @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML})
-    @ApiOperation(value = "saves properties of boundary definitions", notes = "Models the user-defined properties. The property mappings go into a separate resource propertymappings.")
-    public Response putProperties(@ApiParam(value = "Stored properties. The XSD allows a single element only. Therefore, we go for the contained element") Document doc) {
-        org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
-        properties.setAny(doc.getDocumentElement());
-        return RestUtils.persist(this.serviceTemplateResource);
     }
 
     @Path("properties/")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "saves KV properties of boundary definitions")
-    public Response putKVProperties(List<PropertyKV> kv) {
+    public Response putKVProperties(Set<PropertyKV> kv) {
         org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
-        properties.setAny(kv);
+        properties.getKeyValueProperties().setKeyValueProperty(kv);
+        return RestUtils.persist(this.serviceTemplateResource);
+    }
+
+    @Path("properties/")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "creates KV property of boundary definitions")
+    public Response createKVProperty(PropertyKV kv) {
+        if (kv.isValid()) {
+            org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
+            properties.getKeyValueProperties().getKeyValueProperty().add(kv);
+            return RestUtils.persist(this.serviceTemplateResource);
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Received KV property is invalid").build();
+        }
+    }
+
+    @Path("properties/{key}")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "modifies KV property of boundary definitions")
+    public Response editKVProperty(PropertyKV kv) {
+        if (kv.isValid()) {
+            org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
+            properties.getKeyValueProperties().editKeyValueProperty(kv);
+            return RestUtils.persist(this.serviceTemplateResource);
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Received KV property is invalid").build();
+        }
+    }
+
+    @Path("properties/{key}")
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "deletes KV property of boundary definitions")
+    public Response deleteKVProperty(@PathParam("key") String key) {
+        org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
+        properties.getKeyValueProperties().removeKeyValueProperty(key);
+        if (properties.getKeyValueProperties().getKeyValueProperty().isEmpty()) {
+            properties.setKeyValueProperties(null);
+        }
         return RestUtils.persist(this.serviceTemplateResource);
     }
 

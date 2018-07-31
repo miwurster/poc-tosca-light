@@ -26,6 +26,7 @@ import { SelectItem } from 'ng2-select';
 import { PropertiesDefinitionsResourceApiData } from '../../../sharedComponents/propertiesDefinition/propertiesDefinitionsResourceApiData';
 import { SelectData } from '../../../../model/selectData';
 import { HttpErrorResponse } from '@angular/common/http';
+import { KeyValueItem } from '../../../../model/keyValueItem';
 
 @Component({
     selector: 'winery-instance-boundary-property-mappings',
@@ -38,7 +39,7 @@ export class PropertyMappingsComponent implements OnInit {
 
     loading = true;
     targetTypeSelected = false;
-    apiData: PropertyMappingsApiData;
+    apiData: PropertyMappingsApiData = { propertyMappings: {propertyMapping: []}};
     columns: Array<WineryTableColumn> = [
         { title: 'Service Template Property', name: 'serviceTemplatePropertyRef', sort: true },
         { title: 'Target', name: 'targetObjectRef', sort: true },
@@ -49,10 +50,11 @@ export class PropertyMappingsComponent implements OnInit {
     @ViewChild('browseForServiceTemplatePropertyDiag') browseForServiceTemplatePropertyDiag: ModalDirective;
     @ViewChild('propertyMappingForm') propertyMappingForm: NgForm;
     @ViewChild('tempList') templateSelect: any;
+    @ViewChild('serviceTemplateProperty') boundaryPropertiesSelect: any;
     @ViewChild('propertiesSelect') propertiesSelect: any;
     currentSelectedItem: Property = new Property();
     addOrUpdate = 'Add';
-    properties: { name: string, property: string } = { name: '', property: '' };
+    propertiesList: string[] = [];
     xmlData: any;
     selectedProperty = '';
     templateList: Array<SelectData> = [];
@@ -103,15 +105,11 @@ export class PropertyMappingsComponent implements OnInit {
         }
     }
 
-    handleProperties(props: string) {
-        const parser = new DOMParser();
-        this.xmlData = parser.parseFromString(props, 'application/xml');
-        this.properties.name = this.xmlData.firstChild.localName;
-        this.properties.property = '/*[local-name()=\'' + this.properties.name + '\']';
-
-        if (!isNullOrUndefined(this.topologyTemplate) && !isNullOrUndefined(this.apiData)) {
-            this.loading = false;
-        }
+    handleProperties(props: KeyValueItem[]) {
+        this.propertiesList = props.map(item => {
+            return item.key;
+        });
+        this.loading = false;
     }
 
     radioBtnSelected(event: any, reset = true) {
@@ -196,6 +194,12 @@ export class PropertyMappingsComponent implements OnInit {
         }
         this.currentSelectedItem.targetPropertyRef = '/*[local-name()=\'' + this.targetPropertiesWrapperElement +
             '\']/*[local-name()=\'' + this.selectedProperty + '\']';
+    }
+
+    onPropertySelected(property: any) {
+        if (property.text && property.text.length > 0) {
+            this.currentSelectedItem.serviceTemplatePropertyRef = property.text;
+        }
     }
 
     handleData(data: PropertyMappingsApiData) {
@@ -283,5 +287,9 @@ export class PropertyMappingsComponent implements OnInit {
 
     handleError(error: HttpErrorResponse) {
         this.notify.error(error.message);
+    }
+
+    changePropertyInputType() {
+
     }
 }

@@ -1,0 +1,89 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2018 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+<div *ngIf="!loading">
+    <winery-table
+        [data]="properties"
+        [columns]="columns"
+        (addBtnClicked)="onAddClick()"
+        (cellSelected)="onCellSelected($event)"
+        (removeBtnClicked)="onRemoveClick($event)"
+        [enableEditButton]="true"
+        (editBtnClicked)="onEditClick()">
+    </winery-table>
+</div>
+
+<winery-modal bsModal #addPropertyModal="bs-modal" [modalRef]="addPropertyModal">
+    <winery-modal-header [title]="addOrUpdate + ' Property'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <form #boundaryPropertyForm="ngForm" id="boundaryPropertyForm" enctype="multipart/form-data">
+            <fieldset>
+                <div class="form-group">
+                    <span>Boundary Definitions Property</span>
+                    <br>
+                    <div>
+                        <label for="key">Property Name</label>
+                        <input #boundaryPropName="ngModel"
+                               name="key"
+                               id="key"
+                               class="form-control"
+                               type="text"
+                               required
+                               [(ngModel)]="currentSelectedItem.key"/>
+                        <br>
+                        <label for="value">Value</label>
+                        <input #boundaryPropValue="ngModel"
+                               name="value"
+                               id="value"
+                               class="form-control"
+                               type="text"
+                               [(ngModel)]="currentSelectedItem.value"/>
+                    </div>
+
+                    <div style="clear:both"
+                         *ngIf="boundaryPropName.errors && (boundaryPropName.dirty || boundaryPropName.touched)"
+                         class="alert alert-danger">
+                        <div [hidden]="!boundaryPropName.errors.required">
+                            Property name is required!
+                        </div>
+                    </div>
+                </div>
+
+            </fieldset>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer
+        (onOk)="addProperty(addOrUpdate)"
+        [okButtonLabel]="addOrUpdate"
+        [disableOkButton]="!(boundaryPropertyForm?.form.valid && currentSelectedItem.key && currentSelectedItem.key.length > 0)">
+    </winery-modal-footer>
+</winery-modal>
+
+<winery-modal bsModal #confirmDeleteModal="bs-modal" [modalRef]="confirmDeleteModal">
+    <winery-modal-header [title]="'Delete Property'">
+    </winery-modal-header>
+    <winery-modal-body>
+        <p *ngIf="currentSelectedItem != null">
+            Do you want to delete the Property
+            <span style="font-weight:bold;">
+                  {{ currentSelectedItem.key }} = {{ currentSelectedItem.value }}
+              </span>
+            ?
+        </p>
+    </winery-modal-body>
+    <winery-modal-footer
+        (onOk)="removeConfirmed();"
+        [okButtonLabel]="'Delete'">
+    </winery-modal-footer>
+</winery-modal>

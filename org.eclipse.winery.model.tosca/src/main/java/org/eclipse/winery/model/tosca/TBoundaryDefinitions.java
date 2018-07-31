@@ -15,19 +15,15 @@
 package org.eclipse.winery.model.tosca;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyKV;
@@ -35,9 +31,6 @@ import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tBoundaryDefinitions", propOrder = {
@@ -201,64 +194,26 @@ public class TBoundaryDefinitions {
 
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-        "any",
+        "keyValueProperties",
         "propertyMappings"
     })
     public static class Properties {
 
-        @XmlAnyElement(lax = true)
-        protected Object any;
-        
-        @XmlTransient
-        protected List<PropertyKV> kvProperties;
+        @XmlElement(name = "Properties", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE)
+        protected TBoundaryDefinitions.Properties.KeyValueProperties keyValueProperties;
 
         @XmlElement(name = "PropertyMappings")
         protected TBoundaryDefinitions.Properties.PropertyMappings propertyMappings;
 
-        @Nullable
-        public Object getAny() {
-            if (Objects.nonNull(kvProperties)) {
-                // return KV pairs map instead of the generated XML element 
-                return kvProperties;
+        public TBoundaryDefinitions.Properties.@Nullable KeyValueProperties getKeyValueProperties() {
+            if (Objects.isNull(keyValueProperties)) {
+                keyValueProperties = new KeyValueProperties();
             }
-            return any;
+            return keyValueProperties;
         }
 
-        public void setAny(@Nullable Object value) {
-            if (value instanceof List) {
-                // wrap KV pairs with a parent element
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db;
-                try {
-                    db = dbf.newDocumentBuilder();
-                } catch (ParserConfigurationException e) {
-                    throw new IllegalStateException("Could not instantiate document builder", e);
-                }
-                Document doc = db.newDocument();
-                Element root = doc.createElementNS(Namespaces.EXAMPLE_NAMESPACE_URI, "Properties");
-                doc.appendChild(root);
-
-                // No wpd - so this is not possible:
-                // we produce the serialization in the same order the XSD would be generated (because of the usage of xsd:sequence)
-                // for (PropertyDefinitionKV prop : wpd.getPropertyDefinitionKVList()) {
-                this.kvProperties = new ArrayList<>();
-                for (Object prop : (List) value) {
-                    PropertyKV p = (PropertyKV) prop;
-                    Element element = doc.createElementNS(Namespaces.EXAMPLE_NAMESPACE_URI, p.getKey());
-                    root.appendChild(element);
-                    String v = p.getValue();
-                    if (v != null) {
-                        Text text = doc.createTextNode(v);
-                        element.appendChild(text);
-                    }
-                    kvProperties.add(p); 
-                }
-
-                this.any = doc.getDocumentElement();
-            } else {
-                this.kvProperties = null;
-                this.any = value;
-            }
+        public void setKeyValueProperties(TBoundaryDefinitions.Properties.@Nullable KeyValueProperties value) {
+            this.keyValueProperties = value;
         }
 
         public TBoundaryDefinitions.Properties.@Nullable PropertyMappings getPropertyMappings() {
@@ -271,6 +226,40 @@ public class TBoundaryDefinitions {
 
         public void accept(Visitor visitor) {
             visitor.visit(this);
+        }
+
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "", propOrder = {
+            "keyValueProperty"
+        })
+        public static class KeyValueProperties {
+            @XmlElement(name = "property", required = true)
+            protected Set<PropertyKV> keyValueProperty;
+
+            @Nullable
+            public Set<PropertyKV> getKeyValueProperty() {
+                if (Objects.isNull(keyValueProperty)) {
+                    keyValueProperty = new HashSet<>();
+                }
+                return this.keyValueProperty;
+            }
+
+            public void setKeyValueProperty(Set<PropertyKV> keyValueProperty) {
+                this.keyValueProperty = keyValueProperty;
+            }
+
+            public void removeKeyValueProperty(String key) {
+                if (Objects.nonNull(keyValueProperty)) {
+                    keyValueProperty.removeIf(s -> s.getKey().equals(key));
+                }
+            }
+
+            public void editKeyValueProperty(PropertyKV p) {
+                if (Objects.nonNull(keyValueProperty)) {
+                    keyValueProperty.removeIf(s -> s.getKey().equals(p.getKey()));
+                }
+                keyValueProperty.add(p);
+            }
         }
 
         @XmlAccessorType(XmlAccessType.FIELD)

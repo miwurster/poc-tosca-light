@@ -18,6 +18,7 @@ import { backendBaseURL } from '../../../../configuration';
 import { ModalDirective } from 'ngx-bootstrap';
 import { PropertiesDefinitionsResourceApiData } from '../../../sharedComponents/propertiesDefinition/propertiesDefinitionsResourceApiData';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { KeyValueItem } from '../../../../model/keyValueItem';
 
 export class Property {
     serviceTemplatePropertyRef: string;
@@ -66,14 +67,10 @@ export class PropertyMappingService {
             );
     }
 
-    getPropertiesOfServiceTemplate(): Observable<string> {
-        const headers = new HttpHeaders({ 'Accept': 'application/xml' });
+    getPropertiesOfServiceTemplate(): Observable<KeyValueItem[]> {
+        const headers = new HttpHeaders({ 'Accept': 'application/json' });
         const newPath: string = this.path.replace('propertymappings', 'properties');
-
-        return this.http
-            .get(newPath + '/',
-                { headers: headers, responseType: 'text' }
-            );
+        return this.http.get<KeyValueItem[]>(newPath,{ headers: headers });
     }
 
     getTargetObjKVProperties(targetPath: string): Observable<PropertiesDefinitionsResourceApiData> {

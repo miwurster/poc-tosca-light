@@ -17,9 +17,8 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name = "property")
 public class PropertyKV {
-
     private String key;
     private String value;
 
@@ -69,5 +68,9 @@ public class PropertyKV {
     @Override
     public int hashCode() {
         return Objects.hash(key, value);
+    }
+    
+    public boolean isValid() {
+        return Objects.nonNull(this.key) && !this.key.isEmpty();
     }
 }
