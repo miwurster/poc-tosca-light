@@ -368,6 +368,13 @@
                                                 <source>true</source>
                                                 <transitive>false</transitive>
                                             </artifact>
+                                            <artifact>
+                                                <id>
+                                                    org.eclipse.winery:org.eclipse.winery.provenance:2.0.0-SNAPSHOT
+                                                </id>
+                                                <source>true</source>
+                                                <transitive>false</transitive>
+                                            </artifact>
                                         </artifacts>
                                     </feature>
                                 </featureDefinitions>
