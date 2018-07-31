@@ -11,11 +11,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { WineryNotificationService } from './wineryNotificationModule/wineryNotification.service';
 import { ExistService } from './wineryUtils/existService';
 import { backendBaseURL } from './configuration';
 import { BackendAvailabilityStates } from './model/enums';
+import { WineryGitLogComponent } from './wineryGitLog/wineryGitLog.component';
 
 @Component({
     selector: 'winery-repository',
@@ -35,7 +36,7 @@ export class WineryRepositoryComponent implements OnInit {
     backendState = BackendAvailabilityStates.Undefined;
     backendAvailabilityStates = BackendAvailabilityStates;
     loading = true;
-    // @ViewChild('gitLog') gitLog: WineryGitLogComponent;
+    @ViewChild('gitLog') gitLog: WineryGitLogComponent;
 
     // endregion
     options = {
@@ -61,9 +62,9 @@ export class WineryRepositoryComponent implements OnInit {
         );
     }
 
-    // onClick() {
-    // this.gitLog.hide();
-    // }
+    onClick() {
+        this.gitLog.hide();
+    }
 
     refresh() {
         window.location.reload();
