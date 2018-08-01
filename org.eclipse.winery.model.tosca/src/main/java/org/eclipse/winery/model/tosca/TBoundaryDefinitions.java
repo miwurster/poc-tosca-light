@@ -30,6 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 import io.github.adr.embedded.ADR;
 import org.eclipse.jdt.annotation.NonNull;
@@ -99,7 +100,7 @@ public class TBoundaryDefinitions {
         return properties;
     }
 
-    public void setProperties(TBoundaryDefinitions.Properties value) {
+    public void setProperties(TBoundaryDefinitions.@Nullable Properties value) {
         this.properties = value;
     }
 
@@ -107,7 +108,7 @@ public class TBoundaryDefinitions {
         return propertyConstraints;
     }
 
-    public void setPropertyConstraints(TBoundaryDefinitions.PropertyConstraints value) {
+    public void setPropertyConstraints(TBoundaryDefinitions.@Nullable PropertyConstraints value) {
         this.propertyConstraints = value;
     }
 
@@ -115,7 +116,7 @@ public class TBoundaryDefinitions {
         return requirements;
     }
 
-    public void setRequirements(TBoundaryDefinitions.Requirements value) {
+    public void setRequirements(TBoundaryDefinitions.@Nullable Requirements value) {
         this.requirements = value;
     }
 
@@ -123,7 +124,7 @@ public class TBoundaryDefinitions {
         return capabilities;
     }
 
-    public void setCapabilities(TBoundaryDefinitions.Capabilities value) {
+    public void setCapabilities(TBoundaryDefinitions.@Nullable Capabilities value) {
         this.capabilities = value;
     }
 
@@ -131,7 +132,7 @@ public class TBoundaryDefinitions {
         return policies;
     }
 
-    public void setPolicies(TBoundaryDefinitions.Policies value) {
+    public void setPolicies(TBoundaryDefinitions.@Nullable Policies value) {
         this.policies = value;
     }
 
@@ -139,8 +140,12 @@ public class TBoundaryDefinitions {
         return interfaces;
     }
 
-    public void setInterfaces(TBoundaryDefinitions.Interfaces value) {
+    public void setInterfaces(TBoundaryDefinitions.@Nullable Interfaces value) {
         this.interfaces = value;
+    }
+
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
@@ -360,8 +365,12 @@ public class TBoundaryDefinitions {
             return propertyMappings;
         }
 
-        public void setPropertyMappings(TBoundaryDefinitions.Properties.PropertyMappings value) {
+        public void setPropertyMappings(TBoundaryDefinitions.Properties.@Nullable PropertyMappings value) {
             this.propertyMappings = value;
+        }
+
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
         }
 
         @XmlAccessorType(XmlAccessType.FIELD)

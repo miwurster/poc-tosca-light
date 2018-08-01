@@ -317,7 +317,7 @@ div.mainContentContainer.nodeType div.bottom {
 }
 
 div.mainContentContainer.admin div.top {
-    background: url('../assets/img/containers/admin/FrameTop.jpg');
+    background: url('../assets/img/containers/admin/FrameTopLarge.jpg');
 }
 
 div.mainContentContainer.admin div.middle {
@@ -359,6 +359,7 @@ div.managementButtons {
 
 div.mainContentContainer.artifactTemplate div.top {
     background: url('../assets/img/containers/admin/FrameTop.jpg');
+    background-repeat: no-repeat;
 }
 
 div.mainContentContainer.artifactTemplate div.middle {
@@ -513,7 +514,7 @@ div.entityContainer > div {
 }
 
 div.entityContainer > div.left {
-    width: 117px;
+    width: 116px;
 }
 
 div.entityContainer > div.center {
@@ -521,7 +522,7 @@ div.entityContainer > div.center {
 }
 
 div.entityContainer > div.right {
-    width: 33px;
+    width: 32px;
 }
 
 div.entityContainer > div.center > div.informationContainer {
@@ -1189,4 +1190,8 @@ div.policiesContainer > div.content > div.policy > textarea.policy_xml {
 .collapsespan.collapsed:after {
     /* symbol for "collapsed" panels */
     content: "\e259"; /* menu-down glyphicon */
+}
+
+.active-row {
+    background-color: #ccc !important;
 }
