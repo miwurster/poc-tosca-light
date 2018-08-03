@@ -36,13 +36,10 @@ import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemp
 import io.github.adr.embedded.ADR;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 public class BoundaryDefinitionsPropertiesResource {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BoundaryDefinitionsPropertiesResource.class);
-
+    
     private AbstractComponentInstanceResource res;
     private TServiceTemplate template;
 
@@ -58,14 +55,9 @@ public class BoundaryDefinitionsPropertiesResource {
         TBoundaryDefinitions.Properties props = this.template.getBoundaryDefinitions().getProperties();
         if (wpd == null) {
             // no Winery special treatment, just return the XML properties
-            // These can be null resulting in 200 No Content at the caller
             if (props == null) {
                 return Response.ok().type(MediaType.APPLICATION_XML).build();
             } else {
-                /*if (props.getAny() == null) {
-                    LOGGER.debug("XML properties expected, but none found. Returning empty JSON.");
-                    return Response.noContent().type(MediaType.APPLICATION_XML).build();
-                }*/
                 try {
                     @ADR(6)
                     String xmlAsString = BackendUtils.getXMLAsString(TBoundaryDefinitions.Properties.class, props, true);

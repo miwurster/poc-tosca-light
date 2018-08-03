@@ -154,6 +154,8 @@ public abstract class TExtensibleElements {
     }
 
     protected void setWPDNamespace(WinerysPropertiesDefinition res) {
+        // bo be overridden by subclasses willing to use getWinerysPropertiesDefinition()
+        // Template method pattern
     }
 
     @NonNull

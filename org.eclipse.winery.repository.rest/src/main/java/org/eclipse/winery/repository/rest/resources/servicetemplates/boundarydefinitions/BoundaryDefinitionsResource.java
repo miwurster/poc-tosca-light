@@ -15,7 +15,6 @@
 package org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -36,7 +35,6 @@ import org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties.PropertyMa
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions.Requirements;
 import org.eclipse.winery.model.tosca.TCapabilityRef;
 import org.eclipse.winery.model.tosca.TRequirementRef;
-import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions.interfaces.InterfacesResource;
@@ -45,8 +43,6 @@ import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydef
 import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions.reqscaps.RequirementsResource;
 
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.w3c.dom.Document;
 
 public class BoundaryDefinitionsResource {
 
