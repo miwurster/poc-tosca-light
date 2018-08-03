@@ -270,6 +270,10 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.bpmn2bpel.model.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -277,6 +281,10 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.model.csar.toscametafile.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -284,12 +292,20 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.model.selfservice.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.model.tosca:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.model.tosca.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -297,17 +313,29 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.model.tosca.yaml.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.common:2.0.0-SNAPSHOT</id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.common.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.yaml.common:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.yaml.common.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -315,11 +343,19 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.yaml.converter.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.cli:2.0.0-SNAPSHOT</id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.cli.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -327,6 +363,10 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.bpmn2bpel.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.repository:2.0.0-SNAPSHOT</id>
@@ -336,6 +376,10 @@
                                                     <exclude>org.eclipse.collections:eclipse-collections*::</exclude>
                                                 </excludes>
                                                 <transitive>true</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.repository.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -343,6 +387,10 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.repository.client.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -350,17 +398,29 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.repository.configuration.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.compliance:2.0.0-SNAPSHOT</id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.compliance.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>org.eclipse.winery:org.eclipse.winery.generators.ia:2.0.0-SNAPSHOT
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.generators.ia.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -368,6 +428,10 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.highlevelrestapi.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                             <artifact>
                                                 <id>
@@ -375,6 +439,10 @@
                                                 </id>
                                                 <source>true</source>
                                                 <transitive>false</transitive>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>org.eclipse.winery.provenance.*;-noimport:=true</Export-Package>
+                                                </instructions>
                                             </artifact>
                                         </artifacts>
                                     </feature>
