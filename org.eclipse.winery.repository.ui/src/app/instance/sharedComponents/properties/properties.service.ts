@@ -50,8 +50,7 @@ export class PropertiesService {
     }
 
     public saveProperties(properties: any, isXML: boolean): Observable<HttpResponse<string>> {
-        const headers = new HttpHeaders();
-        headers.set('Content-Type', isXML ? 'application/xml' : 'application/json');
+        const headers = new HttpHeaders({ 'Content-Type' : isXML ? 'application/xml' : 'application/json'});
         return this.http
             .put(
                 this.path,

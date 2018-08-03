@@ -21,9 +21,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
@@ -32,7 +30,6 @@ import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.utils.RemoveEmptyLists;
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.eclipse.jdt.annotation.Nullable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -44,13 +41,9 @@ import org.eclipse.jdt.annotation.Nullable;
     "plans"
 })
 public class TServiceTemplate extends HasId implements HasName, HasTargetNamespace {
-    public static final String NS_SUFFIX_PROPERTIESDEFINITION_WINERY = "propertiesdefinition/winery";
-
-    @XmlElements( {
-        @XmlElement(name = "PropertiesDefinition", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, type = TServiceTemplate.PropertiesDefinition.class),
-        @XmlElement(name = "PropertiesDefinition", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, type = WinerysPropertiesDefinition.class)
-    })
-    protected Object propertiesDefinition;
+    
+    @XmlElement(name = "BoundaryDefPropertiesDefinition", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE)
+    protected TServiceTemplate.PropertiesDefinition propertiesDefinition;
 
     @XmlElement(name = "Tags")
     protected TTags tags;
@@ -79,6 +72,7 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
 
     public TServiceTemplate(Builder builder) {
         super(builder);
+        this.propertiesDefinition = builder.propertiesDefinition;
         this.tags = builder.tags;
         this.boundaryDefinitions = builder.boundaryDefinitions;
         this.topologyTemplate = builder.topologyTemplate;
@@ -94,7 +88,8 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
         if (!(o instanceof TServiceTemplate)) return false;
         if (!super.equals(o)) return false;
         TServiceTemplate that = (TServiceTemplate) o;
-        return Objects.equals(tags, that.tags) &&
+        return Objects.equals(propertiesDefinition, that.propertiesDefinition) &&
+            Objects.equals(tags, that.tags) &&
             Objects.equals(boundaryDefinitions, that.boundaryDefinitions) &&
             Objects.equals(topologyTemplate, that.topologyTemplate) &&
             Objects.equals(plans, that.plans) &&
@@ -105,7 +100,7 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), tags, boundaryDefinitions, topologyTemplate, plans, name, targetNamespace, substitutableNodeType);
+        return Objects.hash(super.hashCode(), propertiesDefinition, tags, boundaryDefinitions, topologyTemplate, plans, name, targetNamespace, substitutableNodeType);
     }
 
     @Nullable
@@ -182,11 +177,11 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
         visitor.visit(this);
     }
 
-    public Object getPropertiesDefinition() {
+    public TServiceTemplate.@Nullable PropertiesDefinition getPropertiesDefinition() {
         return propertiesDefinition;
     }
 
-    public void setPropertiesDefinition(Object value) {
+    public void setPropertiesDefinition(TServiceTemplate.@Nullable PropertiesDefinition value) {
         this.propertiesDefinition = value;
     }
 
@@ -211,50 +206,25 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
     public static class PropertiesDefinition extends TEntityType.PropertiesDefinition {
     }
 
-    /**
-     * This is a special method for Winery. Winery allows to define a property definition by specifying name/type
-     * values. Instead of parsing the extensible elements returned TDefinitions, this method is a convenience method to
-     * access this information
-     *
-     * @return a WinerysPropertiesDefinition object, which includes a map of name/type-pairs denoting the associated
-     * property definitions. A default element name and namespace is added if it is not defined in the underlying XML.
-     * null if no Winery specific KV properties are defined for the given entity type
-     */
-    @XmlTransient
-    @JsonIgnore
-    public WinerysPropertiesDefinition getWinerysPropertiesDefinition() {
-        // similar implementation as org.eclipse.winery.repository.resources.entitytypes.properties.PropertiesDefinitionResource.getListFromEntityType(TEntityType)
-        WinerysPropertiesDefinition res = null;
-        if (this.getPropertiesDefinition() instanceof WinerysPropertiesDefinition) {
-            res = (WinerysPropertiesDefinition) this.getPropertiesDefinition();
-        }
-
-        if (res != null) {
-            // we put defaults if elementname and namespace have not been set
-
-            if (res.getElementName() == null) {
-                res.setElementName("Properties");
+    @Override
+    protected void setWPDNamespace(WinerysPropertiesDefinition res) {
+        if (Objects.isNull(res.getNamespace())) {
+            // we use the targetnamespace of the original element
+            String ns = this.getTargetNamespace();
+            if (!ns.endsWith("/")) {
+                ns += "/";
             }
-
-            if (res.getNamespace() == null) {
-                // we use the targetnamespace of the original element
-                String ns = this.getTargetNamespace();
-                if (!ns.endsWith("/")) {
-                    ns += "/";
-                }
-                ns += NS_SUFFIX_PROPERTIESDEFINITION_WINERY;
-                res.setNamespace(ns);
-            }
+            ns += NS_SUFFIX_PROPERTIESDEFINITION_WINERY;
+            res.setNamespace(ns);
         }
-
-        return res;
     }
-
+    
     public static class Builder extends HasId.Builder<Builder> {
         private final TTopologyTemplate topologyTemplate;
 
         private TTags tags;
         private TBoundaryDefinitions boundaryDefinitions;
+        private TServiceTemplate.PropertiesDefinition propertiesDefinition;
         private TPlans plans;
         private String name;
         private String targetNamespace;
@@ -335,6 +305,11 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
 
         public TServiceTemplate build() {
             return new TServiceTemplate(this);
+        }
+
+        public Builder setPropertiesDefinition(PropertiesDefinition propertiesDefinition) {
+            this.propertiesDefinition = propertiesDefinition;
+            return this;
         }
     }
 }

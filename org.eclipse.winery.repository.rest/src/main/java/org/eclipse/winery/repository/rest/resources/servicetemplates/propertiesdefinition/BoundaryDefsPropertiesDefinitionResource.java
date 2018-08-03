@@ -14,124 +14,129 @@
 
 package org.eclipse.winery.repository.rest.resources.servicetemplates.propertiesdefinition;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
-import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
+import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
+import org.eclipse.winery.model.tosca.utils.ModelUtilities;
+import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.NamespaceManager;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
-import org.eclipse.winery.repository.backend.xsd.NamespaceAndDefinedLocalNames;
 import org.eclipse.winery.repository.rest.RestUtils;
-import org.eclipse.winery.repository.rest.datatypes.NamespaceAndDefinedLocalNamesForAngular;
 import org.eclipse.winery.repository.rest.resources.apiData.PropertiesDefinitionEnum;
 import org.eclipse.winery.repository.rest.resources.apiData.PropertiesDefinitionResourceApiData;
+import org.eclipse.winery.repository.rest.resources.entitytypes.properties.PropertiesDefinitionResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-public class BoundaryDefsPropertiesDefinitionResource {
+public class BoundaryDefsPropertiesDefinitionResource extends PropertiesDefinitionResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoundaryDefsPropertiesDefinitionResource.class);
 
     private final ServiceTemplateResource parentRes;
+    private final WinerysPropertiesDefinition wpd;
 
     public BoundaryDefsPropertiesDefinitionResource(ServiceTemplateResource res) {
         this.parentRes = res;
+        this.wpd = res.getElement().getWinerysPropertiesDefinition();
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public PropertiesDefinitionResourceApiData getJson() {
-        Object definition = parentRes.getServiceTemplate().getPropertiesDefinition();
-        return new PropertiesDefinitionResourceApiData(definition);
-    }
-
-    @GET
-    @Path("{type}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<NamespaceAndDefinedLocalNamesForAngular> getXsdDefinitionJson(@PathParam("type") String type) {
-        List<NamespaceAndDefinedLocalNames> allDeclaredElementsLocalNames = null;
-        switch (type) {
-            case "type":
-                allDeclaredElementsLocalNames = RepositoryFactory.getRepository().getXsdImportManager().getAllDefinedTypesLocalNames();
-                break;
-            case "element":
-                allDeclaredElementsLocalNames = RepositoryFactory.getRepository().getXsdImportManager().getAllDeclaredElementsLocalNames();
-                break;
-        }
-
-        if (allDeclaredElementsLocalNames == null) {
-            LOGGER.error("No such parameter available in this call", type);
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-
-        return RestUtils.convert(allDeclaredElementsLocalNames);
+        TServiceTemplate.PropertiesDefinition definition = this.parentRes.getServiceTemplate().getPropertiesDefinition();
+        return new PropertiesDefinitionResourceApiData(definition, this.wpd);
     }
 
     @DELETE
     public Response clearPropertiesDefinition() {
-        parentRes.getServiceTemplate().setPropertiesDefinition(null);
+        TServiceTemplate st = this.parentRes.getServiceTemplate();
+        st.setPropertiesDefinition(null);
+        if (Objects.nonNull(st.getBoundaryDefinitions())) {
+            if (Stream.of(
+                st.getBoundaryDefinitions().getPolicies(),
+                st.getBoundaryDefinitions().getCapabilities(),
+                st.getBoundaryDefinitions().getPropertyConstraints(),
+                st.getBoundaryDefinitions().getRequirements(),
+                st.getBoundaryDefinitions().getInterfaces())
+                .allMatch(Objects::isNull)) {
+                st.setBoundaryDefinitions(null);
+            } else {
+                st.getBoundaryDefinitions().setProperties(null);
+            }
+        }
+        ModelUtilities.removeWinerysPropertiesDefinition(this.parentRes.getServiceTemplate());
         return RestUtils.persist(this.parentRes);
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response onJsonPost(PropertiesDefinitionResourceApiData data) {
+        TServiceTemplate st = this.parentRes.getServiceTemplate();
+
         if (data.selectedValue == PropertiesDefinitionEnum.Element || data.selectedValue == PropertiesDefinitionEnum.Type) {
-            // TODO
-            // return RestUtils.persist(this.parentRes);
+            if (Objects.nonNull(st.getBoundaryDefinitions())) {
+                st.getBoundaryDefinitions().setProperties(null);
+            }
+            // first of all, remove Winery's Properties definition (if it exists)
+            ModelUtilities.removeWinerysPropertiesDefinition(st);
+            // replace old properties definition by new one
+            TServiceTemplate.PropertiesDefinition def = new TServiceTemplate.PropertiesDefinition();
+
+            if (data.propertiesDefinition.getElement() != null) {
+                def.setElement(data.propertiesDefinition.getElement());
+            } else if (data.propertiesDefinition.getType() != null) {
+                def.setType(data.propertiesDefinition.getType());
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST).entity("Wrong data submitted!").build();
+            }
+
+            st.setPropertiesDefinition(def);
+            List<String> errors = new ArrayList<>();
+            BackendUtils.deriveWPD(st, errors);
+            // currently the errors are just logged
+            for (String error : errors) {
+                LOGGER.debug(error);
+            }
+            BackendUtils.initializeProperties(RepositoryFactory.getRepository(), st);
+
+            return RestUtils.persist(this.parentRes);
         } else if (data.selectedValue == PropertiesDefinitionEnum.Custom) {
-            parentRes.getServiceTemplate().setPropertiesDefinition(data.winerysPropertiesDefinition);
-            String namespace = data.winerysPropertiesDefinition.getNamespace();
-            NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
-            if (!namespaceManager.hasPermanentPrefix(namespace)) {
-                namespaceManager.addPermanentNamespace(namespace);
+            // clear current properties definition
+            st.setPropertiesDefinition(null);
+
+            if (!data.winerysPropertiesDefinition.getPropertyDefinitionKVList().getPropertyDefinitionKVs().isEmpty()) {
+                // create winery properties definition and persist it
+                ModelUtilities.replaceWinerysPropertiesDefinition(st, data.winerysPropertiesDefinition);
+                String namespace = data.winerysPropertiesDefinition.getNamespace();
+                NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
+                if (!namespaceManager.hasPermanentProperties(namespace)) {
+                    namespaceManager.addPermanentNamespace(namespace);
+                }
+
+                BackendUtils.initializeProperties(RepositoryFactory.getRepository(), st);
             }
-
-            // BackendUtils.initializeProperties(repository, (TEntityTemplate) element);
-            Document document;
-            try {
-                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            } catch (ParserConfigurationException e) {
-                LOGGER.error("Could not create document", e);
-                return Response.serverError().build();
+            else {
+                return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Empty KV Properties Definition is not allowed!")
+                    .build();
             }
-
-            final String ns = data.winerysPropertiesDefinition.getNamespace();
-            final Element wrapperElement = document.createElementNS(ns, data.winerysPropertiesDefinition.getElementName());
-            document.appendChild(wrapperElement);
-
-            // we produce the serialization in the same order the XSD would be generated (because of the usage of xsd:sequence)
-            for (PropertyDefinitionKV propertyDefinitionKV : data.winerysPropertiesDefinition.getPropertyDefinitionKVList()) {
-                // we always write the element tag as the XSD forces that
-                final Element valueElement = document.createElementNS(ns, propertyDefinitionKV.getKey());
-                wrapperElement.appendChild(valueElement);
-            }
-
-            TBoundaryDefinitions.Properties properties = new TBoundaryDefinitions.Properties();
-            properties.setAny(document.getDocumentElement());
-            parentRes.getServiceTemplate().setBoundaryDefinitions(new TBoundaryDefinitions());
-            parentRes.getServiceTemplate().getBoundaryDefinitions().setProperties(properties);
 
             return RestUtils.persist(this.parentRes);
         }
 
-        return Response.status(Status.BAD_REQUEST).entity("Wrong data submitted!").build();
+        return Response.status(Response.Status.BAD_REQUEST).entity("Wrong data submitted!").build();
     }
 }

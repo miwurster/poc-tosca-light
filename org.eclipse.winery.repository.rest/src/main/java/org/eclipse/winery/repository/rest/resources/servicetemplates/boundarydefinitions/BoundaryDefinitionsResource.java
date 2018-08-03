@@ -80,36 +80,9 @@ public class BoundaryDefinitionsResource {
     }
 
     @Path("properties/")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getProperties(@Context UriInfo uriInfo) {
-        return Response.ok()
-            .entity(new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getPropertiesAsXMLString())
-            .type(MediaType.APPLICATION_JSON)
-            .build();
-    }
-
-    /**
-     * The well-formedness of the XML element is done using the framework. If you see <code>[Fatal Error] :1:19: The
-     * prefix "tosca" for element "tosca:properties" is not bound.</code> in the console, it is an indicator that the XML element is not well-formed.
-     */
-    @Path("properties/")
-    @PUT
-    @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML})
-    @ApiOperation(value = "saves properties of boundary definitions", notes = "Models the user-defined properties. The property mappings go into a separate resource propertymappings.")
-    public Response putProperties(@ApiParam(value = "Stored properties. The XSD allows a single element only. Therefore, we go for the contained element") Document doc) {
-        org.eclipse.winery.model.tosca.TBoundaryDefinitions.Properties properties = ModelUtilities.getProperties(this.boundaryDefinitions);
-        properties.setAny(doc.getDocumentElement());
-        return RestUtils.persist(this.serviceTemplateResource);
-    }
-
-    @Path("properties/")
-    @PUT
-    @Consumes( {MediaType.APPLICATION_JSON})
-    @ApiOperation(value = "saves properties of boundary definitions", notes = "Models the user-defined properties. The property mappings go into a separate resource propertymappings.")
-    public Response putCustomProperties(@ApiParam(value = "Stored properties. The XSD allows a single element only. Therefore, we go for the contained element") Map<String, String> props) {
-        this.boundaryDefinitions.getProperties().setKVProperties(props);
-        return RestUtils.persist(this.serviceTemplateResource);
+    public BoundaryDefinitionsPropertiesResource getProperties(@Context UriInfo uriInfo) {
+        return new BoundaryDefinitionsPropertiesResource(this.serviceTemplateResource);
+        //return new BoundaryDefinitionsJSPData(this.serviceTemplateResource.getServiceTemplate(), uriInfo.getBaseUri()).getPropertiesAsXMLString();
     }
 
     @Path("requirements/")

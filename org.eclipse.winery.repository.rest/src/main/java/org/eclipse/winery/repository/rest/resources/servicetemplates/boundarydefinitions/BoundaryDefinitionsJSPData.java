@@ -17,8 +17,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.SortedSet;
 
 import javax.xml.namespace.QName;
@@ -28,7 +26,6 @@ import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TPlan;
 import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
-import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
@@ -36,6 +33,7 @@ import org.eclipse.winery.repository.rest.datatypes.TypeWithShortName;
 import org.eclipse.winery.repository.rest.datatypes.select2.Select2DataItem;
 import org.eclipse.winery.repository.rest.resources.admin.types.ConstraintTypesManager;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.taglibs.standard.functions.Functions;
 
 public class BoundaryDefinitionsJSPData {
@@ -54,8 +52,8 @@ public class BoundaryDefinitionsJSPData {
         this.baseURI = baseURI;
     }
 
-    private Map<String, String> getDefinedProperties() {
-        /*TBoundaryDefinitions.Properties p = ModelUtilities.getProperties(this.defs);
+    private String getDefinedProperties() {
+        TBoundaryDefinitions.Properties p = ModelUtilities.getProperties(this.defs);
         Object o = p.getAny();
         if (o == null) {
             // nothing stored -> return empty string
@@ -63,42 +61,10 @@ public class BoundaryDefinitionsJSPData {
         } else {
             // something stored --> return that
             return BackendUtils.getXMLAsString(p.getAny());
-        }*/
-        
-        WinerysPropertiesDefinition wpd = ste.getWinerysPropertiesDefinition();
-        
-        if (Objects.isNull(wpd)) {
-            // no Winery special treatment, just return the XML properties
-            // These can be null resulting in 200 No Content at the caller
-            /*if (props == null) {
-                return Response.ok().entity("{}").type(MediaType.APPLICATION_JSON).build();
-            } else {
-                @Nullable final Object any = props.getAny();
-                if (any == null) {
-                    LOGGER.debug("XML properties expected, but none found. Returning empty JSON.");
-                    return Response.ok().entity("{}").type(MediaType.APPLICATION_JSON).build();
-                }
-                try {
-                    @ADR(6)
-                    String xmlAsString = BackendUtils.getXMLAsString(TEntityTemplate.Properties.class, props, true);
-                    return Response
-                        .ok()
-                        .entity(xmlAsString)
-                        .type(MediaType.TEXT_XML)
-                        .build();
-                } catch (Exception e) {
-                    throw new WebApplicationException(e);
-                }
-            }*/
-            return null;
-        } else {
-            return ste.getBoundaryDefinitions().getProperties().getKVProperties();
-            //return Response.ok().entity(kvProperties).type(MediaType.APPLICATION_JSON).build();
         }
-        
     }
 
-    public Map<String, String> getPropertiesAsXMLString() {
+    public String getPropertiesAsXMLString() {
         return this.getDefinedProperties();
     }
 
@@ -106,7 +72,7 @@ public class BoundaryDefinitionsJSPData {
      * Helper method to return an initialized properties object only containing the user-defined properties. The TOSCA
      * properties-element is not returned as the TOSCA XSD allows a single element only
      */
-    /*public String getDefinedPropertiesAsEscapedHTML() {
+    public String getDefinedPropertiesAsEscapedHTML() {
         String s = this.getDefinedProperties();
         s = StringEscapeUtils.escapeHtml4(s);
         return s;
@@ -116,7 +82,8 @@ public class BoundaryDefinitionsJSPData {
         String s = this.getDefinedProperties();
         s = StringEscapeUtils.escapeEcmaScript(s);
         return s;
-    }*/
+    }
+
     public TBoundaryDefinitions getDefs() {
         return this.defs;
     }
