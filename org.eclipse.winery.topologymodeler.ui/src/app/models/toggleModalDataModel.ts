@@ -40,6 +40,7 @@ export interface ToggleModalDataModel {
     currentTableRowIndex: number;
     currentRequirement: ReqCapEntityModel;
     currentCapability: ReqCapEntityModel;
+    groups: any;
 }
 
 export interface ReqCapEntityModel {

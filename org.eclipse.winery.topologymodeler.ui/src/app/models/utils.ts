@@ -38,7 +38,8 @@ export class Utils {
                     otherAttributes = {
                         [nameSpace + 'location']: node.otherAttributes[targetLocationKey],
                         [nameSpace + 'x']: node.x,
-                        [nameSpace + 'y']: node.y
+                        [nameSpace + 'y']: node.y,
+                        [nameSpace + 'groups']: node.groups
                     };
                     break;
                 } else if (key === 'location') {
@@ -64,7 +65,8 @@ export class Utils {
             node.requirements ? node.requirements : {},
             node.deploymentArtifacts ? node.deploymentArtifacts : {},
             node.policies ? node.policies : {},
-            state
+            state,
+            node.groups
         );
     }
 

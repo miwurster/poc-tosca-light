@@ -94,7 +94,8 @@ export class BackendService {
                 this.requestRequirementTypes(),
                 this.requestPolicyTemplates(),
                 this.requestRelationshipTypes(),
-                this.requestNodeTypes()
+                this.requestNodeTypes(),
+                this.requestGroups()
             );
         }
     }
@@ -155,6 +156,15 @@ export class BackendService {
                         return relationship;
                     })
                 );
+        }
+    }
+
+    private requestGroups(): Observable<any> {
+        if(this.configuration) {
+            const url = this.configuration.repositoryURL + '/' + this.configuration.parentPath + '/'
+                + encodeURIComponent(encodeURIComponent(this.configuration.ns));
+            const currentUrl = url + '/' + this.configuration.id + '/groups';
+            return this.http.get(currentUrl, {headers: this.headers});
         }
     }
 

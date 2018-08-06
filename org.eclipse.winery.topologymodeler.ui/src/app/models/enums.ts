@@ -43,6 +43,7 @@ export enum toggleModalType {
     Capabilities = 'CAPABILITIES',
     DeploymentArtifacts = 'DEPLOYMENT_ARTIFACTS',
     Policies = 'POLICIES',
+    Groups = 'GROUPS'
 }
 
 export enum PropertyDefinitionType {

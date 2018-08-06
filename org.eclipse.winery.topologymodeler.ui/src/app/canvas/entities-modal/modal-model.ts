@@ -22,6 +22,7 @@ export class ModalVariantAndState {
 export enum ModalVariant {
     Policies = 'policies',
     DeploymentArtifacts = 'deployment_artifacts',
+    Groups = 'groups',
     // Other as placeholder for other modals like the Requirement and Capability Modals
     Other = 'other',
     None = 'none'

@@ -38,6 +38,16 @@ export interface SidebarStateAction extends Action {
     };
 }
 
+export interface GroupSidebarStateAction extends Action {
+    sidebarContents: {
+        sidebarVisible: boolean,
+        nodeClicked: boolean,
+        id: string,
+        nameTextFieldValue: string,
+        type: string
+    };
+}
+
 export interface SidebarNodeNamechange extends Action {
     nodeNames: {
         newNodeName: string,
@@ -193,6 +203,7 @@ export class WineryActions {
     static DELETE_RELATIONSHIP_TEMPLATE = 'DELETE_RELATIONSHIP_TEMPLATE';
     static CHANGE_NODE_NAME = 'CHANGE_NODE_NAME';
     static OPEN_SIDEBAR = 'OPEN_SIDEBAR';
+    static OPEN_GROUP_SIDEBAR = 'OPEN_GROUP_SIDEBAR';
     static UPDATE_NODE_COORDINATES = 'UPDATE_NODE_COORDINATES';
     static UPDATE_REL_DATA = 'UPDATE_REL_DATA';
     static CHANGE_MIN_INSTANCES = 'CHANGE_MIN_INSTANCES';
@@ -227,6 +238,11 @@ export class WineryActions {
         ((newSidebarData) => ({
             type: WineryActions.OPEN_SIDEBAR,
             sidebarContents: newSidebarData.sidebarContents
+        }));
+    openGroupSidebar: ActionCreator<SidebarStateAction> =
+        ((newSidebarData) => ({
+            type: WineryActions.OPEN_GROUP_SIDEBAR,
+            sidebarContents: newSidebarData.groupSidebarContents
         }));
     changeNodeName: ActionCreator<SidebarNodeNamechange> =
         ((nodeNames) => ({

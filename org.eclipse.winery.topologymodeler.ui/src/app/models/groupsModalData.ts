@@ -12,24 +12,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
+import { TNodeTemplate } from './ttopology-template';
+
 /**
- * Internal representation of navbar buttons
+ * Encompasses the artifacts data defined by the user when using the modal
  */
-export interface ButtonsStateModel {
-    buttonsState: {
-        targetLocationsButton?: boolean;
-        policiesButton?: boolean;
-        requirementsCapabilitiesButton?: boolean;
-        deploymentArtifactsButton?: boolean;
-        propertiesButton?: boolean;
-        typesButton?: boolean;
-        idsButton?: boolean;
-        layoutButton?: boolean;
-        alignHButton?: boolean;
-        alignVButton?: boolean;
-        importTopologyButton?: boolean;
-        splitTopologyButton?: boolean;
-        matchTopologyButton?: boolean;
-        groupNodesButton?: boolean;
-    };
+export class GroupsModalData {
+
+    constructor(public groupSelected?: any,
+                public groups?: any,
+                public selectedNodeTemplates?: Array<TNodeTemplate>) {
+        console.log("Setting data of GroupsModalData to:");
+        console.log(groupSelected);
+        console.log(groups);
+        console.log(selectedNodeTemplates);
+    }
 }

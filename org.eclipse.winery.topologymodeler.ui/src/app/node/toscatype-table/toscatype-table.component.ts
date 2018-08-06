@@ -31,7 +31,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     @Input() toscaTypeData: any;
 
     // Event emitter for showing the modal of a clicked capability or requirement id
-    @Output() showClickedReqOrCapModal: EventEmitter<any>;
+    @Output() showClickedGroupsModal: EventEmitter<any>;
 
     currentToscaTypeData;
     currentToscaType;
@@ -39,7 +39,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
 
     constructor(private entitiesModalService: EntitiesModalService,
                 private backendService: BackendService) {
-        this.showClickedReqOrCapModal = new EventEmitter();
+        this.showClickedGroupsModal = new EventEmitter();
     }
 
     ngOnInit() {
@@ -120,6 +120,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
         this.entitiesModalService.openModalEvent.next(eventObject);
     }
 
+
     openDeploymentArtifactModal(deploymentArtifact) {
         let qName;
         let namespace;
@@ -146,7 +147,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
      *     clicked
      */
     showExistingReqOrCapModal(clickEvent: any): void {
-        this.showClickedReqOrCapModal.emit(clickEvent);
+        this.showClickedGroupsModal.emit(clickEvent);
     }
 
     /**

@@ -16,7 +16,9 @@ package org.eclipse.winery.repository.rest.resources.servicetemplates;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +26,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -33,13 +36,18 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.compliance.checking.ServiceTemplateCheckingResult;
 import org.eclipse.winery.compliance.checking.ServiceTemplateComplianceRuleRuleChecker;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
+import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TGroup;
+import org.eclipse.winery.model.tosca.TGroups;
 import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
@@ -65,6 +73,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 public class ServiceTemplateResource extends AbstractComponentInstanceWithReferencesResource implements IHasName {
@@ -133,6 +143,65 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
     public Response setName(String name) {
         this.getServiceTemplate().setName(name);
         return RestUtils.persist(this);
+    }
+    
+    @PUT
+    @Path("groups")
+    public Response setGroups(TGroups groups) {
+        this.getServiceTemplate().setGroups(groups);
+        return RestUtils.persist(this);
+    }
+    
+    @GET
+    @Path("groups")
+    public Response getGroups(){
+        
+        List<String> testGroups = new ArrayList<>();
+        testGroups.add("testGroup1");
+        testGroups.add("testGroup2");
+        
+        TGroups groups = new TGroups();
+        
+        TGroup group1 = new TGroup(new TGroup.Builder("TestGroup1", "TestGroup1Name", "ScalingGroup"));
+        TEntityTemplate.Properties propsG1 = new TEntityTemplate.Properties();
+        Map<String,String>  map = new HashMap<String,String>();
+        map.put("leck", "mich");
+        propsG1.setKVProperties(map);
+        group1.setProperties(propsG1);
+        
+        
+
+        group1.setNodeTemplates(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates());
+        
+        
+        groups.getGroup().add(group1);
+
+        TGroup group2 = new TGroup(new TGroup.Builder("TestGroup2", "TestGroup2Name", "ScalingGroup"));
+            
+                TEntityTemplate.Properties propsG2 = new TEntityTemplate.Properties();
+                
+                
+                
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+
+        // root elements
+        Document doc = docBuilder.newDocument();
+        Element rootElement = doc.createElement("company");
+        doc.appendChild(rootElement);
+
+        propsG2.setAny(rootElement);
+        
+        group2.setProperties(propsG2);
+        
+        groups.getGroup().add(group2);
+        
+        return Response.ok(groups).build();
     }
 
     @GET

@@ -30,6 +30,7 @@ export class EntityTypesModel {
     requirementTypes: any;
     unGroupedNodeTypes: any;
     deploymentArtifacts: any;
+    groups: any;
 }
 
 /**

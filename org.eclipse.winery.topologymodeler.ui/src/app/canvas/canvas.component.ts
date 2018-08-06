@@ -50,6 +50,7 @@ import { SplitMatchTopologyService } from '../services/split-match-topology.serv
 import { DifferenceStates, VersionUtils } from '../models/ToscaDiff';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { DragSource } from '../models/DragSource';
+import { GroupsModalData } from '../models/groupsModalData';
 
 @Component({
     selector: 'winery-canvas',
@@ -67,6 +68,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('importTopologyModal') importTopologyModal: ModalDirective;
+    @ViewChild('groupNodesModal') groupNodesModal : ModalDirective;
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
     @Input() relationshipTypes: Array<EntityType> = [];
@@ -106,6 +108,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     capabilities: CapabilitiesModalData;
     requirements: RequirementsModalData;
     importTopologyData: ImportTopologyModalData;
+    groupsModalData: GroupsModalData;
 
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
@@ -181,6 +184,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.capabilities = new CapabilitiesModalData();
         this.requirements = new RequirementsModalData();
         this.importTopologyData = new ImportTopologyModalData();
+        this.groupsModalData = new GroupsModalData();
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -280,6 +284,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      *     to show
      */
     public toggleModalHandler(currentNodeData: ToggleModalDataModel) {
+        console.log(currentNodeData);
         this.currentModalData = currentNodeData;
         this.modalData.modalVisible = true;
         this.duplicateId = false;
@@ -293,7 +298,24 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.modalData.modalVariant = ModalVariant.Policies;
                 this.modalData.modalTitle = 'Policy';
                 break;
+            case toggleModalType.Groups:
+                this.modalData.modalVariant = ModalVariant.Other;
+                this.modalData.modalTitle = 'Groups';
+                this.modalData.modalVisible = false;
+                console.log("Debug entityTypes");
+                console.log(this.entityTypes);
+
+                console.log("Trying to open group modal");
+                this.groupsModalData.groupSelected = null;
+                this.groupsModalData.selectedNodeTemplates = this.selectedNodes;
+                this.groupsModalData.groups = this.entityTypes.groups.group;
+
+                console.log("Current Group Modal Data:");
+                console.log(this.groupsModalData);
+                this.groupNodesModal.show();
+                break;
             case toggleModalType.Requirements:
+                console.log("Trying to open requirements modal");
                 this.modalData.modalVariant = ModalVariant.Other;
                 this.modalData.modalVisible = false;
                 this.resetRequirements();
@@ -955,6 +977,9 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             const importTopologyButton = this.navbarButtonsState.buttonsState.importTopologyButton;
             const splitTopologyButton = this.navbarButtonsState.buttonsState.splitTopologyButton;
             const matchTopologyButton = this.navbarButtonsState.buttonsState.matchTopologyButton;
+            const groupNodesButton = this.navbarButtonsState.buttonsState.groupNodesButton;
+            console.log("GroupNodesButton State:");
+            console.log(groupNodesButton);
             let selectedNodes;
             if (alignmentButtonLayout) {
                 this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
@@ -994,6 +1019,14 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             } else if (matchTopologyButton) {
                 this.splitMatchService.matchTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
             }
+
+            // Maybe really ugly in the overall code but this works right now..
+            if(groupNodesButton){
+                this.openGroupSidebar();
+            } else {
+                this.closeGroupSidebar();
+            }
+
             setTimeout(() => {
                 if (selectedNodes === true) {
                     this.updateSelectedNodes();
@@ -1010,6 +1043,16 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      */
     onChangeTopologyTemplate(selectedTopologyTemplateId: string): void {
         this.importTopologyData.selectedTopologyTemplateId = selectedTopologyTemplateId;
+    }
+
+    saveGroupSelection(): void {
+        let nodeTemplates = this.groupsModalData.selectedNodeTemplates;
+        let group = this.groupsModalData.groupSelected;
+    }
+
+    closeGroupModal(): void {
+        this.groupsModalData.groupSelected = null;
+        this.groupNodesModal.hide();
     }
 
     /**
@@ -1384,6 +1427,34 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     hideSidebar() {
         this.ngRedux.dispatch(this.actions.openSidebar({
             sidebarContents: {
+                sidebarVisible: false,
+                nodeClicked: false,
+                id: '',
+                nameTextFieldValue: '',
+                type: ''
+            }
+        }));
+    }
+
+    /**
+     * Hides the Sidebar on the right.
+     */
+    openGroupSidebar() {
+        this.ngRedux.dispatch(this.actions.openGroupSidebar({
+            groupSidebarContents: {
+                sidebarVisible: true,
+                nodeClicked: false,
+                id: '',
+                nameTextFieldValue: '',
+                type: '',
+                groups: this.entityTypes.groups.group
+            }
+        }));
+    }
+
+    closeGroupSidebar() {
+        this.ngRedux.dispatch(this.actions.openGroupSidebar({
+            groupSidebarContents: {
                 sidebarVisible: false,
                 nodeClicked: false,
                 id: '',

@@ -224,6 +224,10 @@ export class WineryComponent implements OnInit {
                 this.entityTypes.relationshipTypes = this.relationshipTypes;
                 break;
             }
+            case 'groups': {
+                this.entityTypes.groups = entityTypeJSON;
+                break;
+            }
         }
     }
 
@@ -262,6 +266,10 @@ export class WineryComponent implements OnInit {
 
     initiateBackendCalls(): void {
         this.backendService.allEntities$.subscribe(JSON => {
+
+            console.log("Storing redux state:")
+
+            console.log(JSON)
             // Grouped NodeTypes
             this.initEntityType(JSON[0], 'groupedNodeTypes');
 
@@ -304,6 +312,8 @@ export class WineryComponent implements OnInit {
 
             // NodeTypes
             this.initEntityType(JSON[9], 'unGroupedNodeTypes');
+
+            this.initEntityType(JSON[10], 'groups');
 
             this.triggerLoaded('everything');
         });

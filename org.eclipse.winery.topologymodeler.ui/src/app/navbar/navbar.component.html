@@ -104,6 +104,14 @@
                 [style.background-color]="getStyle(navbarButtonsState.buttonsState.targetLocationsButton)">
                 Target Locations
             </button>
+            <button
+                class="btn btn-sm align-middle dark-button-style"
+                type="button"
+                id="groupNodes"
+                (click)="toggleButton($event)"
+                [style.background-color]="getStyle(navbarButtonsState.buttonsState.groupNodesButton)">
+                Groups
+            </button>
             <!--<button *ngIf="!readonly"
                     class="btn btn-sm align-middle dark-button-style" type="button" style="margin-left: 4px">Print View
             </button>-->

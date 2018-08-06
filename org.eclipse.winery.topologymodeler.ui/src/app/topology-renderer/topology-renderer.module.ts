@@ -35,6 +35,7 @@ import { TargetLocationsComponent } from '../node/target-locations/target-locati
 import { PoliciesComponent } from '../node/policies/policies.component';
 import { DeploymentArtifactsComponent } from '../node/deployment-artifacts/deployment-artifacts.component';
 import { WineryModalModule } from '../../repositoryUiDependencies/wineryModalModule/winery.modal.module';
+import { GroupsComponent} from '../node/groups/groups.component';
 import { CapabilitiesComponent } from '../node/capabilities/capabilities.component';
 import { PropertiesContentComponent } from '../node/properties-content/properties-content.component';
 import { KeysPipe } from '../pipes/keys.pipe';
@@ -64,11 +65,8 @@ import { PopoverModule } from 'ngx-bootstrap/popover';
     ],
     declarations: [
         NavbarComponent,
-        NodeComponent,
-        CanvasComponent,
         LayoutDirective,
         TopologyRendererComponent,
-        PropertiesComponent,
         RequirementsComponent,
         TargetLocationsComponent,
         PoliciesComponent,
@@ -78,7 +76,10 @@ import { PopoverModule } from 'ngx-bootstrap/popover';
         ToscatypeTableComponent,
         EntitiesModalComponent,
         KeysPipe,
-        LocalnamePipe
+        LocalnamePipe,
+        PropertiesComponent,
+        NodeComponent,
+        CanvasComponent
     ],
     exports: [
         TopologyRendererComponent,

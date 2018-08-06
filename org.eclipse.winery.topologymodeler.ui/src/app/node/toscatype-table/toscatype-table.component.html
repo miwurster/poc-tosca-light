@@ -99,3 +99,26 @@
     </tr>
     </tbody>
 </table>
+
+<table *ngIf="toscaType==='Groups'" class="toscatype-table" border="1" style="">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let group of currentToscaTypeData.group">
+        <td class="toscatype-table-td"
+            [class.cell-with-comment]="isEllipsisActive(daname)">
+            <div #daname (click)="openGroupModal(group)">{{ group.name }}</div>
+            <span class="cell-comment">{{ group.name }}</span>
+        </td>
+        <td class="toscatype-table-td"
+            [class.cell-with-comment]="isEllipsisActive(datype)">
+            <div #datype (click)="selectGroup(group)">{{ group.groupType }}</div>
+            <span class="cell-comment">{{ group.artifactType | localname }}</span>
+        </td>
+    </tr>
+    </tbody>
+</table>

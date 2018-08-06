@@ -28,6 +28,8 @@ import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemp
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.xml.namespace.QName;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class NodeTemplateResource extends TEntityTemplateResource<TNodeTemplate>
 
     private final QName qnameX = new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x");
     private final QName qnameY = new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "y");
+    private final QName qnameGroups = new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "groups");
 
     public NodeTemplateResource(IIdDetermination<TNodeTemplate> idDetermination, TNodeTemplate o, int idx, List<TNodeTemplate> list, IPersistable res) {
         super(idDetermination, o, idx, list, res);
@@ -111,7 +114,21 @@ public class NodeTemplateResource extends TEntityTemplateResource<TNodeTemplate>
         this.o.getOtherAttributes().put(this.qnameY, y);
         return RestUtils.persist(this.res);
     }
-
+    
+    @Path("groups")
+    @GET
+    public String getGroups(){
+        Map<QName, String> otherAttributes = this.o.getOtherAttributes();
+        return otherAttributes.get(this.qnameGroups);
+    }
+    
+    @Path("groups")
+    @PUT
+    public Response setGroups(Collection<String> groups){
+        return Response.ok().build();
+    }
+    
+    
     @Override
     public Namespace getNamespace() {
         // TODO Auto-generated method stub

@@ -44,6 +44,10 @@ import { ReqCapService } from './services/req-cap.service';
 import { SplitMatchTopologyService } from './services/split-match-topology.service';
 import { ErrorHandlerService } from './services/error-handler.service';
 import { PopoverModule } from 'ngx-bootstrap/popover';
+import { SidebarGroupComponent } from './sidebar-group/sidebar-group.component';
+import { PropertiesComponent } from './node/properties/properties.component';
+import { NodeComponent } from './node/node.component';
+import { CanvasComponent } from './canvas/canvas.component';
 
 @NgModule({
     declarations: [
@@ -51,6 +55,7 @@ import { PopoverModule } from 'ngx-bootstrap/popover';
         PaletteComponent,
         SidebarComponent,
         PrintViewComponent,
+        SidebarGroupComponent
     ],
     exports: [WineryComponent],
     imports: [

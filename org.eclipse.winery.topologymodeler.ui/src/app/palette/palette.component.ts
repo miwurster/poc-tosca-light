@@ -155,7 +155,7 @@ export class PaletteComponent implements OnDestroy {
             null,
             null,
             null,
-            null
+            null,
         );
         this.ngRedux.dispatch(this.actions.saveNodeTemplate(newNode));
     }

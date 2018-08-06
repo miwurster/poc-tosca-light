@@ -18,7 +18,7 @@ import {
     HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction, SaveRelationshipAction, SendCurrentNodeIdAction,
     SendPaletteOpenedAction, SetCababilityAction, SetDeploymentArtifactAction, SetPolicyAction, SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
-    UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
+    UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions, GroupSidebarStateAction
 } from '../actions/winery.actions';
 import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
@@ -27,6 +27,7 @@ export interface WineryState {
     currentPaletteOpenedState: boolean;
     hideNavBarAndPaletteState: boolean;
     sidebarContents: any;
+    groupSidebarContents: any;
     currentJsonTopology: TTopologyTemplate;
     currentNodeData: any;
 }
@@ -42,6 +43,13 @@ export const INITIAL_WINERY_STATE: WineryState = {
         type: '',
         minInstances: 1,
         maxInstances: 1
+    },
+    groupSidebarContents: {
+        sidebarVisible: false,
+        nodeClicked: false,
+        id: '',
+        nameTextFieldValue: '',
+        type: ''
     },
     currentJsonTopology: new TTopologyTemplate,
     currentNodeData: {
@@ -76,6 +84,13 @@ export const WineryReducer =
                 return <WineryState>{
                     ...lastState,
                     sidebarContents: newSidebarData
+                };
+            case WineryActions.OPEN_GROUP_SIDEBAR:
+                const newGroupSidebarData: any = (<GroupSidebarStateAction>action).sidebarContents;
+
+                return <WineryState>{
+                    ...lastState,
+                    groupSidebarContents: newGroupSidebarData
                 };
             case WineryActions.CHANGE_MIN_INSTANCES:
                 const sideBarNodeId: any = (<SidebarMinInstanceChanges>action).minInstances.id;

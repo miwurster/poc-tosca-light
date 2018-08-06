@@ -20,5 +20,9 @@ export class ImportTopologyModalData {
     constructor(public selectedTopologyTemplateId?: string,
                 public allTopologyTemplates?: Array<any>,
                 public topologySelected?: boolean) {
+        console.log("Setting data of importTopologyModalData to:");
+        console.log(selectedTopologyTemplateId);
+        console.log(allTopologyTemplates);
+        console.log(topologySelected);
     }
 }

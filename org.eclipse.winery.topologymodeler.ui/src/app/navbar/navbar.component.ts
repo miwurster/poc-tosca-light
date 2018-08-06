@@ -180,6 +180,12 @@ export class NavbarComponent implements OnDestroy {
                 this.matchingOngoing = true;
                 break;
             }
+            case 'groupNodes': {
+                this.ngRedux.dispatch(this.actions.groupNodes());
+
+
+                break;
+            }
         }
     }
 

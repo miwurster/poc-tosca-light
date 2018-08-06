@@ -33,6 +33,7 @@ export class TopologyRendererActions {
     static IMPORT_TOPOLOGY = 'IMPORT_TOPOLOGY';
     static SPLIT_TOPOLOGY = 'SPLIT_TOPOLOGY';
     static MATCH_TOPOLOGY = 'MATCH_TOPOLOGY';
+    static GROUP_NODES = 'GROUP_NODES';
 
     togglePolicies(): Action {
         return {type: TopologyRendererActions.TOGGLE_POLICIES};
@@ -84,5 +85,9 @@ export class TopologyRendererActions {
 
     matchTopology(): Action {
         return {type: TopologyRendererActions.MATCH_TOPOLOGY};
+    }
+
+    groupNodes(): Action {
+        return {type: TopologyRendererActions.GROUP_NODES};
     }
 }

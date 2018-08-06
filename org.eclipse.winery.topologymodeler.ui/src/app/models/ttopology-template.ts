@@ -49,7 +49,8 @@ export class TNodeTemplate extends AbstractTTemplate {
                 public requirements?: any,
                 public deploymentArtifacts?: any,
                 public policies?: any,
-                private _state?: DifferenceStates) {
+                private _state?: DifferenceStates,
+                public groups?: any) {
         super(documentation, any, otherAttributes);
     }
 
@@ -64,7 +65,7 @@ export class TNodeTemplate extends AbstractTTemplate {
     generateNewNodeTemplateWithUpdatedAttribute(updatedAttribute: string, updatedValue: any): TNodeTemplate {
         const nodeTemplate = new TNodeTemplate(this.properties, this.id, this.type, this.name, this.minInstances, this.maxInstances,
             this.visuals, this.documentation, this.any, this.otherAttributes, this.x, this.y, this.capabilities,
-            this.requirements, this.deploymentArtifacts, this.policies);
+            this.requirements, this.deploymentArtifacts, this.policies, this.groups);
         if (updatedAttribute === 'coordinates') {
             nodeTemplate.x = updatedValue.x;
             nodeTemplate.y = updatedValue.y;
@@ -78,7 +79,8 @@ export class TNodeTemplate extends AbstractTTemplate {
                         const otherAttributes = {
                             [nameSpace + 'location']: updatedValue,
                             [nameSpace + 'x']: nodeTemplate.x,
-                            [nameSpace + 'y']: nodeTemplate.y
+                            [nameSpace + 'y']: nodeTemplate.y,
+                            [nameSpace + 'groups']: nodeTemplate.groups
                         };
                         nodeTemplate.otherAttributes = otherAttributes;
                         newOtherAttributesAssigned = true;
