@@ -68,7 +68,6 @@ export class PropertyMappingService {
     }
 
     getPropertiesOfServiceTemplate(): Observable<any> {
-        //const headers = new HttpHeaders({ 'Accept': 'application/xml' });
         const newPath: string = this.path.replace('propertymappings', 'properties');
         return this.http.get(newPath, { observe: 'response', responseType: 'text' })
             .pipe(map(res => {
@@ -80,11 +79,6 @@ export class PropertyMappingService {
                     return { isXML: true, properties: res.body };
                 }
             }));
-
-        /*return this.http
-            .get(newPath + '/',
-                { headers: headers, responseType: 'text' }
-            );*/
     }
 
     getTargetObjKVProperties(targetPath: string): Observable<PropertiesDefinitionsResourceApiData> {

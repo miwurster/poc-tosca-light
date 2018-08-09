@@ -175,19 +175,6 @@ public abstract class TEntityType extends TExtensibleElements implements HasName
         this.targetNamespace = value;
     }
 
-    @Override
-    protected void setWPDNamespace(WinerysPropertiesDefinition res) {
-        if (res.getNamespace() == null) {
-            // we use the targetnamespace of the original element
-            String ns = this.getTargetNamespace();
-            if (!ns.endsWith("/")) {
-                ns += "/";
-            }
-            ns += NS_SUFFIX_PROPERTIESDEFINITION_WINERY;
-            res.setNamespace(ns);
-        }
-    }
-    
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
     public static class DerivedFrom implements HasType {

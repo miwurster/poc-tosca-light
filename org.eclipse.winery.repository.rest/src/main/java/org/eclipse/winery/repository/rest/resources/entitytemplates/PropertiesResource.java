@@ -44,10 +44,6 @@ public class PropertiesResource {
     private AbstractComponentInstanceResource res;
     private TEntityTemplate template;
 
-    public PropertiesResource() {
-
-    }
-
     /**
      * @param template the template to store the definitions at
      * @param res      the resource to save after modifications

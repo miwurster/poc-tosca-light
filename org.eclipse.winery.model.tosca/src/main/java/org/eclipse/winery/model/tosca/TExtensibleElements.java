@@ -147,15 +147,24 @@ public abstract class TExtensibleElements {
         return res;
     }
 
-    protected void setWPDElement(WinerysPropertiesDefinition res) {
+    private void setWPDElement(WinerysPropertiesDefinition res) {
         if (res.getElementName() == null) {
             res.setElementName("Properties");
         }
     }
 
-    protected void setWPDNamespace(WinerysPropertiesDefinition res) {
-        // bo be overridden by subclasses willing to use getWinerysPropertiesDefinition()
-        // Template method pattern
+    private void setWPDNamespace(WinerysPropertiesDefinition res) {
+        if (Objects.isNull(res.getNamespace())) {
+            if (this instanceof HasTargetNamespace) {
+                // we use the targetnamespace of the original element
+                String ns = ((HasTargetNamespace) this).getTargetNamespace();
+                if (!ns.endsWith("/")) {
+                    ns += "/";
+                }
+                ns += NS_SUFFIX_PROPERTIESDEFINITION_WINERY;
+                res.setNamespace(ns);
+            }
+        }
     }
 
     @NonNull

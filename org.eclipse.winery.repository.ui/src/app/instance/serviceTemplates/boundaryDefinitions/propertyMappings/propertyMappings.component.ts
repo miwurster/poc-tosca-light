@@ -54,7 +54,7 @@ export class PropertyMappingsComponent implements OnInit {
     addOrUpdate = 'Add';
     properties: { name: string, property: string } = { name: '', property: '' };
     propertiesList: Array<SelectData> = [];
-    propertiesAreKeyValuePairs: boolean = false;
+    propertiesAreKeyValuePairs = false;
     xmlData: any;
     selectedProperty = '';
     templateList: Array<SelectData> = [];
@@ -115,11 +115,14 @@ export class PropertyMappingsComponent implements OnInit {
                 this.properties.name = this.xmlData.firstChild.localName;
                 this.properties.property = '/*[local-name()=\'' + this.properties.name + '\']';
             }
-        }
-        else {
+        } else {
             this.propertiesAreKeyValuePairs = true;
-            for (let p in props.properties) {
-                this.propertiesList.push({ 'id': p, 'text': p });
+            if (props.properties) {
+                for (const p in props.properties) {
+                    if (props.properties.hasOwnProperty(p)) {
+                        this.propertiesList.push({ 'id': p, 'text': p });
+                    }
+                }
             }
         }
     }

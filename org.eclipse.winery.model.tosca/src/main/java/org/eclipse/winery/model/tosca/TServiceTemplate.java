@@ -206,19 +206,6 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
     public static class PropertiesDefinition extends TEntityType.PropertiesDefinition {
     }
 
-    @Override
-    protected void setWPDNamespace(WinerysPropertiesDefinition res) {
-        if (Objects.isNull(res.getNamespace())) {
-            // we use the targetnamespace of the original element
-            String ns = this.getTargetNamespace();
-            if (!ns.endsWith("/")) {
-                ns += "/";
-            }
-            ns += NS_SUFFIX_PROPERTIESDEFINITION_WINERY;
-            res.setNamespace(ns);
-        }
-    }
-    
     public static class Builder extends HasId.Builder<Builder> {
         private final TTopologyTemplate topologyTemplate;
 
