@@ -995,6 +995,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.splitMatchService.matchTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
             }
             setTimeout(() => {
+                this.newJsPlumbInstance.repaintEverything();
                 if (selectedNodes === true) {
                     this.updateSelectedNodes();
                 } else {
@@ -1051,7 +1052,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     /**
      * Updates the internal representation of all nodes with the actual dom information.
      */
-    updateAllNodes(): void {
+    public updateAllNodes(): void {
         if (this.allNodeTemplates.length > 0 && this.child) {
             for (const nodeTemplate of this.child.nativeElement.children) {
                 this.setNewCoordinates(nodeTemplate);
