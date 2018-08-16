@@ -30,6 +30,7 @@ export interface TopologyRendererState {
         importTopologyButton?: boolean;
         splitTopologyButton?: boolean;
         matchTopologyButton?: boolean;
+        checkComplianceButton?: boolean;
     };
 }
 
@@ -160,6 +161,14 @@ export const TopologyRendererReducer =
                     buttonsState: {
                         ...lastState.buttonsState,
                         matchTopologyButton: !lastState.buttonsState.matchTopologyButton
+                    }
+                };
+            case TopologyRendererActions.CHECK_COMPLIANCE:
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        checkComplianceButton: !lastState.buttonsState.checkComplianceButton
                     }
                 };
         }

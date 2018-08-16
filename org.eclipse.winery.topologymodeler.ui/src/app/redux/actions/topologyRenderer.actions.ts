@@ -33,6 +33,7 @@ export class TopologyRendererActions {
     static IMPORT_TOPOLOGY = 'IMPORT_TOPOLOGY';
     static SPLIT_TOPOLOGY = 'SPLIT_TOPOLOGY';
     static MATCH_TOPOLOGY = 'MATCH_TOPOLOGY';
+    static CHECK_COMPLIANCE = 'CHECK_COMPLIANCE';
 
     togglePolicies(): Action {
         return { type: TopologyRendererActions.TOGGLE_POLICIES };
@@ -84,5 +85,9 @@ export class TopologyRendererActions {
 
     matchTopology(): Action {
         return { type: TopologyRendererActions.MATCH_TOPOLOGY };
+    }
+
+    checkCompliance(): Action {
+        return { type: TopologyRendererActions.CHECK_COMPLIANCE };
     }
 }

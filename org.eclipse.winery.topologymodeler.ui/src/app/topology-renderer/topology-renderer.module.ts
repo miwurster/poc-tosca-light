@@ -45,6 +45,7 @@ import { ToscatypeTableComponent } from '../node/toscatype-table/toscatype-table
 import { EntitiesModalComponent } from '../canvas/entities-modal/entities-modal.component';
 import { LocalnamePipe } from '../pipes/localname.pipe';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
+import { PopoverModule } from 'ngx-bootstrap/popover';
 
 @NgModule({
     imports: [
@@ -61,7 +62,8 @@ import { TooltipModule } from 'ngx-bootstrap/tooltip';
         RouterModule,
         WineryModalModule,
         TypeaheadModule.forRoot(),
-        TooltipModule.forRoot()
+        TooltipModule.forRoot(),
+        PopoverModule.forRoot(),
     ],
     declarations: [
         NavbarComponent,

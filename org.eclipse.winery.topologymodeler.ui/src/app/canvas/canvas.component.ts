@@ -50,6 +50,7 @@ import { SplitMatchTopologyService } from '../services/split-match-topology.serv
 import { DifferenceStates, VersionUtils } from '../models/ToscaDiff';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { DragSource } from '../models/DragSource';
+import { ComplianceRuleResult } from '../models/complianceRuleResult';
 
 @Component({
     selector: 'winery-canvas',
@@ -154,7 +155,6 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 private errorHandler: ErrorHandlerService) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
-        console.log(this.newJsPlumbInstance);
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
             .subscribe(currentNodes => this.updateNodes(currentNodes)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
@@ -983,6 +983,7 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
             const importTopologyButton = this.navbarButtonsState.buttonsState.importTopologyButton;
             const splitTopologyButton = this.navbarButtonsState.buttonsState.splitTopologyButton;
             const matchTopologyButton = this.navbarButtonsState.buttonsState.matchTopologyButton;
+            const checkComplianceButton = this.navbarButtonsState.buttonsState.checkComplianceButton;
             let selectedNodes;
             if (alignmentButtonLayout) {
                 this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
@@ -1020,6 +1021,10 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.splitMatchService.splitTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
             } else if (matchTopologyButton) {
                 this.splitMatchService.matchTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
+            } else if (checkComplianceButton) {
+                this.checkCompliance();
+            } else if (!checkComplianceButton) {
+                this.resetComplianceRuleViolationsFromNodes();
             }
             setTimeout(() => {
                 if (selectedNodes === true) {
@@ -1030,6 +1035,39 @@ export class CanvasComponent implements OnInit, OnDestroy, AfterViewInit, DoChec
                 this.revalidateContainer();
             }, 1);
         }
+    }
+
+    checkCompliance() {
+        this.backendService.checkComplianceOfTopologyTemplate()
+            .subscribe(result => this.onCheckComplianceSuccess(result), err => console.log(err));
+    }
+
+    onCheckComplianceSuccess(complianceRuleResults: ComplianceRuleResult[]) {
+        let isAnyRuleViolated = false;
+        complianceRuleResults.forEach(result => {
+            if (!result.isSatisfied) {
+                isAnyRuleViolated = true;
+                this.markNonCompliantNodes(result);
+            }
+        });
+        if (!isAnyRuleViolated) {
+            this.alert.success('All compliance rules are satisfied');
+        }
+    }
+
+    markNonCompliantNodes(result: ComplianceRuleResult) {
+        result.violatingNodesIds.forEach(nodeId => {
+            const nodeIndex = this.allNodeTemplates.findIndex(node => node.id === nodeId);
+            this.allNodeTemplates[nodeIndex].complianceRuleViolations.push(result);
+        });
+    }
+
+    resetComplianceRuleViolationsFromNodes() {
+        this.allNodeTemplates.forEach(node => node.complianceRuleViolations = []);
+    }
+
+    removeFieldComplianceRuleViolationsFromNodes() {
+        this.allNodeTemplates.forEach(node => delete node.complianceRuleViolations);
     }
 
     /**

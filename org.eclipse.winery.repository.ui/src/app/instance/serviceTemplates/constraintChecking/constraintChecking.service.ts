@@ -31,7 +31,7 @@ export class ConstraintCheckingService {
     }
 
     getCheckingResult(): Observable<string> {
-        const headers = new HttpHeaders({ 'Accept': 'application/xml' });
+        const headers = new HttpHeaders({ 'Accept': 'application/json' });
         const requestUrl = backendBaseURL + this.path;
 
         return this.http

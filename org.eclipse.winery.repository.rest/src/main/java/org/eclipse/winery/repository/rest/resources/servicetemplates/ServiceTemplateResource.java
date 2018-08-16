@@ -36,6 +36,7 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.compliance.checking.ComplianceRuleResult;
 import org.eclipse.winery.compliance.checking.ServiceTemplateCheckingResult;
 import org.eclipse.winery.compliance.checking.ServiceTemplateComplianceRuleRuleChecker;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
@@ -290,12 +291,12 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
     }
 
     @Path("constraintchecking")
-    @Produces(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_JSON)
     @POST
     public Response complianceChecking(@Context UriInfo uriInfo) throws JAXBException {
         ServiceTemplateComplianceRuleRuleChecker checker = new ServiceTemplateComplianceRuleRuleChecker(this.getServiceTemplate());
-        ServiceTemplateCheckingResult serviceTemplateCheckingResult = checker.checkComplianceRules();
-        return Response.ok().entity(serviceTemplateCheckingResult.toXMLString()).build();
+        List<ComplianceRuleResult> serviceTemplateCheckingResult = checker.checkComplianceRules();
+        return Response.ok().entity(serviceTemplateCheckingResult).build();
     }
 
     @Override

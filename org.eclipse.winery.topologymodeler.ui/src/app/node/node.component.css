@@ -125,6 +125,12 @@ div.connectorBox {
     width: 30px;
 }
 
+.compliance-result {
+    cursor: pointer;
+    text-align: center;
+    color: red;
+}
+
 div.connectorLabel {
     height: 15px;
     line-height: 16px;
@@ -151,4 +157,18 @@ button.btn.btn-sm.btn-outline-secondary:hover, button.btn.btn-sm.btn-outline-sec
 .relationship-button {
     border: 1px solid;
     width: 100%;
+}
+
+.rule-violation-label {
+    text-align: center;
+    color: red;
+}
+
+.violated-rule-id {
+    color: #0275d8 !important;
+    cursor: pointer;
+}
+
+.violated-rules-list-item {
+    padding: 2%;
 }

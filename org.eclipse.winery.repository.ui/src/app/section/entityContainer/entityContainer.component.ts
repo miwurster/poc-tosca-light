@@ -11,14 +11,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {backendBaseURL} from '../../configuration';
-import {SectionData} from '../sectionData';
-import {ToscaTypes} from '../../model/enums';
-import {Router} from '@angular/router';
-import {ExistService} from '../../wineryUtils/existService';
-import {isNullOrUndefined} from 'util';
-import {EntityService} from './entity.service';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { backendBaseURL } from '../../configuration';
+import { SectionData } from '../sectionData';
+import { ToscaTypes } from '../../model/enums';
+import { Router } from '@angular/router';
+import { ExistService } from '../../wineryUtils/existService';
+import { isNullOrUndefined } from 'util';
+import { EntityService } from './entity.service';
 import { DifferencesData } from './differencesData';
 
 @Component({

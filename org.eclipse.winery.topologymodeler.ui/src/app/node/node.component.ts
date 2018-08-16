@@ -13,8 +13,8 @@
  ********************************************************************************/
 
 import {
-    AfterViewInit, Component, ComponentRef, DoCheck, ElementRef, EventEmitter, Input, KeyValueDiffers, NgZone, OnDestroy, OnInit, Output,
-    Renderer2
+    AfterViewInit, Component, ComponentRef, DoCheck, ElementRef, EventEmitter, Input, KeyValueDiffers, NgZone,
+    OnDestroy, OnInit, Output, Renderer2
 } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
 import { ButtonsStateModel } from '../models/buttonsState.model';
@@ -29,6 +29,7 @@ import { BackendService } from '../services/backend.service';
 import { isNullOrUndefined } from 'util';
 import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
 import { EntityTypesModel } from '../models/entityTypesModel';
+import { ActivatedRoute } from '@angular/router';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -71,6 +72,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     @Input() dragSource: string;
     @Input() navbarButtonsState: ButtonsStateModel;
     @Input() nodeTemplate: TNodeTemplate;
+    @Input() isComplianceRuleViolation: boolean;
 
     @Output() sendId: EventEmitter<string>;
     @Output() askForRepaint: EventEmitter<string>;
@@ -316,6 +318,9 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * @param $event
      */
     closeConnectorEndpoints($event): void {
+        if (['complianceInfo', 'complianceInfoContainer', 'ruleId'].indexOf($event.target.id) > -1) {
+            return;
+        }
         $event.stopPropagation();
         if (!this.longpress && !$event.ctrlKey) {
             this.closedEndpoint.emit(this.nodeTemplate.id);
@@ -340,6 +345,9 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      * @param $event
      */
     openSidebar($event): void {
+        if (['complianceInfo', 'complianceInfoContainer', 'ruleId'].indexOf($event.target.id) > -1) {
+            return;
+        }
         $event.stopPropagation();
         // close sidebar when longpressing a node template
         if (this.longpress) {
@@ -411,4 +419,11 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
             this.longpress = true;
         }
     }
+
+    openComplianceRule(ruleViolation) {
+        const encodedNamespace = encodeURIComponent(encodeURIComponent(ruleViolation.ruleNamespace))
+        const url = `${this.backendService.configuration.uiURL}compliancerules/${encodedNamespace}/${ruleViolation.ruleId}`;
+        window.open(url);
+    }
+
 }

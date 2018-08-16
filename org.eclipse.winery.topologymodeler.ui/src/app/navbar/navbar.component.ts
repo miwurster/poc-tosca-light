@@ -178,6 +178,10 @@ export class NavbarComponent implements OnDestroy {
                 this.matchingOngoing = true;
                 break;
             }
+            case 'checkCompliance': {
+                this.ngRedux.dispatch(this.actions.checkCompliance());
+                break;
+            }
         }
     }
 
@@ -203,6 +207,7 @@ export class NavbarComponent implements OnDestroy {
         topologySkeleton.nodeTemplates.map(nodeTemplate => {
             delete nodeTemplate.visuals;
             delete nodeTemplate.state;
+            delete nodeTemplate.complianceRuleViolations;
         });
         const topologyToBeSaved = topologySkeleton;
         console.log(topologyToBeSaved);

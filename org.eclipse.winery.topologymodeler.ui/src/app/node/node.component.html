@@ -82,13 +82,26 @@
                 </tr>
             </table>
         </div>
+        <ng-template #popTemplate>
+            <div class="violated-rules-list-item" *ngFor="let ruleViolation of nodeTemplate.complianceRuleViolations">
+                <a id="ruleId" class="violated-rule-id" (click)="openComplianceRule(ruleViolation)">{{ruleViolation.ruleId}}</a>
+            </div>
+        </ng-template>
+        <div id="complianceInfoContainer" class="col-sm-12 compliance-result"
+             *ngIf="nodeTemplate.complianceRuleViolations.length > 0"
+             [popover]="popTemplate"
+             popoverTitle="List of violated Rules">
+            Compliance Rules violated
+        </div>
     </div>
     <ng-template #showPattern>
-        <div class="patternP" tooltip="{{ nodeTypeLocalName }}" (click)="openSidebar($event); closeConnectorEndpoints($event)">
+        <div class="patternP" tooltip="{{ nodeTypeLocalName }}"
+             (click)="openSidebar($event); closeConnectorEndpoints($event)">
             <div class="col-sm-3">
                 <img *ngIf="!nodeTemplate.visuals.imageUrl" class="patternImage" src="http://via.placeholder.com/50x50"
                      style="border-radius: 10%; width: 50px; height: auto">
-                <img *ngIf="nodeTemplate.visuals.imageUrl" class="patternImage" src="{{hostURL}}{{nodeTemplate.visuals.imageUrl}}">
+                <img *ngIf="nodeTemplate.visuals.imageUrl" class="patternImage"
+                     src="{{hostURL}}{{nodeTemplate.visuals.imageUrl}}">
             </div>
         </div>
     </ng-template>

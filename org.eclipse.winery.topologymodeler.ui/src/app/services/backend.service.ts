@@ -24,6 +24,7 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { urlElement } from '../models/enums';
 import { ToscaDiff } from '../models/ToscaDiff';
 import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
+import { ComplianceRuleResult } from '../models/complianceRuleResult';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -346,4 +347,17 @@ export class BackendService {
      const options = new RequestOptions({ headers: headers });
      return this.http.put(backendBaseURL + this.activatedRoute.url + '/', JSON.stringify(data), options);
      }*/
+
+    checkComplianceOfTopologyTemplate(): Observable<ComplianceRuleResult[]> {
+        const headers = new HttpHeaders({ 'Accept': 'application/json' });
+        const url = this.configuration.repositoryURL + '/' + this.configuration.parentPath + '/'
+            + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/' + this.configuration.id + '/constraintchecking';
+
+        return this.http
+            .post<ComplianceRuleResult[]>(
+                url,
+                {},
+                { headers: headers}
+            );
+    }
 }

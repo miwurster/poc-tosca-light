@@ -13,6 +13,7 @@
  ********************************************************************************/
 package org.eclipse.winery.compliance.checking;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +44,11 @@ public class ServiceTemplateComplianceRuleRuleChecker {
         this.serviceTemplate = serviceTemplate;
     }
 
-    public ServiceTemplateCheckingResult checkComplianceRules() {
+    public List<ComplianceRuleResult> checkComplianceRules() {
         StringBuilder checkingResult = new StringBuilder("Rulechecking result for servicetemplate " + serviceTemplate.getIdFromIdOrNameField() + System.lineSeparator());
         ServiceTemplateCheckingResult result = new ServiceTemplateCheckingResult();
         List<ComplianceRuleId> ruleIds = getRuleIds(serviceTemplate);
+        List<ComplianceRuleResult> complianceRuleResults = new ArrayList<>();
         if (ruleIds.isEmpty()) {
             checkingResult.append("No rules defined");
         } else {
@@ -54,7 +56,8 @@ public class ServiceTemplateComplianceRuleRuleChecker {
 
             for (ComplianceRuleId ruleId : ruleIds) {
                 TComplianceRule tComplianceRule = repository.getElement(ruleId);
-
+                ComplianceRuleResult complianceRuleResult = new ComplianceRuleResult(ruleId.getNamespace().toString(), 
+                    ruleId.getXmlId().toString());
                 ComplianceRuleChecker checker = new ComplianceRuleChecker(tComplianceRule, serviceTemplate.getTopologyTemplate());
                 List<GraphMapping> graphMappings;
                 try {
@@ -63,15 +66,20 @@ public class ServiceTemplateComplianceRuleRuleChecker {
                         result.getUnsatisfied().add(ruleId.getQName());
                         checkingResult.append(ruleId.getQName().toString() + " violated:");
                         checkingResult.append(System.lineSeparator());
+                        complianceRuleResult.setIsSatisfied(false);
                         for (GraphMapping mapping : graphMappings) {
                             Map<ToscaNode, ToscaNode> resultMap = checker.getSubGraphMappingAsMap(mapping, checker.getIdentifierGraph());
+                            List<String> violatingNodeIds = resultMap.values().stream().map(node -> node.getId()).collect(Collectors.toList());
+                            complianceRuleResult.getViolatingNodesIds().addAll(violatingNodeIds);
                             checkingResult.append(System.lineSeparator());
                             checkingResult.append(resultMap.values().stream().map(node -> node.getNodeTemplate().getIdFromIdOrNameField()).collect(Collectors.joining(";", "NodeTemplateIds: ", "")));
                         }
                     } else {
                         result.getSatisfied().add(ruleId.getQName());
                         checkingResult.append(ruleId.getQName().toString() + " satisfied");
+                        complianceRuleResult.setIsSatisfied(true);
                     }
+                    complianceRuleResults.add(complianceRuleResult);
                 } catch (ComplianceCheckingException e) {
                     result.getException().add(ruleId.getQName());
                     LOGGER.debug("Could not check compliance at rule " + ruleId.getQName().toString(), e);
@@ -79,7 +87,12 @@ public class ServiceTemplateComplianceRuleRuleChecker {
             }
         }
         LOGGER.debug(checkingResult.toString());
-        return result;
+        return complianceRuleResults;
+    }
+    
+    public List<String> getViolatingNodes(GraphMapping graphMapping){
+        List<String> violatingNodes = new ArrayList<>();
+        return  violatingNodes;
     }
 
     public List<ComplianceRuleId> getRuleIds(TServiceTemplate serviceTemplate) {

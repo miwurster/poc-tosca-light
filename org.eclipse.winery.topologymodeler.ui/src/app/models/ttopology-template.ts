@@ -12,6 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 import { DifferenceStates, VersionUtils } from './ToscaDiff';
+import { ComplianceRuleResult } from './complianceRuleResult';
 
 export class AbstractTTemplate {
     constructor(public documentation?: any,
@@ -49,7 +50,8 @@ export class TNodeTemplate extends AbstractTTemplate {
                 public requirements?: any,
                 public deploymentArtifacts?: any,
                 public policies?: any,
-                private _state?: DifferenceStates) {
+                private _state?: DifferenceStates,
+                public complianceRuleViolations: ComplianceRuleResult[] = []) {
         super(documentation, any, otherAttributes);
     }
 

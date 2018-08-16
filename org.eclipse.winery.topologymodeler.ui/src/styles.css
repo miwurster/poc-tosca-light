@@ -498,3 +498,8 @@ tr.row.col-sm-12 {
   height: 245px;
   width: 369px;
 }*/
+
+.popover{
+    white-space: nowrap;
+    max-width: none;
+}
