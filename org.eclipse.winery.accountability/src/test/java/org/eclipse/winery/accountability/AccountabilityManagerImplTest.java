@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
+import org.eclipse.winery.accountability.blockchain.BlockchainAccess;
 import org.eclipse.winery.accountability.blockchain.BlockchainFactory;
 import org.eclipse.winery.accountability.model.FileProvenanceElement;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
@@ -34,6 +35,7 @@ import org.eclipse.winery.accountability.model.ProvenanceVerification;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationTree;
+import org.eclipse.winery.accountability.storage.ImmutableStorageProvider;
 import org.eclipse.winery.accountability.storage.ImmutableStorageProviderFactory;
 
 import org.apache.commons.io.IOUtils;
@@ -61,8 +63,11 @@ class AccountabilityManagerImplTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        this.provenance = new AccountabilityManagerImpl(BlockchainFactory.AvailableBlockchains.TEST,
-            ImmutableStorageProviderFactory.AvailableImmutableStorages.TEST, null);
+        BlockchainAccess blockchainAccess = BlockchainFactory
+            .getBlockchainAccess(BlockchainFactory.AvailableBlockchains.TEST, null);
+        ImmutableStorageProvider storageProvider = ImmutableStorageProviderFactory
+            .getStorageProvider(ImmutableStorageProviderFactory.AvailableImmutableStorages.TEST, null);
+        this.provenance = new AccountabilityManagerImpl(blockchainAccess, storageProvider);
     }
 
     @ParameterizedTest(name = "{index} => ''{6}''")

@@ -12,39 +12,18 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<div id="tabsContainer">
-    <div id="myTabs">
-        <a class="styledTabMenuButton"
-           [routerLink]="['authorization']"
-           [routerLinkActive]="['selected']">
-            <div class="left"></div>
-            <div class="center">Authorization</div>
-            <div class="right"></div>
-        </a>
-        <a class="styledTabMenuButton"
-           [routerLink]="['authentication']"
-           [routerLinkActive]="['selected']">
-            <div class="left"></div>
-            <div class="center">Authentication</div>
-            <div class="right"></div>
-        </a>
-        <a class="styledTabMenuButton"
-           [routerLink]="['provenance']"
-           [routerLinkActive]="['selected']">
-            <div class="left"></div>
-            <div class="center">Provenance</div>
-            <div class="right"></div>
-        </a>
-        <a class="styledTabMenuButton"
-           [routerLink]="['configuration']"
-           [routerLinkActive]="['selected']">
-            <div class="left"></div>
-            <div class="center">Configuration</div>
-            <div class="right"></div>
-        </a>
-    </div>
-</div>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item" role="presentation" [routerLink]="['authorization']" [routerLinkActive]="'active'"><a
+        class="nav-link">Authorization</a></li>
+    <li class="nav-item" [routerLink]="['authentication']" [routerLinkActive]="'active'"><a class="nav-link">
+        Authentication</a></li>
+    <li class="nav-item" [routerLink]="['provenance']" [routerLinkActive]="'active'"><a class="nav-link">
+        Provenance </a></li>
+    <li class="nav-item" [routerLink]="['configuration']" [routerLinkActive]="'active'"><a>Configuration</a></li>
+</ul>
+
 
 <div id="myContent">
-    <router-outlet ></router-outlet>
+    <router-outlet></router-outlet>
 </div>

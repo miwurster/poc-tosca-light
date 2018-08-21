@@ -66,7 +66,7 @@ public class AccountabilityConfigurationManager {
                     IOUtils.copy(defaultKeystoreStream, output);
                     myProps.setProperty("ethereum-credentials-file-name", DEFAULT_KEYSTORE_FILE_NAME);
                     myProps.setProperty("ethereum-credentials-file-path", DEFAULT_KEYSTORE_FILE.getAbsolutePath());
-                    LOGGER.info("Copied new default Ethereum keystore file to {}", DEFAULT_KEYSTORE_FILE);
+                    LOGGER.info("Copied default Ethereum keystore file to {}", DEFAULT_KEYSTORE_FILE);
                 }
             }
         } catch (IOException e) {

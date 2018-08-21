@@ -38,6 +38,13 @@ public class ImmutableStorageProviderFactory {
         return storageProvider;
     }
 
+    /**
+     * Used to force the factory to re-instantiate storage provider implementation (because a configuration change is detected)
+     */
+    public static void reset() {
+        storageProvider = null;
+    }
+
     public enum AvailableImmutableStorages {
         SWARM,
         TEST

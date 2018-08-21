@@ -52,7 +52,8 @@ export class AccountabilityParentComponent implements OnInit {
     }
 
     handleError(error: HttpErrorResponse) {
+        console.debug(error);
         this.loading = false;
-        this.notify.error(error.message);
+        this.notify.error(error.error);
     }
 }

@@ -53,23 +53,31 @@ import org.slf4j.LoggerFactory;
 public class AccountabilityResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountabilityResource.class);
-
-    private final AccountabilityManager accountabilityManager;
+    
     private final String provenanceId;
 
-    AccountabilityResource(String provenanceId) throws AccountabilityException {
+    private static AccountabilityManager getAccountabilityManager() throws AccountabilityException {
         Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
-        accountabilityManager = AccountabilityManagerFactory.getAccountabilityManager(props);
 
+        return AccountabilityManagerFactory.getAccountabilityManager(props);
+    }
+    
+    private WebApplicationException createException(Exception cause) {
+        Response result = Response.serverError().entity(cause.getMessage()).build();
+        return new WebApplicationException(result);
+    }
+
+    AccountabilityResource(String provenanceId) {
         this.provenanceId = Util.URLdecode(provenanceId);
         LOGGER.info("AccountabilityManager process identifier: " + provenanceId);
     }
-
+    
+    
     @GET
     @Path("fileHistory")
     @Produces(MediaType.APPLICATION_JSON)
     public List<FileProvenanceElement> getFileHistory(@QueryParam("fileId") String fileId)
-        throws ExecutionException, InterruptedException {
+        {
         ServiceTemplateId serviceTemplateId = new ServiceTemplateId(new QName(provenanceId));
         String qNameWithComponentVersionOnly = VersionUtils.getQNameWithComponentVersionOnly(serviceTemplateId);
         Objects.requireNonNull(fileId);
@@ -80,35 +88,50 @@ public class AccountabilityResource {
 //        } else {
         String fileIdDecoded = Util.URLdecode(fileId);
 
-        return accountabilityManager
-            .getHistory(qNameWithComponentVersionOnly, fileIdDecoded)
-            .exceptionally(error -> null)
-            .get();
-        //}
+            try {
+                return getAccountabilityManager()
+                    .getHistory(qNameWithComponentVersionOnly, fileIdDecoded)
+                    .exceptionally(error -> null)
+                    .get();
+            } catch (InterruptedException | ExecutionException | AccountabilityException e) {
+                LOGGER.error("Cannot history of file {}. Reason: {}", fileId, e.getMessage());
+                throw createException(e);
+            }
+            //}
     }
 
     @GET
     @Path("modelHistory")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ModelProvenanceElement> getModelHistory()
-        throws ExecutionException, InterruptedException {
+    public List<ModelProvenanceElement> getModelHistory() {
         ServiceTemplateId serviceTemplateId = new ServiceTemplateId(new QName(provenanceId));
         String qNameWithComponentVersionOnly = VersionUtils.getQNameWithComponentVersionOnly(serviceTemplateId);
 
-        return accountabilityManager
-            .getHistory(qNameWithComponentVersionOnly)
-            .exceptionally(error -> null)
-            .get();
+        try {
+            return getAccountabilityManager()
+                .getHistory(qNameWithComponentVersionOnly)
+                .exceptionally(error -> null)
+                .get();
+        } catch (InterruptedException | ExecutionException | AccountabilityException e) {
+            LOGGER.error("Cannot get history of model. Reason: {}", e.getMessage());
+            throw createException(e);
+        }
     }
 
     @GET
     @Path("authenticate")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<AuthorizationNode> getAuthentication(@QueryParam("participantAddress") String participantAddress) throws ExecutionException, InterruptedException {
-        AuthorizationInfo authorizationInfo = accountabilityManager
-            .getAuthorization(provenanceId)
-            .exceptionally(error -> null)
-            .get();
+    public List<AuthorizationNode> getAuthentication(@QueryParam("participantAddress") String participantAddress)  {
+        AuthorizationInfo authorizationInfo;
+        try {
+            authorizationInfo = getAccountabilityManager()
+                .getAuthorization(provenanceId)
+                .exceptionally(error -> null)
+                .get();
+        } catch (InterruptedException | ExecutionException | AccountabilityException e) {
+            LOGGER.error("Cannot authenticate participant {}. Reason: {}", participantAddress, e.getMessage());
+            throw createException(e);
+        }
 
         if (Objects.nonNull(authorizationInfo)) {
             return authorizationInfo
@@ -122,11 +145,16 @@ public class AccountabilityResource {
     @POST
     @Path("authorize")
     @Consumes(MediaType.APPLICATION_JSON)
-    public String addParticipant(AuthorizationNode participant) throws ExecutionException, InterruptedException {
-        return accountabilityManager
-            .authorize(Util.URLdecode(Util.URLdecode(provenanceId)), participant.getAddress(), participant.getIdentity())
-            .exceptionally(error -> null)
-            .get();
+    public String addParticipant(AuthorizationNode participant) {
+        try {
+            return getAccountabilityManager()
+                .authorize(Util.URLdecode(Util.URLdecode(provenanceId)), participant.getAddress(), participant.getIdentity())
+                .exceptionally(error -> null)
+                .get();
+        } catch (InterruptedException | ExecutionException | AccountabilityException e) {
+            LOGGER.error("Cannot authorize participant {}. Reason: {}", participant.getAddress(), e.getMessage());
+            throw createException(e);
+        }
     }
 
     @GET
@@ -135,11 +163,12 @@ public class AccountabilityResource {
     public Response downloadFileFromImmutableStorage(@QueryParam("address") String address, @QueryParam("filename") String filename) {
         StreamingOutput fileStream = output -> {
             try {
-                byte[] data = accountabilityManager.retrieveState(address).get();
+                byte[] data = getAccountabilityManager().retrieveState(address).get();
                 output.write(data);
                 output.flush();
             } catch (Exception e) {
-                throw new WebApplicationException(e);
+                LOGGER.error("Cannot download file ({}) from immutable storage. Reason: {}", address, e.getMessage());
+                throw createException(e);
             }
         };
         return Response
@@ -153,16 +182,16 @@ public class AccountabilityResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response retrieveFileFromImmutableStorage(@QueryParam("address") String address) {
         try {
-            byte[] data = accountabilityManager.retrieveState(address).get();
+            byte[] data = getAccountabilityManager().retrieveState(address).get();
             String fileAsString = IOUtils.toString(data, Charset.defaultCharset().toString());
 
             return Response
                 .ok(fileAsString, MediaType.TEXT_PLAIN)
                 .build();
-        } catch (IOException | InterruptedException | ExecutionException e) {
+        } catch (IOException | InterruptedException | ExecutionException | AccountabilityException e) {
             LOGGER.error("Cannot retrieve file ({}) from immutable storage. Reason: {}", address, e.getMessage());
 
-            return Response.serverError().build();
+            throw createException(e);
         }
     }
 }

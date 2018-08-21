@@ -17,10 +17,18 @@ package org.eclipse.winery.accountability;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.eclipse.winery.accountability.blockchain.BlockchainAccess;
+import org.eclipse.winery.accountability.blockchain.BlockchainFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
+import org.eclipse.winery.accountability.storage.ImmutableStorageProvider;
+import org.eclipse.winery.accountability.storage.ImmutableStorageProviderFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AccountabilityManagerFactory {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountabilityManagerFactory.class);
     private static AccountabilityManager accountabilityManager;
     private static Properties activeProperties;
 
@@ -32,13 +40,25 @@ public class AccountabilityManagerFactory {
         }
 
         if (Objects.isNull(accountabilityManager) || requiresRecreation) {
+            BlockchainFactory.reset();
+            ImmutableStorageProviderFactory.reset();
+            
             // if there is an older accountability manager, we should shut it down
             if (!Objects.isNull(accountabilityManager)) {
                 accountabilityManager.close();
             }
 
-            accountabilityManager = new AccountabilityManagerImpl(accountabilityConfiguration);
-            copyProperties(accountabilityConfiguration);
+            try {
+                BlockchainAccess blockchain = BlockchainFactory.getBlockchainAccess(BlockchainFactory.AvailableBlockchains.ETHEREUM, accountabilityConfiguration);
+                ImmutableStorageProvider storageProvider = ImmutableStorageProviderFactory.getStorageProvider(ImmutableStorageProviderFactory.AvailableImmutableStorages.SWARM, accountabilityConfiguration);
+                accountabilityManager = new AccountabilityManagerImpl(blockchain, storageProvider);
+                copyProperties(accountabilityConfiguration);
+            } catch (BlockchainException e) {
+                String msg = "Could not instantiate accountability layer: " + e.getMessage();
+                LOGGER.error(msg, e);
+                throw new AccountabilityException(msg, e);
+            }
+            
         }
 
         return accountabilityManager;

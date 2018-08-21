@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.winery.accountability.blockchain.BlockchainAccess;
 import org.eclipse.winery.accountability.blockchain.BlockchainFactory;
 import org.eclipse.winery.accountability.model.FileProvenanceElement;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
+import org.eclipse.winery.accountability.storage.ImmutableStorageProvider;
 import org.eclipse.winery.accountability.storage.ImmutableStorageProviderFactory;
 
 import org.apache.commons.lang3.StringUtils;
@@ -45,8 +47,11 @@ class AccountabilityManagerImplIntegrationTest {
         try (InputStream propsStream = getClass().getClassLoader().getResourceAsStream(CONFIGURATION_FILE_NAME)) {
             Properties props = new Properties();
             props.load(propsStream);
-            this.provenance = new AccountabilityManagerImpl(BlockchainFactory.AvailableBlockchains.ETHEREUM,
-                ImmutableStorageProviderFactory.AvailableImmutableStorages.SWARM, props);
+            BlockchainAccess blockchainAccess = BlockchainFactory
+                .getBlockchainAccess(BlockchainFactory.AvailableBlockchains.ETHEREUM, props);
+            ImmutableStorageProvider storageProvider = ImmutableStorageProviderFactory
+                .getStorageProvider(ImmutableStorageProviderFactory.AvailableImmutableStorages.SWARM, props);
+            this.provenance = new AccountabilityManagerImpl(blockchainAccess, storageProvider);
         }
     }
 
@@ -72,7 +77,7 @@ class AccountabilityManagerImplIntegrationTest {
         CompletableFuture<List<ModelProvenanceElement>> history = this.provenance.getHistory(processId);
         List<ModelProvenanceElement> historyElements = history.get();
 
-        assertEquals(2, historyElements.size());
+        assertTrue(historyElements.size() > 2);// we manually added 2
 
         historyElements.forEach(
             historyElement -> assertTrue(StringUtils.isNotEmpty(historyElement.getAuthorAddress()))

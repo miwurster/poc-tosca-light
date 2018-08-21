@@ -16,7 +16,6 @@ import { ModalDirective } from 'ngx-bootstrap';
 import { AccountabilityParticipant } from '../AccountabilityParticipant';
 import { AccountabilityService } from '../accountability.service';
 import { WineryNotificationService } from '../../../../wineryNotificationModule/wineryNotification.service';
-import { SelectData } from '../../../../model/selectData';
 import { AuthorizationElement } from '../../../../model/provenance';
 import { AccountabilityParentComponent } from '../accountabilityParent.component';
 
@@ -26,9 +25,9 @@ import { AccountabilityParentComponent } from '../accountabilityParent.component
 export class AuthenticationComponent extends AccountabilityParentComponent {
     @ViewChild('authenticationLineageModal') authenticationLineageModal: ModalDirective;
     authenticationData: AuthorizationElement[];
-    participant: AuthorizationElement = {identity: '', address: '', transactionHash: '', unixTimestamp: 0};
+    participant: AuthorizationElement = { identity: '', address: '', transactionHash: '', unixTimestamp: 0 };
 
-    constructor(protected service: AccountabilityService, protected notify: WineryNotificationService ) {
+    constructor(protected service: AccountabilityService, protected notify: WineryNotificationService) {
         super(service, notify);
     }
 
@@ -39,8 +38,16 @@ export class AuthenticationComponent extends AccountabilityParentComponent {
     private handleAuthenticationData(data: AuthorizationElement[]) {
         this.loading = false;
         this.authenticationData = data;
-        this.participant = data[data.length - 1]; // the last participant in the lineage is the one whose address we have entered.
-        this.authenticationLineageModal.show();
+
+        if (data === null || data === undefined) {
+            this.notify.error('An error occurred while querying the authentiaction data for ' + this.participant.address);
+        } else if (data.length === 0) {
+            this.notify.warning('No authentication data is available for ' + this.participant.address);
+        } else {
+            this.participant = data[data.length - 1]; // the last participant in the lineage is the one whose address
+                                                      // we have entered.
+            this.authenticationLineageModal.show();
+        }
     }
 
     private authenticate() {

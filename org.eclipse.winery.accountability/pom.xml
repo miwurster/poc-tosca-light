@@ -190,7 +190,7 @@
             <!--</includes>-->
             <!--</soliditySourceFiles>-->
             <!--<sourceDestination>${basedir}/src/gen/java</sourceDestination>-->
-            <!--<packageName>org.eclipse.winery.accountabilitylity.blockchain.ethereum.generated</packageName>-->
+            <!--<packageName>org.eclipse.winery.accountability.blockchain.ethereum.generated</packageName>-->
             <!--</configuration>-->
             <!--<executions>-->
             <!--<execution>-->

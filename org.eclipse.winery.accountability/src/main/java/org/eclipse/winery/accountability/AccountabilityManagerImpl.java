@@ -24,20 +24,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.winery.accountability.blockchain.BlockchainAccess;
-import org.eclipse.winery.accountability.blockchain.BlockchainFactory;
-import org.eclipse.winery.accountability.exceptions.AccountabilityException;
-import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.FileProvenanceElement;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.ProvenanceVerification;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
 import org.eclipse.winery.accountability.storage.ImmutableStorageProvider;
-import org.eclipse.winery.accountability.storage.ImmutableStorageProviderFactory;
 import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFile;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
@@ -65,21 +60,9 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     private BlockchainAccess blockchain;
     private ImmutableStorageProvider storageProvider;
 
-    AccountabilityManagerImpl(Properties configuration) throws AccountabilityException {
-        this(BlockchainFactory.AvailableBlockchains.ETHEREUM,
-            ImmutableStorageProviderFactory.AvailableImmutableStorages.SWARM, configuration);
-    }
-
-    AccountabilityManagerImpl(BlockchainFactory.AvailableBlockchains desiredBlockchain,
-                                      ImmutableStorageProviderFactory.AvailableImmutableStorages desiredStorage, Properties configuration) throws AccountabilityException {
-        try {
-            this.blockchain = BlockchainFactory.getBlockchainAccess(desiredBlockchain, configuration);
-            this.storageProvider = ImmutableStorageProviderFactory.getStorageProvider(desiredStorage, configuration);
-        } catch (BlockchainException e) {
-            String msg = "Could not instantiate accountability layer: " + e.getMessage();
-            LOGGER.error(msg, e);
-            throw new AccountabilityException(msg, e);
-        }
+    AccountabilityManagerImpl(BlockchainAccess blockchainAccess, ImmutableStorageProvider storageProvider) {
+        this.blockchain = blockchainAccess;
+        this.storageProvider = storageProvider;
     }
 
     @Override

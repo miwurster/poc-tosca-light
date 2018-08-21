@@ -42,6 +42,13 @@ public class BlockchainFactory {
         return blockchain;
     }
 
+    /**
+     * Used to force the factory to re-instantiate blockchain implementation (because a configuration change is detected)
+     */
+    public static void reset() {
+        blockchain = null;
+    }
+
     public enum AvailableBlockchains {
         ETHEREUM,
         TEST
