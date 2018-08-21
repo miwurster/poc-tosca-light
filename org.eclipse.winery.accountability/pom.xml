@@ -157,6 +157,36 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            
+            <!-- This plugin compiles the Solidity Ethereum smart contracts and provides Java wrapper classes for them
+            (that allow communicating with them and deploying them on the blockchain)-->
+            <plugin>
+                <groupId>org.web3j</groupId>
+                <artifactId>web3j-maven-plugin</artifactId>
+                <version>0.3.1</version>
+                <configuration>
+                    <nativeJavaType>true</nativeJavaType>
+                    <soliditySourceFiles>
+                        <directory>${basedir}/src/main/solidity</directory>
+                        <includes>
+                            <include>**/*.sol</include>
+                        </includes>
+                    </soliditySourceFiles>
+                    <sourceDestination>${basedir}/src/gen/java</sourceDestination>
+                    <packageName>org.eclipse.winery.accountability.blockchain.ethereum.generated</packageName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-sources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Allows the maven build plugin to pickup generated Java classes-->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -176,32 +206,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- TODO The following plugin should be used when the web3j-maven-plugin library starts using a version of solc >= 0.4.21
-            and a version of web3j >= 3.4.0 -->
-            
-            <!--<plugin>-->
-            <!--<groupId>org.web3j</groupId>-->
-            <!--<artifactId>web3j-maven-plugin</artifactId>-->
-            <!--<configuration>-->
-            <!--<soliditySourceFiles>-->
-            <!--<directory>${basedir}/src/main/solidity</directory>-->
-            <!--<includes>-->
-            <!--<include>**/*.sol</include>-->
-            <!--</includes>-->
-            <!--</soliditySourceFiles>-->
-            <!--<sourceDestination>${basedir}/src/gen/java</sourceDestination>-->
-            <!--<packageName>org.eclipse.winery.accountability.blockchain.ethereum.generated</packageName>-->
-            <!--</configuration>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>generate-sources</id>-->
-            <!--<phase>generate-sources</phase>-->
-            <!--<goals>-->
-            <!--<goal>generate-sources</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
         </plugins>
     </build>
 </project>

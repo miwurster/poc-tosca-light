@@ -56,22 +56,21 @@ public class AccountabilityResource {
     
     private final String provenanceId;
 
+    AccountabilityResource(String provenanceId) {
+        this.provenanceId = Util.URLdecode(provenanceId);
+        LOGGER.info("AccountabilityManager process identifier: " + provenanceId);
+    }
+
     private static AccountabilityManager getAccountabilityManager() throws AccountabilityException {
         Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
 
         return AccountabilityManagerFactory.getAccountabilityManager(props);
     }
     
-    private WebApplicationException createException(Exception cause) {
+    private static WebApplicationException createException(Exception cause) {
         Response result = Response.serverError().entity(cause.getMessage()).build();
         return new WebApplicationException(result);
     }
-
-    AccountabilityResource(String provenanceId) {
-        this.provenanceId = Util.URLdecode(provenanceId);
-        LOGGER.info("AccountabilityManager process identifier: " + provenanceId);
-    }
-    
     
     @GET
     @Path("fileHistory")
