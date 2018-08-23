@@ -524,21 +524,6 @@
                                                 <id>org.slf4j:jul-to-slf4j:${org.slf4j}</id>
                                                 <source>true</source>
                                                 <transitive>true</transitive>
-                                                <instructions>
-                                                    <Import-Package>*;resolution:=optional</Import-Package>
-                                                    <Export-Package>org.eclipse.winery.highlevelrestapi.*;-noimport:=true</Export-Package>
-                                                </instructions>
-                                            </artifact>
-                                            <artifact>
-                                                <id>
-                                                    org.eclipse.winery:org.eclipse.winery.provenance:2.0.0-SNAPSHOT
-                                                </id>
-                                                <source>true</source>
-                                                <transitive>false</transitive>
-                                                <instructions>
-                                                    <Import-Package>*;resolution:=optional</Import-Package>
-                                                    <Export-Package>org.eclipse.winery.provenance.*;-noimport:=true</Export-Package>
-                                                </instructions>
                                             </artifact>
                                         </artifacts>
                                     </feature>
