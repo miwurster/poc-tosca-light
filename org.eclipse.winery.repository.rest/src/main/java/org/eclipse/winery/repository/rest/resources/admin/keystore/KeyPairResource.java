@@ -14,7 +14,18 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import io.swagger.annotations.ApiOperation;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.eclipse.winery.model.tosca.constants.QNames;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameWithTypeApiData;
@@ -25,10 +36,7 @@ import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
 import org.eclipse.winery.repository.security.csar.datatypes.KeyType;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import io.swagger.annotations.ApiOperation;
 
 public class KeyPairResource extends AbstractKeystoreEntityResource {
     public KeyPairResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
@@ -42,7 +50,7 @@ public class KeyPairResource extends AbstractKeystoreEntityResource {
         try {
             String preparedAlias = prepareAlias(alias);
             return Response.ok()
-                .entity(this.keystoreManager.loadKeyPairAsText(preparedAlias))
+                .entity(this.keystoreManager.getKeyPairData(preparedAlias))
                 .build();
         } catch (GenericKeystoreManagerException e) {
             throw new WebApplicationException(
@@ -54,19 +62,18 @@ public class KeyPairResource extends AbstractKeystoreEntityResource {
     @ApiOperation(value = "Gets the private key of a keypair")
     @GET
     @Path("privatekey")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
     public Response getPrivateKeyInfo(@PathParam("alias") String alias, @QueryParam("toFile") boolean asFile) {
         String preparedAlias = prepareAlias(alias);
         try {
             if (!asFile) {
-                KeyEntityInformation key = this.keystoreManager.loadKeyAsText(preparedAlias, KeyType.PRIVATE);
+                KeyEntityInformation key = this.keystoreManager.getKey(preparedAlias, KeyType.PRIVATE);
                 return Response.ok().entity(key).build();
-            }
-            else {
-                byte[] key = keystoreManager.loadKeyAsByteArray(preparedAlias, KeyType.PRIVATE);
+            } else {
+                byte[] key = keystoreManager.getKeyEncoded(preparedAlias, KeyType.PRIVATE);
                 StreamingOutput stream = keyToStreamingOutput(key);
                 return Response.ok(stream)
-                    .header("content-disposition","attachment; filename = " + preparedAlias + "." + KeyType.PRIVATE + ".key")
+                    .header("content-disposition", "attachment; filename = " + preparedAlias + "." + KeyType.PRIVATE + ".key")
                     .type(MediaType.APPLICATION_OCTET_STREAM)
                     .build();
             }
@@ -80,19 +87,18 @@ public class KeyPairResource extends AbstractKeystoreEntityResource {
     @ApiOperation(value = "Gets the public key of a keypair")
     @GET
     @Path("publickey")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
     public Response getPublicKeyInfo(@PathParam("alias") String alias, @QueryParam("toFile") boolean asFile) {
         String preparedAlias = prepareAlias(alias);
         try {
             if (!asFile) {
-                KeyEntityInformation key = this.keystoreManager.loadKeyAsText(preparedAlias, KeyType.PUBLIC);
+                KeyEntityInformation key = this.keystoreManager.getKey(preparedAlias, KeyType.PUBLIC);
                 return Response.ok().entity(key).type(MediaType.TEXT_PLAIN).build();
-            }
-            else {
-                byte[] key = keystoreManager.loadKeyAsByteArray(preparedAlias, KeyType.PUBLIC);
+            } else {
+                byte[] key = keystoreManager.getKeyEncoded(preparedAlias, KeyType.PUBLIC);
                 StreamingOutput stream = keyToStreamingOutput(key);
                 return Response.ok(stream)
-                    .header("content-disposition","attachment; filename = " + preparedAlias + "." + KeyType.PUBLIC + ".key")
+                    .header("content-disposition", "attachment; filename = " + preparedAlias + "." + KeyType.PUBLIC + ".key")
                     .type(MediaType.APPLICATION_OCTET_STREAM)
                     .build();
             }
@@ -106,18 +112,18 @@ public class KeyPairResource extends AbstractKeystoreEntityResource {
     @ApiOperation(value = "Gets certificates of a keypair")
     @GET
     @Path("certificates")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
     public Response getCertificateInfo(@PathParam("alias") String alias, @QueryParam("toFile") boolean asFile) {
         String preparedAlias = prepareAlias(alias);
         try {
             if (!asFile) {
-                String certInfo = this.keystoreManager.loadX509PEMCertificatesAsText(preparedAlias);
+                String certInfo = this.keystoreManager.getPEMCertificateChain(preparedAlias);
                 return Response.ok().entity(certInfo).type(MediaType.TEXT_PLAIN).build();
             } else {
-                byte[] cert = keystoreManager.loadCertificateAsByteArray(preparedAlias);
+                byte[] cert = keystoreManager.getCertificateEncoded(preparedAlias);
                 StreamingOutput stream = keyToStreamingOutput(cert);
                 return Response.ok(stream)
-                    .header("content-disposition","attachment; filename = " + preparedAlias + ".crt")
+                    .header("content-disposition", "attachment; filename = " + preparedAlias + ".crt")
                     .type(MediaType.APPLICATION_OCTET_STREAM)
                     .build();
             }
@@ -150,11 +156,9 @@ public class KeyPairResource extends AbstractKeystoreEntityResource {
             return Response.status(Response.Status.NOT_FOUND).build();
 
         try {
-            KeyPairInformation kp = this.keystoreManager.loadKeyPairAsText(preparedAlias);
+            KeyPairInformation kp = this.keystoreManager.getKeyPairData(preparedAlias);
             RestUtils.createSigningPolicyTemplate(jsonData, kp);
-
-        } catch (GenericKeystoreManagerException e)
-        {
+        } catch (GenericKeystoreManagerException e) {
             throw new WebApplicationException(
                 Response.serverError().entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build()
             );
@@ -162,5 +166,4 @@ public class KeyPairResource extends AbstractKeystoreEntityResource {
 
         return Response.ok().build();
     }
-    
 }

@@ -76,7 +76,7 @@ import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
 import org.eclipse.winery.repository.security.csar.SecurityProcessor;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.SupportedDigestAlgorithm;
+import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -582,7 +582,7 @@ public class CsarExporter {
     private void addManifest(String entryDefinitionsReference, Collection<String> definitionNames, Map<String, String> definitionsDigests, ArchiveOutputStream out) throws IOException, TransformerException, GenericSecurityProcessorException, GenericKeystoreManagerException {
         SecurityProcessor securityProcessor = new BCSecurityProcessor();
         KeystoreManager keystoreManager = new JCEKSKeystoreManager();
-        String digestAlgorithm = SupportedDigestAlgorithm.SHA256.name();
+        String digestAlgorithm = DigestAlgorithm.SHA256.name();
         List<ToscaMetaEntry> entries = new ArrayList<>();
 
         out.putArchiveEntry(new ZipArchiveEntry(TOSCA_META_FILE_PATH));
@@ -651,7 +651,7 @@ public class CsarExporter {
             out.putArchiveEntry(new ZipArchiveEntry(TOSCA_META_SIGN_BLOCK_FILE_PATH));
             out.write(blockSignatureFileContent);
             out.closeArchiveEntry();
-            byte[] cert = keystoreManager.loadCertificateAsByteArray(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
+            byte[] cert = keystoreManager.getCertificateEncoded(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
             out.putArchiveEntry(new ZipArchiveEntry(TOSCA_META_CERT_PATH));
             out.write(cert);
             out.closeArchiveEntry();

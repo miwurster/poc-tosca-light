@@ -14,14 +14,25 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import com.sun.jersey.multipart.FormDataParam;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
+import java.io.InputStream;
+import java.util.Collection;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.InputStream;
+
+import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.SecurityProcessor;
+import org.eclipse.winery.repository.security.csar.datatypes.CertificateInformation;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+
+import com.sun.jersey.multipart.FormDataParam;
 
 public class CertificatesResource extends AbstractKeystoreEntityResource {
     public CertificatesResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
@@ -30,14 +41,22 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCertificatesList() {
-        // TODO
-        return Response.noContent().build();
+    public Collection<CertificateInformation> getCertificatesList() {
+        try {
+            return this.keystoreManager.getCertificates();
+        } catch (GenericKeystoreManagerException e) {
+            throw new WebApplicationException(
+                Response.serverError()
+                    .entity(e.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build()
+            );
+        }
     }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadExistingCertificate(@FormDataParam("alias") String alias, 
+    public Response uploadExistingCertificate(@FormDataParam("alias") String alias,
                                               @FormDataParam("certificate") InputStream certificate) {
         // TODO
         return Response.noContent().build();

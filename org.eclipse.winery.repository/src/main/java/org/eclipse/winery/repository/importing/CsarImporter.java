@@ -826,7 +826,7 @@ public class CsarImporter {
                 String certAlias = SecureCSARConstants.CERT_IMPORT_PREFIX.concat(signPolicy.getPolicyRef().getLocalPart());
                 c = km.storeCertificate(certAlias, certChain);
             } else {
-                c = km.loadCertificateOfKeypair(signPolicy.getPolicyRef().getLocalPart());
+                c = km.loadCertificate(signPolicy.getPolicyRef().getLocalPart());
             }
         } catch (GenericKeystoreManagerException e) {
             e.printStackTrace();

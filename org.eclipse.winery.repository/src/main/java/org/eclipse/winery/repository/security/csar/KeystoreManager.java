@@ -16,7 +16,8 @@ package org.eclipse.winery.repository.security.csar;
 
 import org.eclipse.winery.repository.security.csar.datatypes.*;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.support.SupportedEncryptionAlgorithm;
+import org.eclipse.winery.repository.security.csar.support.AsymmetricEncryptionAlgorithm;
+import org.eclipse.winery.repository.security.csar.support.SymmetricEncryptionAlgorithm;
 
 import java.io.InputStream;
 import java.security.*;
@@ -29,39 +30,43 @@ public interface KeystoreManager {
     
     boolean entityExists(String alias);
     
-    Collection<SupportedEncryptionAlgorithm> getSupportedSymmetricEncryptionAlgorithms();
+    Collection<SymmetricEncryptionAlgorithm> getSymmetricAlgorithms();
     
-    Collection<KeyEntityInformation> getSecretKeysList(boolean withKeyEncoded);
-
-    Collection<KeyPairInformation> getKeyPairsList() throws GenericKeystoreManagerException;
-
-    Collection<CertificateInformation> getCertificatesList() throws GenericKeystoreManagerException;
+    Collection<AsymmetricEncryptionAlgorithm> getAsymmetricAlgorithms();
     
-    KeystoreContentsInformation getKeystoreContentsInformation() throws GenericKeystoreManagerException;
+    Collection<KeyEntityInformation> getKeys(boolean withKeyEncoded);
 
-    KeyEntityInformation storeSecretKey(String alias, Key key) throws GenericKeystoreManagerException;
+    KeyEntityInformation getKey(String alias, KeyType type) throws GenericKeystoreManagerException;
+
+    byte[] getKeyEncoded(String alias, KeyType type) throws GenericKeystoreManagerException;
+
+    Collection<KeyPairInformation> getKeyPairs() throws GenericKeystoreManagerException;
+
+    KeyPairInformation getKeyPairData(String alias) throws GenericKeystoreManagerException;
+
+    Collection<CertificateInformation> getCertificates() throws GenericKeystoreManagerException;
+
+    KeystoreContentsInformation getKeystoreContent() throws GenericKeystoreManagerException;
+
+    int getKeystoreSize() throws GenericKeystoreManagerException;
+
+    KeyEntityInformation storeKey(String alias, Key key) throws GenericKeystoreManagerException;
+
+    KeyPairInformation storeKeyPair(String alias, PrivateKey privateKey, Certificate certificate) throws GenericKeystoreManagerException;
+
+    Certificate storeCertificate(String alias, InputStream is) throws GenericKeystoreManagerException;
+
+    Certificate storeCertificate(String alias, String pemEncodedString) throws GenericKeystoreManagerException;
 
     Key loadKey(String alias) throws GenericKeystoreManagerException;
-    
-    KeyEntityInformation loadKeyAsText(String alias, KeyType type) throws GenericKeystoreManagerException;
 
-    byte[] loadKeyAsByteArray(String alias, KeyType type) throws GenericKeystoreManagerException;
+    KeyPair loadKeyPair(String alias) throws GenericKeystoreManagerException;
 
-    KeyPairInformation storeKeyPair(String alias, PrivateKey privateKey, Certificate[] certificates) throws GenericKeystoreManagerException;
+    Certificate loadCertificate(String alias) throws GenericKeystoreManagerException;
 
-    KeyPairInformation loadKeyPairAsText(String alias) throws GenericKeystoreManagerException;
+    String getPEMCertificateChain(String alias) throws GenericKeystoreManagerException;
     
-    Certificate storeCertificate(String alias, InputStream is) throws GenericKeystoreManagerException;
-    
-    Certificate storeCertificate(String alias, String pemEncodedString) throws GenericKeystoreManagerException;
-    
-    Certificate loadCertificateOfKeypair(String alias) throws GenericKeystoreManagerException;
-    
-    String loadX509PEMCertificatesAsText(String alias) throws GenericKeystoreManagerException;
-
-    byte[] loadCertificateAsByteArray(String alias) throws GenericKeystoreManagerException;
-    
-    int getKeystoreSize() throws GenericKeystoreManagerException;
+    byte[] getCertificateEncoded(String alias) throws GenericKeystoreManagerException;
 
     void deleteKeystoreEntry(String alias) throws GenericKeystoreManagerException;
 

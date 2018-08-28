@@ -14,23 +14,24 @@
 
 package org.eclipse.winery.repository.security.csar.datatypes;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.io.IOException;
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 public class CertificateInformation {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-    
+
     @JsonProperty
-    private BigInteger serialNumber;
+    private String alias;
+    @JsonProperty
+    private String serialNumber;
     @JsonProperty
     private String sigAlgName;
     @JsonProperty
@@ -38,30 +39,110 @@ public class CertificateInformation {
     @JsonProperty
     private String subjectDN;
     @JsonSerialize(using = JsonDateSerializer.class)
-    private Date validFrom;
+    private Date notBefore;
     @JsonSerialize(using = JsonDateSerializer.class)
-    private Date validBefore;
-    
-    public CertificateInformation(BigInteger serialNumber, String sigAlgName, String issuerDN, String subjectDN, Date validFrom, Date validBefore) {
-        this.serialNumber = serialNumber;
-        this.sigAlgName = sigAlgName;
-        this.issuerDN = issuerDN;
-        this.subjectDN = subjectDN;
-        this.validFrom = validFrom;
-        this.validBefore = validBefore;
+    private Date notAfter;
+    @JsonProperty
+    private String pem;
+
+    private CertificateInformation(Builder builder) {
+        alias = builder.alias;
+        serialNumber = builder.serialNumber;
+        sigAlgName = builder.sigAlgName;
+        issuerDN = builder.issuerDN;
+        subjectDN = builder.subjectDN;
+        notBefore = builder.notBefore;
+        notAfter = builder.notAfter;
+        pem = builder.pemEncodedCertificate;
     }
-    
-    public CertificateInformation(BigInteger serialNumber, String sigAlgName, String subjectDN, Date validFrom, Date validBefore) {
-        this(serialNumber, sigAlgName, subjectDN, subjectDN, validFrom, validBefore);
+
+    public String getPem() {
+        return pem;
     }
-    
+
+    public String getSubjectDN() {
+        return subjectDN;
+    }
+
+    public String getIssuerDN() {
+        return issuerDN;
+    }
+
+    public String getSigAlgName() {
+        return sigAlgName;
+    }
+
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    @JsonPOJOBuilder(withPrefix = "")
+    public static class Builder {
+        private final String alias;
+
+        private String serialNumber;
+        private String sigAlgName;
+        private String subjectDN;
+        private Date notBefore;
+        private Date notAfter;
+        private String issuerDN;
+        private String pemEncodedCertificate;
+
+        public Builder(String alias) {
+            this.alias = alias;
+        }
+
+        public Builder serialNumber(String serialNumber) {
+            this.serialNumber = serialNumber;
+            return this;
+        }
+
+        public Builder sigAlgName(String sigAlgName) {
+            this.sigAlgName = sigAlgName;
+            return this;
+        }
+
+        public Builder subjectDN(String subjectDN) {
+            this.subjectDN = subjectDN;
+            return this;
+        }
+
+        public Builder issuerDN(String issuerDN) {
+            this.issuerDN = issuerDN;
+            return this;
+        }
+
+        public Builder notBefore(Date notBefore) {
+            this.notBefore = notBefore;
+            return this;
+        }
+
+        public Builder notAfter(Date notAfter) {
+            this.notAfter = notAfter;
+            return this;
+        }
+
+        public Builder pemEncodedCertificate(String pemEncodedCertificate) {
+            this.pemEncodedCertificate = pemEncodedCertificate;
+            return this;
+        }
+
+        public CertificateInformation build() {
+            return new CertificateInformation(this);
+        }
+    }
+
     public String printValidityPeriod() {
-        return "[" + dateFormat.format(validFrom) + ", " + dateFormat.format(validBefore) + "]"; 
+        return "[" + dateFormat.format(notBefore) + ", " + dateFormat.format(notAfter) + "]";
     }
 
     private static class JsonDateSerializer extends JsonSerializer<Date> {
         @Override
-        public void serialize(Date date, JsonGenerator gen, SerializerProvider provider) throws IOException, JsonProcessingException {
+        public void serialize(Date date, JsonGenerator gen, SerializerProvider provider) throws IOException {
             String formattedDate = dateFormat.format(date);
             gen.writeString(formattedDate);
         }

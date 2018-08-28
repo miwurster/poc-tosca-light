@@ -32,7 +32,7 @@ import org.eclipse.winery.repository.export.ToscaMetaFirstBlockEntry;
 import org.eclipse.winery.repository.export.ToscaMetaEntry;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.SupportedDigestAlgorithm;
+import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -61,7 +61,7 @@ public class SecurityRequirementsExportEnforcer {
     }
 
     public SecurityRequirementsExportEnforcer(IRepository repository) {
-        this(repository, SupportedDigestAlgorithm.SHA256.name());
+        this(repository, DigestAlgorithm.SHA256.name());
     }
 
     public Map<RepositoryFileReference, String> getAddedReferencesToPathInCSARMap() {

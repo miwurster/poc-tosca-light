@@ -14,25 +14,34 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import com.sun.jersey.multipart.FormDataParam;
-import io.swagger.annotations.ApiOperation;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.SupportedDigestAlgorithm;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.Key;
 import java.util.Collection;
 import java.util.Objects;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.SecurityProcessor;
+import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
+
+import com.sun.jersey.multipart.FormDataParam;
+import io.swagger.annotations.ApiOperation;
 
 public class SecretKeysResource extends AbstractKeystoreEntityResource {
 
@@ -44,7 +53,7 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<KeyEntityInformation> getSecretKeysList(@QueryParam("withKeyEncoded") boolean withKeyEncoded) {
-        return keystoreManager.getSecretKeysList(withKeyEncoded);
+        return keystoreManager.getKeys(withKeyEncoded);
     }
 
     @ApiOperation(value = "Generates a new or stores an existing secret key")
@@ -58,21 +67,17 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
         try {
             if (this.parametersAreNonNull(algo)) {
                 Key key;
-                KeyEntityInformation entity;
-                String alias;
                 if (Objects.isNull(uploadedSecretKey)) {
                     key = securityProcessor.generateSecretKey(algo, keySize);
-                }
-                else {
+                } else {
                     key = securityProcessor.getSecretKeyFromInputStream(algo, uploadedSecretKey);
                 }
-                alias = securityProcessor.calculateDigest(key.getEncoded(), SupportedDigestAlgorithm.SHA256.name());
-                this.checkAliasInsertEligibility(alias);                
-                entity = keystoreManager.storeSecretKey(alias, key);
+                String alias = securityProcessor.calculateDigest(key.getEncoded(), DigestAlgorithm.SHA256.name());
+                this.checkAliasInsertEligibility(alias);
+                KeyEntityInformation entity = keystoreManager.storeKey(alias, key);
                 URI uri = uriInfo.getAbsolutePathBuilder().path(alias).build();
                 return Response.created(uri).entity(entity).build();
-            }
-            else {
+            } else {
                 throw new WebApplicationException(
                     Response.status(Response.Status.BAD_REQUEST)
                         .entity("Insufficient number of parameters in the request")
@@ -80,8 +85,7 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
                         .build()
                 );
             }
-        }
-        catch (GenericKeystoreManagerException | GenericSecurityProcessorException | IllegalArgumentException e) {
+        } catch (GenericKeystoreManagerException | GenericSecurityProcessorException | IllegalArgumentException e) {
             throw new WebApplicationException(
                 Response.serverError()
                     .entity(e.getMessage())
@@ -90,7 +94,7 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
             );
         }
     }
-    
+
     @ApiOperation(value = "Deletes all secret keys from the keystore")
     @DELETE
     public Response deleteAll() {
@@ -103,10 +107,9 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
         }
         return Response.noContent().build();
     }
-    
+
     @Path("{alias}")
-    public SecretKeyResource getSecretKeyResource() { 
-        return new SecretKeyResource(keystoreManager, securityProcessor); 
+    public SecretKeyResource getSecretKeyResource() {
+        return new SecretKeyResource(keystoreManager, securityProcessor);
     }
-    
 }

@@ -556,7 +556,7 @@ public class RestUtils {
     public static PolicyTemplateId createSigningPolicyTemplate(QNameWithTypeApiData qNameApiData, KeyPairInformation kp) {
         Map<String, String> properties = new HashMap<>();
         properties.put(SecureCSARConstants.SEC_POL_KEYHASH_PROPERTY, kp.getPrivateKey().getAlias());
-        properties.put(SecureCSARConstants.SIGN_POL_CERT_PROPERTY, kp.getCertificateChain());
+        properties.put(SecureCSARConstants.SIGN_POL_CERT_PROPERTY, kp.getCertificate().getPem());
 
         return createSecurityPolicyTemplate(qNameApiData, properties);
     }

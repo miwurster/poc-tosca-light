@@ -14,22 +14,6 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import com.sun.jersey.multipart.FormDataParam;
-import io.swagger.annotations.ApiOperation;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.datatypes.DistinguishedName;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.SupportedDigestAlgorithm;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.KeyPair;
@@ -37,6 +21,31 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Objects;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
+import org.eclipse.winery.repository.security.csar.SecurityProcessor;
+import org.eclipse.winery.repository.security.csar.datatypes.DistinguishedName;
+import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
+
+import com.sun.jersey.multipart.FormDataParam;
+import io.swagger.annotations.ApiOperation;
 
 public class KeyPairsResource extends AbstractKeystoreEntityResource {
     public KeyPairsResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
@@ -48,7 +57,7 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<KeyPairInformation> getKeyPairsList() {
         try {
-            return this.keystoreManager.getKeyPairsList();
+            return this.keystoreManager.getKeyPairs();
         } catch (GenericKeystoreManagerException e) {
             throw new WebApplicationException(
                 Response.serverError().entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build()
@@ -70,32 +79,28 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
         try {
             String alias;
             KeyPairInformation entity;
-            
+
             if (this.parametersAreNonNull(algorithm, distinguishedName)) {
                 DistinguishedName dn = new DistinguishedName(distinguishedName);
                 KeyPair keypair = this.securityProcessor.generateKeyPair(algorithm, keySize);
                 if (Objects.nonNull(setMasterKey)) {
                     alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
-                }
-                else {
-                    alias = securityProcessor.calculateDigest(keypair.getPrivate().getEncoded(), SupportedDigestAlgorithm.SHA256.name());
+                } else {
+                    alias = securityProcessor.calculateDigest(keypair.getPrivate().getEncoded(), DigestAlgorithm.SHA256.name());
                     this.checkAliasInsertEligibility(alias);
                 }
-                Certificate[] selfSignedCert = new Certificate[]{ this.securityProcessor.generateSelfSignedCertificate(keypair, dn) };
-                
+                Certificate selfSignedCert = this.securityProcessor.generateSelfSignedX509Certificate(keypair, dn);
                 entity = this.keystoreManager.storeKeyPair(alias, keypair.getPrivate(), selfSignedCert);
-                
             } else if (this.parametersAreNonNull(privateKeyInputStream, certificatesInputStream)) {
                 PrivateKey privateKey = this.securityProcessor.getPKCS8PrivateKeyFromInputStream(algorithm, privateKeyInputStream);
                 Certificate[] cert = this.securityProcessor.getX509CertificateChainFromInputStream(certificatesInputStream);
                 if (Objects.nonNull(setMasterKey)) {
                     alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
-                }
-                else {
-                    alias = securityProcessor.calculateDigest(privateKey.getEncoded(), SupportedDigestAlgorithm.SHA256.name());
+                } else {
+                    alias = securityProcessor.calculateDigest(privateKey.getEncoded(), DigestAlgorithm.SHA256.name());
                     this.checkAliasInsertEligibility(alias);
                 }
-                entity = this.keystoreManager.storeKeyPair(alias, privateKey, cert);
+                entity = this.keystoreManager.storeKeyPair(alias, privateKey, cert[0]);
             } else {
                 throw new WebApplicationException(
                     Response.status(Response.Status.BAD_REQUEST)
@@ -107,9 +112,7 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
 
             URI uri = uriInfo.getAbsolutePathBuilder().path(alias).build();
             return Response.created(uri).entity(entity).build();
-            
-        }
-        catch (WebApplicationException e) {
+        } catch (WebApplicationException e) {
             throw e;
         } catch (GenericSecurityProcessorException | GenericKeystoreManagerException e) {
             throw new WebApplicationException(
@@ -125,7 +128,7 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
     public KeyPairResource getKeyPairResource() {
         return new KeyPairResource(keystoreManager, securityProcessor);
     }
-    
+
     @ApiOperation(value = "Deletes all keypairs from the keystore")
     @DELETE
     public Response deleteAll() {

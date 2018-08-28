@@ -13,14 +13,19 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources.admin;
 
-import io.swagger.annotations.Api;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyChecker;
@@ -36,12 +41,14 @@ import org.eclipse.winery.repository.rest.resources.admin.types.PlanLanguagesMan
 import org.eclipse.winery.repository.rest.resources.admin.types.PlanTypesManager;
 import org.eclipse.winery.repository.rest.resources.apiData.OAuthStateAndCodeApiData;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import io.swagger.annotations.Api;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 
 @Api(tags = "Admin")
 public class AdminTopResource {
@@ -71,7 +78,7 @@ public class AdminTopResource {
         return ConstraintTypesManager.INSTANCE;
     }
 
-    @Path("keystore/")    
+    @Path("keystore/")
     public KeyStoreAdminResource getKeystoreAdminResource() {
         return new KeyStoreAdminResource();
     }
@@ -80,7 +87,7 @@ public class AdminTopResource {
     public AccessControlListAdminResource getACLAdminResource() {
         return new AccessControlListAdminResource();
     }
-    
+
     @GET
     @Path("consistencycheck")
     @Produces(MediaType.APPLICATION_JSON)

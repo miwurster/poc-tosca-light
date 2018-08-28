@@ -14,7 +14,21 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import io.swagger.annotations.ApiOperation;
+import java.util.Objects;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.eclipse.winery.model.tosca.constants.QNames;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameWithTypeApiData;
@@ -24,8 +38,7 @@ import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformatio
 import org.eclipse.winery.repository.security.csar.datatypes.KeyType;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import io.swagger.annotations.ApiOperation;
 
 public class SecretKeyResource extends AbstractKeystoreEntityResource {
     public SecretKeyResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
@@ -34,22 +47,21 @@ public class SecretKeyResource extends AbstractKeystoreEntityResource {
 
     @ApiOperation(value = "Gets secret key as base64-encoded string or as binary")
     @GET
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
-    public Response getSecretKeyInfo(@PathParam("alias") String alias, @QueryParam("toFile") boolean asFile) {
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM})
+    public Response getSecretKeyInfo(@PathParam("alias") String alias, @QueryParam(value = "toFile") String toFile) {
         String preparedAlias = prepareAlias(alias);
         if (!this.keystoreManager.entityExists(preparedAlias)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         try {
-            if (!asFile) {
-                KeyEntityInformation key = this.keystoreManager.loadKeyAsText(preparedAlias, KeyType.SECRET);
+            if (Objects.isNull(toFile)) {
+                KeyEntityInformation key = this.keystoreManager.getKey(preparedAlias, KeyType.SECRET);
                 return Response.ok().entity(key).build();
-            }
-            else {
-                byte[] key = keystoreManager.loadKeyAsByteArray(preparedAlias, KeyType.SECRET);
+            } else {
+                byte[] key = keystoreManager.getKeyEncoded(preparedAlias, KeyType.SECRET);
                 StreamingOutput stream = keyToStreamingOutput(key);
                 return Response.ok(stream)
-                    .header("content-disposition","attachment; filename = " + preparedAlias + ".key")
+                    .header("content-disposition", "attachment; filename = " + preparedAlias + ".key")
                     .type(MediaType.APPLICATION_OCTET_STREAM)
                     .build();
             }
@@ -84,7 +96,7 @@ public class SecretKeyResource extends AbstractKeystoreEntityResource {
         String preparedAlias = prepareAlias(alias);
         if (!this.keystoreManager.entityExists(preparedAlias))
             return Response.status(Response.Status.NOT_FOUND).build();
-        
+
         return RestUtils.generateSecurityPolicyTemplateBody(alias, QNames.WINERY_ENCRYPTION_POLICY_TYPE);
     }
 
@@ -98,17 +110,14 @@ public class SecretKeyResource extends AbstractKeystoreEntityResource {
             return Response.status(Response.Status.NOT_FOUND).build();
 
         try {
-            KeyEntityInformation key = this.keystoreManager.loadKeyAsText(preparedAlias, KeyType.SECRET);
+            KeyEntityInformation key = this.keystoreManager.getKey(preparedAlias, KeyType.SECRET);
             RestUtils.createEncryptionPolicyTemplate(jsonData, key);
-
-        } catch (GenericKeystoreManagerException e)
-        {
+        } catch (GenericKeystoreManagerException e) {
             throw new WebApplicationException(
                 Response.serverError().entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build()
             );
         }
-        
+
         return Response.ok().build();
     }
-    
 }

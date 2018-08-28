@@ -31,7 +31,7 @@ public interface SecurityProcessor {
 
     KeyPair generateKeyPair(String algorithm, int keySize) throws GenericSecurityProcessorException;
     
-    Certificate generateSelfSignedCertificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException;
+    Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException;
     
     SecretKey getSecretKeyFromInputStream(String algorithm, InputStream secretKeyInputStream) throws GenericSecurityProcessorException;
     

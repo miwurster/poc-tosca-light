@@ -14,24 +14,37 @@
 
 package org.eclipse.winery.repository.security.csar.datatypes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class KeyPairInformation {
     @JsonProperty
     private KeyEntityInformation privateKey;
     @JsonProperty
-    private String certificateChain;
-    
-    public KeyPairInformation(KeyEntityInformation privateKey, String certificateChain) {
+    private KeyEntityInformation publicKey;
+    @JsonProperty
+    private CertificateInformation certificate;
+
+    public KeyPairInformation(KeyEntityInformation privateKey, KeyEntityInformation publicKey, CertificateInformation certificates) {
         this.privateKey = privateKey;
-        this.certificateChain = certificateChain;
+        this.publicKey = publicKey;
+        this.certificate = certificates;
     }
 
     public KeyEntityInformation getPrivateKey() {
         return privateKey;
     }
 
-    public String getCertificateChain() {
-        return certificateChain;
+    public KeyEntityInformation getPublicKey() {
+        return publicKey;
+    }
+
+    public CertificateInformation getCertificate() {
+        return certificate;
+    }
+    
+    @JsonIgnore
+    public String getPEMEncodedCertificateString() {
+        return "";
     }
 }

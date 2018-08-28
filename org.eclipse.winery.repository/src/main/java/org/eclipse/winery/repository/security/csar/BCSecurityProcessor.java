@@ -14,6 +14,52 @@
 
 package org.eclipse.winery.repository.security.csar;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.eclipse.winery.repository.security.csar.datatypes.DistinguishedName;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.repository.security.csar.support.SignatureAlgorithm;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -33,34 +79,15 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.eclipse.winery.repository.security.csar.datatypes.DistinguishedName;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.SupportedEncryptionAlgorithm;
-import org.eclipse.winery.repository.security.csar.support.SupportedsSignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
-
 public class BCSecurityProcessor implements SecurityProcessor {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BCSecurityProcessor.class);
-    
+
     private Configuration configuration;
-    
+
     public BCSecurityProcessor(Configuration c) {
         this.configuration = c;
         Security.addProvider(new BouncyCastleProvider());
@@ -71,15 +98,13 @@ public class BCSecurityProcessor implements SecurityProcessor {
     public BCSecurityProcessor() {
         this(null);
     }
-    
+
     @Override
     public Key generateSecretKey(String algorithm, int keySize) throws GenericSecurityProcessorException {
         try {
             KeyGenerator keyGenerator;
-            // validate if the chosen algorithm and key size are supported
-            SupportedEncryptionAlgorithm chosenAlgorithm = SupportedEncryptionAlgorithm.valueOf(algorithm, keySize);
-            keyGenerator = KeyGenerator.getInstance(chosenAlgorithm.getName(), BouncyCastleProvider.PROVIDER_NAME);
-            keyGenerator.init(chosenAlgorithm.getkeySizeInBits(), new SecureRandom());
+            keyGenerator = KeyGenerator.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            keyGenerator.init(keySize, new SecureRandom());
             return keyGenerator.generateKey();
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             LOGGER.error("Error generating a secret key", e);
@@ -88,17 +113,14 @@ public class BCSecurityProcessor implements SecurityProcessor {
             LOGGER.error("Requested combination of the algorithm and key size is not supported", e);
             throw new GenericSecurityProcessorException("Requested combination of the algorithm and key size is not supported");
         }
-        
     }
 
     @Override
     public KeyPair generateKeyPair(String algorithm, int keySize) throws GenericSecurityProcessorException {
         try {
-            SupportedEncryptionAlgorithm chosenAlgorithm = SupportedEncryptionAlgorithm.valueOf(algorithm, keySize);
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
-            keyPairGenerator.initialize(chosenAlgorithm.getkeySizeInBits(), new SecureRandom());
-            KeyPair pair = keyPairGenerator.generateKeyPair();
-            return pair;
+            keyPairGenerator.initialize(keySize, new SecureRandom());
+            return keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             LOGGER.error("Error generating a keypair", e);
             throw new GenericSecurityProcessorException("Could not generate the secret key with given properties");
@@ -109,17 +131,17 @@ public class BCSecurityProcessor implements SecurityProcessor {
     }
 
     @Override
-    public Certificate generateSelfSignedCertificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException {
+    public Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException {
         String signatureAlgorithm;
         try {
-            signatureAlgorithm = SupportedsSignatureAlgorithm.getDefaultOptionForAlgorithm(keypair.getPrivate().getAlgorithm());
+            signatureAlgorithm = SignatureAlgorithm.getDefaultOptionForAlgorithm(keypair.getPrivate().getAlgorithm());
         } catch (IllegalArgumentException e) {
             LOGGER.error("Signature algorithm for keypair algorithm is not found", e);
             throw new GenericSecurityProcessorException("Signature algorithm for keypair algorithm is not found");
         }
         try {
             X500Name dn = buildX500Name(distinguishedName);
-            
+
             long now = System.currentTimeMillis();
             Date startDate = new Date(now);
             BigInteger certSerialNumber = new BigInteger(Long.toString(now));
@@ -127,15 +149,15 @@ public class BCSecurityProcessor implements SecurityProcessor {
             calendar.setTime(startDate);
             calendar.add(Calendar.YEAR, 1); // <-- 1 Yr validity
 
-            Date endDate = calendar.getTime();            
-            
+            Date endDate = calendar.getTime();
+
             ContentSigner sigGen = new JcaContentSignerBuilder(signatureAlgorithm)
                 .setProvider(BouncyCastleProvider.PROVIDER_NAME)
                 .build(keypair.getPrivate());
-            
+
             X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
-                dn, 
-                certSerialNumber, 
+                dn,
+                certSerialNumber,
                 startDate,
                 endDate,
                 dn,
@@ -144,16 +166,14 @@ public class BCSecurityProcessor implements SecurityProcessor {
             ).addExtension(new ASN1ObjectIdentifier("2.5.29.19"), false, new BasicConstraints(false) // true if it is allowed to sign other certs
             ).addExtension(new ASN1ObjectIdentifier("2.5.29.15"), true, new X509KeyUsage(
                 X509KeyUsage.digitalSignature |
-                X509KeyUsage.nonRepudiation   |
-                X509KeyUsage.keyEncipherment  |
-                X509KeyUsage.dataEncipherment)
+                    X509KeyUsage.nonRepudiation |
+                    X509KeyUsage.keyEncipherment |
+                    X509KeyUsage.dataEncipherment)
             );
 
             X509CertificateHolder certHolder = certBuilder.build(sigGen);
-            X509Certificate c = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(certHolder);
-            
+
             return new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(certHolder);
-            
         } catch (OperatorCreationException | CertIOException | CertificateException e) {
             LOGGER.error("Error generating a self-signed certificate", e);
             throw new GenericSecurityProcessorException("Error generating a self-signed certificate");
@@ -163,11 +183,9 @@ public class BCSecurityProcessor implements SecurityProcessor {
     @Override
     public SecretKey getSecretKeyFromInputStream(String algorithm, InputStream secretKeyInputStream) throws GenericSecurityProcessorException {
         try {
-            byte[] key = new byte[0];
+            byte[] key;
             key = IOUtils.toByteArray(secretKeyInputStream);
-            SupportedEncryptionAlgorithm chosenAlgorithm = SupportedEncryptionAlgorithm.valueOf(algorithm, key);
-            int keySize = key.length;
-            return new SecretKeySpec(key, 0, keySize, chosenAlgorithm.getName());
+            return new SecretKeySpec(key, 0, key.length, algorithm);
         } catch (IOException | IllegalArgumentException e) {
             LOGGER.error("Error processing the provided secret key", e);
             throw new GenericSecurityProcessorException("Error processing the provided secret key");
@@ -216,18 +234,18 @@ public class BCSecurityProcessor implements SecurityProcessor {
         final CertificateFactory factory = CertificateFactory.getInstance("X.509");
         final List<X509Certificate> result = new ArrayList<>();
         final BufferedReader r = new BufferedReader(new InputStreamReader(certInputStream));
-        
+
         String s = r.readLine();
         if (s == null || !s.contains("BEGIN CERTIFICATE")) {
             r.close();
             throw new GenericSecurityProcessorException("Error processing the provided X509 certificate chain");
         }
-  
+
         StringBuilder b = new StringBuilder();
         while (s != null) {
             if (s.contains("END CERTIFICATE")) {
                 String hexString = b.toString();
-                final byte[] bytes = Base64.decodeBase64(hexString);                
+                final byte[] bytes = Base64.decodeBase64(hexString);
                 X509Certificate cert = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(bytes));
                 result.add(cert);
                 b = new StringBuilder();
@@ -248,7 +266,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
         try {
             byte[] encryptedValue = encryptByteArray(k, text.getBytes());
             return new String(encryptedValue);
-        } catch ( GenericSecurityProcessorException e) {
+        } catch (GenericSecurityProcessorException e) {
             LOGGER.error("Error processing the encryption request", e);
             throw e;
         }
@@ -297,7 +315,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
     @Override
     public String calculateDigest(String str, String digestAlgorithm) throws GenericSecurityProcessorException {
         try {
-            return calculateDigest(str.getBytes( StandardCharsets.UTF_8 ), digestAlgorithm);
+            return calculateDigest(str.getBytes(StandardCharsets.UTF_8), digestAlgorithm);
         } catch (GenericSecurityProcessorException e) {
             LOGGER.error("Error calculating hash", e);
             throw e;
@@ -306,13 +324,12 @@ public class BCSecurityProcessor implements SecurityProcessor {
 
     @Override
     public String calculateDigest(byte[] bytes, String digestAlgorithm) throws GenericSecurityProcessorException {
-        MessageDigest md = null;
+        MessageDigest md;
         try {
             md = MessageDigest.getInstance(digestAlgorithm);
             md.update(bytes);
             byte[] digest = md.digest();
-            String hex = String.format( "%064x", new BigInteger( 1, digest ) );
-            return hex;
+            return String.format("%064x", new BigInteger(1, digest));
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("Error calculating hash", e);
             throw new GenericSecurityProcessorException("Error calculating hash");
@@ -327,7 +344,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
     @Override
     public byte[] signBytes(Key privateKey, byte[] text) throws GenericSecurityProcessorException {
         try {
-            String algo = SupportedsSignatureAlgorithm.getDefaultOptionForAlgorithm(privateKey.getAlgorithm());
+            String algo = SignatureAlgorithm.getDefaultOptionForAlgorithm(privateKey.getAlgorithm());
             Signature privateSignature = Signature.getInstance(algo);
             privateSignature.initSign((PrivateKey) privateKey);
             privateSignature.update(text);
@@ -348,7 +365,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
     public boolean verifyBytes(Certificate cert, byte[] text, byte[] signature) throws GenericSecurityProcessorException {
         try {
             PublicKey publicKey = cert.getPublicKey();
-            String algo = SupportedsSignatureAlgorithm.getDefaultOptionForAlgorithm(publicKey.getAlgorithm());
+            String algo = SignatureAlgorithm.getDefaultOptionForAlgorithm(publicKey.getAlgorithm());
             Signature publicSignature = Signature.getInstance(algo);
             publicSignature.initVerify(publicKey);
             publicSignature.update(text);
@@ -360,10 +377,10 @@ public class BCSecurityProcessor implements SecurityProcessor {
         }
     }
 
-    public X500Name buildX500Name(DistinguishedName distinguishedName) throws GenericSecurityProcessorException {
+    private X500Name buildX500Name(DistinguishedName distinguishedName) throws GenericSecurityProcessorException {
         if (distinguishedName.isValid()) {
             Map<String, String> rdns = distinguishedName.getIdentityData();
-            
+
             X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
             builder.addRDN(BCStyle.CN, rdns.get("CN"));
             builder.addRDN(BCStyle.O, rdns.get("O"));
@@ -380,7 +397,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
 
             return builder.build();
         }
-        
+
         throw new GenericSecurityProcessorException("The provided distinguished name either is not valid or incomplete");
     }
 }
