@@ -14,16 +14,26 @@
 
 package org.eclipse.winery.repository.security.csar.support;
 
-public enum SupportedDigestAlgorithm {
-    SHA256("SHA-256"),
-    SHA384("SHA-384"),
-    SHA512("SHA-512");
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+public enum AsymmetricEncryptionAlgorithm {
+    RSA1024("RSA", 1024),
+    RSA2048("RSA", 2048);
 
     private String name;
+    private int keySizeInBits;
     
-    SupportedDigestAlgorithm(String name) {
-        this.name = name;
+    AsymmetricEncryptionAlgorithm(String algorithm, int keySizeInBits) {
+        this.name = algorithm;
+        this.keySizeInBits = keySizeInBits;
     }
-    
-    String getName() { return this.name; }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public int getkeySizeInBits() {
+        return this.keySizeInBits;
+    }
 }

@@ -18,17 +18,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-public enum SupportedsSignatureAlgorithm {
-    RSA_SHA256("RSA", SupportedDigestAlgorithm.SHA256, "SHA256withRSA", true),
-    RSA_SHA384("RSA", SupportedDigestAlgorithm.SHA384, "SHA384withRSA", false),
-    RSA_SHA512("RSA", SupportedDigestAlgorithm.SHA512, "SHA512withRSA", false);
+public enum SignatureAlgorithm {
+    RSA_SHA256("RSA", DigestAlgorithm.SHA256, "SHA256withRSA", true),
+    RSA_SHA384("RSA", DigestAlgorithm.SHA384, "SHA384withRSA", false),
+    RSA_SHA512("RSA", DigestAlgorithm.SHA512, "SHA512withRSA", false);
     
     private String name;
-    private SupportedDigestAlgorithm digestAlgorithm;
+    private DigestAlgorithm digestAlgorithm;
     private String fullName;
     private boolean isDefault;
 
-    SupportedsSignatureAlgorithm(String name, SupportedDigestAlgorithm digestAlgorithm, String fullName, boolean isDefault) {
+    SignatureAlgorithm(String name, DigestAlgorithm digestAlgorithm, String fullName, boolean isDefault) {
         this.name = name;
         this.digestAlgorithm = digestAlgorithm;
         this.fullName = fullName;
@@ -42,22 +42,22 @@ public enum SupportedsSignatureAlgorithm {
     public static Collection<String> getOptionsForAlgorithm(String algorithm) {
         if (Objects.nonNull(algorithm)) {
             Collection<String> result = new ArrayList<>();
-            for (SupportedsSignatureAlgorithm a : values()) {
+            for (SignatureAlgorithm a : values()) {
                 if (algorithm.equals(a.name))
                     result.add(a.fullName);
             }
             return result;
         }
-        throw new IllegalArgumentException("Chosen signature algorithm is not supported: " + "@algorithm." + algorithm);
+        throw new IllegalArgumentException("Chosen signature algorithm is not supported");
     }
     
     public static String getDefaultOptionForAlgorithm(String algorithm) {
         if (Objects.nonNull(algorithm)) {
-            for (SupportedsSignatureAlgorithm a : values()) {
+            for (SignatureAlgorithm a : values()) {
                 if (algorithm.equals(a.name) && a.isDefault)
                     return a.fullName;
             }
         }
-        throw new IllegalArgumentException("Chosen signature algorithm is not supported: " + "@algorithm." + algorithm);
+        throw new IllegalArgumentException("Chosen signature algorithm is not supported");
     }
 }
