@@ -40,6 +40,12 @@
                     [disabled]="rows.length === 0 || !currentSelected">
                 Edit
             </button>
+            <button *ngIf="enableOtherPurposeButton"
+                    class="rightbutton btn btn-primary btn-xs"
+                    (click)="onOtherPurposeButtonClick($event);"
+                    [disabled]="rows.length === 0 || !currentSelected">
+                {{otherPurposeButtonName}}
+            </button>
         </div>
     </div>
 </div>

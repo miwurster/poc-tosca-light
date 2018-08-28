@@ -144,12 +144,15 @@ export class WineryTableComponent implements OnInit, DoCheck {
     @Input() disableButtons = false;
     @Input() enableEditButton = false;
     @Input() enableIOButton = false;
+    @Input() enableOtherPurposeButton = false;
+    @Input() otherPurposeButtonName = 'Details';
 
     @Output() cellSelected = new EventEmitter<any>();
     @Output() removeBtnClicked = new EventEmitter<any>();
     @Output() addBtnClicked = new EventEmitter<any>();
     @Output() editBtnClicked = new EventEmitter<any>();
     @Output() ioBtnClicked = new EventEmitter<any>();
+    @Output() otherPurposeBtnClicked = new EventEmitter<any>();
 
     public rows: Array<any> = [];
     public page = 1;
@@ -271,6 +274,11 @@ export class WineryTableComponent implements OnInit, DoCheck {
     onIOClick($event: Event) {
         $event.stopPropagation();
         this.ioBtnClicked.emit(this.currentSelected);
+    }
+
+    onOtherPurposeButtonClick($event: Event) {
+        $event.stopPropagation();
+        this.otherPurposeBtnClicked.emit(this.currentSelected);
     }
 
     onItemsPerPageChange(event: Event, selectElement: any) {
