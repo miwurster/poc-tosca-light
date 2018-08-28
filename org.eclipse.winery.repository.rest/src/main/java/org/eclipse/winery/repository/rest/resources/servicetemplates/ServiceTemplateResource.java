@@ -170,8 +170,9 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
         group1.setProperties(propsG1);
         
         
-
-        group1.setNodeTemplates(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates());
+        if(this.getServiceTemplate().getTopologyTemplate() != null && this.getServiceTemplate().getTopologyTemplate().getNodeTemplates().size() > 0){
+            group1.setNodeTemplates(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates());
+        }
         
         
         groups.getGroup().add(group1);

@@ -14,14 +14,18 @@
 
 import { Action } from 'redux';
 import {
-    DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction, DeleteRelationshipAction,
-    HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction, SaveRelationshipAction, SendCurrentNodeIdAction,
-    SendPaletteOpenedAction, SetCababilityAction, SetDeploymentArtifactAction, SetPolicyAction, SetPropertyAction, SetRequirementAction,
+    DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
+    DeleteRelationshipAction,
+    HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction, SaveRelationshipAction,
+    SendCurrentNodeIdAction,
+    SendPaletteOpenedAction, SetCababilityAction, SetDeploymentArtifactAction, SetPolicyAction, SetPropertyAction,
+    SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
-    UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions, GroupSidebarStateAction
+    UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions, GroupSidebarStateAction, CreateGroupAction
 } from '../actions/winery.actions';
 import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
+import { GroupsModalData } from '../../models/groupsModalData';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;
@@ -30,6 +34,8 @@ export interface WineryState {
     groupSidebarContents: any;
     currentJsonTopology: TTopologyTemplate;
     currentNodeData: any;
+    // I know it shouldn't be here, but this modal is not defined on either the navbar or a node template, but on a sidebar...
+    createGroupModalData: GroupsModalData;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -55,7 +61,8 @@ export const INITIAL_WINERY_STATE: WineryState = {
     currentNodeData: {
         id: '',
         focus: false
-    }
+    },
+    createGroupModalData: new GroupsModalData()
 };
 
 /**
@@ -91,6 +98,13 @@ export const WineryReducer =
                 return <WineryState>{
                     ...lastState,
                     groupSidebarContents: newGroupSidebarData
+                };
+            case WineryActions.CREATE_GROUP:
+                const createGroupModalData: any = (<CreateGroupAction>action).newGroup;
+
+                return <WineryState>{
+                    ...lastState,
+                    createGroupModalData: createGroupModalData
                 };
             case WineryActions.CHANGE_MIN_INSTANCES:
                 const sideBarNodeId: any = (<SidebarMinInstanceChanges>action).minInstances.id;

@@ -22,7 +22,7 @@
                           [nodeTemplates]="nodeTemplates"
                           [relationshipTemplates]="relationshipTemplates"
                           [sidebarDeleteButtonClickEvent]="sidebarDeleteButtonClickEvent"
-                          (generatedReduxState)="onReduxReady()">
+                          (generatedReduxState)="onReduxReady()" (selectedNodes)="sendDataToGroupSideBar($event)">
 </winery-topology-renderer>
 
 <div *ngIf="loaded?.generatedReduxState">
@@ -36,7 +36,7 @@
     <winery-sidebar (sidebarDeleteButtonClicked)="sidebarDeleteButtonClicked($event)"
                     style="width : 300px; float:right; z-index: 400"></winery-sidebar>
 
-    <winery-group-sidebar style="width : 300px; float:right; z-index: 400"></winery-group-sidebar>
+    <winery-group-sidebar [SelectedNodes]="selectedNodes" [groupsModalData]="groupsModalData" style="width : 300px; float:right; z-index: 400"></winery-group-sidebar>
 </div>
 <!--
 <app-sidebar style="width : 300px; float:right"></app-sidebar>

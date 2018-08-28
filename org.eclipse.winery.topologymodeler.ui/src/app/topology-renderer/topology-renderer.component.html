@@ -20,7 +20,8 @@
                    [entityTypes]="entityTypes"
                    [relationshipTypes]="relationshipTypes"
                    [diffMode]="diffMode"
-                   [sidebarDeleteButtonClickEvent]="sidebarDeleteButtonClickEvent">
+                   [sidebarDeleteButtonClickEvent]="sidebarDeleteButtonClickEvent"
+                    (changedSelectedNodes)="informWinery($event)">
     </winery-canvas>
 
     <div *ngIf="diffMode" style="position: fixed; right: 0;" class="sidebar-root">

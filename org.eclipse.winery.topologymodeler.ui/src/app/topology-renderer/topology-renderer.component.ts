@@ -42,6 +42,7 @@ export class TopologyRendererComponent implements OnInit, OnDestroy {
     @Input() relationshipTemplates: Array<TRelationshipTemplate>;
     @Input() sidebarDeleteButtonClickEvent: any;
     @Output() generatedReduxState = new EventEmitter();
+    @Output() selectedNodes = new EventEmitter<Array<TNodeTemplate>>();
     hideNavBarState: boolean;
     subscriptions: Array<Subscription> = [];
 
@@ -81,7 +82,12 @@ export class TopologyRendererComponent implements OnInit, OnDestroy {
         }
     }
 
-    generateDiffTopology() {
+    informWinery(changedSelectedNodes: Array<TNodeTemplate> ) {
+        this.selectedNodes.emit(changedSelectedNodes);
+    }
+
+
+generateDiffTopology() {
         // add all removed elements and color code them red
         // collect all added elements and color code them green
         // collect all changed elements and color code them yellow

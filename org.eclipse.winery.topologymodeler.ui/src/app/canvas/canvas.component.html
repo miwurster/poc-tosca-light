@@ -327,43 +327,6 @@
     </winery-modal-footer>
 </winery-modal>
 
-<winery-modal *ngIf="!readonly" bsModal #groupNodesModal="bs-modal" [modalRef]="groupNodesModal">
-    <winery-modal-header [title]="'Select or create Group to add this Node to'">
-    </winery-modal-header>
-    <winery-modal-body>
-        <form #groupNodesForm="ngForm" id="groupNodesForm" enctype="multipart/form-data">
-            <fieldset>
-                <div class="form-group">
-                    <label for="groupNodes" class="control-label">Group:</label>
-                    <select [(ngModel)]="groupsModalData.groupSelected"
-                            name="groupNodes"
-                            id="groupNodes"
-                            class="form-control"
-                            type="text"
-                            required
-                            (change)="onChangeTopologyTemplate($event.target.value)">
-                        <option *ngFor="let group of groupsModalData.groups"
-                                [value]="group.id">{{ group.id }}
-                        </option>
-                    </select>
-                    <div *ngIf="groupsModalData.groupSelected"
-                         style="display: flex; justify-content: center; align-items: center">
-                        <i class="fa fa-3x fa-refresh fa-spin" style="max-width: 50%;"></i>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-    </winery-modal-body>
-    <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" id="cancelGroupNode" class="btn btn-default" (click)="closeGroupModal();">Cancel
-        </button>
-        <button (click)="console.log('buttonclicked');"
-                type="button" id="groupNodeBtn" class="btn btn-primary"
-                [disabled]="!groupNodesForm.form.valid || groupsModalData.groupSelected">Add
-        </button>
-    </winery-modal-footer>
-</winery-modal>
-
 <winery-entities-modal *ngIf="!readonly"
                        [(modalVariantAndState)]="modalData"
                        [entityTypes]="entityTypes"

@@ -27,6 +27,7 @@ import { EntityTypesModel, TopologyModelerInputDataFormat } from './models/entit
 import { ActivatedRoute } from '@angular/router';
 import { TopologyModelerConfiguration } from './models/topologyModelerConfiguration';
 import { ToastrService } from 'ngx-toastr';
+import { GroupsModalData } from './models/groupsModalData';
 
 /**
  * This is the root component of the topology modeler.
@@ -54,6 +55,9 @@ export class WineryComponent implements OnInit {
     entityTypes: EntityTypesModel;
     hideNavBarState: boolean;
     subscriptions: Array<Subscription> = [];
+    selectedNodes : Array<TNodeTemplate>;
+
+    groupsModalData : GroupsModalData = new GroupsModalData(null, null, null, true);
     // This variable is set via the topologyModelerData input and decides if the editing functionalities are enabled
     readonly: boolean;
 
@@ -336,6 +340,10 @@ export class WineryComponent implements OnInit {
 
     sidebarDeleteButtonClicked($event) {
         this.sidebarDeleteButtonClickEvent = $event;
+    }
+
+    sendDataToGroupSideBar(selectedNodes: Array<TNodeTemplate>){
+        this.selectedNodes = selectedNodes;
     }
 
     private triggerLoaded(what?: string) {

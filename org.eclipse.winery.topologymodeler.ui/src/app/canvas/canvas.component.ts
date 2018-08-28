@@ -12,7 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 import {
-    AfterViewInit, Component, DoCheck, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnChanges, OnDestroy, OnInit, QueryList,
+    AfterViewInit, Component, DoCheck, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnChanges, OnDestroy,
+    OnInit, Output, QueryList,
     Renderer2, SimpleChanges, ViewChild, ViewChildren
 } from '@angular/core';
 import { JsPlumbService } from '../services/jsPlumb.service';
@@ -51,6 +52,7 @@ import { DifferenceStates, VersionUtils } from '../models/ToscaDiff';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { DragSource } from '../models/DragSource';
 import { GroupsModalData } from '../models/groupsModalData';
+import {EventEmitter} from '@angular/core';
 
 @Component({
     selector: 'winery-canvas',
@@ -68,7 +70,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('importTopologyModal') importTopologyModal: ModalDirective;
-    @ViewChild('groupNodesModal') groupNodesModal : ModalDirective;
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
     @Input() relationshipTypes: Array<EntityType> = [];
@@ -83,7 +84,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     allRelationshipTemplates: Array<TRelationshipTemplate> = [];
     navbarButtonsState: ButtonsStateModel;
     selectedNodes: Array<TNodeTemplate> = [];
-    // current data emitted from a node
+    @Output() changedSelectedNodes = new EventEmitter<Array<TNodeTemplate>>();
+        // current data emitted from a node
     currentModalData: any;
     dragSourceActive = false;
     event;
@@ -108,7 +110,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     capabilities: CapabilitiesModalData;
     requirements: RequirementsModalData;
     importTopologyData: ImportTopologyModalData;
-    groupsModalData: GroupsModalData;
 
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
@@ -184,7 +185,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.capabilities = new CapabilitiesModalData();
         this.requirements = new RequirementsModalData();
         this.importTopologyData = new ImportTopologyModalData();
-        this.groupsModalData = new GroupsModalData();
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -284,6 +284,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      *     to show
      */
     public toggleModalHandler(currentNodeData: ToggleModalDataModel) {
+        console.log("toggleModalHandler was called");
         console.log(currentNodeData);
         this.currentModalData = currentNodeData;
         this.modalData.modalVisible = true;
@@ -305,14 +306,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 console.log("Debug entityTypes");
                 console.log(this.entityTypes);
 
-                console.log("Trying to open group modal");
-                this.groupsModalData.groupSelected = null;
-                this.groupsModalData.selectedNodeTemplates = this.selectedNodes;
-                this.groupsModalData.groups = this.entityTypes.groups.group;
-
-                console.log("Current Group Modal Data:");
-                console.log(this.groupsModalData);
-                this.groupNodesModal.show();
                 break;
             case toggleModalType.Requirements:
                 console.log("Trying to open requirements modal");
@@ -1036,6 +1029,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.revalidateContainer();
             }, 1);
         }
+        this.changedSelectedNodes.emit(this.selectedNodes);
     }
 
     /**
@@ -1043,16 +1037,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      */
     onChangeTopologyTemplate(selectedTopologyTemplateId: string): void {
         this.importTopologyData.selectedTopologyTemplateId = selectedTopologyTemplateId;
-    }
-
-    saveGroupSelection(): void {
-        let nodeTemplates = this.groupsModalData.selectedNodeTemplates;
-        let group = this.groupsModalData.groupSelected;
-    }
-
-    closeGroupModal(): void {
-        this.groupsModalData.groupSelected = null;
-        this.groupNodesModal.hide();
     }
 
     /**
@@ -1135,6 +1119,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 }
             }
         }
+        this.changedSelectedNodes.emit(this.selectedNodes);
     }
 
     /**
@@ -1313,6 +1298,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 }
             }
         }
+        this.changedSelectedNodes.emit(this.selectedNodes);
     }
 
     /**
@@ -1327,6 +1313,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             });
             this.newJsPlumbInstance.removeFromAllPosses(this.selectedNodes.map(node => node.id));
             this.selectedNodes = [];
+            this.changedSelectedNodes.emit(this.selectedNodes);
         }
     }
 
@@ -1408,6 +1395,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
             }
         }
+        this.changedSelectedNodes.emit(this.selectedNodes);
     }
 
     /**
@@ -1932,6 +1920,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             });
             this.selectedNodes.splice(selectedNodeIndex, 1);
         }
+        this.changedSelectedNodes.emit(this.selectedNodes);
     }
 
     /**
@@ -1957,6 +1946,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         if (!this.arrayContainsNode(this.selectedNodes, nodeId)) {
             this.clearSelectedNodes();
         }
+        this.changedSelectedNodes.emit(this.selectedNodes);
     }
 
     /**
@@ -1975,6 +1965,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 }
             });
         }
+        this.changedSelectedNodes.emit(this.selectedNodes);
     }
 
     /**

@@ -179,13 +179,10 @@ export class NavbarComponent implements OnDestroy {
                 this.ngRedux.dispatch(this.actions.matchTopology());
                 this.matchingOngoing = true;
                 break;
-            }
-            case 'groupNodes': {
-                this.ngRedux.dispatch(this.actions.groupNodes());
-
-
-                break;
-            }
+            } case 'groupNodes': {
+            this.ngRedux.dispatch(this.actions.groupNodes());
+            break;
+        }
         }
     }
 

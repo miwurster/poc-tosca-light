@@ -128,6 +128,21 @@ export interface SetPropertyAction extends Action {
     };
 }
 
+export interface SetGroupAction extends Action {
+    groupProperty: {
+        group: any
+    }
+}
+
+export interface CreateGroupAction extends Action {
+    newGroup:{
+        id: string,
+        name: string,
+        groupType: string,
+        visible: boolean
+    }
+}
+
 export interface SetCababilityAction extends Action {
     nodeCapability: {
         nodeId: string,
@@ -223,6 +238,9 @@ export class WineryActions {
     static SET_TARGET_LOCATION = 'SET_TARGET_LOCATION';
     static DELETE_POLICY = 'DELETE_POLICY';
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
+    static SET_GROUP = "SET_GROUP"
+
+    static CREATE_GROUP = "CREATE_GROUP"
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
@@ -314,6 +332,16 @@ export class WineryActions {
             type: WineryActions.SET_PROPERTY,
             nodeProperty: newProperty.nodeProperty,
             propertyType: newProperty.propertyType
+        }));
+    setGroup: ActionCreator<SetGroupAction> =
+        ((newGroup) => ({
+            type: WineryActions.SET_GROUP,
+            groupProperty: newGroup.group
+        }));
+    openCreateGroupModal: ActionCreator<CreateGroupAction> =
+        ((newGroupData) => ({
+            type: WineryActions.CREATE_GROUP,
+            newGroup: newGroupData
         }));
     setCapability: ActionCreator<SetCababilityAction> =
         ((newCapability) => ({

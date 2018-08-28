@@ -18,12 +18,12 @@
      *ngIf="groupSidebarState.sidebarVisible">
 
     <!-- Repaint jsPlumb on every accordion click -->
-    <accordion #accordion *ngFor="let group of groupSidebarState.groups">
+    <accordion #accordion [closeOthers]="true">
         <!-- Groups -->
         <accordion-group
             class="card-header-node-accordions"
             #groups
-            panelClass="accordionGroupPanel" >
+            panelClass="accordionGroupPanel" *ngFor="let group of groupSidebarState.groups">
             <div accordion-heading (click)="setGroupSelected(group)">
                 {{ group.name }}:{{ group.groupType }}
             </div>
@@ -50,31 +50,30 @@
                 <i class="fa fa-3x fa-refresh fa-spin" style="max-width: 50%;"></i>
             </div>
             <table *ngIf="group.properties.kvproperties" class="table table-border--grey table-sm body-table">
-                <tr>
+                <div>
                     <th>
                         Key
                     </th>
                     <th>
                         Values
                     </th>
-                <div *ngFor="key in group.properties.kvproperties">
 
-                <tr>
-                    <td class="">{{key}}</td>
-                    <td class="">
+                    <tr *ngFor="let item of group.properties.kvproperties | keysPipe">
+                        <td class="">{{item.key}}</td>
+                        <td class="">
                     <textarea
                         style="width:100%; overflow-y: scroll;"
                         rows="1"
                         placeholder="Edit your value here."
                         required
                         [disabled]="readonly"
-                        value="{{value}}"
+                        value="{{item.value}}"
                         (keyup)="properties.next($event.target.value)"
-                        (keyup)="keyOfEditedKVProperty.next(key)">
+                        (keyup)="keyOfEditedKVProperty.next(item.key)">
                     </textarea>
-                    </td>
-                </tr>
-</div>
+                        </td>
+                    </tr>
+                </div>
             </table>
 
             <div *ngIf="group.properties.any">
@@ -84,7 +83,7 @@
                     placeholder="Edit your XML here."
                     required
                     [disabled]="readonly"
-                    value="{{group.properties.any}}"
+                    value="{{groupProperties}}"
                     (keyup)="properties.next($event.target.value)">
                 </textarea>
             </div>
@@ -102,6 +101,97 @@
                 </table>
 
             </div>
+
+            <div>
+                <button *ngIf="!readonly"
+                        class="btn btn-sm align-middle btn-success" type="button" style="margin: 2px"
+                        (click)="addNodes(selection)">Set Nodes
+                </button>
+
+                <button *ngIf="!readonly"
+                        class="btn btn-sm align-middle btn-danger" type="button" style="margin: 2px"
+                        (click)="deleteGroup()">Delete
+                </button>
+
+            </div>
         </accordion-group>
     </accordion>
+    <div style="vertical-align: center">
+        <button
+            class="btn btn-sm align-middle btn-success" type="button" id="createGroup" style="margin: 2px"
+            (click)="openCreateGroupModal()">Create Group
+        </button>
+
+            <winery-modal *ngIf="groupsModalData.visible" bsModal #groupNodesModal="bs-modal" [modalRef]="groupNodesModal" >
+                <winery-modal-header [title]="'Create Group'">
+                </winery-modal-header>
+                <winery-modal-body>
+                    <form #groupNodesForm="ngForm" id="groupNodesForm" enctype="multipart/form-data">
+                        <fieldset>
+                            <div class="form-group">
+                                <label for="GroupIdDisplay" class="control-label">Group:</label>
+                                <div class="form-group">
+                                    <label for="GroupIdDisplay" class="control-label">Id:</label>
+                                    <input [(ngModel)]="groupsModalData.id"
+                                           id="GroupIdDisplay"
+                                           name="GroupIdDisplay"
+                                           class="form-control"
+                                           type="text"
+                                           required
+                                           />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="GroupNameDisplay" class="control-label">Name:</label>
+                                    <input [(ngModel)]="groupsModalData.name"
+                                           id="GroupNameDisplay"
+                                           name="GroupNameDisplay"
+                                           class="form-control"
+                                           type="text"
+                                           />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="GroupTypeDisplay" class="control-label">Type:</label>
+                                    <input [(ngModel)]="groupsModalData.type"
+                                           id="GroupTypeDisplay"
+                                           name="GroupTypeDisplay"
+                                           class="form-control"
+                                           type="text"
+                                           required
+                                           />
+                                </div>
+                               <!-- <div class="radio">
+                                    <label style="margin-bottom: 1em;">
+                                        <input type="radio" name="templateCreation" value="kv"
+                                               id="kvPropertyRadio"
+                                               [(ngModel)]="modalSelectedRadioButton"/>
+                                        Create Key Value Properties
+                                    </label>
+
+                                </div>
+                                <div class="radio">
+                                    <label style="margin-bottom: 1em;">
+                                        <input type="radio" name="templateCreation" value="any"
+                                               id="anyPropertyRadio"
+                                               [(ngModel)]="modalSelectedRadioButton"/>
+                                       XML Properties
+                                    </label>
+
+                                </div> -->
+                            </div>
+                        </fieldset>
+                    </form>
+                </winery-modal-body>
+                <winery-modal-footer [showDefaultButtons]="false">
+                    <button type="button" id="cancelGroupNode" class="btn btn-default" (click)="closeCreateGroupModal();">Cancel
+                    </button>
+                    <button (click)="addGroup()"
+                            type="button" id="groupNodeBtn" class="btn btn-primary"
+                            [disabled]="!groupNodesForm.form.valid">Add
+                    </button>
+                </winery-modal-footer>
+            </winery-modal>
+
+    </div>
 </div>

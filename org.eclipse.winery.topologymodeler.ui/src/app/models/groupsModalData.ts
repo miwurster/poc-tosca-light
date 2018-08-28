@@ -19,12 +19,14 @@ import { TNodeTemplate } from './ttopology-template';
  */
 export class GroupsModalData {
 
-    constructor(public groupSelected?: any,
-                public groups?: any,
-                public selectedNodeTemplates?: Array<TNodeTemplate>) {
-        console.log("Setting data of GroupsModalData to:");
-        console.log(groupSelected);
-        console.log(groups);
-        console.log(selectedNodeTemplates);
+    constructor(public id?: any,
+                public name?: any,
+                public type?: Array<TNodeTemplate>,
+                public visible?: boolean) {
+        console.log("Setting data of GroupsModalData for new Group to:");
+        console.log(id);
+        console.log(name);
+        console.log(type);
+        console.log(visible);
     }
 }
