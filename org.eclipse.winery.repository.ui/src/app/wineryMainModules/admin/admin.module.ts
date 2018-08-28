@@ -27,6 +27,8 @@ import {FormsModule} from '@angular/forms';
 import {ConsistencyCheckComponent} from '../../instance/admin/consistencyCheck/consistencyCheck.component';
 import {ProgressbarModule} from 'ngx-bootstrap';
 import {ErrorElementToLinkPipe} from '../../instance/admin/consistencyCheck/errorElementToLink.pipe';
+import { KeyManagementComponent } from '../../instance/admin/keyManagement/keyManagement.component';
+import { KeyManagementModule } from '../../instance/admin/keyManagement/keyManagement.module';
 
 @NgModule({
     imports: [
@@ -40,13 +42,15 @@ import {ErrorElementToLinkPipe} from '../../instance/admin/consistencyCheck/erro
         WineryNamespaceSelectorModule,
         ProgressbarModule.forRoot(),
         AdminRouterModule,
+        KeyManagementModule
     ],
     declarations: [
         NamespacesComponent,
         LoggerComponent,
         TypeWithShortNameComponent,
         ConsistencyCheckComponent,
-        ErrorElementToLinkPipe
+        ErrorElementToLinkPipe,
+        KeyManagementComponent
     ]
 })
 export class AdminModule {
