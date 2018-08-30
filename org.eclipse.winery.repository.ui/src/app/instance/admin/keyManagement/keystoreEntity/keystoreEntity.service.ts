@@ -16,6 +16,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/index';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { backendBaseURL } from '../../../../configuration';
+import { AddSecretKeyData } from './keystoreEntity.component';
+import { WineryRowData } from '../../../../wineryTableModule/wineryTable.component';
 
 @Injectable()
 export class KeystoreEntityService {
@@ -39,18 +41,48 @@ export class KeystoreEntityService {
         return this.http.get<KeyPairEntity[]>(keysPath, { params: params });
     }
 
-    getCertificates() {
+    getCertificates(): Observable<CertificateEntity[]> {
         const keysPath = this.path + '/certificates';
         let params = new HttpParams();
 
         return this.http.get<CertificateEntity[]>(keysPath, { params: params });
     }
 
-    getSupportedAlgorithms() {
+    getSupportedAlgorithms(): Observable<SupportedAlgorithms> {
         const keysPath = this.path + '/algorithms';
         let params = new HttpParams();
 
         return this.http.get<SupportedAlgorithms>(keysPath, { params: params });
+    }
+
+    addKey(data: AddSecretKeyData) {
+        const keysPath = this.path + '/keys';
+
+        const formData: FormData = new FormData();
+        formData.append('algo', data.algorithm);
+        formData.append('keySize', data.keySizeInBits);
+        if (data.keyFile !== null && data.keyFile !== undefined) {
+            formData.append('keystoreFile', data.keyFile, data.keyFile.name);
+        }
+
+        return this.http.post(keysPath, formData);
+    }
+
+    removeEntity(keystoreEntityType: string, alias: string) {
+        let keysPath = this.path;
+        switch (keystoreEntityType) {
+            case 'secretkeys':
+                keysPath += '/keys/' + alias;
+                break;
+            case 'keypairs':
+                keysPath += '/keypairs/' + alias;
+                break;
+            case 'certificates':
+                keysPath += '/certificates/' + alias;
+                break;
+        }
+
+        return this.http.delete(keysPath);
     }
 }
 

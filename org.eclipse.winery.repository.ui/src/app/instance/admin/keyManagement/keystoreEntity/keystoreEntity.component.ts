@@ -58,7 +58,8 @@ export class KeystoreEntityComponent implements OnInit {
         'keypairs': [],
         'certificates': []
     };
-    @ViewChild('addModal') addModal: ModalDirective;
+    @ViewChild('addKeyModal') addKeyModal: ModalDirective;
+    @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
     @ViewChild('keyInfoModal') keyInfoModal: ModalDirective;
     @ViewChild('keypairInfoModal') keypairInfoModal: ModalDirective;
     @ViewChild('certificateInfoModal') certificateInfoModal: ModalDirective;
@@ -68,7 +69,7 @@ export class KeystoreEntityComponent implements OnInit {
     };
     supportedAlgorithms: Array<SelectData> = [];
     supportedAlgorithmsKeySizesMap: { [key: string]: SelectData[] } = {};
-    currentSelectedItem: AddSecretKeyData = new AddSecretKeyData;
+    addKeyData: AddSecretKeyData = new AddSecretKeyData;
     Object = Object;
 
     constructor(private service: KeystoreEntityService,
@@ -104,7 +105,6 @@ export class KeystoreEntityComponent implements OnInit {
                     error => this.handleError(error)
                 );
                 break;
-
         }
     }
 
@@ -127,8 +127,21 @@ export class KeystoreEntityComponent implements OnInit {
         this.notify.error(error.message);
     }
 
+    private handleSuccess(): void {
+        this.loading = false;
+        this.notify.success('Operation was successful', 'Success');
+    }
+
     onAddClick() {
-        this.addModal.show();
+        switch (this.keystoreEntityType) {
+            case 'secretkeys':
+                this.addKeyModal.show();
+                break;
+        }
+    }
+
+    onRemoveClick(event: any) {
+        this.confirmDeleteModal.show();
     }
 
     onInfoClick() {
@@ -151,46 +164,85 @@ export class KeystoreEntityComponent implements OnInit {
         }
     }
 
-    addKeystoreEntity() {
+    addKey() {
+        this.loading = true;
+        this.service.addKey(this.addKeyData).subscribe(
+            data => {
+                this.handleSave();
+            },
+            error => this.handleError(error)
+        );
+    }
 
+    private handleSave() {
+        this.handleSuccess();
+        this.ngOnInit();
+    }
+
+    private handleRemove() {
+        this.handleSuccess();
+        this.ngOnInit();
     }
 
     private handleAlgorithmData(data: SupportedAlgorithms) {
-        let dataArray = null;
-        let processData = false;
-        switch (this.keystoreEntityType) {
-            case 'secretkeys':
-                dataArray = data.symmetric;
-                processData = true;
-                break;
-            case 'keypairs':
-                dataArray = data.asymmetric;
-                processData = true;
-                break;
-        }
-        if (processData) {
-            let addedAlgorithms: string[] = [];
-            for (let i = 0; i < dataArray.length; i++) {
-                let algo = dataArray[i].name;
-                let keySize = dataArray[i].keySizeInBits;
-                if (addedAlgorithms.indexOf(algo) === -1) {
-                    addedAlgorithms.push(algo);
-                    this.supportedAlgorithms.push({ id: algo, text: algo });
+        if (this.supportedAlgorithms.length === 0) {
+            let dataArray = null;
+            let processData = false;
+            switch (this.keystoreEntityType) {
+                case 'secretkeys':
+                    dataArray = data.symmetric;
+                    processData = true;
+                    break;
+                case 'keypairs':
+                    dataArray = data.asymmetric;
+                    processData = true;
+                    break;
+            }
+            if (processData) {
+                let addedAlgorithms: string[] = [];
+                for (let i = 0; i < dataArray.length; i++) {
+                    let algo = dataArray[i].name;
+                    let keySize = dataArray[i].keySizeInBits;
+                    if (addedAlgorithms.indexOf(algo) === -1) {
+                        addedAlgorithms.push(algo);
+                        this.supportedAlgorithms.push({ id: algo, text: algo });
+                    }
+                    if (!this.supportedAlgorithmsKeySizesMap.hasOwnProperty(algo) || !this.supportedAlgorithmsKeySizesMap[algo]) {
+                        this.supportedAlgorithmsKeySizesMap[algo] = [];
+                    }
+                    this.supportedAlgorithmsKeySizesMap[algo].push({
+                        id: keySize.toString(), text: keySize.toString()
+                    });
                 }
-                if (!this.supportedAlgorithmsKeySizesMap.hasOwnProperty(algo) || !this.supportedAlgorithmsKeySizesMap[algo]) {
-                    this.supportedAlgorithmsKeySizesMap[algo] = [];
-                }
-                this.supportedAlgorithmsKeySizesMap[algo].push({ id: keySize.toString(), text: keySize.toString() });
             }
         }
     }
 
     targetAlgorithmSelected(targetObj: SelectItem) {
-        this.currentSelectedItem.algorithm = targetObj.id;
+        this.addKeyData.algorithm = targetObj.id;
     }
 
     targetKeySizeSelected(targetObj: SelectItem) {
-        this.currentSelectedItem.keySizeInBits = targetObj.id;
+        this.addKeyData.keySizeInBits = targetObj.id;
+    }
+
+    keySelected(event: any) {
+        const files = event.target.files;
+
+        if (files.length > 0) {
+            this.addKeyData.keyFile = files[0];
+        } else {
+            this.addKeyData.keyFile = undefined;
+        }
+    }
+
+    deleteEntity() {
+        this.confirmDeleteModal.hide();
+        this.service.removeEntity(this.keystoreEntityType, this.selectedCell.row.alias).subscribe(
+            data => this.handleRemove(),
+            error => this.handleError(error)
+        );
+        this.selectedCell = null;
     }
 }
 
@@ -219,7 +271,7 @@ export class KeyPairTableData {
 export class AddSecretKeyData {
     algorithm: string;
     keySizeInBits: string;
-    keyFile: any;
+    keyFile: File;
 
     constructor() {
         this.algorithm = null;
