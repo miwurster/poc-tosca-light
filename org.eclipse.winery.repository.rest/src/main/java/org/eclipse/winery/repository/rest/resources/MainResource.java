@@ -208,7 +208,7 @@ public class MainResource {
         }
         if (importMetaInformation.errors.isEmpty()) {
             if (options.isValidate()) {
-                LOGGER.debug("CSAR import lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+                
                 return Response.ok(importMetaInformation, MediaType.APPLICATION_JSON).build();
             } else if (Objects.nonNull(importMetaInformation.entryServiceTemplate)) {
                 URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(importMetaInformation.entryServiceTemplate));
@@ -223,8 +223,6 @@ public class MainResource {
             // In case there are errors, we send them as "bad request"
             return Response.status(Status.BAD_REQUEST).type(MediaType.APPLICATION_JSON).entity(importMetaInformation).build();
         }
-        
-        
     }
 
     @POST
