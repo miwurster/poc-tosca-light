@@ -27,8 +27,8 @@ import { align } from '../models/enums';
  * Manages all layouting operations besides drag and drop (this is in canvas.ts)
  */
 export class LayoutDirective {
-    readonly nodeXOffset = 40;
-    readonly nodeYOffset = 50;
+    readonly nodeXOffset = 340;
+    readonly nodeYOffset = 100;
     private jsPlumbInstance: any;
 
     constructor(private alert: ToastrService,
@@ -80,9 +80,9 @@ export class LayoutDirective {
             id: 'root',
             properties: {
                 'elk.algorithm': 'layered',
-                'elk.spacing.nodeNode': '200',
+                'elk.spacing.nodeNode': '80',
                 'elk.direction': 'DOWN',
-                'elk.layered.spacing.nodeNodeBetweenLayers': '200'
+                'elk.layered.spacing.nodeNodeBetweenLayers': '100'
             },
             children: children,
             edges: edges,
