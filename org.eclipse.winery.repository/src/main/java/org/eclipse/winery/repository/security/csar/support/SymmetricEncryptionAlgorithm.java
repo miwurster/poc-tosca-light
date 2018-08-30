@@ -20,8 +20,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public enum SymmetricEncryptionAlgorithm {
     AES256("AES", 256),
     AES512("AES", 512),
-    DES256("DES", 256),
-    DES512("DES", 512);    
+    DES64("DES", 64),
+    TRIPLEDES("DESede", 192);    
 
     private String name;
     private int keySizeInBits;
