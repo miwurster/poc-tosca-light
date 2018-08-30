@@ -31,6 +31,7 @@ import org.eclipse.winery.repository.security.csar.KeystoreManager;
 import org.eclipse.winery.repository.security.csar.SecurityProcessor;
 import org.eclipse.winery.repository.security.csar.datatypes.CertificateInformation;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
 
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -58,8 +59,18 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadExistingCertificate(@FormDataParam("alias") String alias,
                                               @FormDataParam("certificate") InputStream certificate) {
-        // TODO
-        return Response.noContent().build();
+        try {
+            this.keystoreManager.storeCertificate(alias, certificate);
+            return Response.ok().build();
+            
+        } catch (GenericKeystoreManagerException e) {
+            throw new WebApplicationException(
+                Response.serverError()
+                    .entity(e.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build()
+            );
+        }
     }
 
     @GET
