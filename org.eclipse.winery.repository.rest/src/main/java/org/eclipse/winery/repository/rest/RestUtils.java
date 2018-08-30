@@ -19,6 +19,8 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.nio.file.attribute.FileTime;
 import java.security.AccessControlException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -215,6 +217,7 @@ public class RestUtils {
      * @param options the set of options that are applicable for exporting a csar
      */
     public static Response getCSARofSelectedResource(final AbstractComponentInstanceResource resource, CsarExportOptions options) {
+        LocalDateTime start = LocalDateTime.now();
         final CsarExporter exporter = new CsarExporter();
         Map<String, Object> exportConfiguration = new HashMap<>();
 
@@ -226,8 +229,10 @@ public class RestUtils {
                     String result = exporter.writeCsarAndSaveManifestInProvenanceLayer(RepositoryFactory.getRepository(), resource.getId(), output)
                         .get();
                     LOGGER.debug("Stored state in accountability layer in transaction " + result);
+                    LOGGER.debug("CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
                 } else {
                     exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
+                    LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
                 }
             } catch (Exception e) {
                 LOGGER.error("Error while exporting CSAR", e);
@@ -237,6 +242,7 @@ public class RestUtils {
         String contentDisposition = String.format("attachment;filename=\"%s%s\"",
             resource.getXmlId().getEncoded(),
             Constants.SUFFIX_CSAR);
+        
         return Response.ok()
             .header("Content-Disposition", contentDisposition)
             .type(MimeTypes.MIMETYPE_ZIP)

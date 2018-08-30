@@ -15,6 +15,8 @@ package org.eclipse.winery.accountability.blockchain.ethereum;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,7 +58,11 @@ public class ProvenanceSmartContractWrapper extends SmartContractWrapper {
     }
 
     public CompletableFuture<String> saveState(final String identifier, final String state) {
-        return ((Provenance) contract).addResourceVersion(identifier, CompressionUtils.compress(state.getBytes()))
+        LocalDateTime start = LocalDateTime.now();
+        byte[] compressed = CompressionUtils.compress(state.getBytes());
+        LOGGER.debug("Compressing fingerprint lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+        
+        return ((Provenance) contract).addResourceVersion(identifier, compressed)
             .sendAsync()
             // replace the complete receipt with the transaction hash only.
             .thenApply(TransactionReceipt::getTransactionHash);

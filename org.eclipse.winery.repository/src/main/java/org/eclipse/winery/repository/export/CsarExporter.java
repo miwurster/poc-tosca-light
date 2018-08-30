@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -127,6 +129,7 @@ public class CsarExporter {
 
     public CompletableFuture<String> writeCsarAndSaveManifestInProvenanceLayer(IRepository repository, DefinitionsChildId entryId, OutputStream out)
         throws IOException, JAXBException, RepositoryCorruptException, AccountabilityException, InterruptedException, ExecutionException {
+        LocalDateTime start = LocalDateTime.now();
         Properties props = repository.getAccountabilityConfigurationManager().properties;
         AccountabilityManager accountabilityManager = AccountabilityManagerFactory.getAccountabilityManager(props);
         
@@ -138,7 +141,8 @@ public class CsarExporter {
 
         String manifestString = this.writeCsar(repository, entryId, out, exportConfiguration);
         String qNameWithComponentVersionOnly = VersionUtils.getQNameWithComponentVersionOnly(entryId);
-
+        LOGGER.debug("Preparing CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+        
         return accountabilityManager.storeFingerprint(qNameWithComponentVersionOnly, manifestString);
     }
 
