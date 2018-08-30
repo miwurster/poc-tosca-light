@@ -62,6 +62,7 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
     selectedNodes: Array<TNodeTemplate>;
     ngRedux: NgRedux<IWineryState>;
     modalSelectedRadioButton = 'kv';
+    backend: BackendService;
 
     groupProperties: any;
 
@@ -76,6 +77,7 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
     constructor(private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
                 private backendService: BackendService) {
+        this.backend = backendService;
         this.ngRedux = $ngRedux;
     }
 
@@ -87,7 +89,20 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
     addNodes(){
         console.log("adding nodes:");
         console.log(this.selectedNodes);
-        this.selectedGroup["nodeTemplates"] = JSON.parse(JSON.stringify(this.selectedNodes));
+
+        let cleanedNodes = new Array();
+
+        for(let item in this.selectedNodes) {
+            let copiedNode = JSON.parse(JSON.stringify(this.selectedNodes[item]));
+            delete copiedNode["visuals"];
+            delete copiedNode["_state"];
+            cleanedNodes.push(this.selectedNodes[item].id);
+        }
+
+        console.log("After cleaning:")
+        console.log(cleanedNodes);
+
+        this.selectedGroup["nodeTemplates"] = JSON.parse(JSON.stringify(cleanedNodes));
     }
 
     deleteGroup(){
@@ -112,17 +127,59 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
     }
 
     addGroup(){
+        console.log("Creating group");
+        console.log(this.groupsModalData);
         let groupId = this.groupsModalData.id;
         let groupName = this.groupsModalData.name;
         let groupType = this.groupsModalData.type;
-        this.groupSidebarState.groups.push({id: groupId, name: groupName, groupType: groupType});
+
+
+        let newGroup ={id: groupId, any: new Array(), documentation: new Array(), otherAttributes: {}, name: groupName, groupType: JSON.parse(groupType)["id"], properties: this.fetchProperties(groupType)}
+
+        console.log(newGroup);
+
+        this.groupSidebarState.groups.push(newGroup);
+    }
+
+    fetchProperties(groupType:any){
+        console.log("GroupType to find:");
+        console.log(groupType);
+
+
+
+
+        console.log("Property def:");
+        //.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0]
+
+        let props = JSON.parse(groupType)["full"]["serviceTemplateOrNodeTypeOrNodeTypeImplementation"][0].any[0];
+
+        let obj:any = {}
+        if(props.propertyDefinitionKVList == null) {
+            obj.any = props.any;
+        } else {
+            let newObj = {};
+            for(let key in props.propertyDefinitionKVList){
+                let propName = props.propertyDefinitionKVList[key];
+                newObj[propName.key] = "";
+            }
+
+            obj.kvproperties = newObj;
+        }
+        console.log(obj);
+        return obj;
+    }
+
+    saveGroups() {
+        this.backendService.saveGroups({group: this.groupSidebarState.groups}).subscribe(res => {console.log(res)});
     }
 
     openCreateGroupModal() {
-        console.log("GroupdNodesModal:");
+        console.log("GroupNodesModal:");
         console.log(this.groupNodesModal);
-
         this.groupsModalData.visible = true;
+        console.log("GroupsModalData:");
+        console.log(this.groupsModalData);
+
         this.groupNodesModal.config = {backdrop:false, keyboard:true};
         this.groupNodesModal.show();
     }

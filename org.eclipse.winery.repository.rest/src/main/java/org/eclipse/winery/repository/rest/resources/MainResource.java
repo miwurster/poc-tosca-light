@@ -45,6 +45,7 @@ import org.eclipse.winery.repository.rest.resources.entitytypeimplementations.no
 import org.eclipse.winery.repository.rest.resources.entitytypeimplementations.relationshiptypeimplementations.RelationshipTypeImplementationsResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.artifacttypes.ArtifactTypesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.capabilitytypes.CapabilityTypesResource;
+import org.eclipse.winery.repository.rest.resources.entitytypes.grouptypes.GroupTypesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.nodetypes.NodeTypesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.policytypes.PolicyTypesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.relationshiptypes.RelationshipTypesResource;
@@ -139,6 +140,9 @@ public class MainResource {
     public ServiceTemplatesResource servicetemplates() {
         return new ServiceTemplatesResource();
     }
+    
+    @Path("grouptypes/")
+    public GroupTypesResource grouptypes() { return new GroupTypesResource();}
 
     @Path("compliancerules/")
     public ComplianceRulesResource compliancerules() {

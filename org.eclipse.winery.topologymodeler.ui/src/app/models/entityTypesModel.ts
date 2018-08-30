@@ -31,6 +31,7 @@ export class EntityTypesModel {
     unGroupedNodeTypes: any;
     deploymentArtifacts: any;
     groups: any;
+    groupTypes: any;
 }
 
 /**

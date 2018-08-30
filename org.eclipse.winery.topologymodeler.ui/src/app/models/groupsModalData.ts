@@ -22,11 +22,13 @@ export class GroupsModalData {
     constructor(public id?: any,
                 public name?: any,
                 public type?: Array<TNodeTemplate>,
-                public visible?: boolean) {
+                public visible?: boolean,
+                public types?: any) {
         console.log("Setting data of GroupsModalData for new Group to:");
         console.log(id);
         console.log(name);
         console.log(type);
         console.log(visible);
+        console.log(types);
     }
 }

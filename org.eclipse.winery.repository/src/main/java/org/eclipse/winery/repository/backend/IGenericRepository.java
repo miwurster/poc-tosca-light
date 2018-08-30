@@ -41,6 +41,7 @@ import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
 import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.ComplianceRuleId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
+import org.eclipse.winery.common.ids.definitions.GroupTypeId;
 import org.eclipse.winery.common.ids.definitions.HasInheritanceId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
@@ -68,6 +69,7 @@ import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TEntityType;
 import org.eclipse.winery.model.tosca.TEntityTypeImplementation;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TGroupType;
 import org.eclipse.winery.model.tosca.TImplementationArtifact;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -511,6 +513,10 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         }
         return ids;
     }
+    
+    default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(GroupTypeId id) {
+        return Collections.emptyList();
+    }
 
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(PolicyTemplateId id) {
         Collection<DefinitionsChildId> ids = new ArrayList<>();
@@ -768,6 +774,8 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
             referencedDefinitionsChildIds = new ArrayList();
         } else if (id instanceof ComplianceRuleId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ComplianceRuleId) id);
+        } else if(id instanceof GroupTypeId) {
+            referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((GroupTypeId) id);
         } else {
             throw new IllegalStateException("Unhandled id class " + id.getClass());
         }

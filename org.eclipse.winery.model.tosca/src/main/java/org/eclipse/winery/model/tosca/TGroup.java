@@ -63,7 +63,7 @@ public class TGroup extends TExtensibleElements {
     protected TEntityTemplate.Properties properties;
     
     @XmlElement(name = "NodeTemplate")
-    protected List<TNodeTemplate> nodeTemplates;
+    protected List<String> nodeTemplates;
     
     public TGroup() {
 
@@ -127,11 +127,11 @@ public class TGroup extends TExtensibleElements {
         this.properties = properties;
     }
 
-    public List<TNodeTemplate> getNodeTemplates() {
+    public List<String> getNodeTemplates() {
         return nodeTemplates;
     }
 
-    public void setNodeTemplates(List<TNodeTemplate> nodeTemplates) {
+    public void setNodeTemplates(List<String> nodeTemplates) {
         this.nodeTemplates = nodeTemplates;
     }
     

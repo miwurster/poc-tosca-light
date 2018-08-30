@@ -1428,6 +1428,25 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * Hides the Sidebar on the right.
      */
     openGroupSidebar() {
+
+
+
+        let groupData = null;
+
+        console.log("GroupData:");
+        console.log(groupData);
+
+
+        if(this.entityTypes.groups == null) {
+            groupData = new Array();
+            console.log("Groups empty set empty array");
+            console.log(groupData);
+        } else {
+            groupData = this.entityTypes.groups.group;
+        }
+
+
+
         this.ngRedux.dispatch(this.actions.openGroupSidebar({
             groupSidebarContents: {
                 sidebarVisible: true,
@@ -1435,7 +1454,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 id: '',
                 nameTextFieldValue: '',
                 type: '',
-                groups: this.entityTypes.groups.group
+                groups: groupData
             }
         }));
     }

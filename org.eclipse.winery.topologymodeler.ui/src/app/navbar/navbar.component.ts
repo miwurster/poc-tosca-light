@@ -210,6 +210,7 @@ export class NavbarComponent implements OnDestroy {
             delete nodeTemplate.state;
         });
         const topologyToBeSaved = topologySkeleton;
+        console.log("Saving topology:");
         console.log(topologyToBeSaved);
         // The topology gets saved here.
         this.backendService.saveTopologyTemplate(topologyToBeSaved)

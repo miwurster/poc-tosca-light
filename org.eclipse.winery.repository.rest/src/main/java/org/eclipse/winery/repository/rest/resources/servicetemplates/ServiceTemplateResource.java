@@ -154,55 +154,9 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
     
     @GET
     @Path("groups")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getGroups(){
-        
-        List<String> testGroups = new ArrayList<>();
-        testGroups.add("testGroup1");
-        testGroups.add("testGroup2");
-        
-        TGroups groups = new TGroups();
-        
-        TGroup group1 = new TGroup(new TGroup.Builder("TestGroup1", "TestGroup1Name", "ScalingGroup"));
-        TEntityTemplate.Properties propsG1 = new TEntityTemplate.Properties();
-        Map<String,String>  map = new HashMap<String,String>();
-        map.put("leck", "mich");
-        propsG1.setKVProperties(map);
-        group1.setProperties(propsG1);
-        
-        
-        if(this.getServiceTemplate().getTopologyTemplate() != null && this.getServiceTemplate().getTopologyTemplate().getNodeTemplates().size() > 0){
-            group1.setNodeTemplates(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates());
-        }
-        
-        
-        groups.getGroup().add(group1);
-
-        TGroup group2 = new TGroup(new TGroup.Builder("TestGroup2", "TestGroup2Name", "ScalingGroup"));
-            
-                TEntityTemplate.Properties propsG2 = new TEntityTemplate.Properties();
-                
-                
-                
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = null;
-        try {
-            docBuilder = docFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-
-        // root elements
-        Document doc = docBuilder.newDocument();
-        Element rootElement = doc.createElement("company");
-        doc.appendChild(rootElement);
-
-        propsG2.setAny(rootElement);
-        
-        group2.setProperties(propsG2);
-        
-        groups.getGroup().add(group2);
-        
-        return Response.ok(groups).build();
+        return Response.ok(this.getServiceTemplate().getGroups()).build();
     }
 
     @GET

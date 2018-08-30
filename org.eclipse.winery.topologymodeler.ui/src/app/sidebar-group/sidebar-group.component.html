@@ -25,7 +25,7 @@
             #groups
             panelClass="accordionGroupPanel" *ngFor="let group of groupSidebarState.groups">
             <div accordion-heading (click)="setGroupSelected(group)">
-                {{ group.name }}:{{ group.groupType }}
+                {{ group.name }}:{{ group.groupType.id }}
             </div>
 
             <div id="groupInformationSection">
@@ -38,7 +38,7 @@
                         <span>Name: {{ group.name }}</span>
                     </tr>
                     <tr class="grouped-nodes-table-td">
-                        <span>Type: {{ group.groupType }}</span>
+                        <span>Type: {{ group.groupType.id}}</span>
                     </tr>
 
                     </tbody>
@@ -66,7 +66,6 @@
                         rows="1"
                         placeholder="Edit your value here."
                         required
-                        [disabled]="readonly"
                         value="{{item.value}}"
                         (keyup)="properties.next($event.target.value)"
                         (keyup)="keyOfEditedKVProperty.next(item.key)">
@@ -94,7 +93,7 @@
                     <tbody>
                     <tr *ngFor="let node of group.nodeTemplates">
                         <td class="grouped-nodes-table-td">
-                            <span>{{ node.id }}</span>
+                            <span>{{ node }}</span>
                         </td>
                     </tr>
                     </tbody>
@@ -117,10 +116,17 @@
         </accordion-group>
     </accordion>
     <div style="vertical-align: center">
+        <div style="vertical-align: center">
         <button
-            class="btn btn-sm align-middle btn-success" type="button" id="createGroup" style="margin: 2px"
+            class="btn btn-sm align-middle btn-info" type="button" id="createGroup" style="margin: 2px"
             (click)="openCreateGroupModal()">Create Group
         </button>
+
+        <button
+            class="btn btn-sm align-middle btn-success" type="button" id="createGroup" style="margin: 2px"
+            (click)="saveGroups()">Save Groups
+        </button>
+        </div>
 
             <winery-modal *ngIf="groupsModalData.visible" bsModal #groupNodesModal="bs-modal" [modalRef]="groupNodesModal" >
                 <winery-modal-header [title]="'Create Group'">
@@ -151,16 +157,30 @@
                                            />
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="GroupTypeDisplay" class="control-label">Type:</label>
-                                    <input [(ngModel)]="groupsModalData.type"
-                                           id="GroupTypeDisplay"
-                                           name="GroupTypeDisplay"
-                                           class="form-control"
-                                           type="text"
-                                           required
-                                           />
+
+                                <div id="groupTypeSelectionDiv">
+                                    <select id=groupTypeSelectId name="groupTypeSelect"
+                                            class="form-control"
+                                            [(ngModel)]="groupsModalData.type"
+                                            required>
+                                        <ng-container>
+                                            <option *ngIf="groupsModalData.types.groupTypes === undefined"
+                                                    value="null" disabled="true" [selected]="true">Group Types are still
+                                                loading...
+                                            </option>
+
+                                            <option
+                                                *ngFor="let groupType of groupsModalData.types.groupTypes"
+                                                [value]="groupType | json">
+                                                {{groupType.id}}
+                                            </option>
+                                        </ng-container>
+
+                                    </select>
+                                    <i *ngIf="groupsModalData.types.groupTypes === undefined"
+                                       class="fa fa-refresh fa-spin"></i>
                                 </div>
+
                                <!-- <div class="radio">
                                     <label style="margin-bottom: 1em;">
                                         <input type="radio" name="templateCreation" value="kv"
@@ -186,7 +206,7 @@
                 <winery-modal-footer [showDefaultButtons]="false">
                     <button type="button" id="cancelGroupNode" class="btn btn-default" (click)="closeCreateGroupModal();">Cancel
                     </button>
-                    <button (click)="addGroup()"
+                    <button (click)="addGroup();closeCreateGroupModal();"
                             type="button" id="groupNodeBtn" class="btn btn-primary"
                             [disabled]="!groupNodesForm.form.valid">Add
                     </button>

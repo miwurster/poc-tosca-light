@@ -67,7 +67,8 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         @XmlElement(name = "NodeTypeImplementation", type = TNodeTypeImplementation.class),
         @XmlElement(name = "RequirementType", type = TRequirementType.class),
         @XmlElement(name = "PolicyType", type = TPolicyType.class),
-        @XmlElement(name = "Compliancerule", type = TComplianceRule.class)
+        @XmlElement(name = "Compliancerule", type = TComplianceRule.class),
+        @XmlElement(name = "GroupType", type = TGroupType.class)
     })
     protected List<TExtensibleElements> serviceTemplateOrNodeTypeOrNodeTypeImplementation;
 
@@ -265,6 +266,15 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
             .filter(x -> x instanceof TPolicyType)
             .map(TPolicyType.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TGroupType> getGroupTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TGroupType)
+            .map(TGroupType.class::cast)
             .collect(Collectors.toList());
     }
 

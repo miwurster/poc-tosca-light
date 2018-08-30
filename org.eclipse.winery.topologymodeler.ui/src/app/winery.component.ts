@@ -57,7 +57,7 @@ export class WineryComponent implements OnInit {
     subscriptions: Array<Subscription> = [];
     selectedNodes : Array<TNodeTemplate>;
 
-    groupsModalData : GroupsModalData = new GroupsModalData(null, null, null, true);
+    groupsModalData : GroupsModalData = new GroupsModalData(null, null, null, true, null);
     // This variable is set via the topologyModelerData input and decides if the editing functionalities are enabled
     readonly: boolean;
 
@@ -109,6 +109,14 @@ export class WineryComponent implements OnInit {
             });
             this.initiateBackendCalls();
         }
+
+        console.log("Setting groupTypes in modal in winery.component");
+        console.log(this.entityTypes);
+
+
+        this.groupsModalData.types = this.entityTypes;
+
+        console.log(this.groupsModalData);
     }
 
     /**
@@ -232,6 +240,9 @@ export class WineryComponent implements OnInit {
                 this.entityTypes.groups = entityTypeJSON;
                 break;
             }
+            case 'groupTypes': {
+                this.entityTypes.groupTypes = entityTypeJSON;
+            }
         }
     }
 
@@ -318,6 +329,8 @@ export class WineryComponent implements OnInit {
             this.initEntityType(JSON[9], 'unGroupedNodeTypes');
 
             this.initEntityType(JSON[10], 'groups');
+
+            this.initEntityType(JSON[11], 'groupTypes');
 
             this.triggerLoaded('everything');
         });
