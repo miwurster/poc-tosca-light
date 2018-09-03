@@ -49,8 +49,6 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
      * Gets called if nodes representation in the store changes
      */
     updateReqs(): void {
-        console.log("Opening Reqs Accordion with current data:");
-        console.log(this.currentNodeData);
         if (this.currentNodeData) {
             if (this.currentNodeData.nodeTemplate.requirements) {
                 this.requirements = this.currentNodeData.nodeTemplate.requirements.requirement;

@@ -23,16 +23,20 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -40,10 +44,16 @@ import org.w3c.dom.Element;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tGroup", propOrder = {
-    
+    "nodeTemplates"
 })
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonTypeInfo(
+    defaultImpl = TGroup.class,
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "fakeJacksonType")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class TGroup extends TExtensibleElements {
+public class TGroup extends TEntityTemplate {
   
    
     @XmlAttribute(name = "id", required = true)
@@ -55,25 +65,19 @@ public class TGroup extends TExtensibleElements {
     @XmlAttribute(name = "name")
     protected String name;
     
-    @XmlAttribute(name = "groupType")
-    @XmlSchemaType(name = "anyURI")
-    protected String groupType;
-
-    @XmlElement(name = "Properties")
-    protected TEntityTemplate.Properties properties;
-    
-    @XmlElement(name = "NodeTemplate")
-    protected List<String> nodeTemplates;
+    @Nullable
+    @XmlElementWrapper(name = "NodeTemplates")
+    @XmlElement(name = "NodeTemplate", type = TNodeTemplate.class)
+    protected List<TNodeTemplate> nodeTemplates;
     
     public TGroup() {
 
     }
 
     public TGroup(Builder builder) {
-        super(builder);
         this.id = builder.id;
         this.name = builder.name;
-        this.groupType = builder.groupType;
+        this.type = builder.groupType;
     }
 
     @Override
@@ -84,12 +88,12 @@ public class TGroup extends TExtensibleElements {
         TGroup tPlan = (TGroup) o;
         return Objects.equals(id, tPlan.id) &&
             Objects.equals(name, tPlan.name) &&
-            Objects.equals(groupType, tPlan.groupType);
+            Objects.equals(type, tPlan.type);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, name, groupType);
+        return Objects.hash(super.hashCode(), id, name, type);
     }
     
     @NonNull
@@ -110,14 +114,14 @@ public class TGroup extends TExtensibleElements {
         this.name = value;
     }
 
-    @NonNull
+   /* @NonNull
     public String getGroupType() {
         return groupType;
     }
 
     public void setGroupType(@NonNull String value) {
         this.groupType = Objects.requireNonNull(value);
-    }
+    } */
     
     public TEntityTemplate.Properties getProperties() {
         return properties;
@@ -125,13 +129,14 @@ public class TGroup extends TExtensibleElements {
 
     public void setProperties(TEntityTemplate.Properties properties) {
         this.properties = properties;
+        this.getProperties().getKVProperties();
     }
 
-    public List<String> getNodeTemplates() {
+    public List<TNodeTemplate> getNodeTemplates() {
         return nodeTemplates;
     }
 
-    public void setNodeTemplates(List<String> nodeTemplates) {
+    public void setNodeTemplates(List<TNodeTemplate> nodeTemplates) {
         this.nodeTemplates = nodeTemplates;
     }
     
@@ -142,9 +147,9 @@ public class TGroup extends TExtensibleElements {
     public static class Builder extends TExtensibleElements.Builder<Builder> {
         private String id;
         private String name;
-        private String groupType;
+        private QName groupType;
 
-        public Builder(String id, String name, String groupType) {
+        public Builder(String id, String name, QName groupType) {
             this.id = id;
             this.name = name;
             this.groupType = groupType;
@@ -160,7 +165,7 @@ public class TGroup extends TExtensibleElements {
             return this;
         }
         
-        public Builder setGroupType(String groupType){
+        public Builder setGroupType(QName groupType){
             this.groupType = groupType;
             return this;
         }

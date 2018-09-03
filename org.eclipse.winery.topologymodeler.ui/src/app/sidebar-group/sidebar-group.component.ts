@@ -24,8 +24,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { BackendService } from '../services/backend.service';
 import { GroupsModalData } from '../models/groupsModalData';
 import { TNodeTemplate } from '../models/ttopology-template';
-import { ModalDirective, ModalOptions } from 'ngx-bootstrap';
-import { WineryModalComponent } from '../../repositoryUiDependencies/wineryModalModule/winery.modal.component';
+import { ModalDirective } from 'ngx-bootstrap';
 
 /**
  * This is the right sidebar, node groups can be managed
@@ -36,9 +35,9 @@ import { WineryModalComponent } from '../../repositoryUiDependencies/wineryModal
     styleUrls: ['./sidebar-group.component.css'],
     animations: [
         trigger('sidebarAnimationStatus', [
-            state('in', style({transform: 'translateX(0)'})),
+            state('in', style({ transform: 'translateX(0)' })),
             transition('void => *', [
-                style({transform: 'translateX(100%)'}),
+                style({ transform: 'translateX(100%)' }),
                 animate('100ms cubic-bezier(0.86, 0, 0.07, 1)')
             ]),
             transition('* => void', [
@@ -51,7 +50,6 @@ import { WineryModalComponent } from '../../repositoryUiDependencies/wineryModal
     ]
 })
 export class SidebarGroupComponent implements OnInit, OnDestroy {
-    // ngRedux sidebarSubscription
     properties: Subject<string> = new Subject<string>();
     sidebarSubscription;
     groupSidebarState: any;
@@ -61,7 +59,6 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
     subscriptions: Array<Subscription> = [];
     selectedNodes: Array<TNodeTemplate>;
     ngRedux: NgRedux<IWineryState>;
-    modalSelectedRadioButton = 'kv';
     backend: BackendService;
 
     groupProperties: any;
@@ -72,7 +69,7 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
 
     subscription: Subscription;
 
-    @ViewChild('groupNodesModal') groupNodesModal : ModalDirective;
+    @ViewChild('groupNodesModal') groupNodesModal: ModalDirective;
 
     constructor(private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
@@ -82,105 +79,86 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
     }
 
     @Input()
-    set SelectedNodes(selectedNodes : Array<TNodeTemplate>){
+    set SelectedNodes(selectedNodes: Array<TNodeTemplate>) {
         this.selectedNodes = selectedNodes;
     }
 
-    addNodes(){
-        console.log("adding nodes:");
-        console.log(this.selectedNodes);
+    addNodes() {
+        const cleanedNodes = new Array();
 
-        let cleanedNodes = new Array();
-
-        for(let item in this.selectedNodes) {
-            let copiedNode = JSON.parse(JSON.stringify(this.selectedNodes[item]));
-            delete copiedNode["visuals"];
-            delete copiedNode["_state"];
-            cleanedNodes.push(this.selectedNodes[item].id);
+        for (const item in this.selectedNodes) {
+            if (item != null) {
+                const node = this.selectedNodes[item];
+                const jsonNode = JSON.parse(JSON.stringify(node));
+                delete jsonNode.visuals;
+                delete jsonNode._state;
+                delete jsonNode.otherAttributes;
+                cleanedNodes.push(jsonNode);
+            }
         }
 
-        console.log("After cleaning:")
-        console.log(cleanedNodes);
-
-        this.selectedGroup["nodeTemplates"] = JSON.parse(JSON.stringify(cleanedNodes));
+        this.selectedGroup['nodeTemplates'] = JSON.parse(JSON.stringify(cleanedNodes));
     }
 
-    deleteGroup(){
-        console.log("Starting of delete selected group");
-        console.log(this.selectedGroup);
-        let groupId = this.selectedGroup.id;
-        console.log("Current groups:");
-        console.log(this.groupSidebarState.groups);
-        console.log("Size: " + this.groupSidebarState.groups.length);
+    deleteGroup() {
+        const groupId = this.selectedGroup.id;
         let removeIndex = -1;
-        for(let index = 0; index < this.groupSidebarState.groups.length; index++){
-            console.log("Checking group:");
-            console.log(this.groupSidebarState.groups[index]);
-            if(this.groupSidebarState.groups[index].id == groupId){
+        for (let index = 0; index < this.groupSidebarState.groups.length; index++) {
+            if (this.groupSidebarState.groups[index].id === groupId) {
                 removeIndex = index;
             }
         }
-        console.log("Removing group with index:");
-        console.log(removeIndex);
 
-        this.groupSidebarState.groups.splice(removeIndex,1);
+        this.groupSidebarState.groups.splice(removeIndex, 1);
     }
 
-    addGroup(){
-        console.log("Creating group");
-        console.log(this.groupsModalData);
-        let groupId = this.groupsModalData.id;
-        let groupName = this.groupsModalData.name;
-        let groupType = this.groupsModalData.type;
+    addGroup() {
+        const groupId = this.groupsModalData.id;
+        const groupName = this.groupsModalData.name;
+        const groupType = this.groupsModalData.type;
 
-
-        let newGroup ={id: groupId, any: new Array(), documentation: new Array(), otherAttributes: {}, name: groupName, groupType: JSON.parse(groupType)["id"], properties: this.fetchProperties(groupType)}
-
-        console.log(newGroup);
+        const newGroup = {
+            id: groupId, any: new Array(), documentation: new Array(), otherAttributes: {}, name: groupName,
+            type: '{' + JSON.parse(groupType)['namespace'] + '}' + JSON.parse(groupType)['id'],
+            properties: this.fetchProperties(groupType)
+        };
 
         this.groupSidebarState.groups.push(newGroup);
     }
 
-    fetchProperties(groupType:any){
-        console.log("GroupType to find:");
-        console.log(groupType);
+    fetchProperties(groupType: any) {
+        const props = JSON.parse(groupType)['full']['serviceTemplateOrNodeTypeOrNodeTypeImplementation'][0].any[0];
 
+        if (props === undefined || props === null) {
+            return {};
+        }
 
-
-
-        console.log("Property def:");
-        //.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0]
-
-        let props = JSON.parse(groupType)["full"]["serviceTemplateOrNodeTypeOrNodeTypeImplementation"][0].any[0];
-
-        let obj:any = {}
-        if(props.propertyDefinitionKVList == null) {
+        const obj: any = {};
+        if (props.propertyDefinitionKVList == null) {
             obj.any = props.any;
         } else {
-            let newObj = {};
-            for(let key in props.propertyDefinitionKVList){
-                let propName = props.propertyDefinitionKVList[key];
-                newObj[propName.key] = "";
-            }
+            const newObj = {};
 
+            for (const key in props.propertyDefinitionKVList) {
+                if (key != null) {
+                    const propName = props.propertyDefinitionKVList[key];
+                    newObj[propName.key] = '';
+                }
+            }
             obj.kvproperties = newObj;
         }
-        console.log(obj);
+
         return obj;
     }
 
     saveGroups() {
-        this.backendService.saveGroups({group: this.groupSidebarState.groups}).subscribe(res => {console.log(res)});
+        this.backendService.saveGroups({ group: this.groupSidebarState.groups }).subscribe(res => {
+        });
     }
 
     openCreateGroupModal() {
-        console.log("GroupNodesModal:");
-        console.log(this.groupNodesModal);
         this.groupsModalData.visible = true;
-        console.log("GroupsModalData:");
-        console.log(this.groupsModalData);
-
-        this.groupNodesModal.config = {backdrop:false, keyboard:true};
+        this.groupNodesModal.config = { backdrop: false, keyboard: true };
         this.groupNodesModal.show();
     }
 
@@ -189,21 +167,13 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
         this.groupNodesModal.hide();
     }
 
-
-
-    setGroupSelected(group:any) {
+    setGroupSelected(group: any) {
         this.selectedGroup = group;
-
         if (this.selectedGroup.properties.kvproperties) {
-           this.groupProperties= this.selectedGroup.properties.kvproperties;
+            this.groupProperties = this.selectedGroup.properties.kvproperties;
         } else {
-           this.groupProperties = this.selectedGroup.properties.any;
+            this.groupProperties = this.selectedGroup.properties.any;
         }
-
-        console.log("SelectedGroup:");
-        console.log(this.selectedGroup);
-        console.log("With Properties:")
-        console.log(this.groupProperties);
     }
 
     /**
@@ -216,6 +186,7 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
                     this.groupSidebarState = sidebarContents;
                 }
             );
+
         this.subscriptions.push(this.keyOfEditedKVProperty.pipe(
             debounceTime(200),
             distinctUntilChanged(), )
@@ -228,15 +199,9 @@ export class SidebarGroupComponent implements OnInit, OnDestroy {
             distinctUntilChanged(), )
             .subscribe(value => {
                 if (this.selectedGroup.properties.kvproperties) {
-                    console.log("Setting kvproperties to groupProperties");
-                    console.log("Value:");
-                    console.log(value)
                     this.groupProperties[this.key] = value;
                 } else {
-                    console.log("Setting any properties to groupProperties");
-                    console.log("Value:");
-                    console.log(value)
-                    this.groupProperties = value;
+                    this.groupProperties.any = value;
                 }
                 this.$ngRedux.dispatch(this.actions.setGroup({
                     groupProperty: {

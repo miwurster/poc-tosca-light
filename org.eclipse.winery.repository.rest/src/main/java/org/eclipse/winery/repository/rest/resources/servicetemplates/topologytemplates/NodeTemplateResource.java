@@ -13,7 +13,17 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources.servicetemplates.topologytemplates;
 
-import io.swagger.annotations.ApiOperation;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
+
 import org.eclipse.winery.common.ids.Namespace;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
@@ -25,13 +35,7 @@ import org.eclipse.winery.repository.rest.resources.artifacts.DeploymentArtifact
 import org.eclipse.winery.repository.rest.resources.entitytemplates.TEntityTemplateResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
-import javax.xml.namespace.QName;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import io.swagger.annotations.ApiOperation;
 
 public class NodeTemplateResource extends TEntityTemplateResource<TNodeTemplate> implements INodeTemplateResourceOrNodeTypeImplementationResource {
 
@@ -114,20 +118,6 @@ public class NodeTemplateResource extends TEntityTemplateResource<TNodeTemplate>
         this.o.getOtherAttributes().put(this.qnameY, y);
         return RestUtils.persist(this.res);
     }
-    
-    @Path("groups")
-    @GET
-    public String getGroups(){
-        Map<QName, String> otherAttributes = this.o.getOtherAttributes();
-        return otherAttributes.get(this.qnameGroups);
-    }
-    
-    @Path("groups")
-    @PUT
-    public Response setGroups(Collection<String> groups){
-        return Response.ok().build();
-    }
-    
     
     @Override
     public Namespace getNamespace() {

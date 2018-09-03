@@ -124,6 +124,7 @@ export class SectionComponent implements OnInit, OnDestroy {
         this.loading = true;
         let url = '/' + this.toscaType;
 
+
         if (this.toscaType === ToscaTypes.Imports) {
             url += '/' + encodeURIComponent(encodeURIComponent(this.importXsdSchemaType));
         }

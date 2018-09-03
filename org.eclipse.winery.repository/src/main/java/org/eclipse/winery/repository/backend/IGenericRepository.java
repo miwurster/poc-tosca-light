@@ -69,7 +69,6 @@ import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TEntityType;
 import org.eclipse.winery.model.tosca.TEntityTypeImplementation;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
-import org.eclipse.winery.model.tosca.TGroupType;
 import org.eclipse.winery.model.tosca.TImplementationArtifact;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -513,7 +512,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         }
         return ids;
     }
-    
+
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(GroupTypeId id) {
         return Collections.emptyList();
     }
@@ -774,7 +773,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
             referencedDefinitionsChildIds = new ArrayList();
         } else if (id instanceof ComplianceRuleId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ComplianceRuleId) id);
-        } else if(id instanceof GroupTypeId) {
+        } else if (id instanceof GroupTypeId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((GroupTypeId) id);
         } else {
             throw new IllegalStateException("Unhandled id class " + id.getClass());

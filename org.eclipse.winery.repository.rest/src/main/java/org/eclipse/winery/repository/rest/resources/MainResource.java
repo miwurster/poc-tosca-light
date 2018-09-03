@@ -140,9 +140,11 @@ public class MainResource {
     public ServiceTemplatesResource servicetemplates() {
         return new ServiceTemplatesResource();
     }
-    
+
     @Path("grouptypes/")
-    public GroupTypesResource grouptypes() { return new GroupTypesResource();}
+    public GroupTypesResource grouptypes() {
+        return new GroupTypesResource();
+    }
 
     @Path("compliancerules/")
     public ComplianceRulesResource compliancerules() {

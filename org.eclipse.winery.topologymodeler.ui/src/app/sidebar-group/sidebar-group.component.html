@@ -25,7 +25,7 @@
             #groups
             panelClass="accordionGroupPanel" *ngFor="let group of groupSidebarState.groups">
             <div accordion-heading (click)="setGroupSelected(group)">
-                {{ group.name }}:{{ group.groupType.id }}
+                {{ group.name }}:{{ group.type.id }}
             </div>
 
             <div id="groupInformationSection">
@@ -38,7 +38,7 @@
                         <span>Name: {{ group.name }}</span>
                     </tr>
                     <tr class="grouped-nodes-table-td">
-                        <span>Type: {{ group.groupType.id}}</span>
+                        <span>Type: {{ group.type.id}}</span>
                     </tr>
 
                     </tbody>
@@ -93,7 +93,7 @@
                     <tbody>
                     <tr *ngFor="let node of group.nodeTemplates">
                         <td class="grouped-nodes-table-td">
-                            <span>{{ node }}</span>
+                            <span>{{ node.name }}</span>
                         </td>
                     </tr>
                     </tbody>

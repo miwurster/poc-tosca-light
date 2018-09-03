@@ -73,6 +73,9 @@ export class Utils {
                 return ToscaTypes.Imports;
             case ToscaTypes.ComplianceRule:
                 return ToscaTypes.ComplianceRule;
+            case ToscaTypes.GroupType:
+            case ToscaTypes.GroupType.toString().slice(0, -1):
+                return ToscaTypes.GroupType;
             default:
                 return ToscaTypes.Admin;
         }
@@ -120,6 +123,9 @@ export class Utils {
                 break;
             case ToscaTypes.ComplianceRule:
                 type = 'Compliance Rule';
+                break;
+            case ToscaTypes.GroupType:
+                type = 'Group Types';
                 break;
             default:
                 type = 'Admin';

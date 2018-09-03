@@ -418,6 +418,18 @@ div.mainContentContainer.requirementType div.bottom {
     background: url('../assets/img/containers/admin/FrameBottom.jpg');
 }
 
+div.mainContentContainer.groupTypes div.top {
+    background: url('../assets/img/containers/admin/FrameTop.jpg');
+}
+
+div.mainContentContainer.groupTypes div.middle {
+    background: url('../assets/img/containers/admin/FrameMiddle.jpg');
+}
+
+div.mainContentContainer.groupTypes div.bottom {
+    background: url('../assets/img/containers/admin/FrameBottom.jpg');
+}
+
 div.mainContentContainer.capabilityType div.top {
     background: url('../assets/img/containers/admin/FrameTop.jpg');
 }
@@ -692,6 +704,18 @@ div.entityContainer.requirementTypeContainer > div.right {
     background: url('../assets/img/entityBox/adminContainer/a-container-right.png');
 }
 
+div.entityContainer.groupTypesContainer > div.left {
+    background: url('../assets/img/entityBox/adminContainer/a-container-left.png');
+}
+
+div.entityContainer.groupTypesContainer > div.center {
+    background: url('../assets/img/entityBox/adminContainer/a-container-center.jpg');
+}
+
+div.entityContainer.groupTypesContainer > div.right {
+    background: url('../assets/img/entityBox/adminContainer/a-container-right.png');
+}
+
 div.entityContainer.capabilityTypeContainer > div.left {
     background: url('../assets/img/entityBox/adminContainer/a-container-left.png');
 }
@@ -857,6 +881,18 @@ div.entityContainer.requirementType > div.center {
 }
 
 div.entityContainer.requirementType > div.right {
+    background: url('../assets/img/entityBox/admin/right.png');
+}
+
+div.entityContainer.groupTypes > div.left {
+    background: url('../assets/img/entityBox/admin/left.png');
+}
+
+div.entityContainer.groupTypes > div.center {
+    background: url('../assets/img/entityBox/admin/center.jpg');
+}
+
+div.entityContainer.groupTypes > div.right {
     background: url('../assets/img/entityBox/admin/right.png');
 }
 

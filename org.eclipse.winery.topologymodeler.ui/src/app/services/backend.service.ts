@@ -161,29 +161,26 @@ export class BackendService {
     }
 
     private requestGroupTypes(): Observable<any> {
-        if(this.configuration) {
+        if (this.configuration) {
             const url = this.configuration.repositoryURL;
             const currentUrl = url + '/grouptypes?full';
-            return this.http.get(currentUrl, {headers: this.headers});
+            return this.http.get(currentUrl, { headers: this.headers });
         }
     }
 
     private requestGroups(): Observable<any> {
-        if(this.configuration) {
+        if (this.configuration) {
             const url = this.configuration.repositoryURL + '/' + this.configuration.parentPath + '/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns));
             const currentUrl = url + '/' + this.configuration.id + '/groups';
-            return this.http.get(currentUrl, {headers: this.headers});
+            return this.http.get(currentUrl, { headers: this.headers });
         }
     }
 
-    saveGroups(groups:any): Observable<HttpResponse<string>> {
+    saveGroups(groups: any): Observable<HttpResponse<string>> {
         if (this.configuration) {
             const headers = new HttpHeaders().set('Content-Type', 'application/json');
             const url = this.serviceTemplateURL + '/groups';
-
-            console.log("Saving groups at url " + url);
-            console.log(groups);
 
             return this.http.put(url, groups, {
                 headers: headers, responseType: 'text', observe: 'response'

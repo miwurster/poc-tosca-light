@@ -12,8 +12,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { TNodeTemplate } from './ttopology-template';
-
 /**
  * Encompasses the artifacts data defined by the user when using the modal
  */
@@ -21,14 +19,8 @@ export class GroupsModalData {
 
     constructor(public id?: any,
                 public name?: any,
-                public type?: Array<TNodeTemplate>,
+                public type?: any,
                 public visible?: boolean,
                 public types?: any) {
-        console.log("Setting data of GroupsModalData for new Group to:");
-        console.log(id);
-        console.log(name);
-        console.log(type);
-        console.log(visible);
-        console.log(types);
     }
 }

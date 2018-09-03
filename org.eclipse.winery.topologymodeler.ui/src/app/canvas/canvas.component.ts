@@ -51,8 +51,7 @@ import { SplitMatchTopologyService } from '../services/split-match-topology.serv
 import { DifferenceStates, VersionUtils } from '../models/ToscaDiff';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { DragSource } from '../models/DragSource';
-import { GroupsModalData } from '../models/groupsModalData';
-import {EventEmitter} from '@angular/core';
+import { EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'winery-canvas',
@@ -85,7 +84,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     navbarButtonsState: ButtonsStateModel;
     selectedNodes: Array<TNodeTemplate> = [];
     @Output() changedSelectedNodes = new EventEmitter<Array<TNodeTemplate>>();
-        // current data emitted from a node
+    // current data emitted from a node
     currentModalData: any;
     dragSourceActive = false;
     event;
@@ -284,7 +283,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      *     to show
      */
     public toggleModalHandler(currentNodeData: ToggleModalDataModel) {
-        console.log("toggleModalHandler was called");
+        console.log('toggleModalHandler was called');
         console.log(currentNodeData);
         this.currentModalData = currentNodeData;
         this.modalData.modalVisible = true;
@@ -303,12 +302,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.modalData.modalVariant = ModalVariant.Other;
                 this.modalData.modalTitle = 'Groups';
                 this.modalData.modalVisible = false;
-                console.log("Debug entityTypes");
+                console.log('Debug entityTypes');
                 console.log(this.entityTypes);
 
                 break;
             case toggleModalType.Requirements:
-                console.log("Trying to open requirements modal");
+                console.log('Trying to open requirements modal');
                 this.modalData.modalVariant = ModalVariant.Other;
                 this.modalData.modalVisible = false;
                 this.resetRequirements();
@@ -971,7 +970,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             const splitTopologyButton = this.navbarButtonsState.buttonsState.splitTopologyButton;
             const matchTopologyButton = this.navbarButtonsState.buttonsState.matchTopologyButton;
             const groupNodesButton = this.navbarButtonsState.buttonsState.groupNodesButton;
-            console.log("GroupNodesButton State:");
+            console.log('GroupNodesButton State:');
             console.log(groupNodesButton);
             let selectedNodes;
             if (alignmentButtonLayout) {
@@ -1014,7 +1013,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             }
 
             // Maybe really ugly in the overall code but this works right now..
-            if(groupNodesButton){
+            if (groupNodesButton) {
                 this.openGroupSidebar();
             } else {
                 this.closeGroupSidebar();
@@ -1428,24 +1427,56 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * Hides the Sidebar on the right.
      */
     openGroupSidebar() {
-
-
-
         let groupData = null;
+        let groupTypeData = null;
 
-        console.log("GroupData:");
-        console.log(groupData);
-
-
-        if(this.entityTypes.groups == null) {
+        if (this.entityTypes.groups == null) {
             groupData = new Array();
-            console.log("Groups empty set empty array");
-            console.log(groupData);
         } else {
             groupData = this.entityTypes.groups.group;
         }
 
+        if (this.entityTypes.groupTypes == null) {
+            groupTypeData = new Array();
+        } else {
+            groupTypeData = this.entityTypes.groupTypes;
+        }
 
+        for (const groupIndex in groupData) {
+
+            if (!groupData[groupIndex].properties) {
+
+                if (!groupData[groupIndex].properties) {
+                    groupData[groupIndex].properties = {};
+                }
+
+                if (!groupData[groupIndex].properties.kvproperties) {
+                    groupData[groupIndex].properties.kvproperties = {};
+                }
+
+                const type = groupData[groupIndex].type;
+                for (const groupTypeIndex in groupTypeData) {
+                    if (groupTypeData[groupTypeIndex].qName === type) {
+                        if (groupTypeData[groupTypeIndex].full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList) {
+                            for (const prop in groupTypeData[groupTypeIndex].full
+                                .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList) {
+                                if (prop != null) {
+                                    const item = groupTypeData[groupTypeIndex].full
+                                        .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList[prop];
+                                    if (!groupData[groupIndex].properties.kvproperties[item.key]) {
+                                        groupData[groupIndex].properties.kvproperties[item.key] = item.value;
+                                    }
+                                }
+                            }
+                        } else {
+                            groupData[groupIndex].propeties.any = groupTypeData[groupTypeIndex].full
+                                .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].any;
+                        }
+
+                    }
+                }
+            }
+        }
 
         this.ngRedux.dispatch(this.actions.openGroupSidebar({
             groupSidebarContents: {
@@ -1454,7 +1485,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 id: '',
                 nameTextFieldValue: '',
                 type: '',
-                groups: groupData
+                groups: groupData,
+                groupTypes: groupTypeData,
             }
         }));
     }

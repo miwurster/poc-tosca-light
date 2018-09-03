@@ -60,7 +60,8 @@ import org.w3c.dom.Text;
     TCapability.class,
     TRequirement.class,
     TRelationshipTemplate.class,
-    TNodeTemplate.class
+    TNodeTemplate.class,
+    TGroup.class
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class TEntityTemplate extends HasId implements HasType, HasName {
@@ -250,7 +251,7 @@ public abstract class TEntityTemplate extends HasId implements HasType, HasName 
                     LOGGER.error("Trying to set k/v property on a template which does not follow the k/v scheme.");
                 }
             }
-
+            
             if (isKv) {
                 return properties;
             } else {

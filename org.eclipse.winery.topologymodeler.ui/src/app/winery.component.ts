@@ -13,7 +13,9 @@
  ********************************************************************************/
 
 import { Component, Input, OnInit } from '@angular/core';
-import { EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate, Visuals } from './models/ttopology-template';
+import {
+    EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate, Visuals
+} from './models/ttopology-template';
 import { ILoaded, LoadedService } from './services/loaded.service';
 import { AppReadyEventService } from './services/app-ready-event.service';
 import { BackendService } from './services/backend.service';
@@ -55,9 +57,9 @@ export class WineryComponent implements OnInit {
     entityTypes: EntityTypesModel;
     hideNavBarState: boolean;
     subscriptions: Array<Subscription> = [];
-    selectedNodes : Array<TNodeTemplate>;
+    selectedNodes: Array<TNodeTemplate>;
 
-    groupsModalData : GroupsModalData = new GroupsModalData(null, null, null, true, null);
+    groupsModalData: GroupsModalData = new GroupsModalData(null, null, null, true, null);
     // This variable is set via the topologyModelerData input and decides if the editing functionalities are enabled
     readonly: boolean;
 
@@ -90,7 +92,8 @@ export class WineryComponent implements OnInit {
             if (this.topologyModelerData.configuration.isReadonly) {
                 this.readonly = true;
             }
-            // If data is passed to the topologymodeler directly, rendering is initiated immediately without backend calls
+            // If data is passed to the topologymodeler directly, rendering is initiated immediately without backend
+            // calls
             if (this.topologyModelerData.topologyTemplate) {
                 this.initiateLocalRendering(this.topologyModelerData);
             } else {
@@ -110,13 +113,7 @@ export class WineryComponent implements OnInit {
             this.initiateBackendCalls();
         }
 
-        console.log("Setting groupTypes in modal in winery.component");
-        console.log(this.entityTypes);
-
-
         this.groupsModalData.types = this.entityTypes;
-
-        console.log(this.groupsModalData);
     }
 
     /**
@@ -281,10 +278,6 @@ export class WineryComponent implements OnInit {
 
     initiateBackendCalls(): void {
         this.backendService.allEntities$.subscribe(JSON => {
-
-            console.log("Storing redux state:")
-
-            console.log(JSON)
             // Grouped NodeTypes
             this.initEntityType(JSON[0], 'groupedNodeTypes');
 
@@ -355,7 +348,7 @@ export class WineryComponent implements OnInit {
         this.sidebarDeleteButtonClickEvent = $event;
     }
 
-    sendDataToGroupSideBar(selectedNodes: Array<TNodeTemplate>){
+    sendDataToGroupSideBar(selectedNodes: Array<TNodeTemplate>) {
         this.selectedNodes = selectedNodes;
     }
 

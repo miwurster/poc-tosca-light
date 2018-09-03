@@ -16,9 +16,7 @@ package org.eclipse.winery.repository.rest.resources.servicetemplates;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,17 +34,13 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.compliance.checking.ServiceTemplateCheckingResult;
 import org.eclipse.winery.compliance.checking.ServiceTemplateComplianceRuleRuleChecker;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
-import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
-import org.eclipse.winery.model.tosca.TGroup;
 import org.eclipse.winery.model.tosca.TGroups;
 import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TRequirement;
@@ -73,8 +67,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 public class ServiceTemplateResource extends AbstractComponentInstanceWithReferencesResource implements IHasName {
@@ -144,18 +136,18 @@ public class ServiceTemplateResource extends AbstractComponentInstanceWithRefere
         this.getServiceTemplate().setName(name);
         return RestUtils.persist(this);
     }
-    
+
     @PUT
     @Path("groups")
     public Response setGroups(TGroups groups) {
         this.getServiceTemplate().setGroups(groups);
         return RestUtils.persist(this);
     }
-    
+
     @GET
     @Path("groups")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getGroups(){
+    public Response getGroups() {
         return Response.ok(this.getServiceTemplate().getGroups()).build();
     }
 

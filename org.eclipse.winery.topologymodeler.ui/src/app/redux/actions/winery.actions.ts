@@ -131,16 +131,16 @@ export interface SetPropertyAction extends Action {
 export interface SetGroupAction extends Action {
     groupProperty: {
         group: any
-    }
+    };
 }
 
 export interface CreateGroupAction extends Action {
-    newGroup:{
+    newGroup: {
         id: string,
         name: string,
         groupType: string,
         visible: boolean
-    }
+    };
 }
 
 export interface SetCababilityAction extends Action {
@@ -238,9 +238,8 @@ export class WineryActions {
     static SET_TARGET_LOCATION = 'SET_TARGET_LOCATION';
     static DELETE_POLICY = 'DELETE_POLICY';
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
-    static SET_GROUP = "SET_GROUP"
-
-    static CREATE_GROUP = "CREATE_GROUP"
+    static SET_GROUP = 'SET_GROUP';
+    static CREATE_GROUP = 'CREATE_GROUP';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
