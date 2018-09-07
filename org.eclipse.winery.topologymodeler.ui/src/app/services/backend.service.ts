@@ -20,12 +20,14 @@ import { EntityType, TTopologyTemplate, Visuals } from '../models/ttopology-temp
 import { QNameWithTypeApiData } from '../models/generateArtifactApiData';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { urlElement } from '../models/enums';
+import { ServiceTemplateId } from '../models/serviceTemplateId';
 import { ToscaDiff } from '../models/ToscaDiff';
-import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs/Observable';
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/internal/operators';
 import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
+import { ToastrService } from 'ngx-toastr';
+import { ErrorHandlerService } from './error-handler.service';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -45,7 +47,9 @@ export class BackendService {
     private allEntities = new Subject<any>();
     allEntities$ = this.allEntities.asObservable();
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient,
+                private errorHandler: ErrorHandlerService,
+                private alert: ToastrService) {
         this.endpointConfiguration$.subscribe((params: TopologyModelerConfiguration) => {
             if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
                 isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {
@@ -311,6 +315,23 @@ export class BackendService {
         return this.http.post(url + '/', importedTemplateQName, {
             headers: headers, observe: 'response', responseType: 'text'
         });
+    }
+
+    substituteTopology(): void {
+        this.alert.info('', 'Substitution in progress...');
+        this.http.get<ServiceTemplateId>(this.serviceTemplateURL + '/substitute')
+            .subscribe(res => {
+                    const url = window.location.origin + window.location.pathname + '?repositoryURL=' + this.configuration.repositoryURL
+                        + '&uiURL=' + this.configuration.uiURL
+                        + '&ns=' + res.namespace.encoded
+                        + '&id=' + res.xmlId.encoded
+                        + '&parentPath=' + this.configuration.parentPath
+                        + '&elementPath=' + this.configuration.elementPath;
+                    this.alert.success('automatically opening does not work currently...', 'Substitution successful!');
+                },
+                error => {
+                    this.errorHandler.handleError(error);
+                });
     }
 
     /**

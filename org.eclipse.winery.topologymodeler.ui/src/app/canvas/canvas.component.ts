@@ -84,7 +84,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     // current data emitted from a node
     currentModalData: any;
     dragSourceActive = false;
-    event;
     selectedRelationshipType: EntityType;
     nodeChildrenIdArray: Array<string>;
     nodeChildrenArray: Array<NodeComponent>;
@@ -955,6 +954,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             const importTopologyButton = this.navbarButtonsState.buttonsState.importTopologyButton;
             const splitTopologyButton = this.navbarButtonsState.buttonsState.splitTopologyButton;
             const matchTopologyButton = this.navbarButtonsState.buttonsState.matchTopologyButton;
+            const substitutionButton = this.navbarButtonsState.buttonsState.substituteTopologyButton;
             let selectedNodes;
             if (alignmentButtonLayout) {
                 this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
@@ -984,7 +984,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                         for (const serviceTemplate of allServiceTemplates) {
                             this.importTopologyData.allTopologyTemplates.push(serviceTemplate);
                         }
-                        console.log(this.importTopologyData.allTopologyTemplates);
                     });
                 }
                 this.ngRedux.dispatch(this.topologyRendererActions.importTopology());
@@ -993,7 +992,10 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.splitMatchService.splitTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
             } else if (matchTopologyButton) {
                 this.splitMatchService.matchTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
+            } else if (substitutionButton) {
+                this.backendService.substituteTopology();
             }
+
             setTimeout(() => {
                 this.newJsPlumbInstance.repaintEverything();
                 if (selectedNodes === true) {
