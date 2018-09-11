@@ -28,6 +28,7 @@ import { WineryTableModule } from '../../../wineryTableModule/wineryTable.module
 import { WineryEditXMLModule } from '../../sharedComponents/editXML/editXML.module';
 import { InstanceService } from '../../instance.service';
 import { KeystoreEntityComponent } from './keystoreEntity/keystoreEntity.component';
+import { TabsModule } from 'ngx-bootstrap/tabs';
 
 export const keyManagementRoutes: Routes = [
     { path: 'secretkeys', component: KeystoreEntityComponent },
@@ -50,7 +51,8 @@ export const keyManagementRoutes: Routes = [
         WineryEditXMLModule,
         WineryQNameSelectorModule,
         RouterModule,
-        WineryEditorModule
+        WineryEditorModule,
+        TabsModule.forRoot()
     ],
     exports: [
         RouterModule

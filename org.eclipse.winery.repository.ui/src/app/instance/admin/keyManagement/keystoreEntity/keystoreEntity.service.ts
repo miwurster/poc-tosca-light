@@ -14,10 +14,9 @@
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/index';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { backendBaseURL } from '../../../../configuration';
-import { AddSecretKeyData } from './keystoreEntity.component';
-import { WineryRowData } from '../../../../wineryTableModule/wineryTable.component';
+import { AddKeypairData, AddSecretKeyData } from './keystoreEntity.component';
 
 @Injectable()
 export class KeystoreEntityService {
@@ -29,30 +28,49 @@ export class KeystoreEntityService {
 
     getSecretKeys(): Observable<KeyEntity[]> {
         const keysPath = this.path + '/keys';
-        let params = new HttpParams();
 
-        return this.http.get<KeyEntity[]>(keysPath, { params: params });
+        return this.http.get<KeyEntity[]>(keysPath, {});
     }
 
     getKeyPairs(): Observable<KeyPairEntity[]> {
         const keysPath = this.path + '/keypairs';
-        let params = new HttpParams();
 
-        return this.http.get<KeyPairEntity[]>(keysPath, { params: params });
+        return this.http.get<KeyPairEntity[]>(keysPath, {});
     }
 
     getCertificates(): Observable<CertificateEntity[]> {
         const keysPath = this.path + '/certificates';
-        let params = new HttpParams();
 
-        return this.http.get<CertificateEntity[]>(keysPath, { params: params });
+        return this.http.get<CertificateEntity[]>(keysPath, {});
     }
 
     getSupportedAlgorithms(): Observable<SupportedAlgorithms> {
         const keysPath = this.path + '/algorithms';
-        let params = new HttpParams();
 
-        return this.http.get<SupportedAlgorithms>(keysPath, { params: params });
+        return this.http.get<SupportedAlgorithms>(keysPath, {});
+    }
+
+    getPolicyTemplateNamespace() {
+        const policyTemplateNSPath = this.path + '/namespaces/secpolicytemplate';
+
+        return this.http.get(policyTemplateNSPath, { responseType: 'text' });
+    }
+
+    getSecurityPolicyTemplate(ns: string, alias: string) {
+        const policyTemplateNSPath = backendBaseURL + '/policytemplates/' + ns + '/' + alias;
+
+        return this.http.get(policyTemplateNSPath, {});
+    }
+
+    generateEncryptionPolicy(alias: string) {
+        const policyPath = this.path + '/keys/' + alias + '/encryptionpolicy';
+
+        return this.http.get(policyPath)
+            .map((res: Response) => {
+                console.log(res);
+                return res;
+            })
+            .flatMap((policyBody) => this.http.put(policyPath, policyBody));
     }
 
     addKey(data: AddSecretKeyData) {
@@ -63,6 +81,38 @@ export class KeystoreEntityService {
         formData.append('keySize', data.keySizeInBits);
         if (data.keyFile !== null && data.keyFile !== undefined) {
             formData.append('keystoreFile', data.keyFile, data.keyFile.name);
+        }
+
+        return this.http.post(keysPath, formData);
+    }
+
+    addKeypair(data: AddKeypairData) {
+        const keysPath = this.path + '/keypairs';
+        // TODO build DN string
+        const dn = 'CN=' + data.commonName + ','
+            + 'O=' + data.organizationName + ','
+            + 'C=' + data.countryName;
+
+        const formData: FormData = new FormData();
+        formData.append('algo', data.algorithm);
+        formData.append('keySize', data.keySizeInBits);
+        formData.append('dn', dn);
+        if (data.privateKeyFile  !== null && data.privateKeyFile !== undefined) {
+            formData.append('privateKeyFile', data.privateKeyFile, data.privateKeyFile.name);
+        }
+        if (data.certificateFile  !== null && data.certificateFile !== undefined) {
+            formData.append('certificate', data.certificateFile, data.certificateFile.name);
+        }
+
+        return this.http.post(keysPath, formData);
+    }
+
+    addCertificate(data: File) {
+        const keysPath = this.path + '/certificates';
+
+        const formData: FormData = new FormData();
+        if (data !== null && data !== undefined) {
+            formData.append('certificate', data, data.name);
         }
 
         return this.http.post(keysPath, formData);
@@ -84,21 +134,34 @@ export class KeystoreEntityService {
 
         return this.http.delete(keysPath);
     }
+
+    generateSigningPolicy(alias: string) {
+        const policyPath = this.path + '/keypairs/' + alias + '/signingpolicy';
+
+        return this.http.get(policyPath)
+            .map((res: Response) => {
+                console.log(res);
+                return res;
+            })
+            .flatMap((policyBody) => this.http.put(policyPath, policyBody));
+    }
 }
 
-export interface KeyPairEntity {
+export class KeyPairEntity {
     privateKey: KeyEntity;
     publicKey: KeyEntity;
     certificate: CertificateEntity;
 }
 
-export interface KeyEntity {
+export class KeyEntity {
     alias: string;
     algorithm: string;
+    keyFormat: string;
     keySizeInBits: number;
+    base64Key: string;
 }
 
-export interface CertificateEntity {
+export class CertificateEntity {
     alias: string;
     serialNumber: string;
     sigAlgName: string;
@@ -106,14 +169,15 @@ export interface CertificateEntity {
     subjectDN: string;
     notBefore: string;
     notAfter: string;
+    pem: string;
 }
 
-export interface SupportedAlgorithms {
+export class SupportedAlgorithms {
     symmetric: SupportedAlgorithm[];
     asymmetric: SupportedAlgorithm[];
 }
 
-export interface SupportedAlgorithm {
+export class SupportedAlgorithm {
     name: string;
     keySizeInBits: number;
 }

@@ -314,6 +314,18 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     }
 
     @Override
+    public Certificate storeCertificate(String alias, Certificate c) throws GenericKeystoreManagerException {
+        try {
+            keystore.setCertificateEntry(alias, c);
+            keystore.store(new FileOutputStream(this.keystorePath), KEYSTORE_PASSWORD.toCharArray());
+            return c;
+        } catch (CertificateException | NoSuchAlgorithmException | IOException | KeyStoreException e) {
+            LOGGER.error("Error while storing a certificate", e);
+            throw new GenericKeystoreManagerException("Could not store the provided certificate");
+        }
+    }
+
+    @Override
     public Certificate storeCertificate(String alias, String pemEncodedString) throws GenericKeystoreManagerException {
         try {
             InputStream stream = new ByteArrayInputStream(pemEncodedString.getBytes(StandardCharsets.UTF_8));
@@ -447,18 +459,8 @@ public class JCEKSKeystoreManager implements KeystoreManager {
                 String alias = aliases.nextElement();
                 Certificate cert = this.keystore.getCertificate(alias);
                 if (Objects.nonNull(cert)) {
-                    X509Certificate x = (X509Certificate) cert;
-                    CertificateInformation c = new CertificateInformation.Builder(alias)
-                        .serialNumber(x.getSerialNumber().toString())
-                        .sigAlgName(x.getSigAlgName())
-                        .subjectDN(x.getSubjectX500Principal().getName())
-                        .issuerDN(x.getIssuerX500Principal().getName())
-                        .notBefore(x.getNotBefore())
-                        .notAfter(x.getNotAfter())
-                        .pemEncodedCertificate("")
-                        .build();
-
-                    certificates.add(c);
+                    CertificateInformation ci = buildCertificateInformation(alias, cert);
+                    certificates.add(ci);
                 }
             }
             return certificates;
@@ -466,6 +468,38 @@ public class JCEKSKeystoreManager implements KeystoreManager {
             LOGGER.error("Error retrieving certificates list", e);
             throw new GenericKeystoreManagerException("Error retrieving certificates list");
         }
+    }
+
+    @Override
+    public CertificateInformation getCertificate(String alias) throws GenericKeystoreManagerException {
+        Certificate cert;
+        try {
+            cert = this.keystore.getCertificate(alias);
+            return buildCertificateInformation(alias, cert);
+        } catch (KeyStoreException e) {
+            throw new GenericKeystoreManagerException("Error retrieving certificate with alias, " + alias);
+        }
+    }
+
+    private CertificateInformation buildCertificateInformation(String alias, Certificate cert) throws GenericKeystoreManagerException {
+        if (Objects.nonNull(cert)) {
+            try {
+                X509Certificate x = (X509Certificate) cert;
+                return new CertificateInformation.Builder(alias)
+                    .serialNumber(x.getSerialNumber().toString())
+                    .sigAlgName(x.getSigAlgName())
+                    .subjectDN(x.getSubjectX500Principal().getName())
+                    .issuerDN(x.getIssuerX500Principal().getName())
+                    .notBefore(x.getNotBefore())
+                    .notAfter(x.getNotAfter())
+                    .pemEncodedCertificate(constructPEMCertificate(x))
+                    .build();
+            } catch (GenericKeystoreManagerException e) {
+                e.printStackTrace();
+            }
+        }
+
+        throw new GenericKeystoreManagerException("Error retrieving certificate with alias, " + alias);
     }
 
     @Override

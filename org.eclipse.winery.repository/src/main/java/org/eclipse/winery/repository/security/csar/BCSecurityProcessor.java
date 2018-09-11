@@ -221,7 +221,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
     }
 
     @Override
-    public Certificate[] getX509CertificateChainFromInputStream(InputStream certInputStream) throws GenericSecurityProcessorException {
+    public Certificate[] getX509Certificates(InputStream certInputStream) throws GenericSecurityProcessorException {
         try {
             return createCertificates(certInputStream);
         } catch (Exception e) {
@@ -230,8 +230,9 @@ public class BCSecurityProcessor implements SecurityProcessor {
         }
     }
 
-    private X509Certificate[] createCertificates(InputStream certInputStream) throws Exception {
+    private Certificate[] createCertificates(InputStream certInputStream) throws Exception {
         final CertificateFactory factory = CertificateFactory.getInstance("X.509");
+
         final List<X509Certificate> result = new ArrayList<>();
         final BufferedReader r = new BufferedReader(new InputStreamReader(certInputStream));
 

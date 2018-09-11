@@ -45,6 +45,8 @@ public interface KeystoreManager {
     KeyPairInformation getKeyPairData(String alias) throws GenericKeystoreManagerException;
 
     Collection<CertificateInformation> getCertificates() throws GenericKeystoreManagerException;
+    
+    CertificateInformation getCertificate(String alias) throws GenericKeystoreManagerException;
 
     KeystoreContentsInformation getKeystoreContent() throws GenericKeystoreManagerException;
 
@@ -55,6 +57,8 @@ public interface KeystoreManager {
     KeyPairInformation storeKeyPair(String alias, PrivateKey privateKey, Certificate certificate) throws GenericKeystoreManagerException;
 
     Certificate storeCertificate(String alias, InputStream is) throws GenericKeystoreManagerException;
+
+    Certificate storeCertificate(String alias, Certificate c) throws GenericKeystoreManagerException;
 
     Certificate storeCertificate(String alias, String pemEncodedString) throws GenericKeystoreManagerException;
 

@@ -86,21 +86,30 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
                 if (Objects.nonNull(setMasterKey)) {
                     alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
                 } else {
-                    alias = securityProcessor.calculateDigest(keypair.getPrivate().getEncoded(), DigestAlgorithm.SHA256.name());
+                    alias = securityProcessor.calculateDigest(keypair.getPublic().getEncoded(), DigestAlgorithm.SHA256.name());
                     this.checkAliasInsertEligibility(alias);
                 }
                 Certificate selfSignedCert = this.securityProcessor.generateSelfSignedX509Certificate(keypair, dn);
                 entity = this.keystoreManager.storeKeyPair(alias, keypair.getPrivate(), selfSignedCert);
             } else if (this.parametersAreNonNull(privateKeyInputStream, certificatesInputStream)) {
                 PrivateKey privateKey = this.securityProcessor.getPKCS8PrivateKeyFromInputStream(algorithm, privateKeyInputStream);
-                Certificate[] cert = this.securityProcessor.getX509CertificateChainFromInputStream(certificatesInputStream);
-                if (Objects.nonNull(setMasterKey)) {
-                    alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
+                Certificate[] cert = this.securityProcessor.getX509Certificates(certificatesInputStream);
+                if (Objects.nonNull(cert) && cert.length > 0) {
+                    if (Objects.nonNull(setMasterKey)) {
+                        alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
+                    } else {
+                        alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithm.SHA256.name());
+                        this.checkAliasInsertEligibility(alias);
+                    }
+                    entity = this.keystoreManager.storeKeyPair(alias, privateKey, cert[0]);
                 } else {
-                    alias = securityProcessor.calculateDigest(privateKey.getEncoded(), DigestAlgorithm.SHA256.name());
-                    this.checkAliasInsertEligibility(alias);
+                    throw new WebApplicationException(
+                        Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Provided certificates cannot be processed")
+                            .type(MediaType.TEXT_PLAIN)
+                            .build()
+                    );
                 }
-                entity = this.keystoreManager.storeKeyPair(alias, privateKey, cert[0]);
             } else {
                 throw new WebApplicationException(
                     Response.status(Response.Status.BAD_REQUEST)

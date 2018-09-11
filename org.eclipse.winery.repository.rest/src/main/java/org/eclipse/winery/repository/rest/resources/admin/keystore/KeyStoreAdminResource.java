@@ -26,7 +26,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.admin.KeystoreId;
+import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.admin.AbstractAdminResource;
 import org.eclipse.winery.repository.security.csar.BCSecurityProcessor;
 import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
@@ -112,5 +115,16 @@ public class KeyStoreAdminResource extends AbstractAdminResource {
         result.put("asymmetric", asym);
         
         return Response.ok().entity(result).build();
+    }
+
+    @ApiOperation(value = "Gets the namespace constant for security policy templates")
+    @GET
+    @Path("namespaces/secpolicytemplate")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPolicyTemplateNamespace() {
+        return Response
+            .ok()
+            .entity(Util.DoubleURLencode(Namespaces.URI_OPENTOSCA_SECURE_POLICYTEMPLATE))
+            .build();
     }
 }

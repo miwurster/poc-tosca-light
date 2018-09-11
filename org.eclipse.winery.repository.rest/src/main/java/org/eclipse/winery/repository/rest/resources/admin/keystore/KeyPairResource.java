@@ -15,6 +15,7 @@
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -165,5 +166,21 @@ public class KeyPairResource extends AbstractKeystoreEntityResource {
         }
 
         return Response.ok().build();
+    }
+
+    @ApiOperation(value = "Deletes resource using its alias")
+    @DELETE
+    public Response deleteEntity(@PathParam("alias") String alias) {
+        String preparedAlias = prepareAlias(alias);
+        if (!this.keystoreManager.entityExists(preparedAlias))
+            return Response.status(Response.Status.NOT_FOUND).build();
+        try {
+            this.keystoreManager.deleteKeystoreEntry(preparedAlias);
+        } catch (GenericKeystoreManagerException e) {
+            throw new WebApplicationException(
+                Response.serverError().entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build()
+            );
+        }
+        return Response.noContent().build();
     }
 }

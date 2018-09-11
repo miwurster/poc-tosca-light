@@ -34,6 +34,7 @@ export class KeystoreEntityComponent implements OnInit {
 
     keystoreEntityType: string;
     loading = true;
+    modalLoading = false;
     columns = {
         'secretkeys': [
             { title: 'Alias', name: 'alias' },
@@ -58,19 +59,25 @@ export class KeystoreEntityComponent implements OnInit {
         'keypairs': [],
         'certificates': []
     };
-    @ViewChild('addKeyModal') addKeyModal: ModalDirective;
-    @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
-    @ViewChild('keyInfoModal') keyInfoModal: ModalDirective;
-    @ViewChild('keypairInfoModal') keypairInfoModal: ModalDirective;
-    @ViewChild('certificateInfoModal') certificateInfoModal: ModalDirective;
     selectedCell: WineryRowData = {
         row: "",
         column: ""
     };
+    selectedEntitySecPolicyTemplate: any = undefined;
     supportedAlgorithms: Array<SelectData> = [];
+    secPolicyTemplateNameSpace: string;
     supportedAlgorithmsKeySizesMap: { [key: string]: SelectData[] } = {};
     addKeyData: AddSecretKeyData = new AddSecretKeyData;
-    Object = Object;
+    addKeypairData: AddKeypairData = new AddKeypairData;
+    addCertificateData: File = undefined;
+
+    @ViewChild('addKeyModal') addKeyModal: ModalDirective;
+    @ViewChild('addKeypairModal') addKeypairModal: ModalDirective;
+    @ViewChild('addCertificateModal') addCertificateModal: ModalDirective;
+    @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
+    @ViewChild('keyInfoModal') keyInfoModal: ModalDirective;
+    @ViewChild('keypairInfoModal') keypairInfoModal: ModalDirective;
+    @ViewChild('certificateInfoModal') certificateInfoModal: ModalDirective;
 
     constructor(private service: KeystoreEntityService,
                 private notify: WineryNotificationService,
@@ -84,6 +91,10 @@ export class KeystoreEntityComponent implements OnInit {
         this.loading = true;
         this.service.getSupportedAlgorithms().subscribe(
             data => this.handleAlgorithmData(data),
+            error => this.handleError(error)
+        );
+        this.service.getPolicyTemplateNamespace().subscribe(
+            data => this.secPolicyTemplateNameSpace = data,
             error => this.handleError(error)
         );
         switch (this.keystoreEntityType) {
@@ -124,6 +135,7 @@ export class KeystoreEntityComponent implements OnInit {
 
     private handleError(error: HttpErrorResponse) {
         this.loading = false;
+        this.modalLoading = false;
         this.notify.error(error.message);
     }
 
@@ -137,6 +149,12 @@ export class KeystoreEntityComponent implements OnInit {
             case 'secretkeys':
                 this.addKeyModal.show();
                 break;
+            case 'keypairs':
+                this.addKeypairModal.show();
+                break;
+            case 'certificates':
+                this.addCertificateModal.show();
+                break;
         }
     }
 
@@ -145,16 +163,28 @@ export class KeystoreEntityComponent implements OnInit {
     }
 
     onInfoClick() {
-        switch (this.keystoreEntityType) {
-            case 'secretkeys':
-                this.keyInfoModal.show();
-                break;
-            case 'keypairs':
-                this.keypairInfoModal.show();
-                break;
-            case 'certificates':
-                this.certificateInfoModal.show();
-                break;
+        if (this.selectedCell) {
+            this.modalLoading = true;
+            this.service.getSecurityPolicyTemplate(this.secPolicyTemplateNameSpace, this.selectedCell.row.alias).subscribe(
+                policyTemplate => this.handlePolicyTemplateData(policyTemplate),
+                error => {
+                    this.modalLoading = false;
+                    if (error.status !== 404) {
+                        this.handleError(error);
+                    }
+                }
+            );
+            switch (this.keystoreEntityType) {
+                case 'secretkeys':
+                    this.keyInfoModal.show();
+                    break;
+                case 'keypairs':
+                    this.keypairInfoModal.show();
+                    break;
+                case 'certificates':
+                    this.certificateInfoModal.show();
+                    break;
+            }
         }
     }
 
@@ -167,6 +197,16 @@ export class KeystoreEntityComponent implements OnInit {
     addKey() {
         this.loading = true;
         this.service.addKey(this.addKeyData).subscribe(
+            data => {
+                this.handleSave();
+            },
+            error => this.handleError(error)
+        );
+    }
+
+    addKeypair() {
+        this.loading = true;
+        this.service.addKeypair(this.addKeypairData).subscribe(
             data => {
                 this.handleSave();
             },
@@ -219,11 +259,25 @@ export class KeystoreEntityComponent implements OnInit {
     }
 
     targetAlgorithmSelected(targetObj: SelectItem) {
-        this.addKeyData.algorithm = targetObj.id;
+        switch (this.keystoreEntityType) {
+            case 'secretkeys':
+                this.addKeyData.algorithm = targetObj.id;
+                break;
+            case 'keypairs':
+                this.addKeypairData.algorithm = targetObj.id;
+                break;
+        }
     }
 
     targetKeySizeSelected(targetObj: SelectItem) {
-        this.addKeyData.keySizeInBits = targetObj.id;
+        switch (this.keystoreEntityType) {
+            case 'secretkeys':
+                this.addKeyData.algorithm = targetObj.id;
+                break;
+            case 'keypairs':
+                this.addKeypairData.keySizeInBits = targetObj.id;
+                break;
+        }
     }
 
     keySelected(event: any) {
@@ -236,6 +290,36 @@ export class KeystoreEntityComponent implements OnInit {
         }
     }
 
+    keypairSelected(event: any) {
+        const files = event.target.files;
+
+        if (files.length > 0) {
+            this.addKeypairData.privateKeyFile = files[0];
+        } else {
+            this.addKeypairData.privateKeyFile = undefined;
+        }
+    }
+
+    certificateSelected(event: any) {
+        const files = event.target.files;
+        switch (this.keystoreEntityType) {
+            case 'keypairs':
+                if (files.length > 0) {
+                    this.addKeypairData.privateKeyFile = files[0];
+                } else {
+                    this.addKeypairData.privateKeyFile = undefined;
+                }
+                break;
+            case 'certificates':
+                if (files.length > 0) {
+                    this.addCertificateData = files[0];
+                } else {
+                    this.addCertificateData = undefined;
+                }
+                break;
+        }
+    }
+
     deleteEntity() {
         this.confirmDeleteModal.hide();
         this.service.removeEntity(this.keystoreEntityType, this.selectedCell.row.alias).subscribe(
@@ -243,6 +327,76 @@ export class KeystoreEntityComponent implements OnInit {
             error => this.handleError(error)
         );
         this.selectedCell = null;
+    }
+
+    private handlePolicyTemplateData(policyTemplate: Object) {
+        this.modalLoading = false;
+        if (policyTemplate) {
+            this.selectedEntitySecPolicyTemplate = policyTemplate;
+        } else {
+            this.selectedEntitySecPolicyTemplate = null;
+        }
+    }
+
+    generateEncryptionPolicy() {
+        this.modalLoading = true;
+        this.service.generateEncryptionPolicy(this.selectedCell.row.alias).subscribe(
+            data => {
+                this.modalLoading = false;
+                this.service.getSecurityPolicyTemplate(this.secPolicyTemplateNameSpace, this.selectedCell.row.alias).subscribe(
+                    data => this.handlePolicyTemplateData(data),
+                    error => {
+                        if (error.status !== 404) {
+                            this.handleError(error);
+                        }
+                    }
+                );
+            },
+            error => this.handleError(error)
+        );
+    }
+
+    closeInfoModal() {
+        this.selectedCell = null;
+        this.selectedEntitySecPolicyTemplate = null;
+        this.modalLoading = false;
+        switch (this.keystoreEntityType) {
+            case 'secretkeys':
+                this.keyInfoModal.hide();
+                break;
+            case 'keypairs':
+                this.keypairInfoModal.hide();
+                break;
+        }
+
+    }
+
+    generateSigningPolicy() {
+        this.modalLoading = true;
+        this.service.generateSigningPolicy(this.selectedCell.row.alias).subscribe(
+            data => {
+                this.modalLoading = false;
+                this.service.getSecurityPolicyTemplate(this.secPolicyTemplateNameSpace, this.selectedCell.row.alias).subscribe(
+                    data => this.handlePolicyTemplateData(data),
+                    error => {
+                        if (error.status !== 404) {
+                            this.handleError(error);
+                        }
+                    }
+                );
+            },
+            error => this.handleError(error)
+        );
+    }
+
+    addCertificate() {
+        this.loading = true;
+        this.service.addCertificate(this.addCertificateData).subscribe(
+            data => {
+                this.handleSave();
+            },
+            error => this.handleError(error)
+        );
     }
 }
 
@@ -272,6 +426,24 @@ export class AddSecretKeyData {
     algorithm: string;
     keySizeInBits: string;
     keyFile: File;
+
+    constructor() {
+        this.algorithm = null;
+        this.keySizeInBits = null;
+    }
+}
+
+export class AddKeypairData {
+    algorithm: string;
+    keySizeInBits: string;
+    commonName: string;
+    localityName: string;
+    stateOrProvinceName: string;
+    organizationalUnitName: string;
+    organizationName: string;
+    countryName: string;
+    privateKeyFile: File;
+    certificateFile: File;
 
     constructor() {
         this.algorithm = null;

@@ -15,7 +15,9 @@
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
 import java.io.InputStream;
+import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Objects;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -32,6 +34,7 @@ import org.eclipse.winery.repository.security.csar.SecurityProcessor;
 import org.eclipse.winery.repository.security.csar.datatypes.CertificateInformation;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
 
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -57,13 +60,24 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadExistingCertificate(@FormDataParam("alias") String alias,
-                                              @FormDataParam("certificate") InputStream certificate) {
+    public Response uploadExistingCertificate(@FormDataParam("certificate") InputStream certificate) {
         try {
-            this.keystoreManager.storeCertificate(alias, certificate);
-            return Response.ok().build();
-            
-        } catch (GenericKeystoreManagerException e) {
+            Certificate[] cert = this.securityProcessor.getX509Certificates(certificate);
+            if (Objects.nonNull(cert) && cert.length > 0) {
+                String alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithm.SHA256.name());
+                this.checkAliasInsertEligibility(alias);
+
+                this.keystoreManager.storeCertificate(alias, cert[0]);
+                return Response.ok().build();
+            } else {
+                throw new WebApplicationException(
+                    Response.serverError()
+                        .entity("No certificate was supplied")
+                        .type(MediaType.TEXT_PLAIN)
+                        .build()
+                );
+            }
+        } catch (GenericKeystoreManagerException | GenericSecurityProcessorException e) {
             throw new WebApplicationException(
                 Response.serverError()
                     .entity(e.getMessage())
@@ -73,11 +87,9 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
         }
     }
 
-    @GET
     @Path("{alias}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCertificateInfo(@PathParam("alias") String alias) {
-        // TODO
-        return Response.noContent().build();
+    public CertificateResource getCertificateInfo(@PathParam("alias") String alias) {
+        return new CertificateResource(keystoreManager, securityProcessor);
     }
 }
