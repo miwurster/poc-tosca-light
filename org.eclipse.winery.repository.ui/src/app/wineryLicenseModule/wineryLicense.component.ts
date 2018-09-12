@@ -11,13 +11,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import {Component, OnInit} from '@angular/core';
-import {WineryLicenseService} from './wineryLicense.service';
-import {WineryNotificationService} from '../wineryNotificationModule/wineryNotification.service';
-import {InstanceService} from '../instance/instance.service';
-import {ToscaTypes} from '../wineryInterfaces/enums';
-import {LicenseEnum, WineryLicense} from './wineryLicense.enum';
+import { Component, OnInit } from '@angular/core';
+import { WineryLicenseService } from './wineryLicense.service';
+import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
+import { InstanceService } from '../instance/instance.service';
+import { ToscaTypes } from '../model/enums';
 import { HttpErrorResponse } from '@angular/common/http';
+import { catchError, map } from 'rxjs/internal/operators';
+import { forkJoin, throwError } from 'rxjs/index';
+import { Observable } from 'rxjs/Rx';
 
 @Component({
     templateUrl: 'wineryLicense.component.html',
@@ -40,29 +42,46 @@ export class WineryLicenseComponent implements OnInit {
 
     constructor(private service: WineryLicenseService, private notify: WineryNotificationService, public sharedData: InstanceService) {
         this.toscaType = this.sharedData.toscaComponent.toscaType;
-        this.options = Object.keys(LicenseEnum).map(key => LicenseEnum[key]);
+        this.options = this.service.getLicenseNames();
     }
 
     ngOnInit() {
-        this.service.getData().subscribe(
-            data => {
-                this.licenseText = data;
-                this.intialLicenseText = data;
-            },
-            error => this.handleMissingLicense()
-        );
+        const observables =
+            [
+                this.service.getData()
+                    .pipe(
+                        map(
+                            data => {
+                                this.licenseText = data;
+                                this.intialLicenseText = data;
+                            }),
+                        catchError((e) => {
+                            this.handleMissingLicense();
+                            return Observable.of(null);
+                        })
+                    ),
+                this.service.loadLicenses()
+                    .pipe(
+                        catchError(e => {
+                            this.handleError(e);
+                            return Observable.of(null);
+                        })
+                    )
+            ];
+
+        forkJoin(observables).subscribe();
     }
 
     saveLicenseFile() {
         this.service.save(this.licenseText).subscribe(
-            data => this.handleSave(),
+            () => this.handleSave(),
             error => this.handleError(error)
         );
     }
 
     dropdownAction(item: string) {
         this.licenseType = item;
-        this.licenseText = WineryLicense.getLicense(this.licenseType);
+        this.licenseText = this.service.getLicenseText(item);
     }
 
     cancelEdit() {

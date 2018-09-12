@@ -13,13 +13,42 @@
  ********************************************************************************/
 package org.eclipse.winery.repository.rest;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.header.ContentDisposition;
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataBodyPart;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URI;
+import java.nio.file.attribute.FileTime;
+import java.security.AccessControlException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status.Family;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
+
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.constants.MimeTypes;
@@ -33,23 +62,35 @@ import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.ids.elements.ToscaElementId;
 import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
-import org.eclipse.winery.model.selfservice.Application;
-import org.eclipse.winery.model.tosca.*;
+import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.HasType;
+import org.eclipse.winery.model.tosca.TConstraint;
+import org.eclipse.winery.model.tosca.TEntityTemplate;
+import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.Constants;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.IRepository;
+import org.eclipse.winery.repository.backend.NamespaceManager;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.xsd.NamespaceAndDefinedLocalNames;
 import org.eclipse.winery.repository.configuration.Environment;
+import org.eclipse.winery.repository.export.CsarExportOptions;
 import org.eclipse.winery.repository.export.CsarExporter;
 import org.eclipse.winery.repository.export.ToscaExportUtil;
 import org.eclipse.winery.repository.rest.datatypes.LocalNameForAngular;
 import org.eclipse.winery.repository.rest.datatypes.NamespaceAndDefinedLocalNamesForAngular;
-import org.eclipse.winery.repository.rest.resources._support.*;
+import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResource;
+import org.eclipse.winery.repository.rest.resources._support.AbstractComponentsResource;
+import org.eclipse.winery.repository.rest.resources._support.IHasName;
+import org.eclipse.winery.repository.rest.resources._support.IPersistable;
+import org.eclipse.winery.repository.rest.resources._support.ResourceResult;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameApiData;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameWithTypeApiData;
 import org.eclipse.winery.repository.rest.resources.apiData.converter.QNameConverter;
@@ -64,25 +105,16 @@ import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformatio
 import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
 import org.eclipse.winery.yaml.common.exception.MultiException;
 import org.eclipse.winery.yaml.converter.Converter;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.Status.Family;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.URI;
-import java.nio.file.attribute.FileTime;
-import java.security.AccessControlException;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.core.header.ContentDisposition;
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataBodyPart;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Contains utility functionality concerning with everything that is <em>not</em> related only to the repository, but
@@ -91,7 +123,7 @@ import java.util.stream.Collectors;
  */
 public class RestUtils {
 
-    private static final XLogger LOGGER = XLoggerFactory.getXLogger(RestUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestUtils.class);
 
     // RegExp inspired by http://stackoverflow.com/a/5396246/873282
     // NameStartChar without ":"
@@ -167,7 +199,7 @@ public class RestUtils {
             Map<String, Object> conf = new HashMap<>();
             conf.put(ToscaExportUtil.ExportProperties.REPOSITORY_URI.toString(), uri);
             try {
-                exporter.exportTOSCA(RepositoryFactory.getRepository(), resource.getId(), output, conf);
+                exporter.writeTOSCA(RepositoryFactory.getRepository(), resource.getId(), conf, output);
             } catch (Exception e) {
                 throw new WebApplicationException(e);
             }
@@ -183,26 +215,48 @@ public class RestUtils {
          * sb.append(resource.getNamespace().getEncoded()); sb.append(".xml");
          * sb.append("\""); return Response.ok().header("Content-Disposition",
          * sb
-         * .toString()).type(MediaType.APPLICATION_XML_TYPE).entity(so).build();
+         * .toString()).type(MediaType.APPLICATION_XML_TYPE).entity(so).buildProvenanceSmartContract();
          */
         return Response.ok().type(MediaType.APPLICATION_XML).entity(so).build();
     }
 
-    public static Response getCSARofSelectedResource(final AbstractComponentInstanceResource resource, Map<String, Object> exportConfigurations) {
+    /**
+     * @param options the set of options that are applicable for exporting a csar
+     */
+    public static Response getCsarOfSelectedResource(final AbstractComponentInstanceResource resource, CsarExportOptions options) {
+        LocalDateTime start = LocalDateTime.now();
         final CsarExporter exporter = new CsarExporter();
+        Map<String, Object> exportConfiguration = new HashMap<>();
+
         StreamingOutput so = output -> {
             try {
-                exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfigurations);
+                // check which options are chosen
+                if (options.isAddToProvenance()) {
+                    // We wait for the accountability layer to confirm the transaction
+                    String result = exporter.writeCsarAndSaveManifestInProvenanceLayer(RepositoryFactory.getRepository(), resource.getId(), output)
+                        .get();
+                    LOGGER.debug("Stored state in accountability layer in transaction " + result);
+                    LOGGER.debug("CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+                } else if (options.isSecure()) {
+                    // TODO handle secure flag
+                } else {
+                    exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
+                    LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+                }
             } catch (Exception e) {
+                LOGGER.error("Error while exporting CSAR", e);
                 throw new WebApplicationException(e);
             }
         };
-        StringBuilder sb = new StringBuilder();
-        sb.append("attachment;filename=\"");
-        sb.append(resource.getXmlId().getEncoded());
-        sb.append(org.eclipse.winery.repository.Constants.SUFFIX_CSAR);
-        sb.append("\"");
-        return Response.ok().header("Content-Disposition", sb.toString()).type(MimeTypes.MIMETYPE_ZIP).entity(so).build();
+        String contentDisposition = String.format("attachment;filename=\"%s%s\"",
+            resource.getXmlId().getEncoded(),
+            Constants.SUFFIX_CSAR);
+
+        return Response.ok()
+            .header("Content-Disposition", contentDisposition)
+            .type(MimeTypes.MIMETYPE_ZIP)
+            .entity(so)
+            .build();
     }
 
     public static Response getYamlOfSelectedResource(DefinitionsChildId id) {
@@ -326,6 +380,8 @@ public class RestUtils {
             location = "servicetemplates";
         } else if (type.contains("ComplianceRule")) {
             location = "compliancerules";
+        } else if (type.contains("PatternRefinementModel")) {
+            location = "patternrefinementmodels";
         } else {
             if (type.contains("TypeImplementation")) {
                 location = "entitytypeimplementations";
@@ -604,6 +660,8 @@ public class RestUtils {
 
     public static Response.ResponseBuilder persistWithResponseBuilder(IPersistable res) {
         try {
+            NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
+            namespaceManager.addPermanentNamespace(res.getDefinitions().getTargetNamespace());
             BackendUtils.persist(res.getDefinitions(), res.getRepositoryFileReference(), MediaTypes.MEDIATYPE_TOSCA_DEFINITIONS);
         } catch (IOException e) {
             LOGGER.debug("Could not persist resource", e);
@@ -833,6 +891,7 @@ public class RestUtils {
         // set filename
         ContentDisposition contentDisposition = ContentDisposition.type("attachment").fileName(ref.getFileName()).modificationDate(new Date(lastModified.toMillis())).build();
         res.header("Content-Disposition", contentDisposition);
+        res.header("Cache-Control", "max-age=0");
         return res;
     }
 

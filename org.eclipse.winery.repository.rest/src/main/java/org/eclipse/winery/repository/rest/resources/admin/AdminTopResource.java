@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2013 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyChecker;
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyCheckerConfiguration;
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyCheckerVerbosity;
-import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyErrorLogger;
+import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyErrorCollector;
 import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.configuration.GitHubConfiguration;
 import org.eclipse.winery.repository.rest.resources.admin.keypermissions.AccessControlListAdminResource;
@@ -91,11 +91,13 @@ public class AdminTopResource {
     @GET
     @Path("consistencycheck")
     @Produces(MediaType.APPLICATION_JSON)
-    public ConsistencyErrorLogger checkConsistency(@QueryParam("serviceTemplatesOnly") boolean serviceTemplatesOnly, @QueryParam("checkDocumentation") boolean checkDocumentation) {
+    public ConsistencyErrorCollector checkConsistency(@QueryParam("serviceTemplatesOnly") boolean serviceTemplatesOnly, @QueryParam("checkDocumentation") boolean checkDocumentation) {
         IRepository repo = RepositoryFactory.getRepository();
         EnumSet<ConsistencyCheckerVerbosity> verbosity = EnumSet.of(ConsistencyCheckerVerbosity.NONE);
         ConsistencyCheckerConfiguration config = new ConsistencyCheckerConfiguration(serviceTemplatesOnly, checkDocumentation, verbosity, repo);
-        return ConsistencyChecker.checkCorruption(config);
+        final ConsistencyChecker consistencyChecker = new ConsistencyChecker(config);
+        consistencyChecker.checkCorruption();
+        return consistencyChecker.getErrorCollector();
     }
 
     @POST

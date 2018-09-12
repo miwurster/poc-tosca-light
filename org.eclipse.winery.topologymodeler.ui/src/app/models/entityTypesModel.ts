@@ -12,21 +12,31 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Visuals } from './ttopology-template';
+import { Entity, EntityType, TTopologyTemplate, VisualEntityType, Visuals } from './ttopology-template';
+import { TopologyModelerConfiguration } from './topologyModelerConfiguration';
 
 /**
  * Internal representation of entity Types
  */
-export interface EntityTypesModel {
+export class EntityTypesModel {
     artifactTemplates: any;
-    artifactTypes: any;
-    capabilityTypes: any;
+    artifactTypes: EntityType[];
+    capabilityTypes: EntityType[];
     groupedNodeTypes: any;
     nodeVisuals: Visuals[];
-    policyTemplates: any;
-    policyTypes: any;
-    relationshipTypes: any;
-    requirementTypes: any;
+    relationshipVisuals: Visuals[];
+    policyTemplates: Entity[];
+    policyTypes: EntityType[];
+    relationshipTypes: VisualEntityType[];
+    requirementTypes: EntityType[];
     unGroupedNodeTypes: any;
-    deploymentArtifacts: any;
+}
+
+/**
+ * How data passed to the TopologyModeler has to look
+ */
+export interface TopologyModelerInputDataFormat {
+    configuration: TopologyModelerConfiguration;
+    topologyTemplate: TTopologyTemplate;
+    visuals: Visuals[];
 }

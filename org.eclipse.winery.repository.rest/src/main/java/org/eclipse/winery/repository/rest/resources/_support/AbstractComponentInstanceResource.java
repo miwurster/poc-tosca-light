@@ -16,8 +16,6 @@ package org.eclipse.winery.repository.rest.resources._support;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -64,7 +62,7 @@ import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.configuration.Environment;
-import org.eclipse.winery.repository.export.ToscaExportUtil;
+import org.eclipse.winery.repository.export.CsarExportOptions;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.apiData.NewVersionApiData;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameWithTypeApiData;
@@ -133,8 +131,10 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         // the data file might not exist
         this.ref = BackendUtils.getRefOfDefinitions(id);
         if (RepositoryFactory.getRepository().exists(this.ref)) {
+            LOGGER.debug("data file exists");
             this.load();
         } else {
+            LOGGER.debug("Data file does not exist. Creating a new one.");
             this.createNew();
         }
     }
@@ -238,14 +238,15 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
 
     @GET
     @Produces(MimeTypes.MIMETYPE_ZIP)
-    public final Response getCSAR(@QueryParam(value = "secure") String secure) {
+    public final Response getCSAR(@QueryParam(value = "addToProvenance") String addToProvenance,
+                                  @QueryParam(value = "secure") String secure) {
         if (!RepositoryFactory.getRepository().exists(this.id)) {
             return Response.status(Status.NOT_FOUND).build();
         }
-        Map<String, Object> exportConfigurations = new HashMap<>();
-        exportConfigurations.put(ToscaExportUtil.ExportProperties.APPLY_SECURITY_POLICIES.name(), Objects.nonNull(secure));
-
-        return RestUtils.getCSARofSelectedResource(this, exportConfigurations);
+        CsarExportOptions options = new CsarExportOptions();
+        options.setAddToProvenance(Objects.nonNull(addToProvenance));
+        options.setSecure(Objects.nonNull(secure));
+        return RestUtils.getCsarOfSelectedResource(this, options);
     }
 
     /**
@@ -259,6 +260,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
     public Response getDefinitionsAsResponse(
         @QueryParam(value = "csar") String csar,
         @QueryParam(value = "yaml") String yaml,
+        @QueryParam(value = "addToProvenance") String addToProvenance,
         @QueryParam(value = "secure") String secure,
         @Context UriInfo uriInfo
     ) {
@@ -278,10 +280,11 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
             // we cannot use this.definitions as that definitions is Winery's internal representation of the data and not the full blown definitions (including imports to referenced elements)
             return RestUtils.getDefinitionsOfSelectedResource(this, uriInfo.getBaseUri());
         } else {
-            Map<String, Object> exportConfigurations = new HashMap<>();
-            exportConfigurations.put(ToscaExportUtil.ExportProperties.APPLY_SECURITY_POLICIES.name(), Objects.nonNull(secure));
+            CsarExportOptions options = new CsarExportOptions();
+            options.setAddToProvenance(Objects.nonNull(addToProvenance));
+            options.setSecure(Objects.nonNull(secure));
 
-            return RestUtils.getCSARofSelectedResource(this, exportConfigurations);
+            return RestUtils.getCsarOfSelectedResource(this, options);
         }
     }
 
@@ -290,6 +293,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
     public Response redirectToAngularUi(
         @QueryParam(value = "csar") String csar,
         @QueryParam(value = "yaml") String yaml,
+        @QueryParam(value = "addToProvenance") String addToProvenance,
         @QueryParam(value = "secure") String secure,
         @QueryParam(value = "xml") String xml,
         @Context UriInfo uriInfo) {
@@ -297,7 +301,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         // thus, there is the hack with ?csar and ?yaml
         // the hack is implemented at getDefinitionsAsResponse
         if ((csar != null) || (yaml != null) || (xml != null)) {
-            return this.getDefinitionsAsResponse(csar, yaml, secure, uriInfo);
+            return this.getDefinitionsAsResponse(csar, yaml, addToProvenance, secure, uriInfo);
         }
         String repositoryUiUrl = Environment.getUrlConfiguration().getRepositoryUiUrl();
         String uiUrl = uriInfo.getAbsolutePath().toString().replaceAll(Environment.getUrlConfiguration().getRepositoryApiUrl(), repositoryUiUrl);
@@ -468,7 +472,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         // we allow changing the target namespace and the id
         // This allows for inserting arbitrary definitions XML
         //		if (!this.definitions.getTargetNamespace().equals(this.id.getNamespace().getDecoded())) {
-        //			return Response.status(Status.BAD_REQUEST).entity("Changing of the namespace is not supported").build();
+        //			return Response.status(Status.BAD_REQUEST).entity("Changing of the namespace is not supported").buildProvenanceSmartContract();
         //		}
         //		this.definitions.setTargetNamespace(this.id.getNamespace().getDecoded());
 

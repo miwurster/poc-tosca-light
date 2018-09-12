@@ -12,13 +12,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 import { Injectable } from '@angular/core';
-import { Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
 import { backendBaseURL } from '../configuration';
-import { WineryInstance, WineryTopologyTemplate } from '../wineryInterfaces/wineryComponent';
-import { ToscaComponent } from '../wineryInterfaces/toscaComponent';
-import { ToscaTypes } from '../wineryInterfaces/enums';
-import { WineryVersion } from '../wineryInterfaces/wineryVersion';
+import { WineryInstance, WineryTopologyTemplate } from '../model/wineryComponent';
+import { ToscaComponent } from '../model/toscaComponent';
+import { ToscaTypes } from '../model/enums';
+import { WineryVersion } from '../model/wineryVersion';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 
 @Injectable()
@@ -53,8 +52,8 @@ export class InstanceService {
                     'Boundary Definitions', 'Tags', 'Constraint Checking', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.RelationshipType:
-                subMenu = ['README', 'LICENSE', 'Visual Appearance', 'Instance States', 'Source Interfaces', 'Target Interfaces',
-                    'Valid Sources and Targets', 'Implementations', 'Properties Definition',
+                subMenu = ['README', 'LICENSE', 'Visual Appearance', 'Instance States', 'Source Interfaces', 'Interfaces',
+                    'Target Interfaces', 'Valid Sources and Targets', 'Implementations', 'Properties Definition',
                     'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.ArtifactType:
@@ -87,8 +86,11 @@ export class InstanceService {
             case ToscaTypes.ComplianceRule:
                 subMenu = ['README', 'LICENSE', 'Identifier', 'Required Structure', 'Tags', 'Documentation', 'XML'];
                 break;
+            case ToscaTypes.PatternRefinementModel:
+                subMenu = ['README', 'LICENSE', 'Detector', 'Refinement Structure', 'Relation Mappings', 'XML'];
+                break;
             default: // assume Admin
-                subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Constraint Types', 'Consistency Check', 'Log', 'Key Management'];
+                subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Constraint Types', 'Consistency Check', 'Accountability', 'Log', 'Key Management'];
         }
 
         return subMenu;

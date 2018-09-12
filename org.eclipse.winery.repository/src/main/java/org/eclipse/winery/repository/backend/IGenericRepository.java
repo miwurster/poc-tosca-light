@@ -44,6 +44,7 @@ import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.HasInheritanceId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
+import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.PolicyTemplateId;
 import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
@@ -216,8 +217,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
     <T extends DefinitionsChildId> SortedSet<T> getAllDefinitionsChildIds(Class<T> idClass);
 
     /**
-     * Returns all stable components available of the given id type.
-     * Components without a version are also included.
+     * Returns all stable components available of the given id type. Components without a version are also included.
      *
      * @param idClass class of the Ids to search for
      * @return empty set if no ids are available
@@ -241,8 +241,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
      * <p>
      * The generated Ids are linked as child to the id associated to the given reference
      * <p>
-     * Required for
-     * - getting plans nested in a service template: plans are nested below the PlansOfOneServiceTemplateId
+     * Required for - getting plans nested in a service template: plans are nested below the PlansOfOneServiceTemplateId
      * - exporting service templates
      *
      * @param ref     a reference to the TOSCA element to be checked. The path belonging to this element is checked.
@@ -290,20 +289,20 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                 boolean referencesGivenQName = false;
 
                 if (element instanceof HasType) {
-                    referencesGivenQName = ((HasType) element).getTypeAsQName().equals(qNameOfTheType);
+                    referencesGivenQName = qNameOfTheType.equals(((HasType) element).getTypeAsQName());
                 }
 
                 if (!referencesGivenQName && element instanceof HasInheritance) {
                     HasType derivedFrom = ((HasInheritance) element).getDerivedFrom();
-                    referencesGivenQName = Objects.nonNull(derivedFrom) && derivedFrom.equals(qNameOfTheType);
+                    referencesGivenQName = Objects.nonNull(derivedFrom) && qNameOfTheType.equals(derivedFrom);
                 }
 
                 if (!referencesGivenQName && element instanceof TRelationshipType) {
                     TRelationshipType.ValidTarget validTarget = ((TRelationshipType) element).getValidTarget();
                     TRelationshipType.ValidSource validSource = ((TRelationshipType) element).getValidSource();
 
-                    referencesGivenQName = Objects.nonNull(validTarget) && validTarget.getTypeRef().equals(qNameOfTheType);
-                    referencesGivenQName = !referencesGivenQName && Objects.nonNull(validSource) && validSource.getTypeRef().equals(qNameOfTheType);
+                    referencesGivenQName = Objects.nonNull(validTarget) && qNameOfTheType.equals(validTarget.getTypeRef());
+                    referencesGivenQName = !referencesGivenQName && Objects.nonNull(validSource) && qNameOfTheType.equals(validSource.getTypeRef());
                 }
 
                 if (!referencesGivenQName && element instanceof TEntityTypeImplementation) {
@@ -312,8 +311,9 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                         implementationArtifacts.getImplementationArtifact()
                             .stream()
                             .anyMatch(implementationArtifact ->
-                                implementationArtifact.getArtifactRef().equals(qNameOfTheType) ||
-                                    implementationArtifact.getArtifactType().equals(qNameOfTheType));
+                                qNameOfTheType.equals(implementationArtifact.getArtifactType()) ||
+                                    qNameOfTheType.equals(implementationArtifact.getArtifactRef())
+                            );
 
                     if (!referencesGivenQName && element instanceof TNodeTypeImplementation) {
                         TDeploymentArtifacts deploymentArtifacts = ((TNodeTypeImplementation) element).getDeploymentArtifacts();
@@ -321,8 +321,9 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                             deploymentArtifacts.getDeploymentArtifact()
                                 .stream()
                                 .anyMatch(tDeploymentArtifact ->
-                                    tDeploymentArtifact.getArtifactRef().equals(qNameOfTheType) ||
-                                        tDeploymentArtifact.getArtifactType().equals(qNameOfTheType));
+                                    qNameOfTheType.equals(tDeploymentArtifact.getArtifactType()) ||
+                                        qNameOfTheType.equals(tDeploymentArtifact.getArtifactRef())
+                                );
                     }
                 }
 
@@ -330,7 +331,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                     TAppliesTo appliesTo = ((TPolicyType) element).getAppliesTo();
                     referencesGivenQName = Objects.nonNull(appliesTo) && appliesTo.getNodeTypeReference()
                         .stream()
-                        .anyMatch(nodeTypeReference -> nodeTypeReference.getTypeRef().equals(qNameOfTheType));
+                        .anyMatch(nodeTypeReference -> qNameOfTheType.equals(nodeTypeReference.getTypeRef()));
                 }
 
                 if (!referencesGivenQName && element instanceof TNodeType) {
@@ -338,7 +339,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                     referencesGivenQName = Objects.nonNull(requirementDefinitions) &&
                         requirementDefinitions.getRequirementDefinition()
                             .stream()
-                            .anyMatch(tRequirementDefinition -> tRequirementDefinition.getRequirementType().equals(qNameOfTheType));
+                            .anyMatch(tRequirementDefinition -> qNameOfTheType.equals(tRequirementDefinition.getRequirementType()));
 
                     if (!referencesGivenQName) {
                         TNodeType.CapabilityDefinitions capabilityDefinitions = ((TNodeType) element).getCapabilityDefinitions();
@@ -346,7 +347,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                             capabilityDefinitions
                                 .getCapabilityDefinition()
                                 .stream()
-                                .anyMatch(tCapabilityDefinition -> tCapabilityDefinition.getCapabilityType().equals(qNameOfTheType));
+                                .anyMatch(tCapabilityDefinition -> qNameOfTheType.equals(tCapabilityDefinition.getCapabilityType()));
                     }
                 }
 
@@ -354,7 +355,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                     TEntityType.PropertiesDefinition propertiesDefinition = ((TEntityType) element).getPropertiesDefinition();
                     if (Objects.nonNull(propertiesDefinition)) {
                         referencesGivenQName = Objects.nonNull(propertiesDefinition.getElement()) && propertiesDefinition.getElement().equals(qNameOfTheType)
-                            || Objects.nonNull(propertiesDefinition.getType()) && propertiesDefinition.getType().equals(qNameOfTheType);
+                            || Objects.nonNull(propertiesDefinition.getType()) && qNameOfTheType.equals(propertiesDefinition.getType());
                     }
                 }
 
@@ -691,6 +692,11 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         return ids;
     }
 
+    default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(PatternRefinementModelId id) {
+        // TODO
+        return new HashSet<>();
+    }
+
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ComplianceRuleId id) {
         // We have to use a HashSet to ensure that no duplicate ids are added
         // E.g., there may be multiple relationship templates having the same type
@@ -755,7 +761,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
 
         return ids;
     }
-    
+
     /**
      * Determines all referencedDefinitionsChildIds
      *
@@ -791,6 +797,8 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
             referencedDefinitionsChildIds = new ArrayList();
         } else if (id instanceof ComplianceRuleId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ComplianceRuleId) id);
+        } else if (id instanceof PatternRefinementModelId) {
+            referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((PatternRefinementModelId) id);
         } else {
             throw new IllegalStateException("Unhandled id class " + id.getClass());
         }
@@ -985,6 +993,8 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
     }
 
     NamespaceManager getNamespaceManager();
+
+    AccountabilityConfigurationManager getAccountabilityConfigurationManager();
 
     XsdImportManager getXsdImportManager();
 

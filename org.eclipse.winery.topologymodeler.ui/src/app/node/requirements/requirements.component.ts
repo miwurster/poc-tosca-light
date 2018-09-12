@@ -17,7 +17,7 @@ import { EntityTypesModel } from '../../models/entityTypesModel';
 import { TNodeTemplate } from '../../models/ttopology-template';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../../redux/store/winery.store';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { RequirementModel } from '../../models/requirementModel';
 
 @Component({
@@ -30,6 +30,7 @@ import { RequirementModel } from '../../models/requirementModel';
  */
 export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
     @Output() toggleModalHandler: EventEmitter<any>;
+    @Input() readonly: boolean;
     @Input() currentNodeData: any;
     requirements: any[] = [];
     requirementsExist: boolean;
@@ -73,17 +74,24 @@ export class RequirementsComponent implements OnInit, OnChanges, OnDestroy {
     public toggleModal($event) {
         this.currentRequirement = null;
         const currentReqId = $event.srcElement.textContent;
-        this.requirements.some(req => {
-            if (req.id === currentReqId) {
-                this.currentRequirement = req;
-                return true;
-            }
-        });
+
+        if (this.requirements) {
+            this.requirements.some(req => {
+                if (req.id === currentReqId) {
+                    this.currentRequirement = req;
+                    return true;
+                }
+            });
+        } else {
+            this.requirements = [];
+        }
+
         if ($event.srcElement.innerText === 'Add new') {
             this.currentNodeData.currentRequirement = null;
         } else {
             this.currentNodeData.currentRequirement = this.currentRequirement;
         }
+
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 

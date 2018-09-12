@@ -15,11 +15,16 @@
 import { Injectable } from '@angular/core';
 import { Action } from 'redux';
 
+export interface HighlightNodesAction extends Action {
+    nodesToHighlight: string[];
+}
+
 /**
  * Actions of the topologyRenderer
  */
 @Injectable()
 export class TopologyRendererActions {
+
     static TOGGLE_POLICIES = 'TOGGLE_POLICIES';
     static TOGGLE_TARGET_LOCATIONS = 'TOGGLE_TARGET_LOCATIONS';
     static TOGGLE_PROPERTIES = 'TOGGLE_PROPERTIES';
@@ -33,6 +38,9 @@ export class TopologyRendererActions {
     static IMPORT_TOPOLOGY = 'IMPORT_TOPOLOGY';
     static SPLIT_TOPOLOGY = 'SPLIT_TOPOLOGY';
     static MATCH_TOPOLOGY = 'MATCH_TOPOLOGY';
+    static SUBSTITUTE_TOPOLOGY = 'SUBSTITUTE_TOPOLOGY';
+    static REFINE_TOPOLOGY = 'REFINE_TOPOLOGY';
+    static HIGHLIGHT_NODES = 'HIGHLIGHT_NODES';
 
     togglePolicies(): Action {
         return { type: TopologyRendererActions.TOGGLE_POLICIES };
@@ -84,5 +92,20 @@ export class TopologyRendererActions {
 
     matchTopology(): Action {
         return { type: TopologyRendererActions.MATCH_TOPOLOGY };
+    }
+
+    substituteTopology(): Action {
+        return { type: TopologyRendererActions.SUBSTITUTE_TOPOLOGY };
+    }
+
+    refineTopology(): Action {
+        return { type: TopologyRendererActions.REFINE_TOPOLOGY };
+    }
+
+    highlightNodes(listOfNodeIds: string[]): HighlightNodesAction {
+        return {
+            type: TopologyRendererActions.HIGHLIGHT_NODES,
+            nodesToHighlight: listOfNodeIds
+        };
     }
 }

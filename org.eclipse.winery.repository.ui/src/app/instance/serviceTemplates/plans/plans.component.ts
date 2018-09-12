@@ -17,10 +17,10 @@ import { PlansApiData } from './plansApiData';
 import { PlansService } from './plans.service';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { isNullOrUndefined } from 'util';
-import { SelectData } from '../../../wineryInterfaces/selectData';
+import { SelectData } from '../../../model/selectData';
 import { WineryUploaderComponent } from '../../../wineryUploader/wineryUploader.component';
 import { SelectItem } from 'ng2-select';
-import { InputParameters, OutputParameters } from '../../../wineryInterfaces/parameters';
+import { InputParameters, OutputParameters } from '../../../model/parameters';
 import { backendBaseURL, workflowModelerURL } from '../../../configuration';
 import { InstanceService } from '../../instance.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -76,6 +76,8 @@ export class PlansComponent implements OnInit {
     @ViewChild('ioModal') ioModal: any;
     @ViewChild('confirmDeleteModal') confirmDeleteModal: any;
 
+    @ViewChild('confirmPlanGeneration') confirmPlanGeneration: any;
+
     constructor(private notify: WineryNotificationService,
                 public sharedData: InstanceService,
                 private service: PlansService,
@@ -86,6 +88,27 @@ export class PlansComponent implements OnInit {
         this.getPlanTypesData();
         this.uploaderUrl = this.service.path + 'addarchive/';
     }
+
+    // region ########## Plan Generation ##########
+    onGeneratePlans() {
+        this.confirmPlanGeneration.show();
+    }
+
+    generatePlans() {
+        this.loading = true;
+        this.service.generatePlans().subscribe(
+            () => this.handlePlanSaved(),
+            error => {
+                this.loading = false;
+                this.notify.warning(
+                    'Plan Builder service is not available or raised an error:\n' + error.message,
+                    'Warning: No Plans Generated'
+                );
+            }
+        );
+    }
+
+    // endregion
 
     // region ########## Callbacks ##########
     // region ########## Table ##########
@@ -216,7 +239,6 @@ export class PlansComponent implements OnInit {
             );
     }
 
-    // endregion
     // endregion
 
     // region ########## Private Methods ##########

@@ -11,21 +11,26 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { SectionResolverData } from '../wineryInterfaces/resolverData';
+import { SectionResolverData } from '../model/resolverData';
 import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
 import { SectionService } from './section.service';
 import { SectionData } from './sectionData';
 import { backendBaseURL } from '../configuration';
-import { ModalDirective } from 'ngx-bootstrap';
-import { ToscaTypes } from '../wineryInterfaces/enums';
+import { BsModalRef, BsModalService, ModalDirective } from 'ngx-bootstrap';
+import { ToscaTypes } from '../model/enums';
 import { WineryUploaderComponent } from '../wineryUploader/wineryUploader.component';
 import { WineryAddComponent } from '../wineryAddComponentModule/addComponent.component';
 import { isNullOrUndefined } from 'util';
 import { Utils } from '../wineryUtils/utils';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ImportMetaInformation } from '../model/importMetaInformation';
+import { KeyValueItem } from '../model/keyValueItem';
+import { ConfigurationService } from '../instance/admin/accountability/configuration/configuration.service';
+import { AccountabilityService } from '../instance/admin/accountability/accountability.service';
+import { FileProvenanceElement } from '../model/provenance';
 
 const showAll = 'Show all Items';
 const showGrouped = 'Group by Namespace';
@@ -41,7 +46,6 @@ const showGrouped = 'Group by Namespace';
     ]
 })
 export class SectionComponent implements OnInit, OnDestroy {
-
     loading = true;
     toscaType: ToscaTypes;
     toscaTypes = ToscaTypes;
@@ -55,7 +59,17 @@ export class SectionComponent implements OnInit, OnDestroy {
     allElements: SectionData[];
     elementToRemove: SectionData;
     overwriteValue = false;
+    validateInput = false;
     secure = false;
+    isAccountabilityCheckEnabled = false;
+
+    importMetadata: ImportMetaInformation;
+    fileProvenance: Map<string, FileProvenanceElement[]> = new Map<string, FileProvenanceElement[]>();
+
+    /* File Comparison-Related */
+    modalRef: BsModalRef;
+    selectedFileProvenance: FileProvenanceElement[];
+    selectedFile: FileProvenanceElement;
 
     importXsdSchemaType: string;
 
@@ -65,13 +79,17 @@ export class SectionComponent implements OnInit, OnDestroy {
     @ViewChild('addCsarModal') addCsarModal: ModalDirective;
     @ViewChild('removeElementModal') removeElementModal: ModalDirective;
     @ViewChild('addYamlModal') addYamlModal: ModalDirective;
+    @ViewChild('validationModal') validationModal: ModalDirective;
     @ViewChild('fileUploader') fileUploader: WineryUploaderComponent;
 
     constructor(private route: ActivatedRoute,
                 private change: ChangeDetectorRef,
                 private router: Router,
                 private service: SectionService,
-                private notify: WineryNotificationService) {
+                private notify: WineryNotificationService,
+                private accountabilityConfig: ConfigurationService,
+                protected accountability: AccountabilityService,
+                private modalService: BsModalService) {
     }
 
     /**
@@ -80,6 +98,7 @@ export class SectionComponent implements OnInit, OnDestroy {
      * Subscribe to the url on initialisation in order to get the corresponding resource type.
      */
     ngOnInit(): void {
+        this.isAccountabilityCheckEnabled = this.accountabilityConfig.isAccountablilityCheckEnabled();
         this.loading = true;
         this.routeSub = this.route
             .data
@@ -129,19 +148,44 @@ export class SectionComponent implements OnInit, OnDestroy {
             );
     }
 
+    onUploadSuccess(response: string) {
+        const metadata = JSON.parse(response);
+        this.fileProvenance = new Map<string, FileProvenanceElement[]>();
+
+        if (this.validateInput) {
+            if (metadata.valid) {
+                this.notify.success('CSAR validation successful!', 'CSAR valid');
+            } else {
+                this.notify.error('CSAR validation failed! See modal for details.', 'CSAR invalid');
+            }
+
+            const keys = Object.keys(metadata.verificationMap);
+            const files: KeyValueItem[] = [];
+
+            for (const key of keys) {
+                files.push({ key: key, value: metadata.verificationMap[key] });
+            }
+
+            metadata.verificationMap = files;
+            this.importMetadata = metadata;
+
+            this.validationModal.show();
+        }
+    }
+
     onPageChange(page: number) {
         this.currentPage = page;
     }
 
-    onRemoveElement() {
-    }
-
-    parametersValueChanged() {
+    importOptionsChanged() {
+        // validation currently only works, if the overwrite flag is set to true...
+        this.overwriteValue = this.overwriteValue || this.validateInput;
         this.fileUploader.getUploader().setOptions({
             url: this.fileUploadUrl,
             additionalParameter: {
-                'overwrite': this.overwriteValue,
-                'secure' : this.secure
+                overwrite: this.overwriteValue,
+                validate: this.validateInput,
+                secure: this.secure
             }
         });
     }
@@ -230,4 +274,44 @@ export class SectionComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.notify.error(error.message);
     }
+
+    getVerificationClass(value: string): string {
+        switch (value) {
+            case 'VERIFIED':
+                return 'green';
+            default:
+                return 'red';
+        }
+    }
+
+    getProvenance(file: KeyValueItem) {
+        this.accountability.getFileProvenance(this.importMetadata.entryServiceTemplate.qname, file.key)
+            .subscribe(
+                value => this.fileProvenance[file.key] = value,
+                error => this.handleError(error)
+            );
+    }
+
+    getAuthorizedClass(authorized: boolean): string {
+        return this.getVerificationClass(authorized ? 'VERIFIED' : '');
+    }
+
+    onUploadError(response: string) {
+        if (this.validateInput) {
+            this.onUploadSuccess(response);
+        }
+    }
+
+    downloadFileFromImmutableStorage(fileAddress: string, fileName: string): void {
+        const provenanceId = this.importMetadata.entryServiceTemplate.qname;
+        const url = AccountabilityService.getDownloadURLForFile(fileAddress, fileName, provenanceId);
+        window.open(url, '_blank');
+    }
+
+    openFileComparisonModal(modalTemplate: TemplateRef<any>, file: FileProvenanceElement) {
+        this.selectedFile = file;
+        this.selectedFileProvenance = this.fileProvenance[file.fileName];
+        this.modalRef = this.modalService.show(modalTemplate);
+    }
+
 }

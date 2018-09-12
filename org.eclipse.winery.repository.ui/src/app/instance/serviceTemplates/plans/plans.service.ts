@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { PlansApiData } from './plansApiData';
 import { backendBaseURL } from '../../../configuration';
-import { SelectData } from '../../../wineryInterfaces/selectData';
+import { SelectData } from '../../../model/selectData';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
 @Injectable()
@@ -71,5 +71,13 @@ export class PlansService {
                 plan,
                 { headers: headers, observe: 'response', responseType: 'text' }
             );
+    }
+
+    public generatePlans(): Observable<HttpResponse<string>> {
+        const url = this.path + 'generate';
+        const headers = new HttpHeaders({ 'Content-Type': 'text/plain' });
+        return this.http.post(url, null,
+            { headers: headers, observe: 'response', responseType: 'text' }
+        );
     }
 }

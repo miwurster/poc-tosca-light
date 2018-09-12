@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,7 +16,7 @@ import {WineryNotificationService} from './wineryNotificationModule/wineryNotifi
 import {WineryGitLogComponent} from './wineryGitLog/wineryGitLog.component';
 import {ExistService} from './wineryUtils/existService';
 import {backendBaseURL} from './configuration';
-import {BackendAvailabilityStates} from './wineryInterfaces/enums';
+import {BackendAvailabilityStates} from './model/enums';
 
 @Component({
     selector: 'winery-repository',

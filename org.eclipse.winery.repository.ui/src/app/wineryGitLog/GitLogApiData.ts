@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import {QNameWithTypeApiData} from '../wineryInterfaces/qNameWithTypeApiData';
+import {QNameWithTypeApiData} from '../model/qNameWithTypeApiData';
 
 export class GitData {
     reset: boolean;
@@ -32,5 +32,5 @@ export class GitChange {
     name: string;
     type: string;
     path: string;
-    diff: string;
+    diffs: string;
 }

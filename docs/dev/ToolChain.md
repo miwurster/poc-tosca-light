@@ -87,10 +87,17 @@ This is required by the Eclipse process for checking for intellectual property (
      - Are there too much changed files? 🡒 Do not stage files you did not intend to change (e.g., `build.gradle` if you did not touch `build.gradle` at all)
      - Check again the style (!)
      - (Don't forget RESCAN to see the current changes)
-  7. Add Changes/Fixed to `CHANGELOG.md` and add description to `docs/index.md` (if helpful)
+  7. Add description as new markdown file to to `docs/index.md` (if helpful)
   8. Press "Stage to Commit" 🡒 all changes are staged to Commit
   9. Sign the Commit Message (<kbd>Ctrl</kbd>+<kbd>S</kbd> in Git Gui)
-  10. Commit & Push with "force overwrite" since you changed the branch: `git push -f`
+  10. In the case of multiple authors: Add each additional author with `Co-authored-by`.
+      See also in the [Eclipse Handbook](https://www.eclipse.org/projects/handbook/#resources-commit).  
+      Example:
+      
+              Co-authored-by: Some Bodyelse <somebodyelse@nowhere.com>
+              Signed-off-by: Some Body <somebody@somewhere.com>
+      
+  11. Commit & Push with "force overwrite" since you changed the branch: `git push -f`
 
 ## GitHub - Create Final Pull Request
 

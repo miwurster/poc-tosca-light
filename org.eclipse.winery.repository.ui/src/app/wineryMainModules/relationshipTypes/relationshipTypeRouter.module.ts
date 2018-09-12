@@ -19,7 +19,7 @@ import {InstanceComponent} from '../../instance/instance.component';
 import {InstanceResolver} from '../../instance/instance.resolver';
 import {EditXMLComponent} from '../../instance/sharedComponents/editXML/editXML.component';
 import {DocumentationComponent} from '../../instance/sharedComponents/documentation/documentation.component';
-import {ToscaTypes} from '../../wineryInterfaces/enums';
+import {ToscaTypes} from '../../model/enums';
 import {VisualAppearanceComponent} from '../../instance/sharedComponents/visualAppearance/visualAppearance.component';
 import {InstanceStatesComponent} from '../../instance/sharedComponents/instanceStates/instanceStates.component';
 import {InterfacesComponent} from '../../instance/sharedComponents/interfaces/interfaces.component';
@@ -45,6 +45,7 @@ const relationshipTypeRoutes: Routes = [
             {path: 'visualappearance', component: VisualAppearanceComponent},
             {path: 'instancestates', component: InstanceStatesComponent},
             {path: 'sourceinterfaces', component: InterfacesComponent},
+            {path: 'interfaces', component: InterfacesComponent},
             {path: 'targetinterfaces', component: InterfacesComponent},
             {path: 'validsourcesandtargets', component: ValidSourcesAndTargetsComponent},
             {path: 'implementations', component: ImplementationsComponent},

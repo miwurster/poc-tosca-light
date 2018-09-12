@@ -13,9 +13,6 @@
  ********************************************************************************/
 
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Rx';
-import 'rxjs/add/operator/catch';
-import { ActivatedRoute } from '@angular/router';
 import { backendBaseURL, hostURL } from '../models/configuration';
 import { Subject } from 'rxjs/Subject';
 import { isNullOrUndefined } from 'util';
@@ -23,32 +20,55 @@ import { EntityType, TTopologyTemplate, Visuals } from '../models/ttopology-temp
 import { QNameWithTypeApiData } from '../models/generateArtifactApiData';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { urlElement } from '../models/enums';
+import { ServiceTemplateId } from '../models/serviceTemplateId';
 import { ToscaDiff } from '../models/ToscaDiff';
+import { ToastrService } from 'ngx-toastr';
+import { Observable } from 'rxjs/Observable';
+import { forkJoin } from 'rxjs';
+import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
+import { ErrorHandlerService } from './error-handler.service';
 
 /**
  * Responsible for interchanging data between the app and the server.
  */
 @Injectable()
 export class BackendService {
+
     readonly headers = new HttpHeaders().set('Accept', 'application/json');
 
     configuration: TopologyModelerConfiguration;
-    topologyTemplateURL;
+    serviceTemplateURL: string;
+    serviceTemplateUiUrl: string;
+
+    endpointConfiguration = new Subject<any>();
+    endpointConfiguration$ = this.endpointConfiguration.asObservable();
 
     private allEntities = new Subject<any>();
     allEntities$ = this.allEntities.asObservable();
 
     constructor(private http: HttpClient,
-                private activatedRoute: ActivatedRoute) {
-        this.activatedRoute.queryParams.subscribe((params: TopologyModelerConfiguration) => {
-            if (!(isNullOrUndefined(params.id) &&
-                isNullOrUndefined(params.ns) &&
-                isNullOrUndefined(params.repositoryURL) &&
-                isNullOrUndefined(params.uiURL))) {
-                this.configuration = params;
-                this.topologyTemplateURL = this.configuration.repositoryURL + '/servicetemplates/'
+                private alert: ToastrService,
+                private errorHandler: ErrorHandlerService) {
+        this.endpointConfiguration$.subscribe((params: TopologyModelerConfiguration) => {
+            if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
+                isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {
+
+                this.configuration = new TopologyModelerConfiguration(
+                    params.id,
+                    params.ns,
+                    params.repositoryURL,
+                    params.uiURL,
+                    params.compareTo,
+                    params.compareTo ? true : params.isReadonly,
+                    params.parentPath,
+                    params.elementPath
+                );
+
+                const url = this.configuration.parentPath + '/'
                     + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
                     + this.configuration.id;
+                this.serviceTemplateURL = this.configuration.repositoryURL + '/' + url;
+                this.serviceTemplateUiUrl = this.configuration.uiURL + url;
 
                 // All Entity types
                 this.requestAllEntitiesAtOnce().subscribe(data => {
@@ -61,13 +81,13 @@ export class BackendService {
 
     /**
      * Requests all entities together.
-     * We use Observable.forkJoin to await all responses from the backend.
+     * We use forkJoin() to await all responses from the backend.
      * This is required
      * @returns data  The JSON from the server
      */
-    private requestAllEntitiesAtOnce(): Observable<Object> {
+    private requestAllEntitiesAtOnce(): Observable<any> {
         if (this.configuration) {
-            return Observable.forkJoin(
+            return forkJoin(
                 this.requestGroupedNodeTypes(),
                 this.requestArtifactTemplates(),
                 this.requestTopologyTemplateAndVisuals(),
@@ -91,16 +111,18 @@ export class BackendService {
      */
     private requestTopologyTemplateAndVisuals(): Observable<any> {
         if (this.configuration) {
-            const url = this.configuration.repositoryURL + '/servicetemplates/'
+            const url = this.configuration.repositoryURL + '/' + this.configuration.parentPath + '/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/';
-            const currentUrl = url + this.configuration.id + '/topologytemplate/';
-            const visualsUrl = backendBaseURL + '/nodetypes/allvisualappearancedata';
+            const currentUrl = url + this.configuration.id + '/' + this.configuration.elementPath;
+            const nodeVisualsUrl = backendBaseURL + '/nodetypes/allvisualappearancedata';
+            const relationshipVisualsUrl = backendBaseURL + '/relationshiptypes/allvisualappearancedata';
             // This is required because the information has to be returned together
 
             if (isNullOrUndefined(this.configuration.compareTo)) {
-                return Observable.forkJoin(
+                return forkJoin(
                     this.http.get<TTopologyTemplate>(currentUrl),
-                    this.http.get<Visuals>(visualsUrl)
+                    this.http.get<Visuals>(nodeVisualsUrl),
+                    this.http.get<Visuals>(relationshipVisualsUrl),
                 );
             } else {
                 const compareUrl = url
@@ -109,32 +131,14 @@ export class BackendService {
                 const templateUrl = url
                     + this.configuration.compareTo + '/topologytemplate';
 
-                return Observable.forkJoin(
+                return forkJoin(
                     this.http.get<TTopologyTemplate>(currentUrl),
-                    this.http.get<Visuals>(visualsUrl),
+                    this.http.get<Visuals>(nodeVisualsUrl),
+                    this.http.get<Visuals>(relationshipVisualsUrl),
                     this.http.get<ToscaDiff>(compareUrl),
                     this.http.get<TTopologyTemplate>(templateUrl)
                 );
             }
-        }
-    }
-
-    /**
-     * Returns data that is later used by jsPlumb to render a relationship connector
-     * @returns data The JSON from the server
-     */
-    requestRelationshipTypeVisualappearance(namespace: string, id: string): Observable<EntityType> {
-        if (this.configuration) {
-            const url = this.configuration.repositoryURL + '/relationshiptypes/'
-                + encodeURIComponent(encodeURIComponent(namespace)) + '/'
-                + id + '/visualappearance/';
-            return this.http.get<EntityType>(url, { headers: this.headers })
-                .map(relationship => {
-                    if (!isNullOrUndefined(this.configuration.compareTo)) {
-                        relationship.color = 'grey';
-                    }
-                    return relationship;
-                });
         }
     }
 
@@ -273,9 +277,7 @@ export class BackendService {
     saveTopologyTemplate(topologyTemplate: any): Observable<HttpResponse<string>> {
         if (this.configuration) {
             const headers = new HttpHeaders().set('Content-Type', 'application/json');
-            const url = this.configuration.repositoryURL + '/servicetemplates/'
-                + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/'
-                + this.configuration.id + '/topologytemplate/';
+            const url = this.serviceTemplateURL + '/' + this.configuration.elementPath;
 
             return this.http.put(url, topologyTemplate, {
                 headers: headers, responseType: 'text', observe: 'response'
@@ -289,8 +291,27 @@ export class BackendService {
      */
     importTopology(importedTemplateQName: string): Observable<HttpResponse<string>> {
         const headers = new HttpHeaders().set('Content-Type', 'text/plain');
-        const url = this.topologyTemplateURL + urlElement.TopologyTemplate + 'merge';
-        return this.http.post(url + '/', importedTemplateQName, { headers: headers, observe: 'response', responseType: 'text' });
+        const url = this.serviceTemplateURL + urlElement.TopologyTemplate + 'merge';
+        return this.http.post(url + '/', importedTemplateQName, {
+            headers: headers, observe: 'response', responseType: 'text'
+        });
+    }
+
+    substituteTopology(): void {
+        this.alert.info('', 'Substitution in progress...');
+        this.http.get<ServiceTemplateId>(this.serviceTemplateURL + '/substitute')
+            .subscribe(res => {
+                    const url = window.location.origin + window.location.pathname + '?repositoryURL=' + this.configuration.repositoryURL
+                        + '&uiURL=' + this.configuration.uiURL
+                        + '&ns=' + res.namespace.encoded
+                        + '&id=' + res.xmlId.encoded
+                        + '&parentPath=' + this.configuration.parentPath
+                        + '&elementPath=' + this.configuration.elementPath;
+                    this.alert.success('automatically opening does not work currently...', 'Substitution successful!');
+                },
+                error => {
+                    this.errorHandler.handleError(error);
+                });
     }
 
     /**
@@ -299,7 +320,7 @@ export class BackendService {
      */
     splitTopology(): Observable<HttpResponse<string>> {
         const headers = new HttpHeaders().set('Content-Type', 'application/json');
-        const url = this.topologyTemplateURL + urlElement.TopologyTemplate + 'split';
+        const url = this.serviceTemplateURL + urlElement.TopologyTemplate + 'split';
         return this.http.post(url + '/', {}, { headers: headers, observe: 'response', responseType: 'text' });
     }
 
@@ -309,7 +330,7 @@ export class BackendService {
      */
     matchTopology(): Observable<HttpResponse<string>> {
         const headers = new HttpHeaders().set('Content-Type', 'application/json');
-        const url = this.topologyTemplateURL + urlElement.TopologyTemplate + 'match';
+        const url = this.serviceTemplateURL + urlElement.TopologyTemplate + 'match';
         return this.http.post(url + '/', {}, { headers: headers, observe: 'response', responseType: 'text' });
     }
 
@@ -332,21 +353,4 @@ export class BackendService {
         const url = hostURL + urlElement.Winery + urlElement.ServiceTemplates;
         return this.http.get<EntityType[]>(url + '/', { headers: this.headers });
     }
-
-    /*  saveVisuals(data: any): Observable<Response> {
-     const headers = new Headers({ 'Content-Type': 'application/json' });
-     const options = new RequestOptions({ headers: headers });
-     return this.http.put(backendBaseURL + this.activatedRoute.url + '/', JSON.stringify(data), options);
-     }*/
-}
-
-/**
- * Defines config of TopologyModeler.
- */
-export class TopologyModelerConfiguration {
-    readonly id: string;
-    readonly ns: string;
-    readonly repositoryURL: string;
-    readonly uiURL: string;
-    readonly compareTo: string;
 }

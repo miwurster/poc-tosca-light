@@ -13,13 +13,6 @@
  *******************************************************************************/
 package org.eclipse.winery.model.csar.toscametafile;
 
-import org.eclipse.virgo.util.parser.manifest.ManifestContents;
-import org.eclipse.virgo.util.parser.manifest.ManifestParser;
-import org.eclipse.virgo.util.parser.manifest.ManifestProblem;
-import org.eclipse.virgo.util.parser.manifest.RecoveringManifestParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -27,6 +20,13 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import org.eclipse.virgo.util.parser.manifest.ManifestContents;
+import org.eclipse.virgo.util.parser.manifest.ManifestParser;
+import org.eclipse.virgo.util.parser.manifest.ManifestProblem;
+import org.eclipse.virgo.util.parser.manifest.RecoveringManifestParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Parses and validates a TOSCA meta file.
@@ -38,15 +38,12 @@ public class TOSCAMetaFileParser {
     /**
      * Parses and validates the <code>toscaMetaFile</code>.
      *
-     * @param toscaMetaFile to process
+     * @param toscaMetaFile path to the metadata file to process
      * @return <code>TOSCAMetaFile</code> that gives access to the content of
      * the TOSCA meta file. If the given file doesn't exist or is
      * invalid <code>null</code>.
      */
     public TOSCAMetaFile parse(Path toscaMetaFile) {
-        // counts the errors during parsing
-        int numErrors = 0;
-
         FileReader reader = null;
         ManifestParser parser;
         ManifestContents manifestContent;
@@ -59,43 +56,15 @@ public class TOSCAMetaFileParser {
             manifestContent = parser.parse(reader);
             reader.close();
 
+            // counts the errors during parsing
+            int numErrors = 0;
+
             for (ManifestProblem problem : parser.getProblems()) {
                 this.logManifestProblem(problem);
                 numErrors++;
             }
 
-            Map<String, String> mainAttr = manifestContent.getMainAttributes();
-
-            // signature file block 0 validation
-            if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION)) {
-                numErrors += this.validateSignatureBlock0(manifestContent);
-            }
-            // properties manifest file block 0 validation
-            else if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION)) {
-                numErrors += this.validatePropsManifestBlock0(manifestContent);
-            }
-            // properties signature file block 0 validation
-            else if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION)) {
-                numErrors += this.validatePropsSignatureBlock0(manifestContent);
-            }
-            // standard block 0 validation
-            else {
-                numErrors += this.validateBlock0(manifestContent);
-            }
-            
-            if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION) || mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION)) {
-                numErrors += this.validatePropsManifestFileBlocks(manifestContent);
-            }
-            else {
-                numErrors += this.validateFileBlocks(manifestContent);
-            }
-            
-            if (numErrors == 0) {
-                TOSCAMetaFileParser.LOGGER.debug("Parsing TOSCA meta file \"{}\" completed without errors. TOSCA meta file is valid.", toscaMetaFile.getFileName().toString());
-                toscaMetaFileContent = new TOSCAMetaFile(manifestContent);
-            } else {
-                TOSCAMetaFileParser.LOGGER.error("Parsing TOSCA meta file \"{}\" failed - {} error(s) occured. TOSCA meta file is invalid.", toscaMetaFile.getFileName().toString(), numErrors);
-            }
+            toscaMetaFileContent = this.parse(manifestContent, numErrors);
         } catch (FileNotFoundException exc) {
             TOSCAMetaFileParser.LOGGER.error("\"{}\" doesn't exist or is not a file.", toscaMetaFile, exc);
         } catch (IOException exc) {
@@ -108,6 +77,55 @@ public class TOSCAMetaFileParser {
                     TOSCAMetaFileParser.LOGGER.warn("An IOException occured.", exc);
                 }
             }
+        }
+
+        return toscaMetaFileContent;
+    }
+
+    /**
+     * Parses and validates the <code>toscaMetaFile</code>.
+     *
+     * @param manifestContent  generically parsed manifest file
+     * @param parseErrorsCount number of errors found during the generic parsing of the meta file.
+     * @return <code>TOSCAMetaFile</code> that gives access to the content of
+     * the TOSCA meta file. If the given file doesn't exist or is
+     * invalid <code>null</code>.
+     */
+    public TOSCAMetaFile parse(ManifestContents manifestContent, int parseErrorsCount) {
+        // counts the errors during parsing
+        int numErrors = parseErrorsCount;
+        TOSCAMetaFile toscaMetaFileContent = null;
+
+        Map<String, String> mainAttr = manifestContent.getMainAttributes();
+
+        // signature file block 0 validation
+        if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION)) {
+            numErrors += this.validateSignatureBlock0(manifestContent);
+        }
+        // properties manifest file block 0 validation
+        else if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION)) {
+            numErrors += this.validatePropsManifestBlock0(manifestContent);
+        }
+        // properties signature file block 0 validation
+        else if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION)) {
+            numErrors += this.validatePropsSignatureBlock0(manifestContent);
+        }
+        // standard block 0 validation
+        else {
+            numErrors += this.validateBlock0(manifestContent);
+        }
+
+        if (mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPS_META_VERSION) || mainAttr.containsKey(TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION)) {
+            numErrors += this.validatePropsManifestFileBlocks(manifestContent);
+        } else {
+            numErrors += this.validateFileBlocks(manifestContent);
+        }
+
+        if (numErrors == 0) {
+            TOSCAMetaFileParser.LOGGER.debug("Parsing TOSCA meta file \"{}\" completed without errors. TOSCA meta file is valid.", toscaMetaFile.getFileName().toString());
+            toscaMetaFileContent = new TOSCAMetaFile(manifestContent);
+        } else {
+            TOSCAMetaFileParser.LOGGER.error("Parsing TOSCA meta file \"{}\" failed - {} error(s) occured. TOSCA meta file is invalid.", toscaMetaFile.getFileName().toString(), numErrors);
         }
 
         return toscaMetaFileContent;
@@ -135,6 +153,7 @@ public class TOSCAMetaFileParser {
      * @return Number of errors occurred during validation.
      */
     private int validateBlock0(ManifestContents mf) {
+        // TODO: refactor validation using validateAttributeValue
         int numErrors = 0;
 
         String metaFileVersion;
@@ -220,7 +239,7 @@ public class TOSCAMetaFileParser {
     private int validateSignatureBlock0(ManifestContents manifestContent) {
         int numErrors = 0;
         Map<String, String> attributes = manifestContent.getMainAttributes();
-        
+
         // Validate signature header attributes
         numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION, TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION_VALUE, 0);
         numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.CREATED_BY, 0);
@@ -241,7 +260,7 @@ public class TOSCAMetaFileParser {
 
         return numErrors;
     }
-    
+
     private int validatePropsSignatureBlock0(ManifestContents manifestContent) {
         int numErrors = 0;
         Map<String, String> attributes = manifestContent.getMainAttributes();
@@ -278,8 +297,7 @@ public class TOSCAMetaFileParser {
         if (Objects.isNull(attribute)) {
             this.logAttrMissing(attrName, blockNr);
             return 1;
-        }
-        else if (attribute.trim().isEmpty()) {
+        } else if (attribute.trim().isEmpty()) {
             this.logAttrValEmpty(attrName, blockNr);
             return 1;
         }
@@ -291,12 +309,10 @@ public class TOSCAMetaFileParser {
         if (Objects.isNull(attribute)) {
             this.logAttrMissing(attrName, blockNr);
             return 1;
-        }
-        else if (attribute.trim().isEmpty()) {
+        } else if (attribute.trim().isEmpty()) {
             this.logAttrValEmpty(attrName, blockNr);
             return 1;
-        }
-        else if (!attribute.trim().equals(correctValue)) {
+        } else if (!attribute.trim().equals(correctValue)) {
             this.logAttrWrongVal(attrName, blockNr, correctValue);
             return 1;
         }
@@ -344,11 +360,9 @@ public class TOSCAMetaFileParser {
                 this.logAttrWrongVal(TOSCAMetaFileAttributes.CONTENT_TYPE, blockNr);
                 numErrors++;
             }
-
         }
 
         return numErrors;
-
     }
 
     /**
@@ -378,9 +392,6 @@ public class TOSCAMetaFileParser {
     /**
      * Logs that attribute <code>attributeName</code> in block
      * <code>blockNr</code> has an invalid value.
-     *
-     * @param attributeName
-     * @param blockNr
      */
     private void logAttrWrongVal(String attributeName, int blockNr) {
         TOSCAMetaFileParser.LOGGER.warn("Attribute {} in block {} has an invalid value.", attributeName, blockNr);
@@ -389,9 +400,6 @@ public class TOSCAMetaFileParser {
     /**
      * Logs that attribute <code>attributeName</code> in block
      * <code>blockNr</code> has an empty value.
-     *
-     * @param attributeName
-     * @param blockNr
      */
     private void logAttrValEmpty(String attributeName, int blockNr) {
         TOSCAMetaFileParser.LOGGER.warn("Attribute {} in block {} has a empty value.", attributeName, blockNr);
@@ -399,11 +407,8 @@ public class TOSCAMetaFileParser {
 
     /**
      * Logs the ManifestProblem <code>problem</code>.
-     *
-     * @param problem
      */
     private void logManifestProblem(ManifestProblem problem) {
         TOSCAMetaFileParser.LOGGER.warn(problem.toString());
     }
-
 }

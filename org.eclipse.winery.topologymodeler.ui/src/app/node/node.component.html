@@ -12,21 +12,26 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
 
-<div class="container rounded"
+<div class="node" [ngClass]="nodeClass"
      style="padding: 3px; position: absolute; user-select: none;"
      [style.top]="nodeTemplate.y + 'px'"
      [style.left]="nodeTemplate.x + 'px'"
+     [style.borderColor]="nodeTemplate.visuals.color"
+     [style.shadowColor]="nodeTemplate.visuals.color"
      [class.selected]="makeSelectionVisible"
      [class.unselected]="!makeSelectionVisible"
-     id={{nodeTemplate.id}} [style.borderColor]="nodeTemplate.color" [style.shadowColor]="nodeTemplate.color"
+     id={{nodeTemplate.id}}
      (mousedown)="mouseDownHandler($event)"
      (mouseup)="mouseUpHandler($event)"
      [@onCreateNodeTemplateAnimation]='visibilityState'
      [class.removeZIndex]="removeZIndex">
+
     <div *ngIf="nodeTemplate.state" style="margin-bottom: 4px; padding-left: 4px;">
         {{ nodeTemplate.state }}
     </div>
-    <div class="row rounded col-sm-12 node-template-header"
+
+    <div *ngIf="nodeClass !== 'pattern'; else showPattern"
+         class="row rounded col-sm-12 node-template-header"
          (click)="openSidebar($event); closeConnectorEndpoints($event)">
         <div class="col-sm-1" style="padding: 0;">
             <table class="table table-responsive table-active table-border--grey table-sm">
@@ -46,9 +51,9 @@
             </table>
         </div>
         <div class="col-sm-3">
-            <img *ngIf="!nodeTemplate.imageUrl" src="http://via.placeholder.com/50x50"
+            <img *ngIf="!nodeTemplate.visuals.imageUrl" src="http://via.placeholder.com/50x50"
                  style="border-radius: 10%; margin-top: 1px; width: 50px; height: auto">
-            <img *ngIf="nodeTemplate.imageUrl" src="{{hostURL}}{{nodeTemplate.imageUrl}}">
+            <img *ngIf="nodeTemplate.visuals.imageUrl" src="{{hostURL}}{{nodeTemplate.visuals.imageUrl}}">
         </div>
         <div id="specifierDiv" class="col-sm-8" style="padding-left: 0; padding-right: 0;">
             <table class="header-table" style="margin-left: 6px">
@@ -67,9 +72,18 @@
                     </td>
                 </tr>
                 <tr *ngIf="navbarButtonsState.buttonsState.typesButton" class="">
+                    <ng-template #popTemplate>
+                        <div class="popover-component" style="font-size: x-small" (click)="linkType($event)"
+                             [innerHtml]="popoverHtml"></div>
+                    </ng-template>
                     <td class="td-value"
-                        (click)="linkType($event)"
-                        style="color: #0275d8;"
+                        [popover]="popTemplate"
+                        containerClass="popover-component"
+                        [outsideClick]="true"
+                        (click)="$event.stopPropagation();"
+                        placement="bottom"
+                        container="body"
+                        style="color: #0275d8; pointer-events: all;"
                         [class.cell-with-comment]="isEllipsisActive(headerTableType)">
                         <div #headerTableType>({{nodeTypeLocalName}})</div>
                         <span class="cell-comment">{{ (nodeTypeLocalName)}}</span>
@@ -78,12 +92,22 @@
             </table>
         </div>
     </div>
+    <ng-template #showPattern>
+        <div class="patternP" tooltip="{{ nodeTypeLocalName }}" placement="right" (click)="openSidebar($event); closeConnectorEndpoints($event)">
+            <div class="col-sm-3">
+                <img *ngIf="!nodeTemplate.visuals.imageUrl" class="patternImage" src="http://via.placeholder.com/50x50"
+                     style="border-radius: 10%; width: 50px; height: auto">
+                <img *ngIf="nodeTemplate.visuals.imageUrl" class="patternImage" src="{{hostURL}}{{nodeTemplate.visuals.imageUrl}}">
+            </div>
+        </div>
+    </ng-template>
+
     <div class="endpointContainer center-block row" style="border: 0; box-shadow: none"
-         *ngIf="connectorEndpointVisible"
+         *ngIf="connectorEndpointVisible && !readonly"
          (mouseover)="makeSource($event)">
         <div class="btn-group-vertical btn-group-sm center-block" role="group" id={{dragSource}}
              (mousedown)="passCurrentType($event)">
-            <button *ngFor="let rel of relationshipTypes"
+            <button *ngFor="let rel of entityTypes.relationshipTypes"
                     type="button" class="btn btn-sm btn-outline-secondary btn-block"
                     [style.border-color]="this.nodeTemplate.color" [style.color]="rel.color"
                     style="font-size: x-small;">
@@ -96,6 +120,7 @@
     <accordion #accordion (click)="repaint($event)">
         <!-- PROPERTIES -->
         <accordion-group
+            class="card-header-node-accordions"
             #propertiesgroup
             panelClass="accordionGroupPanel"
             *ngIf="navbarButtonsState.buttonsState.propertiesButton">
@@ -106,6 +131,7 @@
                 ></i>
             </div>
             <winery-properties
+                [readonly]="readonly"
                 (toggleModalHandler)="sendToggleAction($event)"
                 [currentNodeData]="{entityTypes: entityTypes,
                                     nodeTemplate: nodeTemplate,
@@ -122,10 +148,11 @@
                 Deployment Artifacts
                 <i class="pull-sm-0 float-sm-right fa icon-styling padding-top--2px"
                    [ngClass]="{'fa-chevron-down': deploymentartifactsgroup?.isOpen,
-           'fa-chevron-right': !deploymentartifactsgroup?.isOpen}"
+                   'fa-chevron-right': !deploymentartifactsgroup?.isOpen}"
                 ></i>
             </div>
             <winery-deployment-artifacts
+                [readonly]="readonly"
                 (toggleModalHandler)="sendToggleAction($event)"
                 [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'DEPLOYMENT_ARTIFACTS',
@@ -147,6 +174,7 @@
                 ></i>
             </div>
             <winery-requirements
+                [readonly]="readonly"
                 (toggleModalHandler)="sendToggleAction($event)"
                 [currentNodeData]="{entityTypes: entityTypes,
                                     nodeTemplate: nodeTemplate,
@@ -167,6 +195,7 @@
                 ></i>
             </div>
             <winery-capabilities
+                [readonly]="readonly"
                 (toggleModalHandler)="sendToggleAction($event)"
                 [currentNodeData]="{entityTypes: entityTypes,
                                     nodeTemplate: nodeTemplate,
@@ -186,6 +215,7 @@
                 </i>
             </div>
             <winery-policies
+                [readonly]="readonly"
                 (toggleModalHandler)="sendToggleAction($event)"
                 [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'POLICIES',

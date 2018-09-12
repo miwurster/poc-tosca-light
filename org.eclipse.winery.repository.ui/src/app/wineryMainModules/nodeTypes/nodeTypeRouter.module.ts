@@ -19,7 +19,7 @@ import { InstanceComponent } from '../../instance/instance.component';
 import { InstanceResolver } from '../../instance/instance.resolver';
 import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXML.component';
 import { DocumentationComponent } from '../../instance/sharedComponents/documentation/documentation.component';
-import { ToscaTypes } from '../../wineryInterfaces/enums';
+import { ToscaTypes } from '../../model/enums';
 import { VisualAppearanceComponent } from '../../instance/sharedComponents/visualAppearance/visualAppearance.component';
 import { InstanceStatesComponent } from '../../instance/sharedComponents/instanceStates/instanceStates.component';
 import { InterfacesComponent } from '../../instance/sharedComponents/interfaces/interfaces.component';
@@ -29,7 +29,7 @@ import { PropertiesDefinitionComponent } from '../../instance/sharedComponents/p
 import { CapOrReqDefComponent } from '../../instance/nodeTypes/capabilityOrRequirementDefinitions/capOrReqDef.component';
 import { WineryReadmeComponent } from '../../wineryReadmeModule/wineryReadme.component';
 import { WineryLicenseComponent } from '../../wineryLicenseModule/wineryLicense.component';
-import { TagComponent } from '../../instance/serviceTemplates/tag/tag.component';
+import { TagComponent } from '../../instance/sharedComponents/tag/tag.component';
 
 const toscaType = ToscaTypes.NodeType;
 

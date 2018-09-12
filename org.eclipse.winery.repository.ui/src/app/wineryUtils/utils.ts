@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
-import { ServiceTemplateTemplateTypes, ToscaTypes } from '../wineryInterfaces/enums';
+import { ServiceTemplateTemplateTypes, ToscaTypes } from '../model/enums';
 import { isNullOrUndefined } from 'util';
 
 export class Utils {
@@ -73,6 +73,8 @@ export class Utils {
                 return ToscaTypes.Imports;
             case ToscaTypes.ComplianceRule:
                 return ToscaTypes.ComplianceRule;
+            case ToscaTypes.PatternRefinementModel:
+                return ToscaTypes.PatternRefinementModel;
             default:
                 return ToscaTypes.Admin;
         }
@@ -119,7 +121,10 @@ export class Utils {
                 type = 'XSD Import';
                 break;
             case ToscaTypes.ComplianceRule:
-                type = 'Constraint Rule';
+                type = 'Compliance Rule';
+                break;
+            case ToscaTypes.PatternRefinementModel:
+                type = 'Pattern Refinement Model';
                 break;
             default:
                 type = 'Admin';

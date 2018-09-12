@@ -14,14 +14,15 @@
 
 import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { WineryAlertService } from '../winery-alert/winery-alert.service';
+import { ToastrService } from 'ngx-toastr';
 import { NgRedux } from '@angular-redux/store';
 import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
-import { ButtonsStateModel } from '../models/buttonsState.model';
 import { IWineryState } from '../redux/store/winery.store';
 import { BackendService } from '../services/backend.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { Hotkey, HotkeysService } from 'angular2-hotkeys';
+import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
+import { WineryActions } from '../redux/actions/winery.actions';
 
 /**
  * The navbar of the topologymodeler.
@@ -33,55 +34,58 @@ import { Hotkey, HotkeysService } from 'angular2-hotkeys';
     animations: [
         trigger('navbarInOut', [
             transition('void => *', [
-                style({ transform: 'translateY(-100%)' }),
+                style({transform: 'translateY(-100%)'}),
                 animate('200ms ease-out')
             ]),
             transition('* => void', [
-                animate('200ms ease-in', style({ transform: 'translateY(-100%)' }))
+                animate('200ms ease-in', style({transform: 'translateY(-100%)'}))
             ])
         ])
     ]
 })
 export class NavbarComponent implements OnDestroy {
 
-    /**
-     * Boolean variables that hold the state {pressed vs. !pressed} of the navbar buttons.
-     * @type {boolean}
-     */
-    @Input() hideNavBarState;
+    @Input() hideNavBarState: boolean;
+    @Input() readonly: boolean;
 
     @ViewChild('exportCsarButton')
     private exportCsarButtonRef: ElementRef;
 
-    navbarButtonsState: ButtonsStateModel;
+    navbarButtonsState: TopologyRendererState;
     unformattedTopologyTemplate;
     subscriptions: Array<Subscription> = [];
     exportCsarUrl: string;
     splittingOngoing: boolean;
     matchingOngoing: boolean;
 
-    constructor(private alert: WineryAlertService,
+    constructor(private alert: ToastrService,
                 private ngRedux: NgRedux<IWineryState>,
                 private actions: TopologyRendererActions,
+                private wineryActions: WineryActions,
                 private backendService: BackendService,
                 private hotkeysService: HotkeysService) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
             .subscribe(topologyTemplate => this.unformattedTopologyTemplate = topologyTemplate));
-        this.hotkeysService.add(new Hotkey('ctrl+s', (event: KeyboardEvent): boolean => {
+        this.hotkeysService.add(new Hotkey('mod+s', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             this.saveTopologyTemplateToRepository();
             return false; // Prevent bubbling
-        }));
-        this.exportCsarUrl = this.backendService.topologyTemplateURL + '/?csar';
+        }, undefined, 'Save the Topology Template'));
+        this.hotkeysService.add(new Hotkey('mod+l', (event: KeyboardEvent): boolean => {
+            event.stopPropagation();
+            this.ngRedux.dispatch(this.actions.executeLayout());
+            return false; // Prevent bubbling
+        }, undefined, 'Apply the layout directive to the Node Templates'));
+        this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
     }
 
     /**
      * Setter for buttonstate
      * @param newButtonsState
      */
-    setButtonsState(newButtonsState: ButtonsStateModel): void {
+    setButtonsState(newButtonsState: TopologyRendererState): void {
         this.navbarButtonsState = newButtonsState;
         if (!this.navbarButtonsState.buttonsState.splitTopologyButton) {
             this.splittingOngoing = false;
@@ -118,7 +122,7 @@ export class NavbarComponent implements OnDestroy {
      * This function is called whenever a navbar button is clicked.
      * It contains a separate case for each button.
      * It toggles the `pressed` state of a button and publishes the respective
-     * button {id and boolean} to the subscribers of the Observable inside
+     * button id and boolean to the subscribers of the Observable inside
      * SharedNodeNavbarService.
      * @param event -- The click event of a button.
      */
@@ -178,6 +182,14 @@ export class NavbarComponent implements OnDestroy {
                 this.matchingOngoing = true;
                 break;
             }
+            case 'substituteTopology':
+                this.ngRedux.dispatch(this.actions.substituteTopology());
+                break;
+            case 'refineTopology':
+                this.readonly = true;
+                this.ngRedux.dispatch(this.wineryActions.sendPaletteOpened(false));
+                this.ngRedux.dispatch(this.actions.refineTopology());
+                break;
         }
     }
 
@@ -201,8 +213,7 @@ export class NavbarComponent implements OnDestroy {
         });
         // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
         topologySkeleton.nodeTemplates.map(nodeTemplate => {
-            delete nodeTemplate.color;
-            delete nodeTemplate.imageUrl;
+            delete nodeTemplate.visuals;
             delete nodeTemplate.state;
         });
         const topologyToBeSaved = topologySkeleton;
@@ -214,7 +225,7 @@ export class NavbarComponent implements OnDestroy {
                     + res.statusText + ' ' + res.status + '</p>')
                     : this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
                     + res.statusText + ' ' + res.status + '</p>');
-            });
+            }, err => this.alert.error(err.error));
     }
 
     /**
@@ -222,5 +233,9 @@ export class NavbarComponent implements OnDestroy {
      */
     ngOnDestroy() {
         this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    }
+
+    openManagementUi() {
+        window.open(this.backendService.serviceTemplateUiUrl, '_blank');
     }
 }

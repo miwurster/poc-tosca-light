@@ -14,23 +14,31 @@
 
 package org.eclipse.winery.model.tosca;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.winery.model.tosca.constants.Namespaces;
-import org.eclipse.winery.model.tosca.constants.QNames;
-
-import javax.xml.bind.annotation.*;
-import javax.xml.namespace.QName;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+
+import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.model.tosca.constants.QNames;
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tArtifactTemplate", propOrder = {
     "policies", "artifactReferences"
 })
-public class TArtifactTemplate
-    extends TEntityTemplate {
+public class TArtifactTemplate extends TEntityTemplate {
 
     @XmlElement(name = "Policies", namespace = Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE)
     protected TArtifactTemplate.Policies policies;
@@ -123,11 +131,16 @@ public class TArtifactTemplate
      *
      * @return possible object is {@link TArtifactTemplate.ArtifactReferences }
      */
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
     public TArtifactTemplate.@Nullable ArtifactReferences getArtifactReferences() {
         return artifactReferences;
     }
 
-    public void setArtifactReferences(TArtifactTemplate.ArtifactReferences value) {
+    public void setArtifactReferences(TArtifactTemplate.@Nullable ArtifactReferences value) {
         this.artifactReferences = value;
     }
 
@@ -136,12 +149,7 @@ public class TArtifactTemplate
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
@@ -160,7 +168,7 @@ public class TArtifactTemplate
     @XmlType(name = "", propOrder = {
         "artifactReference"
     })
-    public static class ArtifactReferences {
+    public static class ArtifactReferences implements Serializable {
 
         @XmlElement(name = "ArtifactReference", required = true)
         protected List<TArtifactReference> artifactReference;
@@ -172,21 +180,6 @@ public class TArtifactTemplate
                 '}';
         }
 
-        /**
-         * Gets the value of the artifactReference property.
-         * <p>
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the artifactReference property.
-         * <p>
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getArtifactReference().add(newItem);
-         * </pre>
-         */
         @NonNull
         public List<TArtifactReference> getArtifactReference() {
             if (artifactReference == null) {
@@ -251,7 +244,6 @@ public class TArtifactTemplate
         private String name;
         private TArtifactTemplate.ArtifactReferences artifactReferences;
         private TArtifactTemplate.Policies policies;
-
 
         public Builder(String id, QName type) {
             super(id, type);

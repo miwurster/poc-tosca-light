@@ -20,13 +20,13 @@ import { InstanceResolver } from '../../instance/instance.resolver';
 import { BoundaryDefinitionsComponent } from '../../instance/serviceTemplates/boundaryDefinitions/boundaryDefinitions.component';
 import { boundaryDefinitionsRoutes } from '../../instance/serviceTemplates/boundaryDefinitions/boundaryDefinitions.module';
 import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXML.component';
-import { TopologyTemplateComponent } from '../../instance/serviceTemplates/topologyTemplate/topologyTemplate.component';
+import { TopologyTemplateComponent } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.component';
 import { PlansComponent } from '../../instance/serviceTemplates/plans/plans.component';
 import { SelfServicePortalComponent } from '../../instance/serviceTemplates/selfServicePortal/selfServicePortal.component';
 import { selfServiceRoutes } from '../../instance/serviceTemplates/selfServicePortal/selfServicePortalRouter.module';
-import { TagComponent } from '../../instance/serviceTemplates/tag/tag.component';
+import { TagComponent } from '../../instance/sharedComponents/tag/tag.component';
 import { DocumentationComponent } from '../../instance/sharedComponents/documentation/documentation.component';
-import { ToscaTypes } from '../../wineryInterfaces/enums';
+import { ToscaTypes } from '../../model/enums';
 import { WineryReadmeComponent } from '../../wineryReadmeModule/wineryReadme.component';
 import { WineryLicenseComponent } from '../../wineryLicenseModule/wineryLicense.component';
 import { ConstraintCheckingComponent } from '../../instance/serviceTemplates/constraintChecking/constraintChecking.component';
@@ -34,17 +34,17 @@ import { ConstraintCheckingComponent } from '../../instance/serviceTemplates/con
 const toscaType = ToscaTypes.ServiceTemplate;
 
 const serviceTemplateRoutes: Routes = [
-    {path: toscaType, component: SectionComponent, resolve: {resolveData: SectionResolver}},
-    {path: toscaType + '/:namespace', component: SectionComponent, resolve: {resolveData: SectionResolver}},
+    { path: toscaType, component: SectionComponent, resolve: { resolveData: SectionResolver } },
+    { path: toscaType + '/:namespace', component: SectionComponent, resolve: { resolveData: SectionResolver } },
     {
         path: toscaType + '/:namespace/:localName',
         component: InstanceComponent,
-        resolve: {resolveData: InstanceResolver},
+        resolve: { resolveData: InstanceResolver },
         children: [
-            {path: 'readme', component: WineryReadmeComponent},
-            {path: 'license', component: WineryLicenseComponent},
-            {path: 'topologytemplate', component: TopologyTemplateComponent},
-            {path: 'plans', component: PlansComponent},
+            { path: 'readme', component: WineryReadmeComponent },
+            { path: 'license', component: WineryLicenseComponent },
+            { path: 'topologytemplate', component: TopologyTemplateComponent },
+            { path: 'plans', component: PlansComponent },
             {
                 path: 'selfserviceportal',
                 component: SelfServicePortalComponent,
@@ -59,11 +59,11 @@ const serviceTemplateRoutes: Routes = [
                 // 'app/instance/serviceTemplates/boundaryDefinitions/boundaryDefinitions.module#BoundaryDefinitionsModule'
                 children: boundaryDefinitionsRoutes
             },
-            {path: 'constraintchecking', component: ConstraintCheckingComponent},
-            {path: 'tags', component: TagComponent},
-            {path: 'documentation', component: DocumentationComponent},
-            {path: 'xml', component: EditXMLComponent},
-            {path: '', redirectTo: 'readme', pathMatch: 'full'}
+            { path: 'constraintchecking', component: ConstraintCheckingComponent },
+            { path: 'tags', component: TagComponent },
+            { path: 'documentation', component: DocumentationComponent },
+            { path: 'xml', component: EditXMLComponent },
+            { path: '', redirectTo: 'readme', pathMatch: 'full' }
         ]
     }
 ];

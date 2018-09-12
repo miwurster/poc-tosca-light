@@ -15,11 +15,11 @@ import { Component, Input, ViewChild } from '@angular/core';
 import { InstanceService } from '../instance/instance.service';
 import { ModalDirective } from 'ngx-bootstrap';
 import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
-import { WineryVersionTypesEnum } from '../wineryInterfaces/enums';
-import { WineryVersion } from '../wineryInterfaces/wineryVersion';
+import { WineryVersionTypesEnum } from '../model/enums';
+import { WineryVersion } from '../model/wineryVersion';
 import { WineryValidatorObject } from '../wineryValidators/wineryDuplicateValidator.directive';
 import { AbstractControl, ValidatorFn } from '@angular/forms';
-import { QNameWithTypeApiData } from '../wineryInterfaces/qNameWithTypeApiData';
+import { QNameWithTypeApiData } from '../model/qNameWithTypeApiData';
 import { WineryAddVersionService } from './wineryVersion.service';
 import { Router } from '@angular/router';
 import { ReferencedDefinitionsComponent } from './referencedDefinitions/referencedDefinitions.component';
@@ -68,13 +68,15 @@ export class WineryVersionComponent {
         this.onShowModal();
         this.generateNewVersions();
 
-        this.currentSelected = null;
         this.newVersion = new WineryVersion('', 0, 0);
 
         this.modalConfig.action = WineryVersionActions.AddNewVersion;
         this.modalConfig.title = 'Add a new version';
         this.modalConfig.okButtonLabel = 'Add';
         this.modalConfig.valid = false;
+
+        this.wipVersionSelected();
+
         this.modal.show();
     }
 

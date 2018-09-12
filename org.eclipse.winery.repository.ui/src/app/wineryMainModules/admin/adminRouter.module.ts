@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,12 +16,17 @@ import { RouterModule, Routes } from '@angular/router';
 import { SectionResolver } from '../../section/section.resolver';
 import { InstanceComponent } from '../../instance/instance.component';
 import { InstanceResolver } from '../../instance/instance.resolver';
-import { ToscaTypes } from '../../wineryInterfaces/enums';
+import { ToscaTypes } from '../../model/enums';
 import { RepositoryComponent } from '../../instance/admin/repository/repository.component';
 import { TypeWithShortNameComponent } from '../../instance/admin/typesWithShortName/typeWithShortName.component';
 import { NamespacesComponent } from '../../instance/admin/namespaces/namespaces.component';
 import { LoggerComponent } from '../../instance/admin/logger/logger.component';
 import { ConsistencyCheckComponent } from '../../instance/admin/consistencyCheck/consistencyCheck.component';
+import { AccountabilityComponent } from '../../instance/admin/accountability/accountability.component';
+import { AuthorizationComponent } from '../../instance/admin/accountability/authorization/authorization.component';
+import { AuthenticationComponent } from '../../instance/admin/accountability/authentication/authentication.component';
+import { ConfigurationComponent } from '../../instance/admin/accountability/configuration/configuration.component';
+import { ProvenanceComponent } from '../../instance/admin/accountability/provenance/provenance.component';
 import { KeyManagementComponent } from '../../instance/admin/keyManagement/keyManagement.component';
 import { keyManagementRoutes } from '../../instance/admin/keyManagement/keyManagement.module';
 
@@ -38,12 +43,23 @@ const adminRoutes: Routes = [
             { path: 'plantypes', component: TypeWithShortNameComponent },
             { path: 'constrainttypes', component: TypeWithShortNameComponent },
             { path: 'consistencycheck', component: ConsistencyCheckComponent },
-            { path: 'log', component: LoggerComponent },
+            {
+                path: 'accountability',
+                component: AccountabilityComponent,
+                children: [
+                    { path: 'authorization', component: AuthorizationComponent },
+                    { path: 'authentication', component: AuthenticationComponent },
+                    { path: 'provenance', component: ProvenanceComponent },
+                    { path: 'configuration', component: ConfigurationComponent },
+                    { path: '', redirectTo: 'authorization', pathMatch: 'full' }
+                ]
+            },
             {
                 path: 'keymanagement',
                 component: KeyManagementComponent,
                 children: keyManagementRoutes
             },
+            { path: 'log', component: LoggerComponent },
             { path: '', redirectTo: 'namespaces', pathMatch: 'full' }
         ]
     },

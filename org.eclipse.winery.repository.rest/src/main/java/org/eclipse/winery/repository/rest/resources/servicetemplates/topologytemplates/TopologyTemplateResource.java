@@ -41,12 +41,12 @@ import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.rest.RestUtils;
+import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResourceContainingATopology;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.composeadapter.CompositionData;
-import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 import org.eclipse.winery.repository.splitting.Splitting;
+import org.eclipse.winery.repository.targetallocation.Allocation;
+import org.eclipse.winery.repository.targetallocation.util.AllocationRequest;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource.Builder;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
@@ -58,14 +58,16 @@ public class TopologyTemplateResource {
 
     private final TTopologyTemplate topologyTemplate;
 
-    private final ServiceTemplateResource serviceTemplateRes;
+    private final AbstractComponentInstanceResourceContainingATopology parent;
+    private final String type;
 
     /**
      * A topology template is always nested in a service template
      */
-    public TopologyTemplateResource(ServiceTemplateResource parent) {
-        this.topologyTemplate = parent.getServiceTemplate().getTopologyTemplate();
-        this.serviceTemplateRes = parent;
+    public TopologyTemplateResource(AbstractComponentInstanceResourceContainingATopology parent, TTopologyTemplate topologyTemplate, String type) {
+        this.topologyTemplate = topologyTemplate;
+        this.parent = parent;
+        this.type = type;
     }
 
     @GET
@@ -87,7 +89,7 @@ public class TopologyTemplateResource {
         URI repositoryURI = uriInfo.getBaseUri();
         location = location + "/?repositoryURL=";
         location = location + Util.URLencode(repositoryURI.toString());
-        ServiceTemplateId serviceTemplate = (ServiceTemplateId) this.serviceTemplateRes.getId();
+        ServiceTemplateId serviceTemplate = (ServiceTemplateId) this.parent.getId();
         location = location + "&ns=";
         location = location + serviceTemplate.getNamespace().getEncoded();
         location = location + "&id=";
@@ -105,39 +107,6 @@ public class TopologyTemplateResource {
         return res;
     }
 
-    /**
-     * @param uriInfo the URI ending with "topologytemplate/" of a service template
-     */
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response triggerGenerateBuildPlan(@Context UriInfo uriInfo) {
-        String plansURI = uriInfo.getAbsolutePath().resolve("../plans/").toString();
-        String csarURI = uriInfo.getAbsolutePath().resolve("../?csar").toString();
-
-        String request = "<generatePlanForTopology><CSARURL>";
-        request += csarURI;
-        request += "</CSARURL><PLANPOSTURL>";
-        request += plansURI;
-        request += "</PLANPOSTURL></generatePlanForTopology>";
-
-        Client client = Client.create();
-
-        Builder wr = null;
-        if (RestUtils.isResourceAvailable("http://localhost:1339/planbuilder")) {
-            wr = client.resource("http://localhost:1339/planbuilder/sync").type(MediaType.APPLICATION_XML);
-        } else if (RestUtils.isResourceAvailable("http://localhost:1337/containerapi/planbuilder")) {
-            wr = client.resource("http://localhost:1337/containerapi/planbuilder/sync").type(MediaType.APPLICATION_XML);
-        }
-
-        try {
-            wr.post(String.class, request);
-        } catch (com.sun.jersey.api.client.UniformInterfaceException e) {
-            return Response.serverError().entity(e.getMessage()).build();
-        }
-
-        return Response.ok().build();
-    }
-
     // @formatter:off
     @GET
     @ApiOperation(value = "Returns a JSON representation of the topology template." +
@@ -146,8 +115,8 @@ public class TopologyTemplateResource {
         "@return The JSON representation of the topology template <em>without</em> associated artifacts and without the parent service template")
     @Produces(MediaType.APPLICATION_JSON)
     // @formatter:on
-    public Response getComponentInstanceJSON() {
-        return Response.ok(this.topologyTemplate).build();
+    public TTopologyTemplate getComponentInstanceJSON() {
+        return this.topologyTemplate;
     }
 
     /**
@@ -159,9 +128,9 @@ public class TopologyTemplateResource {
     public Response mergeWithOtherTopologyTemplate(String strOtherServiceTemplateQName) {
         QName otherServiceTemplateQName = QName.valueOf(strOtherServiceTemplateQName);
         ServiceTemplateId otherServiceTemplateId = new ServiceTemplateId(otherServiceTemplateQName);
-        ServiceTemplateId thisServiceTemplateId = (ServiceTemplateId) this.serviceTemplateRes.getId();
+        ServiceTemplateId thisServiceTemplateId = (ServiceTemplateId) this.parent.getId();
         try {
-            BackendUtils.mergeServiceTemplateAinServiceTemplateB(otherServiceTemplateId, thisServiceTemplateId);
+            BackendUtils.mergeTopologyTemplateAinTopologyTemplateB(otherServiceTemplateId, thisServiceTemplateId);
         } catch (IOException e) {
             LOGGER.debug("Could not merge", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e).build();
@@ -173,8 +142,8 @@ public class TopologyTemplateResource {
     @Path("nodetemplates/")
     public NodeTemplatesResource getNodeTemplatesResource() {
         // FIXME: onDelete will not work as we have a copy of the original list. We have to add a "listener" to remove at the list and route that remove to the original list
-        List<TNodeTemplate> l = BackendUtils.getAllNestedNodeTemplates(this.serviceTemplateRes.getServiceTemplate());
-        return new NodeTemplatesResource(l, this.serviceTemplateRes);
+        List<TNodeTemplate> l = this.topologyTemplate.getNodeTemplates();
+        return new NodeTemplatesResource(l, this.parent);
     }
 
     @Path("relationshiptemplates/")
@@ -186,25 +155,26 @@ public class TopologyTemplateResource {
                 l.add((TRelationshipTemplate) t);
             }
         }
-        return new RelationshipTemplatesResource(l, this.serviceTemplateRes);
+        return new RelationshipTemplatesResource(l, this.parent);
     }
 
     @PUT
     @ApiOperation(value = "Replaces the topology by the information given in the XML")
     @Consumes(MediaType.TEXT_XML)
     public Response setModel(TTopologyTemplate topologyTemplate) {
-        this.serviceTemplateRes.getServiceTemplate().setTopologyTemplate(topologyTemplate);
-        return RestUtils.persist(this.serviceTemplateRes);
+        this.parent.setTopology(topologyTemplate, this.type);
+        return RestUtils.persist(this.parent);
     }
 
     @PUT
-    @ApiOperation(value = "Replaces the topology by the information given in the XML")
+    @ApiOperation(value = "Replaces the topology by the information given in the JSON")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response setModelJson(TTopologyTemplate topologyTemplate) throws Exception {
         ModelUtilities.patchAnyAttributes(topologyTemplate.getNodeTemplates());
         ModelUtilities.patchAnyAttributes(topologyTemplate.getRelationshipTemplates());
-        this.serviceTemplateRes.getServiceTemplate().setTopologyTemplate(topologyTemplate);
-        return RestUtils.persist(this.serviceTemplateRes);
+        // the following method includes patching of the topology template (removing empty lists, ..)
+        this.parent.setTopology(topologyTemplate, this.type);
+        return RestUtils.persist(this.parent);
     }
 
     // @formatter:off
@@ -216,7 +186,7 @@ public class TopologyTemplateResource {
         "getTopologyTemplate(QName)} consumes this template</p>" +
         "<p>@return The XML representation of the topology template <em>without</em>" +
         "associated artifacts and without the parent service template </p>")
-    @Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML})
+    @Produces( {MediaType.APPLICATION_XML, MediaType.TEXT_XML})
     // @formatter:on
     public Response getComponentInstanceXML() {
         return RestUtils.getXML(TTopologyTemplate.class, this.topologyTemplate);
@@ -229,7 +199,7 @@ public class TopologyTemplateResource {
         Splitting splitting = new Splitting();
         ServiceTemplateId splitServiceTemplateId;
         try {
-            splitServiceTemplateId = splitting.splitTopologyOfServiceTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());
+            splitServiceTemplateId = splitting.splitTopologyOfServiceTemplate((ServiceTemplateId) this.parent.getId());
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not split. " + e.getMessage()).build();
         }
@@ -244,7 +214,7 @@ public class TopologyTemplateResource {
         Splitting splitting = new Splitting();
         ServiceTemplateId matchedServiceTemplateId;
         try {
-            matchedServiceTemplateId = splitting.matchTopologyOfServiceTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());
+            matchedServiceTemplateId = splitting.matchTopologyOfServiceTemplate((ServiceTemplateId) this.parent.getId());
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Could not match. " + e.getMessage()).build();
         }
@@ -252,10 +222,29 @@ public class TopologyTemplateResource {
         return Response.created(url).build();
     }
 
+    @Path("allocate")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @POST
+    public Response allocate(@Context UriInfo uriInfo, AllocationRequest allocationRequest) {
+        try {
+            Allocation allocation = new Allocation(allocationRequest);
+            List<ServiceTemplateId> allocatedIds = allocation.allocate((ServiceTemplateId) this.parent.getId());
+            List<URI> urls = new ArrayList<>();
+            for (ServiceTemplateId id : allocatedIds) {
+                urls.add(uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(id)));
+            }
+            return Response.ok(urls, MediaType.APPLICATION_JSON).build();
+        } catch (Exception e) {
+            LOGGER.debug("Error allocating", e);
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
     @POST
     @Path("compose/")
-    @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
-    @Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
+    @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
+    @Produces( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
     public Response composeServiceTemplates(CompositionData compositionData, @Context UriInfo uriInfo) {
         Splitting splitting = new Splitting();
         String newComposedSolutionServiceTemplateId = compositionData.getTargetid();
@@ -277,7 +266,7 @@ public class TopologyTemplateResource {
         if (mergeResponse.getStatus() == 500) {
             return mergeResponse;
         }
-        URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(serviceTemplateRes.getId()));
+        URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(parent.getId()));
         String location = url.toString();
         location = location + "topologytemplate?edit";
         url = RestUtils.createURI(location);
@@ -291,7 +280,7 @@ public class TopologyTemplateResource {
     public Response resolve(@Context UriInfo uriInfo) {
         Splitting splitting = new Splitting();
         try {
-            splitting.resolveTopologyTemplate((ServiceTemplateId) this.serviceTemplateRes.getId());
+            splitting.resolveTopologyTemplate((ServiceTemplateId) this.parent.getId());
             return Response.ok().build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();

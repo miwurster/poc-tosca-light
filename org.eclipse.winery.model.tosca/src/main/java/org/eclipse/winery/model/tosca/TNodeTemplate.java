@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -108,20 +110,19 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         return "nodetemplate";
     }
 
-    public TNodeTemplate.Requirements getRequirements() {
+    public TNodeTemplate.@Nullable Requirements getRequirements() {
         return requirements;
     }
 
-    public void setRequirements(TNodeTemplate.Requirements value) {
+    public void setRequirements(TNodeTemplate.@Nullable Requirements value) {
         this.requirements = value;
     }
 
-    /*@Nullable*/
-    public TNodeTemplate.Capabilities getCapabilities() {
+    public TNodeTemplate.@Nullable Capabilities getCapabilities() {
         return capabilities;
     }
 
-    public void setCapabilities(TNodeTemplate.Capabilities value) {
+    public void setCapabilities(TNodeTemplate.@Nullable Capabilities value) {
         this.capabilities = value;
     }
 
@@ -129,7 +130,7 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         return policies;
     }
 
-    public void setPolicies(TNodeTemplate.Policies value) {
+    public void setPolicies(TNodeTemplate.@Nullable Policies value) {
         this.policies = value;
     }
 
@@ -138,7 +139,7 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         return deploymentArtifacts;
     }
 
-    public void setDeploymentArtifacts(TDeploymentArtifacts value) {
+    public void setDeploymentArtifacts(@Nullable TDeploymentArtifacts value) {
         this.deploymentArtifacts = value;
     }
 
@@ -147,7 +148,7 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         return name;
     }
 
-    public void setName(String value) {
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
@@ -177,43 +178,58 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         this.maxInstances = value;
     }
 
+    /**
+     * In the JSON, also output this direct child of the node template object.
+     * Therefore, no JsonIgnore annotation.
+     */
     @XmlTransient
+    @Nullable
     public String getX() {
         Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
         return otherNodeTemplateAttributes.get(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x"));
     }
 
     /**
-     * Sets the left coordinate of a {@link TNodeTemplate}.
+     * Sets the top coordinate of a {@link TNodeTemplate}. When receiving the JSON, this method ensures that (i) the "y" property can be handled and (ii) the Y coordinate is written correctly in the extension namespace.
      *
      * @param x the value of the x-coordinate to be set
      */
-    public void setX(String x) {
+    public void setX(@NonNull String x) {
+        Objects.requireNonNull(x);
         Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
         otherNodeTemplateAttributes.put(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x"), x);
     }
 
+    /**
+     * In the JSON, also output this direct child of the node template object.
+     * Therefore, no JsonIgnore annotation.
+     */
     @XmlTransient
+    @Nullable
     public String getY() {
         Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
         return otherNodeTemplateAttributes.get(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "y"));
     }
 
     /**
-     * Sets the top coordinate of a {@link TNodeTemplate}.
+     * Sets the top coordinate of a {@link TNodeTemplate}. When receiving the JSON, this method ensures that (i) the "y" property can be handled and (ii) the Y coordinate is written correctly in the extension namespace.
      *
      * @param y the value of the coordinate to be set
      */
-    public void setY(String y) {
+    public void setY(@NonNull String y) {
         Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
         otherNodeTemplateAttributes.put(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "y"), y);
+    }
+
+    public void accept(@NonNull Visitor visitor) {
+        visitor.visit(this);
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "capability"
     })
-    public static class Capabilities {
+    public static class Capabilities implements Serializable {
 
         @XmlElement(name = "Capability", required = true)
         protected List<TCapability> capability;
@@ -258,41 +274,25 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         public int hashCode() {
             return Objects.hash(capability);
         }
+
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
+        }
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
         "policy"
     })
-    public static class Policies {
+    public static class Policies implements Serializable {
 
         @XmlElement(name = "Policy", required = true)
         protected List<TPolicy> policy;
 
-        /**
-         * Gets the value of the policy property.
-         * <p>
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the policy property.
-         * <p>
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getPolicy().add(newItem);
-         * </pre>
-         * <p>
-         * <p>
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TPolicy }
-         */
         @NonNull
         public List<TPolicy> getPolicy() {
             if (policy == null) {
-                policy = new ArrayList<TPolicy>();
+                policy = new ArrayList<>();
             }
             return this.policy;
         }
@@ -333,31 +333,11 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
     @XmlType(name = "", propOrder = {
         "requirement"
     })
-    public static class Requirements {
+    public static class Requirements implements Serializable {
 
         @XmlElement(name = "Requirement", required = true)
         protected List<TRequirement> requirement;
 
-        /**
-         * Gets the value of the requirement property.
-         * <p>
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the requirement property.
-         * <p>
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getRequirement().add(newItem);
-         * </pre>
-         * <p>
-         * <p>
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TRequirement }
-         */
         @NonNull
         public List<TRequirement> getRequirement() {
             if (requirement == null) {
@@ -377,6 +357,10 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         @Override
         public int hashCode() {
             return Objects.hash(requirement);
+        }
+
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
         }
     }
 

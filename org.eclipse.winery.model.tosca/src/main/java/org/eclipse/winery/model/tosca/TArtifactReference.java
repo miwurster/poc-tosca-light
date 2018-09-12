@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -32,7 +33,7 @@ import org.eclipse.jdt.annotation.NonNull;
 @XmlType(name = "tArtifactReference", propOrder = {
     "includeOrExclude"
 })
-public class TArtifactReference {
+public class TArtifactReference implements Serializable {
 
     @XmlElements( {
         @XmlElement(name = "Exclude", type = TArtifactReference.Exclude.class),
@@ -113,7 +114,6 @@ public class TArtifactReference {
         this.reference = value;
     }
 
-
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
     public static class Exclude {
@@ -131,10 +131,9 @@ public class TArtifactReference {
         }
     }
 
-
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Include {
+    public static class Include implements Serializable {
 
         @XmlAttribute(name = "pattern", required = true)
         protected String pattern;

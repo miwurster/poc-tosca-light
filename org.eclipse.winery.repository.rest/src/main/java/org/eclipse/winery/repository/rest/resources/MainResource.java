@@ -13,10 +13,29 @@
  ********************************************************************************/
 package org.eclipse.winery.repository.rest.resources;
 
-import com.sun.jersey.core.header.FormDataContentDisposition;
-import com.sun.jersey.multipart.FormDataParam;
-import io.swagger.annotations.*;
-import org.apache.commons.io.FileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+
+import org.eclipse.winery.repository.importing.CsarImportOptions;
 import org.eclipse.winery.repository.importing.CsarImporter;
 import org.eclipse.winery.repository.importing.ImportMetaInformation;
 import org.eclipse.winery.repository.rest.RestUtils;
@@ -34,20 +53,21 @@ import org.eclipse.winery.repository.rest.resources.entitytypes.policytypes.Poli
 import org.eclipse.winery.repository.rest.resources.entitytypes.relationshiptypes.RelationshipTypesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.requirementtypes.RequirementTypesResource;
 import org.eclipse.winery.repository.rest.resources.imports.ImportsResource;
+import org.eclipse.winery.repository.rest.resources.patternrefinementmodels.PatternRefinementModelsResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplatesResource;
 import org.eclipse.winery.repository.rest.resources.yaml.YAMLParserResource;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.*;
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ResponseHeader;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * All paths listed here have to be listed in Jersey's filter configuration
@@ -55,6 +75,7 @@ import java.util.*;
 @Api()
 @Path("/")
 public class MainResource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MainResource.class);
 
     @Path("API/")
     public APIResource api() {
@@ -126,10 +147,15 @@ public class MainResource {
         return new ServiceTemplatesResource();
     }
 
-	@Path("compliancerules/")
-	public ComplianceRulesResource compliancerules() {
-		return new ComplianceRulesResource();
-	}
+    @Path("compliancerules/")
+    public ComplianceRulesResource compliancerules() {
+        return new ComplianceRulesResource();
+    }
+
+    @Path("patternrefinementmodels/")
+    public PatternRefinementModelsResource patternRefinementModels() {
+        return new PatternRefinementModelsResource();
+    }
 
     @Path("yaml/")
     public YAMLParserResource yamlParser() {
@@ -173,29 +199,40 @@ public class MainResource {
     public Response importCSAR(
         @FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataContentDisposition fileDetail,
         @FormDataParam("overwrite") @ApiParam(value = "true: content of CSAR overwrites existing content. false (default): existing content is kept") Boolean overwrite,
-        @FormDataParam("secure") Boolean secure, @Context UriInfo uriInfo) {
+        @FormDataParam("validate") @ApiParam(value = "true: validates the hash of the manifest file with the one stored in the accountability layer") Boolean validate,
+        @FormDataParam("secure") Boolean secure,
+        @Context UriInfo uriInfo) {
+        LocalDateTime start = LocalDateTime.now();
+
         // @formatter:on
         CsarImporter importer = new CsarImporter();
-        Map<String, Object> importConfigurations = new HashMap<>();
-        importConfigurations.put(CsarImporter.SECURE_CSAR_IMPORT, Objects.nonNull(secure) && secure);
-        boolean ow;
-        ow = (overwrite != null) && overwrite;
+        CsarImportOptions options = new CsarImportOptions();
+        options.setOverwrite((overwrite != null) && overwrite);
+        options.setAsyncWPDParsing(false);
+        options.setValidate((validate != null) && validate);
+        options.setSecure((secure != null) && secure);
         ImportMetaInformation importMetaInformation;
         try {
-            importMetaInformation = importer.readCSAR(uploadedInputStream, ow, true, importConfigurations);
+            importMetaInformation = importer.readCSAR(uploadedInputStream, options);
         } catch (Exception e) {
             return Response.serverError().entity("Could not import CSAR").entity(e.getMessage()).build();
         }
         if (importMetaInformation.errors.isEmpty()) {
-            if (importMetaInformation.entryServiceTemplate.isPresent()) {
-                URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(importMetaInformation.entryServiceTemplate.get()));
+            if (options.isValidate()) {
+
+                return Response.ok(importMetaInformation, MediaType.APPLICATION_JSON).build();
+            } else if (Objects.nonNull(importMetaInformation.entryServiceTemplate)) {
+                URI url = uriInfo.getBaseUri().resolve(RestUtils.getAbsoluteURL(importMetaInformation.entryServiceTemplate));
+                LOGGER.debug("CSAR import lasted {}", Duration.between(LocalDateTime.now(), start).toString());
                 return Response.created(url).build();
             } else {
+                LOGGER.debug("CSAR import lasted {}", Duration.between(LocalDateTime.now(), start).toString());
                 return Response.noContent().build();
             }
         } else {
+            LOGGER.debug("CSAR import lasted {}", Duration.between(LocalDateTime.now(), start).toString());
             // In case there are errors, we send them as "bad request"
-            return Response.status(Status.BAD_REQUEST).entity(importMetaInformation.errors).build();
+            return Response.status(Status.BAD_REQUEST).type(MediaType.APPLICATION_JSON).entity(importMetaInformation).build();
         }
     }
 
@@ -208,7 +245,12 @@ public class MainResource {
         FileUtils.copyInputStreamToFile(is, toscaFile);
         CsarImporter importer = new CsarImporter();
         List<String> errors = new ArrayList<>();
-        importer.importDefinitions(null, toscaFile.toPath(), errors, false, true);
+        CsarImportOptions options = new CsarImportOptions();
+        options.setOverwrite(false);
+        options.setAsyncWPDParsing(true);
+        options.setValidate(false);
+        importer.importDefinitions(null, toscaFile.toPath(), errors, options);
+
         if (errors.isEmpty()) {
             return Response.noContent().build();
         } else {
