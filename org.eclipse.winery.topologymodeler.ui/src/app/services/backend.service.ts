@@ -22,11 +22,10 @@ import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { urlElement } from '../models/enums';
 import { ServiceTemplateId } from '../models/serviceTemplateId';
 import { ToscaDiff } from '../models/ToscaDiff';
+import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs/Observable';
 import { forkJoin } from 'rxjs';
-import { map } from 'rxjs/internal/operators';
 import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
-import { ToastrService } from 'ngx-toastr';
 import { ErrorHandlerService } from './error-handler.service';
 
 /**
@@ -48,8 +47,8 @@ export class BackendService {
     allEntities$ = this.allEntities.asObservable();
 
     constructor(private http: HttpClient,
-                private errorHandler: ErrorHandlerService,
-                private alert: ToastrService) {
+                private alert: ToastrService,
+                private errorHandler: ErrorHandlerService) {
         this.endpointConfiguration$.subscribe((params: TopologyModelerConfiguration) => {
             if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
                 isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {
@@ -114,14 +113,16 @@ export class BackendService {
         if (this.configuration) {
             const url = this.configuration.repositoryURL + '/' + this.configuration.parentPath + '/'
                 + encodeURIComponent(encodeURIComponent(this.configuration.ns)) + '/';
-            const currentUrl = url + this.configuration.id + '/' + this.configuration.elementPath + '/';
-            const visualsUrl = backendBaseURL + '/nodetypes/allvisualappearancedata';
+            const currentUrl = url + this.configuration.id + '/' + this.configuration.elementPath;
+            const nodeVisualsUrl = backendBaseURL + '/nodetypes/allvisualappearancedata';
+            const relationshipVisualsUrl = backendBaseURL + '/relationshiptypes/allvisualappearancedata';
             // This is required because the information has to be returned together
 
             if (isNullOrUndefined(this.configuration.compareTo)) {
                 return forkJoin(
                     this.http.get<TTopologyTemplate>(currentUrl),
-                    this.http.get<Visuals>(visualsUrl)
+                    this.http.get<Visuals>(nodeVisualsUrl),
+                    this.http.get<Visuals>(relationshipVisualsUrl),
                 );
             } else {
                 const compareUrl = url
@@ -132,33 +133,12 @@ export class BackendService {
 
                 return forkJoin(
                     this.http.get<TTopologyTemplate>(currentUrl),
-                    this.http.get<Visuals>(visualsUrl),
+                    this.http.get<Visuals>(nodeVisualsUrl),
+                    this.http.get<Visuals>(relationshipVisualsUrl),
                     this.http.get<ToscaDiff>(compareUrl),
                     this.http.get<TTopologyTemplate>(templateUrl)
                 );
             }
-        }
-    }
-
-    /**
-     * Returns data that is later used by jsPlumb to render a relationship connector
-     * @returns data The JSON from the server
-     */
-    requestRelationshipTypeVisualappearance(namespace: string, id: string): Observable<EntityType> {
-        if (this.configuration) {
-            const url = this.configuration.repositoryURL + '/relationshiptypes/'
-                + encodeURIComponent(encodeURIComponent(namespace)) + '/'
-                + id + '/visualappearance/';
-            return this.http
-                .get<EntityType>(url, { headers: this.headers })
-                .pipe(
-                    map(relationship => {
-                        if (!isNullOrUndefined(this.configuration.compareTo)) {
-                            relationship.color = 'grey';
-                        }
-                        return relationship;
-                    })
-                );
         }
     }
 
@@ -297,7 +277,7 @@ export class BackendService {
     saveTopologyTemplate(topologyTemplate: any): Observable<HttpResponse<string>> {
         if (this.configuration) {
             const headers = new HttpHeaders().set('Content-Type', 'application/json');
-            const url = this.serviceTemplateURL + '/' + this.configuration.elementPath + '/';
+            const url = this.serviceTemplateURL + '/' + this.configuration.elementPath;
 
             return this.http.put(url, topologyTemplate, {
                 headers: headers, responseType: 'text', observe: 'response'
