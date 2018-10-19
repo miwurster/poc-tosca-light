@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,6 +63,7 @@ import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
+import org.eclipse.winery.repository.export.CsarExportConfiguration;
 import org.eclipse.winery.repository.export.CsarExporter;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -428,7 +429,7 @@ public class ConsistencyChecker {
 
     private void checkCsar(DefinitionsChildId id, Path tempCsar) {
         CsarExporter exporter = new CsarExporter();
-        Map<String, Object> exportConfiguration = new HashMap<>();
+        EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.noneOf(CsarExportConfiguration.class);
         try (OutputStream outputStream = Files.newOutputStream(tempCsar, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             try {
                 exporter.writeCsar(RepositoryFactory.getRepository(), id, outputStream, exportConfiguration);

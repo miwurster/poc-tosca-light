@@ -24,5 +24,12 @@ public enum CsarExportConfiguration {
     /**
      * Indicates the hash of all files referenced in the exported CSAR should be included in the tosca meta-file
      */
-    INCLUDE_HASHES;
+    INCLUDE_HASHES,
+
+    /**
+     * Indicates that modeled security policies must be applied
+     */
+    APPLY_SECURITY_POLICIES,
+
+    STORE_FINGERPRINT_IN_ACCOUNTABILITY
 }

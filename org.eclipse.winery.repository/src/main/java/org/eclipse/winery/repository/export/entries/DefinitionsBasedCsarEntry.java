@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.repository.JAXBSupport;
 
@@ -31,10 +32,16 @@ import org.eclipse.winery.repository.JAXBSupport;
 public class DefinitionsBasedCsarEntry implements CsarEntry {
     private static Marshaller marshaller;
     private Definitions definitions;
+    private DefinitionsChildId definitionsChildId;
 
-    public DefinitionsBasedCsarEntry(Definitions definitions) {
+    public DefinitionsBasedCsarEntry(Definitions definitions, DefinitionsChildId definitionsChildId) {
         assert (definitions != null);
         this.definitions = definitions;
+        this.definitionsChildId = definitionsChildId;
+    }
+
+    public Definitions getDefinitions() {
+        return this.definitions;
     }
 
     private static Marshaller getMarshaller() {
@@ -65,4 +72,7 @@ public class DefinitionsBasedCsarEntry implements CsarEntry {
         }
     }
 
+    public DefinitionsChildId getDefinitionsChildId() {
+        return definitionsChildId;
+    }
 }

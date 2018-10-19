@@ -24,6 +24,7 @@ public class ToscaMetaEntry {
     private String contentType;
     private String digestAlgorithm;
     private String digestValue;
+    private String digestValueUsingDefaultAlgorithm;
     private String digestOfEncryptedProperty;
         
     private ToscaMetaEntry(Builder builder) {
@@ -31,6 +32,7 @@ public class ToscaMetaEntry {
         this.contentType = builder.contentType;
         this.digestAlgorithm = builder.digestAlgorithm;
         this.digestValue = builder.digestValue;
+        this.digestValueUsingDefaultAlgorithm = builder.digestValueUsingDefaultAlgorithm;
         this.digestOfEncryptedProperty = builder.digestOfEncryptedProperty;
     }
 
@@ -41,6 +43,7 @@ public class ToscaMetaEntry {
         private String contentType;
         private String digestAlgorithm;
         private String digestValue;
+        private String digestValueUsingDefaultAlgorithm;
         private String digestOfEncryptedProperty;
 
         public Builder(String name) {
@@ -59,6 +62,11 @@ public class ToscaMetaEntry {
 
         public Builder digestValue(String digestValue) {
             this.digestValue = digestValue;
+            return this;
+        }
+        
+        public Builder digestValueUsingDefaultAlgorithm(String digestValueUsingDefaultAlgorithm) {
+            this.digestValueUsingDefaultAlgorithm = digestValueUsingDefaultAlgorithm;
             return this;
         }
 
@@ -95,6 +103,12 @@ public class ToscaMetaEntry {
             sb.append(TOSCAMetaFileAttributes.DIGEST);
             sb.append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR);
             sb.append(digestValue);
+            sb.append(System.lineSeparator());
+        }
+        if (Objects.nonNull(digestValueUsingDefaultAlgorithm)) {
+            sb.append(TOSCAMetaFileAttributes.HASH);
+            sb.append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR);
+            sb.append(digestValueUsingDefaultAlgorithm);
             sb.append(System.lineSeparator());
         }
         if (Objects.nonNull(digestOfEncryptedProperty)) {

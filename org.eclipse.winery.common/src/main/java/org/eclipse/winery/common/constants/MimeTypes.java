@@ -27,4 +27,7 @@ public class MimeTypes {
     public static final String MIMETYPE_YAML = "text/yaml";
 
     public static final String MIMETYPE_ZIP = "application/zip";
+    
+    public static final String MIMETYPE_MANIFEST = "text/cache-manifest";
+    public static final String MIMETYPE_OCTET_STREAM = "application/octet-stream";
 }

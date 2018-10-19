@@ -21,8 +21,59 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ModalDirective } from 'ngx-bootstrap';
 import { WineryRowData } from '../../../../wineryTableModule/wineryTable.component';
-import { SelectData } from '../../../../wineryInterfaces/selectData';
 import { SelectItem } from 'ng2-select';
+import { SelectData } from '../../../../model/selectData';
+
+export class KeyPairTableData {
+    alias: string;
+    algorithm: string;
+    publicKeySize: number;
+    certificate: boolean;
+    originalObject: KeyPairEntity;
+
+    constructor(kp: KeyPairEntity) {
+        this.alias = kp.privateKey.alias;
+        this.algorithm = kp.privateKey.algorithm;
+        this.publicKeySize = kp.publicKey.keySizeInBits;
+        this.certificate = kp.certificate !== null;
+        this.originalObject = kp;
+    }
+}
+
+export class AddSecretKeyData {
+    algorithm: string;
+    keySizeInBits: string;
+    keyFile: File;
+
+    constructor() {
+        this.algorithm = null;
+        this.keySizeInBits = null;
+    }
+}
+
+export class AddKeypairData {
+    algorithm: string;
+    keySizeInBits: string;
+    commonName: string;
+    localityName: string;
+    stateOrProvinceName: string;
+    organizationalUnitName: string;
+    organizationName: string;
+    countryName: string;
+    privateKeyFile: File;
+    certificateFile: File;
+
+    constructor() {
+        this.algorithm = null;
+        this.keySizeInBits = null;
+    }
+}
+
+export class KeystoreTableData {
+    secretkeys: KeyEntity[];
+    keypairs: KeyPairTableData[];
+    certificates: CertificateEntity[];
+}
 
 @Component({
     selector: 'winery-instance-keystoreentity',
@@ -60,15 +111,15 @@ export class KeystoreEntityComponent implements OnInit {
         'certificates': []
     };
     selectedCell: WineryRowData = {
-        row: "",
-        column: ""
+        row: '',
+        column: ''
     };
     selectedEntitySecPolicyTemplate: any = undefined;
     supportedAlgorithms: Array<SelectData> = [];
     secPolicyTemplateNameSpace: string;
     supportedAlgorithmsKeySizesMap: { [key: string]: SelectData[] } = {};
-    addKeyData: AddSecretKeyData = new AddSecretKeyData;
-    addKeypairData: AddKeypairData = new AddKeypairData;
+    addKeyData: AddSecretKeyData = new AddSecretKeyData();
+    addKeypairData: AddKeypairData = new AddKeypairData();
     addCertificateData: File = undefined;
 
     @ViewChild('addKeyModal') addKeyModal: ModalDirective;
@@ -84,7 +135,7 @@ export class KeystoreEntityComponent implements OnInit {
                 public route: ActivatedRoute) {
         this.route.url.subscribe(params => {
             this.keystoreEntityType = params[0].path;
-        })
+        });
     }
 
     ngOnInit(): void {
@@ -125,7 +176,7 @@ export class KeystoreEntityComponent implements OnInit {
         if (this.keystoreEntityType === 'keypairs') {
             this.data[this.keystoreEntityType] = [];
             for (let i = 0; i < receivedData.length; i++) {
-                let kp = new KeyPairTableData(<KeyPairEntity>receivedData[i]);
+                const kp = new KeyPairTableData(<KeyPairEntity>receivedData[i]);
                 this.data[this.keystoreEntityType].push(kp);
             }
         } else {
@@ -239,10 +290,10 @@ export class KeystoreEntityComponent implements OnInit {
                     break;
             }
             if (processData) {
-                let addedAlgorithms: string[] = [];
+                const addedAlgorithms: string[] = [];
                 for (let i = 0; i < dataArray.length; i++) {
-                    let algo = dataArray[i].name;
-                    let keySize = dataArray[i].keySizeInBits;
+                    const algo = dataArray[i].name;
+                    const keySize = dataArray[i].keySizeInBits;
                     if (addedAlgorithms.indexOf(algo) === -1) {
                         addedAlgorithms.push(algo);
                         this.supportedAlgorithms.push({ id: algo, text: algo });
@@ -272,7 +323,7 @@ export class KeystoreEntityComponent implements OnInit {
     targetKeySizeSelected(targetObj: SelectItem) {
         switch (this.keystoreEntityType) {
             case 'secretkeys':
-                this.addKeyData.algorithm = targetObj.id;
+                this.addKeyData.keySizeInBits = targetObj.id;
                 break;
             case 'keypairs':
                 this.addKeypairData.keySizeInBits = targetObj.id;
@@ -341,7 +392,7 @@ export class KeystoreEntityComponent implements OnInit {
     generateEncryptionPolicy() {
         this.modalLoading = true;
         this.service.generateEncryptionPolicy(this.selectedCell.row.alias).subscribe(
-            data => {
+            res => {
                 this.modalLoading = false;
                 this.service.getSecurityPolicyTemplate(this.secPolicyTemplateNameSpace, this.selectedCell.row.alias).subscribe(
                     data => this.handlePolicyTemplateData(data),
@@ -374,7 +425,7 @@ export class KeystoreEntityComponent implements OnInit {
     generateSigningPolicy() {
         this.modalLoading = true;
         this.service.generateSigningPolicy(this.selectedCell.row.alias).subscribe(
-            data => {
+            res => {
                 this.modalLoading = false;
                 this.service.getSecurityPolicyTemplate(this.secPolicyTemplateNameSpace, this.selectedCell.row.alias).subscribe(
                     data => this.handlePolicyTemplateData(data),
@@ -397,56 +448,5 @@ export class KeystoreEntityComponent implements OnInit {
             },
             error => this.handleError(error)
         );
-    }
-}
-
-export class KeystoreTableData {
-    secretkeys: KeyEntity[];
-    keypairs: KeyPairTableData[];
-    certificates: CertificateEntity[];
-}
-
-export class KeyPairTableData {
-    alias: string;
-    algorithm: string;
-    publicKeySize: number;
-    certificate: boolean;
-    originalObject: KeyPairEntity;
-
-    constructor(kp: KeyPairEntity) {
-        this.alias = kp.privateKey.alias;
-        this.algorithm = kp.privateKey.algorithm;
-        this.publicKeySize = kp.publicKey.keySizeInBits;
-        this.certificate = kp.certificate !== null;
-        this.originalObject = kp;
-    }
-}
-
-export class AddSecretKeyData {
-    algorithm: string;
-    keySizeInBits: string;
-    keyFile: File;
-
-    constructor() {
-        this.algorithm = null;
-        this.keySizeInBits = null;
-    }
-}
-
-export class AddKeypairData {
-    algorithm: string;
-    keySizeInBits: string;
-    commonName: string;
-    localityName: string;
-    stateOrProvinceName: string;
-    organizationalUnitName: string;
-    organizationName: string;
-    countryName: string;
-    privateKeyFile: File;
-    certificateFile: File;
-
-    constructor() {
-        this.algorithm = null;
-        this.keySizeInBits = null;
     }
 }

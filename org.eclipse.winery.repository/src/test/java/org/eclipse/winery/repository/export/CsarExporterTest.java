@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CsarExporterTest extends TestWithGitBackedRepository {
 
-    private ByteArrayInputStream createOutputAndInputStream(String commitId, DefinitionsChildId id, Map<String, Object> exportConfiguration) throws Exception {
+    private ByteArrayInputStream createOutputAndInputStream(String commitId, DefinitionsChildId id, EnumSet<CsarExportConfiguration> exportConfiguration) throws Exception {
         setRevisionTo(commitId);
         CsarExporter exporter = new CsarExporter();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -76,8 +77,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
 
     @Test
     public void csarIsValidZipForArtifactTemplateWithFilesAndSources() throws Exception {
-        Map<String, Object> exportConfiguration = new HashMap<>();
-        exportConfiguration.put(INCLUDE_HASHES.name(), null);
+        EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.of(INCLUDE_HASHES);
         try (InputStream inputStream = this.createOutputAndInputStream("origin/plain", new ArtifactTemplateId("http://plain.winery.opentosca.org/artifacttemplates", "ArtifactTemplateWithFilesAndSources-ArtifactTypeWithoutProperties", false), exportConfiguration);
              ZipInputStream zis = new ZipInputStream(inputStream)) {
             ZipEntry entry;
@@ -92,7 +92,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
     @Test
     public void metafileDoesNotContainUnnecessaryFileAttributes() throws Exception {
         // create an empty configuration object
-        Map<String, Object> exportConfiguration = new HashMap<>();
+        EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.noneOf(CsarExportConfiguration.class);
 
         try (InputStream inputStream = this.createOutputAndInputStream("origin/plain", new ArtifactTemplateId("http://plain.winery.opentosca.org/artifacttemplates", "ArtifactTemplateWithFilesAndSources-ArtifactTypeWithoutProperties", false), exportConfiguration); ZipInputStream zis = new ZipInputStream(inputStream)) {
             ManifestContents manifestContents = parseManifest(zis);
@@ -108,8 +108,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
 
     @Test
     public void testCsarFilesAreMentionedInTheManifest() throws Exception {
-        Map<String, Object> exportConfiguration = new HashMap<>();
-        exportConfiguration.put(INCLUDE_HASHES.name(), null);
+        EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.of(INCLUDE_HASHES);
 
         try (InputStream inputStream = this.createOutputAndInputStream("origin/plain", new ServiceTemplateId("http://plain.winery.opentosca.org/servicetemplates", "ServiceTemplateWithAllReqCapVariants", false), exportConfiguration); ZipInputStream zis = new ZipInputStream(inputStream)) {
             ZipEntry entry;
@@ -146,8 +145,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
 
     @Test
     public void testHashesForEachFile() throws Exception {
-        Map<String, Object> exportConfiguration = new HashMap<>();
-        exportConfiguration.put(INCLUDE_HASHES.name(), null);
+        EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.of(INCLUDE_HASHES);
 
         try (InputStream inputStream = this.createOutputAndInputStream(
             // quick fix - should work if eclipse/winery#305 is merged
@@ -156,11 +154,11 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
             exportConfiguration);
              ZipInputStream zis = new ZipInputStream(inputStream)) {
             ZipEntry entry;
-            List<CsarContentProperties> elementsList = new ArrayList<>();
+            List<MetaFileEntry> elementsList = new ArrayList<>();
             ManifestContents manifestContents = null;
 
             while ((entry = zis.getNextEntry()) != null) {
-                CsarContentProperties fileProperties = new CsarContentProperties(entry.getName());
+                MetaFileEntry fileProperties = new MetaFileEntry(entry.getName(), null);
                 elementsList.add(fileProperties);
                 byte[] array = IOUtils.toByteArray(zis);
                 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(array);
@@ -174,7 +172,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
 
             assertNotNull(manifestContents);
 
-            for (CsarContentProperties fileProperties : elementsList) {
+            for (MetaFileEntry fileProperties : elementsList) {
                 Map<String, String> attributes = manifestContents.getAttributesForSection(fileProperties.getPathInsideCsar());
 
                 if (!"TOSCA-Metadata/TOSCA.meta".equals(fileProperties.getPathInsideCsar())) {
@@ -193,8 +191,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
     @Test
     @EnabledIf("(new java.io.File(\"C:/Ethereum/keystore/UTC--2018-03-05T15-33-22.456000000Z--e4b51a3d4e77d2ce2a9d9ce107ec8ec7cff5571d.json\")).exists()")
     public void csarFilesHaveImmutableStorageAddresses() throws Exception {
-        Map<String, Object> exportConfiguration = new HashMap<>();
-        exportConfiguration.put(STORE_IMMUTABLY.name(), null);
+        EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.of(STORE_IMMUTABLY);
 
         try (InputStream inputStream = this.createOutputAndInputStream(
             "origin/plain",

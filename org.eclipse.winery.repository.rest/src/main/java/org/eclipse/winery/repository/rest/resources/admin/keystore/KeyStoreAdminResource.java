@@ -29,7 +29,6 @@ import javax.ws.rs.core.Response;
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.admin.KeystoreId;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
-import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.admin.AbstractAdminResource;
 import org.eclipse.winery.repository.security.csar.BCSecurityProcessor;
 import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
@@ -113,7 +112,7 @@ public class KeyStoreAdminResource extends AbstractAdminResource {
         Collection<AsymmetricEncryptionAlgorithm> asym = this.keystoreManager.getAsymmetricAlgorithms();
         result.put("symmetric", sym);
         result.put("asymmetric", asym);
-        
+
         return Response.ok().entity(result).build();
     }
 

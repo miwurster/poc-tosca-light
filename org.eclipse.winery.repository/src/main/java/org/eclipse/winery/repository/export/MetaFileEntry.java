@@ -14,9 +14,14 @@
 
 package org.eclipse.winery.repository.export;
 
-public class CsarContentProperties {
+import java.util.Objects;
+
+import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
+
+public class MetaFileEntry {
     
     private String pathInsideCsar;
+    private String mimeType;
     private String fileHash;
 
     /**
@@ -24,18 +29,9 @@ public class CsarContentProperties {
      */
     private String immutableAddress;
 
-    public CsarContentProperties(String pathInsideCsar) {
+    public MetaFileEntry(String pathInsideCsar, String mimeType) {
         this.pathInsideCsar = pathInsideCsar;
-    }
-
-    public CsarContentProperties(String pathInsideCsar, String fileHash) {
-        this(pathInsideCsar);
-        this.fileHash = fileHash;
-    }
-
-    public CsarContentProperties(String pathInsideCsar, String fileHash, String immutableAddress) {
-        this(pathInsideCsar, fileHash);
-        this.immutableAddress = immutableAddress;
+        this.mimeType = mimeType;
     }
 
     public String getPathInsideCsar() {
@@ -60,10 +56,9 @@ public class CsarContentProperties {
     
     @Override
     public boolean equals(Object other) {
-        return 
-            other instanceof CsarContentProperties && 
+        return other instanceof MetaFileEntry && 
                 this.pathInsideCsar != null &&
-                this.pathInsideCsar.equals(((CsarContentProperties) other).getPathInsideCsar());
+                this.pathInsideCsar.equals(((MetaFileEntry) other).getPathInsideCsar());
     }
     
     @Override
@@ -72,5 +67,24 @@ public class CsarContentProperties {
             return 0;
         
         return this.pathInsideCsar.hashCode();
+    }
+    
+    public String getMetaFileEntryString() {
+        StringBuilder entry = new StringBuilder();
+        
+        entry.append(TOSCAMetaFileAttributes.NAME).append(": ").append(pathInsideCsar).append("\n");
+        entry.append(TOSCAMetaFileAttributes.CONTENT_TYPE).append(": ").append(mimeType).append("\n");
+        
+        if (Objects.nonNull(fileHash)) {
+            entry.append(TOSCAMetaFileAttributes.HASH).append(": ").append(fileHash).append("\n");
+        }
+        
+        // todo: add everything else here
+        
+        return entry.toString();
+    }
+
+    public String getMimeType() {
+        return mimeType;
     }
 }

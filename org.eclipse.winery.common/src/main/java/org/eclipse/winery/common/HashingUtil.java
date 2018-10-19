@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,10 @@ public class HashingUtil {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             return getChecksum(fileInputStream, algorithm);
         }
+    }
+
+    public static String getChecksum(String str, String algorithm) throws IOException, NoSuchAlgorithmException {
+        return getChecksum(IOUtils.toInputStream(str), algorithm);
     }
 
     public static String getChecksum(InputStream content, String algorithm) throws IOException, NoSuchAlgorithmException {

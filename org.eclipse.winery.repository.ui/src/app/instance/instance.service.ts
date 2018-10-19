@@ -90,7 +90,10 @@ export class InstanceService {
                 subMenu = ['README', 'LICENSE', 'Detector', 'Refinement Structure', 'Relation Mappings', 'XML'];
                 break;
             default: // assume Admin
-                subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Constraint Types', 'Consistency Check', 'Accountability', 'Log', 'Key Management'];
+                subMenu = [
+                    'Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Constraint Types',
+                    'Consistency Check', 'Accountability', 'Log', 'Key Management'
+                ];
         }
 
         return subMenu;

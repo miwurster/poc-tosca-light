@@ -122,10 +122,10 @@ public class TOSCAMetaFileParser {
         }
 
         if (numErrors == 0) {
-            TOSCAMetaFileParser.LOGGER.debug("Parsing TOSCA meta file \"{}\" completed without errors. TOSCA meta file is valid.", toscaMetaFile.getFileName().toString());
+//            TOSCAMetaFileParser.LOGGER.debug("Parsing TOSCA meta file \"{}\" completed without errors. TOSCA meta file is valid.", toscaMetaFile.getFileName().toString());
             toscaMetaFileContent = new TOSCAMetaFile(manifestContent);
         } else {
-            TOSCAMetaFileParser.LOGGER.error("Parsing TOSCA meta file \"{}\" failed - {} error(s) occured. TOSCA meta file is invalid.", toscaMetaFile.getFileName().toString(), numErrors);
+//            TOSCAMetaFileParser.LOGGER.error("Parsing TOSCA meta file \"{}\" failed - {} error(s) occured. TOSCA meta file is invalid.", toscaMetaFile.getFileName().toString(), numErrors);
         }
 
         return toscaMetaFileContent;
@@ -243,9 +243,7 @@ public class TOSCAMetaFileParser {
         // Validate signature header attributes
         numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION, TOSCAMetaFileAttributes.TOSCA_SIGNATURE_VERSION_VALUE, 0);
         numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.CREATED_BY, 0);
-        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.ENTRY_DEFINITIONS, 0);
-        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.DIGEST_ALGORITHM, 0);
-        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.DIGEST_MANIFEST, 0);
+        numErrors += validateAttributeValue(attributes, TOSCAMetaFileAttributes.HASH, 0);
 
         return numErrors;
     }

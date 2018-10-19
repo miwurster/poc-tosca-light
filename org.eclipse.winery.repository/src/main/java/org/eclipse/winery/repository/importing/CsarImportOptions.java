@@ -33,13 +33,14 @@ public class CsarImportOptions {
      */
     private boolean validate;
 
-    public boolean isOverwrite() {
-        return overwrite;
-    }
+    /**
+     * if true: Validates the CSAR being imported with the security policies enforced.
+     */
+    private boolean secure;
 
-    public void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
-    }
+    public boolean isOverwrite() { return overwrite; }
+
+    public void setOverwrite(boolean overwrite) { this.overwrite = overwrite; }
 
     public boolean isAsyncWPDParsing() {
         return asyncWPDParsing;
@@ -55,5 +56,13 @@ public class CsarImportOptions {
 
     public void setValidate(boolean validate) {
         this.validate = validate;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
     }
 }

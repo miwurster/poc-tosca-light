@@ -42,4 +42,8 @@ public class CsarExportOptions {
     public void setSecure(boolean secure) {
         this.secure = secure;
     }
+
+    public boolean containsOptions() {
+        return addToProvenance || secure;
+    }
 }

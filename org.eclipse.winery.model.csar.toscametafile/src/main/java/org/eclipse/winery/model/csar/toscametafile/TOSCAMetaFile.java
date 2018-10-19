@@ -13,10 +13,14 @@
  *******************************************************************************/
 package org.eclipse.winery.model.csar.toscametafile;
 
-import org.eclipse.virgo.util.parser.manifest.ManifestContents;
-
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.eclipse.virgo.util.parser.manifest.ManifestContents;
 
 /**
  * Provides structured access to the content of a TOSCA meta file.

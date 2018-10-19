@@ -43,6 +43,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -60,8 +61,9 @@ import org.eclipse.winery.repository.security.csar.datatypes.DistinguishedName;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
 import org.eclipse.winery.repository.security.csar.support.SignatureAlgorithm;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.configuration.Configuration;
+//import org.apache.commons.codec.binary.Base64;
+//import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -246,7 +248,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
         while (s != null) {
             if (s.contains("END CERTIFICATE")) {
                 String hexString = b.toString();
-                final byte[] bytes = Base64.decodeBase64(hexString);
+                final byte[] bytes = Base64.getDecoder().decode(hexString);
                 X509Certificate cert = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(bytes));
                 result.add(cert);
                 b = new StringBuilder();
@@ -281,7 +283,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
             cipher = Cipher.getInstance(k.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
             cipher.init(Cipher.ENCRYPT_MODE, k);
             byte[] encrypted = cipher.doFinal(sequence);
-            return Base64.encodeBase64(encrypted);
+            return Base64.getEncoder().encode(encrypted); 
         } catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException e) {
             LOGGER.error("Error processing the encryption request", e);
             throw new GenericSecurityProcessorException("Error processing the encryption request");
@@ -305,7 +307,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
         try {
             cipher = Cipher.getInstance(k.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
             cipher.init(Cipher.DECRYPT_MODE, k);
-            byte[] decodedBytes = Base64.decodeBase64(sequence);
+            byte[] decodedBytes = Base64.getDecoder().decode(sequence);
             return cipher.doFinal(decodedBytes);
         } catch (NoSuchAlgorithmException | NoSuchProviderException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
             LOGGER.error("Error processing the decryption request", e);

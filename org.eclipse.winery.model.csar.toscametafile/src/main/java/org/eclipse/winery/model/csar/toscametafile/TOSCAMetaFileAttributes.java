@@ -18,6 +18,11 @@ package org.eclipse.winery.model.csar.toscametafile;
  */
 public class TOSCAMetaFileAttributes {
 
+    final public static String LOCATION_IN_CSAR = "TOSCA-Metadata/TOSCA.meta";
+    final public static String TOSCA_META_SIGN_FILE_PATH = "TOSCA-Metadata/TOSCA.sf";
+    final public static String TOSCA_META_SIGN_BLOCK_FILE_PATH = "TOSCA-Metadata/TOSCA.sig";
+    final public static String TOSCA_META_CERT_PATH = "TOSCA-Metadata/TOSCA.crt";
+    
     // of block 0
     final public static String TOSCA_META_VERSION = "TOSCA-Meta-Version";
     final public static String TOSCA_META_VERSION_VALUE = "1.0";
@@ -34,9 +39,9 @@ public class TOSCAMetaFileAttributes {
     final public static String TOSCA_PROPS_META_VERSION_VALUE = "1.0";
 
     // of signature file block 0
-    final public static String TOSCA_SIGNATURE_VERSION = "Signature-Version";
+    final public static String TOSCA_SIGNATURE_VERSION = "Manifest-Signature-Version";
     final public static String TOSCA_SIGNATURE_VERSION_VALUE = "1.0";
-    final public static String DIGEST_MANIFEST = "Digest-Manifest";
+    final public static String DIGEST_MANIFEST = "Manifest-Digest";
 
     // of signature file block 0
     final public static String TOSCA_PROPSSIGNATURE_VERSION = "Properties-Signature-Version";

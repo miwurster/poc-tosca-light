@@ -1391,9 +1391,8 @@ public class BackendUtils {
 
         ToscaExportUtil exporter = new ToscaExportUtil();
         // we include everything related
-        Map<String, Object> conf = new HashMap<>();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        exporter.writeTOSCA(repository, id, conf, bos);
+        exporter.writeTOSCA(id, bos);
         String xmlRepresentation = bos.toString(StandardCharsets.UTF_8.toString());
         Unmarshaller u = JAXBSupport.createUnmarshaller();
         return ((Definitions) u.unmarshal(new StringReader(xmlRepresentation)));
@@ -1675,8 +1674,7 @@ public class BackendUtils {
             if (repository.exists(atId)) {
                 if (overwrite) {
                     repository.forceDelete(atId);
-                }
-                else {
+                } else {
                     return atId;
                 }
             }
@@ -1693,7 +1691,18 @@ public class BackendUtils {
         return atId;
     }
 
-    public static RepositoryFileReference addFileToArtifactTemplate(IRepository repository, ArtifactTemplateId atId, TArtifactTemplate artifactTemplate, String name, Object content) {
+    public static TArtifactTemplate generateArtifactTemplate(IRepository repository, QName artifactType, String id) {
+        ArtifactTemplateId atId = BackendUtils.getDefinitionsChildId(ArtifactTemplateId.class, Namespaces.URI_OPENTOSCA_ARTIFACTTEMPLATE, id, false);
+        repository.flagAsExisting(atId);
+        final TArtifactTemplate artifactTemplate = repository.getElement(atId);
+        artifactTemplate.setType(artifactType);
+        artifactTemplate.setName(id);
+        BackendUtils.initializeProperties(repository, artifactTemplate);
+
+        return artifactTemplate;
+    }
+
+    public static String addFileRefToArtifactTemplate(ArtifactTemplateId atId, TArtifactTemplate artifactTemplate, String name) {
         DirectoryId fileDir = new ArtifactTemplateFilesDirectoryId(atId);
 
         if (Objects.isNull(artifactTemplate.getArtifactReferences())) {
@@ -1703,42 +1712,11 @@ public class BackendUtils {
 
         RepositoryFileReference ref = new RepositoryFileReference(fileDir, name);
         String path = Util.getUrlPath(ref);
-        
-        if (content instanceof String) {
-            putTextToFileInRepository(repository, ref,(String) content);
-        }
-        else {
-            ByteArrayInputStream bis = new ByteArrayInputStream((byte[]) content);
-            putBytesToFileInRepository(repository, ref,bis);
-        }
 
         TArtifactReference artRef = new TArtifactReference();
         artRef.setReference(path);
         artRefList.add(artRef);
 
-        try {
-            BackendUtils.persist(repository, atId, artifactTemplate);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return ref;
+        return BackendUtils.getPathInsideRepo(ref);
     }
-
-    private static void putTextToFileInRepository(IRepository repository, RepositoryFileReference ref, String content) {
-        try {
-            repository.putContentToFile(ref,content, MediaType.TEXT_PLAIN);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void putBytesToFileInRepository(IRepository repository, RepositoryFileReference ref, InputStream is) {
-        try {
-            repository.putContentToFile(ref,is, MediaType.OCTET_STREAM);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
 }

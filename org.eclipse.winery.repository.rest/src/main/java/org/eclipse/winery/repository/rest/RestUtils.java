@@ -21,10 +21,10 @@ import java.nio.file.attribute.FileTime;
 import java.security.AccessControlException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +36,6 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -62,6 +61,7 @@ import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.ids.elements.ToscaElementId;
 import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
+import org.eclipse.winery.model.selfservice.Application;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.HasType;
 import org.eclipse.winery.model.tosca.TConstraint;
@@ -81,6 +81,7 @@ import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.xsd.NamespaceAndDefinedLocalNames;
 import org.eclipse.winery.repository.configuration.Environment;
+import org.eclipse.winery.repository.export.CsarExportConfiguration;
 import org.eclipse.winery.repository.export.CsarExportOptions;
 import org.eclipse.winery.repository.export.CsarExporter;
 import org.eclipse.winery.repository.export.ToscaExportUtil;
@@ -194,12 +195,10 @@ public class RestUtils {
      * Returns the plain XML for the selected resource
      */
     public static Response getDefinitionsOfSelectedResource(final AbstractComponentInstanceResource resource, final URI uri) {
-        final ToscaExportUtil exporter = new ToscaExportUtil();
+        final ToscaExportUtil exporter = new ToscaExportUtil(uri);
         StreamingOutput so = output -> {
-            Map<String, Object> conf = new HashMap<>();
-            conf.put(ToscaExportUtil.ExportProperties.REPOSITORY_URI.toString(), uri);
             try {
-                exporter.writeTOSCA(RepositoryFactory.getRepository(), resource.getId(), conf, output);
+                exporter.writeTOSCA(resource.getId(), output);
             } catch (Exception e) {
                 throw new WebApplicationException(e);
             }
@@ -226,20 +225,21 @@ public class RestUtils {
     public static Response getCsarOfSelectedResource(final AbstractComponentInstanceResource resource, CsarExportOptions options) {
         LocalDateTime start = LocalDateTime.now();
         final CsarExporter exporter = new CsarExporter();
-        Map<String, Object> exportConfiguration = new HashMap<>();
-
+        EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.noneOf(CsarExportConfiguration.class);
+        
         StreamingOutput so = output -> {
             try {
-                // check which options are chosen
+                // process CSAR with AddToProvenance option selected
                 if (options.isAddToProvenance()) {
                     // We wait for the accountability layer to confirm the transaction
                     String result = exporter.writeCsarAndSaveManifestInProvenanceLayer(RepositoryFactory.getRepository(), resource.getId(), output)
                         .get();
                     LOGGER.debug("Stored state in accountability layer in transaction " + result);
                     LOGGER.debug("CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
-                } else if (options.isSecure()) {
-                    // TODO handle secure flag
                 } else {
+                    if (options.isSecure()) {
+                        exportConfiguration.add(CsarExportConfiguration.APPLY_SECURITY_POLICIES);
+                    }
                     exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
                     LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
                 }

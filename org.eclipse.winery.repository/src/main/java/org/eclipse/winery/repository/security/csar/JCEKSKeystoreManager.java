@@ -57,7 +57,8 @@ import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreMan
 import org.eclipse.winery.repository.security.csar.support.AsymmetricEncryptionAlgorithm;
 import org.eclipse.winery.repository.security.csar.support.SymmetricEncryptionAlgorithm;
 
-import org.apache.commons.configuration.Configuration;
+//import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -305,12 +306,17 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         try {
             Certificate c = CertificateFactory.getInstance("X509").generateCertificate(is);
             keystore.setCertificateEntry(alias, c);
-            keystore.store(new FileOutputStream(this.keystorePath), KEYSTORE_PASSWORD.toCharArray());
-            return c;
-        } catch (CertificateException | NoSuchAlgorithmException | IOException | KeyStoreException e) {
+            try (FileOutputStream fos = new FileOutputStream(this.keystorePath)) {
+                keystore.store(fos, KEYSTORE_PASSWORD.toCharArray());
+            } catch (NoSuchAlgorithmException | IOException e) {
+                LOGGER.error("Error while storing a certificate", e);
+                throw new GenericKeystoreManagerException("Could not store the provided certificate");
+            }
+        } catch (CertificateException | KeyStoreException e) {
             LOGGER.error("Error while storing a certificate", e);
             throw new GenericKeystoreManagerException("Could not store the provided certificate");
         }
+        return null;
     }
 
     @Override

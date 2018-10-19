@@ -31,6 +31,7 @@ public class ToscaMetaFirstBlockEntry {
     private String entryDefinitionsReference;
     private String digestAlgorithm;
     private String digestManifest;
+    private String manifestDigestWithDefaultAlgorithm;
 
 
     private ToscaMetaFirstBlockEntry(Builder builder) {
@@ -44,6 +45,7 @@ public class ToscaMetaFirstBlockEntry {
         this.entryDefinitionsReference = builder.entryDefinitionsReference;
         this.digestAlgorithm = builder.digestAlgorithm;
         this.digestManifest = builder.digestManifest;
+        this.manifestDigestWithDefaultAlgorithm = builder.manifestDigestWithDefaultAlgorithm;
     }
 
     public static class Builder {
@@ -59,6 +61,7 @@ public class ToscaMetaFirstBlockEntry {
         private String entryDefinitionsReference;
         private String digestAlgorithm;
         private String digestManifest;
+        private String manifestDigestWithDefaultAlgorithm;
 
         public Builder(String versionName, String versionValue) {
             this.versionName = versionName;
@@ -104,6 +107,11 @@ public class ToscaMetaFirstBlockEntry {
             this.digestManifest = digestManifest;
             return this;
         }
+        
+        public Builder manifestDigestWithDefaultAlgorithm(String manifestDigestWithDefaultAlgorithm) {
+            this.manifestDigestWithDefaultAlgorithm = manifestDigestWithDefaultAlgorithm;
+            return this;
+        }
 
         public ToscaMetaFirstBlockEntry build() {
             return new ToscaMetaFirstBlockEntry(this);
@@ -146,6 +154,13 @@ public class ToscaMetaFirstBlockEntry {
             sb.append(TOSCAMetaFileAttributes.DIGEST_MANIFEST);
             sb.append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR);
             sb.append(digestManifest);
+            sb.append(System.lineSeparator());
+        }
+
+        if (Objects.nonNull(manifestDigestWithDefaultAlgorithm)) {
+            sb.append(TOSCAMetaFileAttributes.HASH);
+            sb.append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR);
+            sb.append(manifestDigestWithDefaultAlgorithm);
             sb.append(System.lineSeparator());
         }
 
