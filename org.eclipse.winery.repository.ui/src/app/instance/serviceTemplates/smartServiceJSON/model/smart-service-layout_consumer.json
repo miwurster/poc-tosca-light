@@ -1,0 +1,43 @@
+[
+    { "key": "SmartService.DataConsumers",
+        "type": "array",
+        "listItems": 1,
+        "items": [ {
+            "type": "div",
+
+            "items": [
+                { "key": "SmartService.DataConsumers[].Name",
+                    "placeholder": "Name"
+                },
+                { "key": "SmartService.DataConsumers[].DataChannels",
+                    "type": "array",
+                    "listItems": 1,
+                    "items": [ {
+                        "type": "div",
+                        "items": [
+                            { "key": "SmartService.DataConsumers[].DataChannels[].Name",
+                                "placeholder": "Name"
+                            },
+                            { "key": "SmartService.DataConsumers[].DataChannels[].DataType",
+                                "placeholder": "Data Type"
+                            },
+                            { "key": "SmartService.DataConsumers[].DataChannels[].Unit",
+                                "placeholder": "Unit"
+                            },
+                            { "key": "SmartService.DataConsumers[].DataChannels[].ResourceName",
+                                "placeholder": "Resource Name"
+                            },
+                            { "key": "SmartService.DataConsumers[].DataChannels[].MetaData",
+                                "placeholder": "Meta Data"
+                            }
+                        ]
+                    } ]
+                }
+            ]
+        } ]
+    },
+    {
+        "type": "submit",
+        "title": "Save"
+    }
+]

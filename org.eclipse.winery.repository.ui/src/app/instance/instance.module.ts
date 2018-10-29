@@ -23,6 +23,7 @@ import { PropertyRenameComponent } from './instanceHeader/propertyRename/propert
 import { FormsModule } from '@angular/forms';
 import { AlertModule, BsDropdownModule } from 'ngx-bootstrap';
 import { WineryAddVersionModule } from '../wineryVersionModule/wineryVersion.module';
+import { SmartServiceJSONComponent } from './serviceTemplates/smartServiceJSON/smartServiceJSON.component';
 
 @NgModule({
     imports: [

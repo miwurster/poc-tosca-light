@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "http://smartorchestra.de/schemas/smart-service.json",
+  "title": "Smart Service JSON Schema",
+  "description": "This document provides a schema for smart services which supports the specification of their data providers, data consumers and/or data processors.",
+  "type": "object",
+  "required": [
+    "SmartService"
+  ],
+  "properties": {
+    "SmartService": {
+      "description": "The smart service element which is the root of each document.",
+      "type": "object",
+      "properties": {
+        "ServiceClass": {
+          "description": "A constant that specifies the service class this smart service represent. Service class '1' represents services that are providing data through connected sensors, service class '2' represents services that are processing data by reading and writing to FIWARE Orien topics, and service class '3' represents services that are consuming data to act on certain events through connected actuators.",
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        "DataProviders": {
+          "description": "An optional list of data providers where a data provider is a cyber physical device that provides data to another smart service, e.g., a temperature sensor.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataProvider"
+          }
+        },
+        "DataConsumers": {
+          "description": "An optional list of data consumer where a data consumer is a cyber physical device that consumes data from another smart service, e.g., an actuator.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataConsumer"
+          }
+        },
+        "DataProcessors": {
+          "description": "An optional list of data processors where a data processor is an application that processes data from one or more data channels and publishes the results on other data channels.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataProcessor"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "DataProvider": {
+      "type": "object",
+      "required": [
+        "Name"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "DataChannels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataChannel"
+          }
+        }
+      }
+    },
+    "DataConsumer": {
+      "type": "object",
+      "required": [
+        "Name"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "DataChannels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataChannel"
+          }
+        }
+      }
+    },
+    "DataProcessor": {
+      "type": "object",
+      "required": [
+        "Name"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "FiwareSourceTopics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FiwareTopic"
+          }
+        },
+        "FiwareTargetTopics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FiwareTopic"
+          }
+        }
+      }
+    },
+    "ChannelMetaData": {
+      "type": "object",
+      "required": [
+        "Name",
+        "DataType",
+        "Unit"
+      ],
+      "properties": {
+        "Name": {
+          "type": "string"
+        },
+        "DataType": {
+          "type": "string"
+        },
+        "Unit": {
+          "type": "string"
+        }
+      }
+    },
+    "DataChannel": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ChannelMetaData"
+        },
+        {
+          "properties": {
+            "ResourceName": {
+              "type": "string"
+            },
+            "MetaData": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ResourceName",
+            "MetaData"
+          ]
+        }
+      ]
+    },
+    "FiwareTopic": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ChannelMetaData"
+        }
+      ]
+    }
+  }
+}

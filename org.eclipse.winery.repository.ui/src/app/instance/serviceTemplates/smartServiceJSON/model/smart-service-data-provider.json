@@ -1,0 +1,26 @@
+{
+    "SmartService": {
+        "ServiceClass": "1",
+        "DataProviders": [
+            {
+                "Name": "Messstation",
+                "DataChannels": [
+                    {
+                        "Name": "Tempsensor1",
+                        "DataType": "Temperature",
+                        "Unit": "Degr.Celsius",
+                        "ResourceName": "temp",
+                        "MetaData": "ABC"
+                    },
+                    {
+                        "Name": "HumiditySensor6",
+                        "DataType": "Humidity",
+                        "Unit": "%",
+                        "ResourceName": "hum",
+                        "MetaData": "ABC"
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,43 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2018 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<div class="bootstrap-wrapper">
+    <div class="row">
+        <div class="col-sm-3">
+            <label for="select">Choose example data input</label>
+            <select (change)="onChange($event)" id="select">
+                <option *ngFor="let exa of exampleData" [value]="exa.id">{{exa.name}}</option>
+            </select>
+        </div>
+        <div class="col-sm-3">
+            <label for="file">Choose File</label>
+            <input type="file"
+                   id="file"
+                   (change)="handleFileInput($event.target.files)">
+            <!--<button (click)="show = !show">{{show ? 'hide' : 'show'}}</button>-->
+        </div>
+    </div>
+    <div class="form-group">
+        <json-schema-form
+            [schema]="jsonSchema"
+            [layout]="jsonFormLayout"
+            [(data)]="flexibleData"
+            (onSubmit)="submit($event)">
+        </json-schema-form>
+    </div>
+</div>
+
+
+
+

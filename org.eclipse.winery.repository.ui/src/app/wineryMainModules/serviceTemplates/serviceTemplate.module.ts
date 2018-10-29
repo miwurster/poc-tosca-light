@@ -35,6 +35,8 @@ import { WinerySourceModule } from '../../instance/sharedComponents/artifactSour
 import { ConstraintCheckingComponent } from '../../instance/serviceTemplates/constraintChecking/constraintChecking.component';
 import { WineryEditorModule } from '../../wineryEditorModule/wineryEditor.module';
 import { TopologyTemplateModule } from '../../instance/serviceTemplates/topologyTemplate/topologyTemplate.module';
+import { SmartServiceJSONModule } from '../../instance/serviceTemplates/smartServiceJSON/smartServiceJSON.module';
+import { SmartServiceJSONComponent } from '../../instance/serviceTemplates/smartServiceJSON/smartServiceJSON.component';
 
 @NgModule({
     imports: [
@@ -56,7 +58,8 @@ import { TopologyTemplateModule } from '../../instance/serviceTemplates/topology
         WineryTableModule,
         ServiceTemplateRouterModule,
         WineryReadmeModule,
-        WineryLicenseModule
+        WineryLicenseModule,
+        SmartServiceJSONModule
     ],
     declarations: [
         PlansComponent,

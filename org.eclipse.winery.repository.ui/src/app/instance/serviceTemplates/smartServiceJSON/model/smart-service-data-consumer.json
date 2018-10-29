@@ -1,0 +1,19 @@
+{
+    "SmartService": {
+        "ServiceClass": "3",
+        "DataConsumers": [
+            {
+                "Name": "Schaltzentrale",
+                "DataChannels": [
+                    {
+                        "Name": "Kippschalter",
+                        "DataType": "Boolean",
+                        "Unit": "0/1",
+                        "ResourceName": "switch1",
+                        "MetaData": "ABC"
+                    }
+                ]
+            }
+        ]
+    }
+}

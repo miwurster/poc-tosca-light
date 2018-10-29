@@ -1,0 +1,24 @@
+{
+    "SmartService": {
+        "ServiceClass": "2",
+        "DataProcessors": [
+            {
+                "Name": "PythonApp",
+                "FiwareSourceTopics": [
+                    {
+                        "Name": "TopicIN",
+                        "DataType": "Temperature",
+                        "Unit": "Degr.Celsius"
+                    }
+                ],
+                "FiwareTargetTopics": [
+                    {
+                        "Name": "TopicOUT",
+                        "DataType": "Boolean",
+                        "Unit": "0/1"
+                    }
+                ]
+            }
+        ]
+    }
+}
