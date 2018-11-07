@@ -21,6 +21,7 @@ LABEL maintainer "Oliver Kopp <kopp.dev@gmail.com>, Michael Wurster <miwurster@g
 
 ENV WINERY_REPOSITORY_URL=
 ENV WINERY_HEAP_MAX=2048m
+ENV WINERY_JMX_ENABLED=
 
 RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
@@ -47,5 +48,6 @@ EXPOSE 8080
 
 CMD if [ ! "x${WINERY_REPOSITORY_URL}" = "x" ]; then rm -rf /var/opentosca/repository && git clone ${WINERY_REPOSITORY_URL} /var/opentosca/repository; fi \
     && echo 'export CATALINA_OPTS="-Djava.security.egd=file:/dev/./urandom -Xms512m -Xmx${WINERY_HEAP_MAX} -XX:MaxPermSize=256m"' > ${CATALINA_HOME}/bin/setenv.sh \
+    && if [ ! "x${WINERY_JMX_ENABLED}" = "x" ]; then echo 'export CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.rmi.port=9010 -Djava.rmi.server.hostname=0.0.0.0 -Dcom.sun.management.jmxremote.ssl=false"' >> ${CATALINA_HOME}/bin/setenv.sh; fi \
     && chmod a+x ${CATALINA_HOME}/bin/setenv.sh \
     && ${CATALINA_HOME}/bin/catalina.sh run

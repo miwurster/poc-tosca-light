@@ -15,7 +15,7 @@ The source for the documentation can be found at [docs/](docs).
 ## Running via docker
 
 1. `docker build -t winery .`.
-   In case, there are issues, you can also try `docker build --no-cache -t winery Dockerfiles/full`
+   In case, there are issues, you can also try `docker build --no-cache -t winery .`
 2. `docker run -p 8080:8080 winery` to run winery on http://localhost:8080/
 
 You can also use the pre-built image and bin it to a local repository:
@@ -30,12 +30,12 @@ You can also use the pre-built image and bin it to a local repository:
 You can also use the pre-built image:
 
 - Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery-cli`
-- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery`
+- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery-cli`
 
 In case you want to have verbose information, you can execute following:
 
-- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery winery -v`
-- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery winery -v`
+- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery-cli winery -v`
+- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery-cli winery -v`
 
 Currently supported CLI arguments:
 
