@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -55,14 +56,13 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.eclipse.winery.repository.security.csar.datatypes.DistinguishedName;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
 import org.eclipse.winery.repository.security.csar.support.SignatureAlgorithm;
 
-//import org.apache.commons.codec.binary.Base64;
-//import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -83,6 +83,9 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+//import org.apache.commons.codec.binary.Base64;
+//import org.apache.commons.configuration.Configuration;
 
 public class BCSecurityProcessor implements SecurityProcessor {
 
@@ -264,52 +267,75 @@ public class BCSecurityProcessor implements SecurityProcessor {
         return result.toArray(new X509Certificate[result.size()]);
     }
 
-    @Override
-    public String encryptString(Key k, String text) throws GenericSecurityProcessorException {
+    /*@Override
+    public String encryptText(Key k, String text) throws GenericSecurityProcessorException, UnsupportedEncodingException {
         try {
-            byte[] encryptedValue = encryptByteArray(k, text.getBytes());
+            byte[] encryptedValue = encryptBytes(k, text.getBytes("UTF-8"));
             return new String(encryptedValue);
-        } catch (GenericSecurityProcessorException e) {
+        } catch (UnsupportedEncodingException | GenericSecurityProcessorException e) {
             LOGGER.error("Error processing the encryption request", e);
             throw e;
-        }
-    }
-
-    @Override
-    public byte[] encryptByteArray(Key k, byte[] sequence) throws GenericSecurityProcessorException {
-        Cipher cipher;
-        try {
-            // TODO: plain AES mode is not safe, use AES/CBC/PKCS5Padding or AES/CTR/NoPadding
-            cipher = Cipher.getInstance(k.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
-            cipher.init(Cipher.ENCRYPT_MODE, k);
-            byte[] encrypted = cipher.doFinal(sequence);
-            return Base64.getEncoder().encode(encrypted); 
-        } catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException e) {
-            LOGGER.error("Error processing the encryption request", e);
-            throw new GenericSecurityProcessorException("Error processing the encryption request");
         }
     }
 
     @Override
     public String decryptString(Key k, String text) throws GenericSecurityProcessorException {
         try {
-            byte[] original = decryptByteArray(k, text.getBytes());
+            byte[] original = decryptBytes(k, text.getBytes());
             return new String(original);
         } catch (GenericSecurityProcessorException e) {
             LOGGER.error("Error processing the decryption request", e);
             throw e;
         }
+    }*/
+
+    @Override
+    public byte[] encryptBytes(Key k, byte[] sequence) throws GenericSecurityProcessorException {
+        try {
+            final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            final int blockSize = cipher.getBlockSize();
+
+            // generate random IV using block size
+            final byte[] ivData = new byte[blockSize];
+            final SecureRandom rnd = SecureRandom.getInstance("SHA1PRNG");
+            rnd.nextBytes(ivData);
+            final IvParameterSpec iv = new IvParameterSpec(ivData);
+
+            cipher.init(Cipher.ENCRYPT_MODE, k, iv);
+
+            final byte[] encryptedMessage = cipher.doFinal(sequence);
+
+            // concatenate IV and encrypted message
+            final byte[] ivAndEncryptedMessage = new byte[ivData.length + encryptedMessage.length];
+            System.arraycopy(ivData, 0, ivAndEncryptedMessage, 0, blockSize);
+            System.arraycopy(encryptedMessage, 0, ivAndEncryptedMessage, blockSize, encryptedMessage.length);
+
+            return ivAndEncryptedMessage;
+        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException e) {
+            LOGGER.error("Error processing the encryption request", e);
+            throw new GenericSecurityProcessorException("Error processing the encryption request");
+        }
     }
 
     @Override
-    public byte[] decryptByteArray(Key k, byte[] sequence) throws GenericSecurityProcessorException {
-        Cipher cipher;
+    public byte[] decryptBytes(Key k, byte[] sequence) throws GenericSecurityProcessorException {
         try {
-            cipher = Cipher.getInstance(k.getAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
-            cipher.init(Cipher.DECRYPT_MODE, k);
-            byte[] decodedBytes = Base64.getDecoder().decode(sequence);
-            return cipher.doFinal(decodedBytes);
-        } catch (NoSuchAlgorithmException | NoSuchProviderException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
+            final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            final int blockSize = cipher.getBlockSize();
+
+            // retrieve random IV from start of the received message
+            final byte[] ivData = new byte[blockSize];
+            System.arraycopy(sequence, 0, ivData, 0, blockSize);
+            final IvParameterSpec iv = new IvParameterSpec(ivData);
+
+            // retrieve the encrypted message itself
+            final byte[] encryptedMessage = new byte[sequence.length - blockSize];
+            System.arraycopy(sequence, blockSize, encryptedMessage, 0, encryptedMessage.length);
+
+            cipher.init(Cipher.DECRYPT_MODE, k, iv);
+
+            return cipher.doFinal(encryptedMessage);
+        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
             LOGGER.error("Error processing the decryption request", e);
             throw new GenericSecurityProcessorException("Error processing the decryption request");
         }

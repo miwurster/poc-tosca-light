@@ -137,4 +137,12 @@ public class NodeTemplateResource extends TEntityTemplateResource<TNodeTemplate>
     public Response getHEAD() {
         return Response.noContent().build();
     }
+
+    
+    // TODO : decrypt node template if security policies are specified and the respective key is present 
+    @Path("decrypt")
+    @POST
+    public Response decrypt() {
+        return Response.noContent().build();
+    }
 }

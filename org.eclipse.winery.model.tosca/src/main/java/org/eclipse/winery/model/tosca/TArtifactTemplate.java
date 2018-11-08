@@ -16,10 +16,10 @@ package org.eclipse.winery.model.tosca;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -85,6 +85,8 @@ public class TArtifactTemplate extends TEntityTemplate {
 
     /**
      * Gets the value of the first available encrypted policy if there is one.
+     * We treat artifact templates as atomic entities.
+     * Therefore, only one encryption policy which covers all contained files is present.
      *
      * @return possible object is {@link TPolicy}
      */
@@ -102,7 +104,9 @@ public class TArtifactTemplate extends TEntityTemplate {
 
     /**
      * Gets the value of the first available signing policy if there is one.
-     *
+     * We treat artifact templates as atomic entities. 
+     * Therefore, only one signing policy which covers all contained files is present. 
+     * 
      * @return possible object is {@link TPolicy}
      */
     public TPolicy getSigningPolicy() {
@@ -218,7 +222,7 @@ public class TArtifactTemplate extends TEntityTemplate {
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the wineryExtensionPolicies property.
+         * This is why there is not a <CODE>set</CODE> method for the policy property.
          * <p>
          * <p>
          * For example, to add a new item, do as follows:
@@ -237,6 +241,16 @@ public class TArtifactTemplate extends TEntityTemplate {
                 policy = new ArrayList<>();
             }
             return this.policy;
+        }
+        
+        public void addPolicy(TPolicy p) {
+            if (!getPolicy().contains(p)) {
+                getPolicy().add(p);
+            }
+        }
+
+        public void removePolicy(String name) {
+            getPolicy().removeIf(policy -> name.equals(policy.getName()));
         }
     }
 

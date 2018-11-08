@@ -17,4 +17,12 @@ package org.eclipse.winery.repository.rest.resources.apiData;
 public class QNameApiData {
     public String localname;
     public String namespace;
+
+    public QNameApiData() {
+    }
+
+    public QNameApiData(String localPart, String namespaceURI) {
+        this.localname = localPart;
+        this.namespace = namespaceURI;
+    }
 }

@@ -307,18 +307,20 @@ public class CsarImporter {
         Path sigFileToscaMetaPath = path.resolve(TOSCAMetaFileAttributes.TOSCA_META_SIGN_FILE_PATH);
         Path sigBlockFileToscaMetaPath = path.resolve(TOSCAMetaFileAttributes.TOSCA_META_SIGN_BLOCK_FILE_PATH);
         Path certToscaMetaPath = path.resolve(TOSCAMetaFileAttributes.TOSCA_META_CERT_PATH);
-        try {
+        try (FileInputStream fis = new FileInputStream(certToscaMetaPath.toFile())) {
             if (!Files.exists(certToscaMetaPath) || !Files.exists(sigFileToscaMetaPath) || !Files.exists(sigBlockFileToscaMetaPath)) {
                 importMetaInformation.errors.add("Incomplete external signature");
                 LOGGER.error("Incomplete external signature: required files are missing");
                 // return importMetaInformation;
             }
-            byte[] sigFileToscaMeta = Files.readAllBytes(sigFileToscaMetaPath);
+
+            String sigFileToscaMetaHash = HashingUtil.getHashForFile(sigFileToscaMetaPath.toString(), TOSCAMetaFileAttributes.HASH);
             byte[] sigBlockFileToscaMeta = Files.readAllBytes(sigBlockFileToscaMetaPath);
-            FileInputStream fis = new FileInputStream(certToscaMetaPath.toFile());
             Certificate c = km.storeCertificate(SecureCSARConstants.MASTER_IMPORT_CERT_NAME, fis);
-            boolean isSFSignatureCorrect = sp.verifyBytes(c, sigFileToscaMeta, sigBlockFileToscaMeta);
-            fis.close();
+            boolean isSFSignatureCorrect = false;
+            if (Objects.nonNull(sigFileToscaMetaHash)) {
+                isSFSignatureCorrect = sp.verifyBytes(c, sigFileToscaMetaHash.getBytes(), sigBlockFileToscaMeta);
+            }
             // Verify the signature file
             if (!isSFSignatureCorrect) {
                 importMetaInformation.errors.add("Corrupt external signature: The signature file is invalid");
@@ -331,7 +333,7 @@ public class CsarImporter {
                 String manifestDigest = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.HASH);
                 String digest;
                 try (InputStream is = Files.newInputStream(toscaMetaPath)) {
-                    digest  = HashingUtil.getChecksum(is, TOSCAMetaFileAttributes.HASH);
+                    digest = HashingUtil.getChecksum(is, TOSCAMetaFileAttributes.HASH);
                 }
                 if (!manifestDigest.equals(digest)) {
                     importMetaInformation.errors.add("Corrupt external signature: TOSCAMetFile is invalid");
@@ -342,7 +344,7 @@ public class CsarImporter {
                         Path p = path.resolve(fileBlock.get(TOSCAMetaFileAttributes.NAME));
                         String fileDigest;
                         try (InputStream is = Files.newInputStream(p)) {
-                            fileDigest  = HashingUtil.getChecksum(is, TOSCAMetaFileAttributes.HASH);
+                            fileDigest = HashingUtil.getChecksum(is, TOSCAMetaFileAttributes.HASH);
                         }
                         if (!fileBlock.get(TOSCAMetaFileAttributes.HASH).equals(fileDigest)) {
                             importMetaInformation.errors.add("Corrupt external signature: the content of CSAR is invalid");
@@ -702,10 +704,13 @@ public class CsarImporter {
                         Certificate c = loadPolicyCertificate(signPolicy, csarRoot);
                         if (Objects.nonNull(c)) {
                             try {
-                                byte[] artifactFileBytes = Files.readAllBytes(artifactFilePath);
+                                String artifactFileBytesHash = HashingUtil.getHashForFile(artifactFilePath.toString(), TOSCAMetaFileAttributes.HASH);
                                 byte[] sigFileBytes = Files.readAllBytes(sigFilePath);
-                                // Verify signature block file
-                                boolean isSFSignatureCorrect = sp.verifyBytes(c, artifactFileBytes, sigFileBytes);
+                                boolean isSFSignatureCorrect = false;
+                                if (Objects.nonNull(artifactFileBytesHash)) {
+                                    // Verify signature block file
+                                    isSFSignatureCorrect = sp.verifyBytes(c, artifactFileBytesHash.getBytes(), sigFileBytes);
+                                }
                                 if (!isSFSignatureCorrect) {
                                     errors.add("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());
                                     LOGGER.error("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());

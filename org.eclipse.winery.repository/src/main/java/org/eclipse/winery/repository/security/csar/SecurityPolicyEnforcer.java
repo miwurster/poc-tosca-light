@@ -14,14 +14,17 @@
 
 package org.eclipse.winery.repository.security.csar;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +32,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.constants.MimeTypes;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
@@ -76,6 +81,8 @@ import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreMan
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
 import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
 
+import org.apache.commons.io.Charsets;
+
 public class SecurityPolicyEnforcer {
     private SecurityProcessor securityProcessor;
     private KeystoreManager keystoreManager;
@@ -83,6 +90,7 @@ public class SecurityPolicyEnforcer {
     private IRepository repository;
     private Map<MetaFileEntry, CsarEntry> addedReferences;
     private Map<String, DefinitionsChildId> addedIdsForImports;
+    private Map<RepositoryFileReference, String> encryptedFilesDigests;
 
     public SecurityPolicyEnforcer(IRepository repository, String digestAlgorithm) {
         this.securityProcessor = new BCSecurityProcessor();
@@ -91,6 +99,7 @@ public class SecurityPolicyEnforcer {
         this.digestAlgorithm = digestAlgorithm;
         this.addedReferences = new HashMap<>();
         this.addedIdsForImports = new HashMap<>();
+        this.encryptedFilesDigests = new HashMap<>();
     }
 
     public SecurityPolicyEnforcer(IRepository repository) {
@@ -101,13 +110,13 @@ public class SecurityPolicyEnforcer {
         for (MetaFileEntry m : refMap.keySet()) {
             CsarEntry currentEntry = refMap.get(m);
             if (currentEntry instanceof DefinitionsBasedCsarEntry) {
-                this.enforceSecurityPolicies((DefinitionsBasedCsarEntry) currentEntry, refMap);
+                this.enforceSecurityPolicies((DefinitionsBasedCsarEntry) currentEntry);
             }
         }
         refMap.putAll(addedReferences);
     }
 
-    public void enforceSecurityPolicies(DefinitionsBasedCsarEntry entry, Map<MetaFileEntry, CsarEntry> refMap) {
+    private void enforceSecurityPolicies(DefinitionsBasedCsarEntry entry) {
         DefinitionsChildId definitionsChildId = entry.getDefinitionsChildId();
         Definitions entryDefinitions = entry.getDefinitions();
 
@@ -267,8 +276,8 @@ public class SecurityPolicyEnforcer {
                     Key encryptionKey = this.keystoreManager.loadKey(keyAlias);
                     for (String p : propertyNamesForEncryption) {
                         assert nodeTemplateKVProperties != null;
-                        String encValue = this.securityProcessor.encryptString(encryptionKey, nodeTemplateKVProperties.get(p));
-                        nodeTemplateKVProperties.replace(p, encValue);
+                        byte[] encValue = this.securityProcessor.encryptBytes(encryptionKey, nodeTemplateKVProperties.get(p).getBytes(Charsets.UTF_8));
+                        nodeTemplateKVProperties.replace(p, Base64.getEncoder().encodeToString(encValue));
                         numPropsSecured++;
                     }
                     nodeTemplate.getProperties().setKVProperties(nodeTemplateKVProperties);
@@ -445,20 +454,32 @@ public class SecurityPolicyEnforcer {
         try {
             for (RepositoryFileReference fileRef : files) {
                 if (!fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) || !fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED)) {
-                    byte[] fileBytes = Files.readAllBytes(((FilebasedRepository) repository).ref2AbsolutePath(fileRef));
-                    byte[] blockSignatureFileContent = this.securityProcessor.signBytes(signingKey, fileBytes);
+                    byte[] blockSignatureFileContent;
+                    String blockSignatureFilePath;
+                    String fileHash;
 
-                    // generate signature block file                
-                    String blockSignatureFileName = fileRef.getFileName().concat(mode).concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
-                    String blockSignatureFilePath = BackendUtils.addFileRefToArtifactTemplate(tcId, artifactTemplate, blockSignatureFileName);
+                    if (mode.equals(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN)) {
+                        fileHash = HashingUtil.getHashForFile(((FilebasedRepository) repository).ref2AbsolutePath(fileRef).toString(), TOSCAMetaFileAttributes.HASH);
+                    } else {
+                        fileHash = encryptedFilesDigests.get(fileRef);
+                    }
 
-                    MetaFileEntry blockSigEntry = new MetaFileEntry(blockSignatureFilePath, MimeTypes.MIMETYPE_OCTET_STREAM);
-                    addedReferences.put(blockSigEntry, new BytesBasedCsarEntry(blockSignatureFileContent));
+                    if (Objects.nonNull(fileHash)) {
+                        blockSignatureFileContent = this.securityProcessor.signBytes(signingKey, fileHash.getBytes());
+                        // generate signature block file                
+                        String blockSignatureFileName = fileRef.getFileName().concat(mode).concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
+                        blockSignatureFilePath = BackendUtils.addFileRefToArtifactTemplate(tcId, artifactTemplate, blockSignatureFileName);
 
-                    artifactTemplate.getSigningPolicy().setIsApplied(true);
+                        MetaFileEntry blockSigEntry = new MetaFileEntry(blockSignatureFilePath, MimeTypes.MIMETYPE_OCTET_STREAM);
+                        addedReferences.put(blockSigEntry, new BytesBasedCsarEntry(blockSignatureFileContent));
+                    } else {
+                        // file's hash cannot be calculated
+                        // TODO this is an exception, abort export
+                    }
                 }
             }
-        } catch (IOException | GenericSecurityProcessorException e) {
+            artifactTemplate.getSigningPolicy().setIsApplied(true);
+        } catch (GenericSecurityProcessorException e) {
             e.printStackTrace();
         }
     }
@@ -469,18 +490,41 @@ public class SecurityPolicyEnforcer {
                 if (!fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) || !fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED)) {
                     Path absolutePath = ((FilebasedRepository) repository).ref2AbsolutePath(fileRef);
                     byte[] fileBytes = Files.readAllBytes(absolutePath);
-                    byte[] encryptedFileBytes = this.securityProcessor.encryptByteArray(encryptionKey, fileBytes);
+                    byte[] encryptedFileBytes = this.securityProcessor.encryptBytes(encryptionKey, fileBytes);
 
                     String pathInRepo = BackendUtils.getPathInsideRepo(fileRef);
 
                     MetaFileEntry blockSigEntry = new MetaFileEntry(pathInRepo, MimeTypes.MIMETYPE_OCTET_STREAM);
                     addedReferences.put(blockSigEntry, new BytesBasedCsarEntry(encryptedFileBytes));
-
-                    artifactTemplate.getEncryptionPolicy().setIsApplied(true);
+                    encryptedFilesDigests.put(fileRef, HashingUtil.getChecksum(new ByteArrayInputStream(encryptedFileBytes), TOSCAMetaFileAttributes.HASH));
                 }
             }
+            artifactTemplate.getEncryptionPolicy().setIsApplied(true);
+        } catch (IOException | GenericSecurityProcessorException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Response decryptFilesOfArtifactTemplate(TArtifactTemplate artifactTemplate, Key secretKey, Set<RepositoryFileReference> files) {
+        try {
+            SecurityProcessor securityProcessor = new BCSecurityProcessor();
+            for (RepositoryFileReference fileRef : files) {
+                if (!(fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) || fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED))) {
+                    Path absolutePath = ((FilebasedRepository) RepositoryFactory.getRepository()).ref2AbsolutePath(fileRef);
+                    byte[] fileBytes = Files.readAllBytes(absolutePath);
+                    byte[] decrypted = securityProcessor.decryptBytes(secretKey, fileBytes);
+                    Files.write(absolutePath, decrypted);
+                }
+            }
+            artifactTemplate.getEncryptionPolicy().setIsApplied(false);
+            return Response.ok()
+                .entity("Artifact Template files were successfully decrypted")
+                .build();
         } catch (IOException | GenericSecurityProcessorException e) {
             e.printStackTrace();
+            return Response.serverError()
+                .entity(e.getMessage())
+                .build();
         }
     }
 

@@ -27,6 +27,7 @@ import {WineryEditorModule} from '../../wineryEditorModule/wineryEditor.module';
 import {WineryReadmeModule} from '../../wineryReadmeModule/wineryReadme.module';
 import {WineryLicenseModule} from '../../wineryLicenseModule/wineryLicense.module';
 import {WinerySourceModule} from '../../instance/sharedComponents/artifactSource/source.module';
+import { ArtifactPoliciesComponent } from '../../instance/artifactTemplates/artifactpolicies/artifactpolicies.component';
 
 @NgModule({
     imports: [
@@ -47,6 +48,7 @@ import {WinerySourceModule} from '../../instance/sharedComponents/artifactSource
     declarations: [
         FilesComponent,
         PropertiesComponent,
+        ArtifactPoliciesComponent
     ]
 })
 export class ArtifactTemplateModule {

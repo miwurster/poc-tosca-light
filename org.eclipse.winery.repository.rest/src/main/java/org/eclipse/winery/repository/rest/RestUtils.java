@@ -19,6 +19,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.nio.file.attribute.FileTime;
 import java.security.AccessControlException;
+import java.security.Key;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -64,10 +65,12 @@ import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.selfservice.Application;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.HasType;
+import org.eclipse.winery.model.tosca.TArtifactTemplate;
 import org.eclipse.winery.model.tosca.TConstraint;
 import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TPolicy;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
@@ -81,6 +84,7 @@ import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.xsd.NamespaceAndDefinedLocalNames;
 import org.eclipse.winery.repository.configuration.Environment;
+import org.eclipse.winery.repository.datatypes.ids.elements.ArtifactTemplateFilesDirectoryId;
 import org.eclipse.winery.repository.export.CsarExportConfiguration;
 import org.eclipse.winery.repository.export.CsarExportOptions;
 import org.eclipse.winery.repository.export.CsarExporter;
@@ -101,9 +105,13 @@ import org.eclipse.winery.repository.rest.resources.entitytemplates.policytempla
 import org.eclipse.winery.repository.rest.resources.entitytemplates.policytemplates.PolicyTemplatesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.TopologyGraphElementEntityTypeResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
+import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
+import org.eclipse.winery.repository.security.csar.KeystoreManager;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
+import org.eclipse.winery.repository.security.csar.SecurityPolicyEnforcer;
 import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
 import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
+import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.yaml.common.exception.MultiException;
 import org.eclipse.winery.yaml.converter.Converter;
 
@@ -226,7 +234,7 @@ public class RestUtils {
         LocalDateTime start = LocalDateTime.now();
         final CsarExporter exporter = new CsarExporter();
         EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.noneOf(CsarExportConfiguration.class);
-        
+
         StreamingOutput so = output -> {
             try {
                 // process CSAR with AddToProvenance option selected
@@ -1041,5 +1049,36 @@ public class RestUtils {
             .stream()
             .map(id -> adapter.marshal(id.getQName()))
             .collect(Collectors.toList());
+    }
+
+    public static Response decryptArtifactTemplateFiles(TArtifactTemplate aTemp, ArtifactTemplateFilesDirectoryId filesDirectoryId) {
+        TPolicy encPolicy = aTemp.getEncryptionPolicy();
+        if (Objects.nonNull(encPolicy)) {
+            if (!encPolicy.getIsApplied()) {
+                return Response.status(Status.CONFLICT)
+                    .entity("Nothing to decrypt - encryption policy is not applied.")
+                    .build();
+            }
+            try {
+                KeystoreManager keystoreManager = new JCEKSKeystoreManager();
+                String keyAlias = encPolicy.getPolicyRef().getLocalPart();
+                Key secretKey = keystoreManager.loadKey(keyAlias);
+                Set<RepositoryFileReference> files = RepositoryFactory.getRepository().getContainedFiles(filesDirectoryId);
+                return SecurityPolicyEnforcer.decryptFilesOfArtifactTemplate(aTemp, secretKey, files);
+            } catch (GenericKeystoreManagerException e) {
+                e.printStackTrace();
+                return Response.serverError()
+                    .entity(e.getMessage())
+                    .build();
+            }
+        } else {
+            return Response.status(Status.CONFLICT)
+                .entity("Nothing to decrypt - no encryption policy is present.")
+                .build();
+        }
+    }
+
+    public static void decryptNodeTemplate(TServiceTemplate st, TNodeTemplate nt) {
+
     }
 }

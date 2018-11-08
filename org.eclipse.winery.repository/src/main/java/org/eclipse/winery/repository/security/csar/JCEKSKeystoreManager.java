@@ -312,11 +312,11 @@ public class JCEKSKeystoreManager implements KeystoreManager {
                 LOGGER.error("Error while storing a certificate", e);
                 throw new GenericKeystoreManagerException("Could not store the provided certificate");
             }
+            return c;
         } catch (CertificateException | KeyStoreException e) {
             LOGGER.error("Error while storing a certificate", e);
             throw new GenericKeystoreManagerException("Could not store the provided certificate");
         }
-        return null;
     }
 
     @Override

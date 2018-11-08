@@ -1,0 +1,70 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2018 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<div [class.hidden]="!loading">
+    <winery-loader></winery-loader>
+</div>
+<div *ngIf="!loading && (securityPolicies || policies)">
+    <h4> Modeled Policies </h4>
+    <div *ngIf="securityPolicies.length > 0">
+        <winery-table [title]="'Security Policies'"
+                      [columns]="securityPoliciesColumns"
+                      [data]="securityPolicies"
+                      [disableFiltering]="true"
+                      (cellSelected)="onCellSelect($event)"
+                      (addBtnClicked)="onAddClick()"
+                      (removeBtnClicked)="onRemoveClick($event)">
+        </winery-table>
+        <div *ngIf="selectedPolicy">
+            <div class="row">
+                <div class="col-md-12">
+                    <b>Full policy name:</b> {{selectedPolicy.name}}
+                </div>
+            </div>
+            <div class="row" *ngIf="selectedPolicy.isApplied && selectedPolicy.type.localname === 'EncryptionPolicyType'">
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-primary" (click)="onDecryptClick()">Decrypt contents</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div *ngIf="policies.length > 0">
+        <winery-table [title]="'Other Policies'"
+                      [columns]="policiesColumns"
+                      [data]="policies"
+                      [disableButtons]="true"
+                      [disableFiltering]="true">
+        </winery-table>
+    </div>
+
+    <winery-modal bsModal #addPolicyModal="bs-modal" [modalRef]="addPolicyModal">
+        <winery-modal-header [title]="'Add Policy'">
+        </winery-modal-header>
+        <winery-modal-body>
+            <form #addPolicyForm="ngForm" id="addPolicyForm">
+
+            </form>
+        </winery-modal-body>
+        <winery-modal-footer
+            (onOk)="addPolicy(); addPolicyForm.reset();"
+            [closeButtonLabel]="'Cancel'"
+            [okButtonLabel]="'Add'"
+            [disableOkButton]="false">
+        </winery-modal-footer>
+    </winery-modal>
+
+
+</div>

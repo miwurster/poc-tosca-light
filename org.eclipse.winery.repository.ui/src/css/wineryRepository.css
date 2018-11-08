@@ -373,7 +373,7 @@ div.managementButtons {
 /* quick hack for new types: just use the administration */
 
 div.mainContentContainer.artifactTemplate div.top {
-    background: url('../assets/img/containers/admin/FrameTop.jpg');
+    background: url('../assets/img/containers/admin/FrameTopLarge.jpg');
     background-repeat: no-repeat;
 }
 

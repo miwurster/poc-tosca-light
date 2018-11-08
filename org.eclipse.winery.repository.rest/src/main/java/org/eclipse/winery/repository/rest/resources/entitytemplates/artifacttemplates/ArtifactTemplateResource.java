@@ -14,9 +14,14 @@
 package org.eclipse.winery.repository.rest.resources.entitytemplates.artifacttemplates;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Objects;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -36,6 +41,7 @@ import org.eclipse.winery.repository.datatypes.ids.elements.ArtifactTemplateSour
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceWithReferencesResource;
 import org.eclipse.winery.repository.rest.resources._support.IHasName;
+import org.eclipse.winery.repository.rest.resources.apiData.PoliciesApiData;
 import org.eclipse.winery.repository.rest.resources.entitytemplates.IEntityTemplateResource;
 import org.eclipse.winery.repository.rest.resources.entitytemplates.PropertiesResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions.PropertyConstraintsResource;
@@ -169,4 +175,44 @@ public class ArtifactTemplateResource extends AbstractComponentInstanceWithRefer
 		return Response.ok().entity(res).build();
 	}
 	*/
+
+    @GET
+    @Path("policies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public PoliciesApiData getPolicies() {
+        if (Objects.nonNull(this.getTArtifactTemplate()) && Objects.nonNull(this.getTArtifactTemplate().getPolicies())) {
+            return new PoliciesApiData(this.getTArtifactTemplate().getPolicies().getPolicy());
+        } else {
+            return new PoliciesApiData(new ArrayList<>());
+        }
+    }
+
+    @POST
+    @Path("policies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addPolicy(String policyTemplateId) {
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("policies/{policyName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response removePolicy(@PathParam("policyName") String policyName) {
+
+        return Response.ok().build();
+    }
+
+    // TODO decrypt the artifact template if the policies are specified and the respective key is present
+    @POST
+    @Path("decrypt")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response decrypt() {
+        Response res = RestUtils.decryptArtifactTemplateFiles(this.getTArtifactTemplate(), this.filesDirectoryId);
+        if (res.getStatus() == 200) {
+            return RestUtils.persist(this);
+        } else {
+            return res;
+        }
+    }
 }

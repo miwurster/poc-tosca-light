@@ -53,6 +53,7 @@ import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.version.VersionUtils;
+import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
 import org.eclipse.winery.model.selfservice.Application;
 import org.eclipse.winery.model.selfservice.Application.Options;
 import org.eclipse.winery.model.selfservice.ApplicationOption;
@@ -84,6 +85,7 @@ import org.eclipse.winery.repository.security.csar.SecurityProcessor;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
 
+import com.google.common.base.Charsets;
 import de.danielbechler.util.Strings;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -290,7 +292,8 @@ public class CsarExporter {
         Key signingKey = keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
         // TODO: notify a user if no master key is set
         if (Objects.nonNull(signingKey)) {
-            byte[] blockSignatureFileContent = securityProcessor.signBytes(signingKey, builder.toString().getBytes());
+            String blockSignatureFileHash = HashingUtil.getChecksum(builder.toString(), HASH);
+            byte[] blockSignatureFileContent = securityProcessor.signBytes(signingKey, blockSignatureFileHash.getBytes());
             MetaFileEntry blockSignatureFileEntry = new MetaFileEntry(TOSCA_META_SIGN_BLOCK_FILE_PATH, MimeTypes.MIMETYPE_OCTET_STREAM);
             refMap.put(blockSignatureFileEntry, new BytesBasedCsarEntry(blockSignatureFileContent));
 

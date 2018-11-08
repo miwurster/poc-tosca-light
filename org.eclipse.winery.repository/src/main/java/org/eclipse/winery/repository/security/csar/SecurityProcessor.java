@@ -15,6 +15,7 @@
 package org.eclipse.winery.repository.security.csar;
 
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -42,13 +43,9 @@ public interface SecurityProcessor {
 
     Certificate[] getX509Certificates(InputStream certInputStream) throws GenericSecurityProcessorException;
 
-    String encryptString(Key k, String text) throws GenericSecurityProcessorException;
+    byte[] encryptBytes(Key k, byte[] sequence) throws GenericSecurityProcessorException;
 
-    byte[] encryptByteArray(Key k, byte[] sequence) throws GenericSecurityProcessorException;
-
-    String decryptString(Key k, String text) throws GenericSecurityProcessorException;
-
-    byte[] decryptByteArray(Key k, byte[] sequence) throws GenericSecurityProcessorException;
+    byte[] decryptBytes(Key k, byte[] sequence) throws GenericSecurityProcessorException;
 
     String calculateDigest(String str, String digestAlgorithm) throws GenericSecurityProcessorException;
 
