@@ -54,5 +54,19 @@
         "readableName": "",
         "upstreamRepository": "",
         "patternCollection": false
+    },
+    {
+        "namespace": "http://opentosca.org/policytemplates/security",
+        "prefix": "sptemplate",
+        "readableName": "",
+        "upstreamRepository": "",
+        "patternCollection": false
+    },
+    {
+        "namespace": "http://opentosca.org/policytypes/security",
+        "prefix": "sptype",
+        "readableName": "",
+        "upstreamRepository": "",
+        "patternCollection": false
     }
 ]
