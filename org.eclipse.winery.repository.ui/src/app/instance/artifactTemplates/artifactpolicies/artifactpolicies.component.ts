@@ -103,7 +103,7 @@ export class ArtifactPoliciesComponent implements OnInit {
     onDecryptClick() {
         this.loading = true;
         this.service.decryptContents().subscribe(
-            data => {
+            response => {
                 this.selectedPolicy = null;
                 this.service.getPolicies().subscribe(
                     data => this.processPoliciesData(data),

@@ -53,7 +53,6 @@ import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.version.VersionUtils;
-import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
 import org.eclipse.winery.model.selfservice.Application;
 import org.eclipse.winery.model.selfservice.Application.Options;
 import org.eclipse.winery.model.selfservice.ApplicationOption;
@@ -85,7 +84,6 @@ import org.eclipse.winery.repository.security.csar.SecurityProcessor;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
 
-import com.google.common.base.Charsets;
 import de.danielbechler.util.Strings;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
