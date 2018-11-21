@@ -22,7 +22,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ModalDirective } from 'ngx-bootstrap';
 import { WineryRowData } from '../../../../wineryTableModule/wineryTable.component';
 import { SelectItem } from 'ng2-select';
-import { SelectData } from '../../../../model/selectData';
 
 export class KeyPairTableData {
     alias: string;
@@ -115,9 +114,9 @@ export class KeystoreEntityComponent implements OnInit {
         column: ''
     };
     selectedEntitySecPolicyTemplate: any = undefined;
-    supportedAlgorithms: Array<SelectData> = [];
+    supportedAlgorithms: string[] = [];
     secPolicyTemplateNameSpace: string;
-    supportedAlgorithmsKeySizesMap: { [key: string]: SelectData[] } = {};
+    supportedAlgorithmsKeySizesMap: { [key: string]: string[] } = {};
     addKeyData: AddSecretKeyData = new AddSecretKeyData();
     addKeypairData: AddKeypairData = new AddKeypairData();
     addCertificateData: File = undefined;
@@ -296,26 +295,25 @@ export class KeystoreEntityComponent implements OnInit {
                     const keySize = dataArray[i].keySizeInBits;
                     if (addedAlgorithms.indexOf(algo) === -1) {
                         addedAlgorithms.push(algo);
-                        this.supportedAlgorithms.push({ id: algo, text: algo });
+                        this.supportedAlgorithms.push(algo);
                     }
                     if (!this.supportedAlgorithmsKeySizesMap.hasOwnProperty(algo) || !this.supportedAlgorithmsKeySizesMap[algo]) {
                         this.supportedAlgorithmsKeySizesMap[algo] = [];
                     }
-                    this.supportedAlgorithmsKeySizesMap[algo].push({
-                        id: keySize.toString(), text: keySize.toString()
-                    });
+                    this.supportedAlgorithmsKeySizesMap[algo].push(keySize.toString());
                 }
             }
         }
     }
 
-    targetAlgorithmSelected(targetObj: SelectItem) {
+    targetAlgorithmSelected(targetObj: string) {
+        console.log(targetObj);
         switch (this.keystoreEntityType) {
             case 'secretkeys':
-                this.addKeyData.algorithm = targetObj.id;
+                this.addKeyData.algorithm = targetObj;
                 break;
             case 'keypairs':
-                this.addKeypairData.algorithm = targetObj.id;
+                this.addKeypairData.algorithm = targetObj;
                 break;
         }
     }
