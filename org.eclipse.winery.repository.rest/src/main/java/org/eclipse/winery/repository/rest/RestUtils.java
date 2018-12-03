@@ -105,13 +105,13 @@ import org.eclipse.winery.repository.rest.resources.entitytemplates.policytempla
 import org.eclipse.winery.repository.rest.resources.entitytemplates.policytemplates.PolicyTemplatesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.TopologyGraphElementEntityTypeResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
-import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
 import org.eclipse.winery.repository.security.csar.SecurityPolicyEnforcer;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.datatypes.KeyEntityInformation;
+import org.eclipse.winery.security.datatypes.KeyPairInformation;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.yaml.common.exception.MultiException;
 import org.eclipse.winery.yaml.converter.Converter;
 
@@ -1060,7 +1060,7 @@ public class RestUtils {
                     .build();
             }
             try {
-                KeystoreManager keystoreManager = new JCEKSKeystoreManager();
+                KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
                 String keyAlias = encPolicy.getPolicyRef().getLocalPart();
                 Key secretKey = keystoreManager.loadKey(keyAlias);
                 Set<RepositoryFileReference> files = RepositoryFactory.getRepository().getContainedFiles(filesDirectoryId);

@@ -12,13 +12,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar.datatypes;
+package org.eclipse.winery.security.datatypes;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DistinguishedName {
     private final Map<String, String> identityData;

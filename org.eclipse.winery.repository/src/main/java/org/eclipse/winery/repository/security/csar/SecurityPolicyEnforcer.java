@@ -77,9 +77,12 @@ import org.eclipse.winery.repository.export.entries.BytesBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.CsarEntry;
 import org.eclipse.winery.repository.export.entries.DefinitionsBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.StringBasedCsarEntry;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
+import org.eclipse.winery.security.BCSecurityProcessor;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.DigestAlgorithm;
 
 import org.apache.commons.io.Charsets;
 
@@ -94,7 +97,7 @@ public class SecurityPolicyEnforcer {
 
     public SecurityPolicyEnforcer(IRepository repository, String digestAlgorithm) {
         this.securityProcessor = new BCSecurityProcessor();
-        this.keystoreManager = new JCEKSKeystoreManager();
+        this.keystoreManager = KeystoreManagerFactory.getInstance();
         this.repository = repository;
         this.digestAlgorithm = digestAlgorithm;
         this.addedReferences = new HashMap<>();

@@ -12,15 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar.exceptions;
+package org.eclipse.winery.security.datatypes;
 
-public class GenericSecurityProcessorException extends Exception {
-    private static final long serialVersionUID = 1L;
-    
-    public GenericSecurityProcessorException() { super(); }
-
-    public GenericSecurityProcessorException(String message)
-    {
-        super(message);
-    }
+public enum KeyType {
+    SECRET, PRIVATE, PUBLIC
 }

@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar;
+package org.eclipse.winery.security;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -59,9 +59,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.eclipse.winery.repository.security.csar.datatypes.DistinguishedName;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.SignatureAlgorithm;
+import org.eclipse.winery.security.datatypes.DistinguishedName;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.SignatureAlgorithm;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.io.IOUtils;

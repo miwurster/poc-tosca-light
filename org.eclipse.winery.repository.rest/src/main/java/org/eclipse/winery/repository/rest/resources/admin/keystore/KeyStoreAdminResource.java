@@ -30,13 +30,13 @@ import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.admin.KeystoreId;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.repository.rest.resources.admin.AbstractAdminResource;
-import org.eclipse.winery.repository.security.csar.BCSecurityProcessor;
-import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.support.AsymmetricEncryptionAlgorithm;
-import org.eclipse.winery.repository.security.csar.support.SymmetricEncryptionAlgorithm;
+import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
+import org.eclipse.winery.security.BCSecurityProcessor;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithm;
 
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -50,7 +50,8 @@ public class KeyStoreAdminResource extends AbstractAdminResource {
 
     public KeyStoreAdminResource() {
         super(new KeystoreId());
-        keystoreManager = new JCEKSKeystoreManager(this.configuration);
+        keystoreManager = KeystoreManagerFactory.getInstance();
+
         if (!keystoreManager.keystoreExists()) {
             LOGGER.error("Error initializing keystore");
             throw new WebApplicationException(

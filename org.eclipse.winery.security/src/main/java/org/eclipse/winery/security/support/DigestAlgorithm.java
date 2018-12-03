@@ -12,28 +12,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar.support;
+package org.eclipse.winery.security.support;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum SymmetricEncryptionAlgorithm {
-    AES256("AES", 256),
-    AES512("AES", 512);
+public enum DigestAlgorithm {
+    SHA256("SHA-256"),
+    SHA384("SHA-384"),
+    SHA512("SHA-512");
 
     private String name;
-    private int keySizeInBits;
-
-    SymmetricEncryptionAlgorithm(String algorithm, int keySizeInBits) {
-        this.name = algorithm;
-        this.keySizeInBits = keySizeInBits;
+    
+    DigestAlgorithm(String name) {
+        this.name = name;
     }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public int getkeySizeInBits() {
-        return this.keySizeInBits;
-    }
+    
+    String getName() { return this.name; }
 }

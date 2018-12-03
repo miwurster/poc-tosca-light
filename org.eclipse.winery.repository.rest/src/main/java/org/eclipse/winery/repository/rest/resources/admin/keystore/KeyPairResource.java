@@ -30,12 +30,12 @@ import javax.ws.rs.core.StreamingOutput;
 import org.eclipse.winery.model.tosca.constants.QNames;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameWithTypeApiData;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyType;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.datatypes.KeyEntityInformation;
+import org.eclipse.winery.security.datatypes.KeyPairInformation;
+import org.eclipse.winery.security.datatypes.KeyType;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 
 import io.swagger.annotations.ApiOperation;
 

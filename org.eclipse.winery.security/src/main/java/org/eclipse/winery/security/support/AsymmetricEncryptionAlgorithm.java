@@ -12,15 +12,28 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar.exceptions;
+package org.eclipse.winery.security.support;
 
-public class GenericKeystoreManagerException extends Exception {
-    private static final long serialVersionUID = 1L;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
+public enum AsymmetricEncryptionAlgorithm {
+    RSA1024("RSA", 1024),
+    RSA2048("RSA", 2048);
+
+    private String name;
+    private int keySizeInBits;
     
-    public GenericKeystoreManagerException() { super(); }
+    AsymmetricEncryptionAlgorithm(String algorithm, int keySizeInBits) {
+        this.name = algorithm;
+        this.keySizeInBits = keySizeInBits;
+    }
 
-    public GenericKeystoreManagerException(String message)
-    {
-        super(message);
+    public String getName() {
+        return this.name;
+    }
+
+    public int getkeySizeInBits() {
+        return this.keySizeInBits;
     }
 }

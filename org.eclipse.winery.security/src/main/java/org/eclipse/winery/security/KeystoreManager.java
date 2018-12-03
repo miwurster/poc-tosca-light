@@ -12,17 +12,23 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar;
-
-import org.eclipse.winery.repository.security.csar.datatypes.*;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.support.AsymmetricEncryptionAlgorithm;
-import org.eclipse.winery.repository.security.csar.support.SymmetricEncryptionAlgorithm;
+package org.eclipse.winery.security;
 
 import java.io.InputStream;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Collection;
+
+import org.eclipse.winery.security.datatypes.CertificateInformation;
+import org.eclipse.winery.security.datatypes.KeyEntityInformation;
+import org.eclipse.winery.security.datatypes.KeyPairInformation;
+import org.eclipse.winery.security.datatypes.KeyType;
+import org.eclipse.winery.security.datatypes.KeystoreContentsInformation;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithm;
 
 public interface KeystoreManager {
 

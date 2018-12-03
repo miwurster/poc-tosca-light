@@ -14,16 +14,17 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
+import java.io.InputStream;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.InputStream;
-import java.util.Objects;
-import java.util.stream.Stream;
+
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
 
 abstract class AbstractKeystoreEntityResource {
     protected final KeystoreManager keystoreManager;

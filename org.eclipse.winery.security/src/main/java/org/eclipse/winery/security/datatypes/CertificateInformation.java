@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar.datatypes;
+package org.eclipse.winery.security.datatypes;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

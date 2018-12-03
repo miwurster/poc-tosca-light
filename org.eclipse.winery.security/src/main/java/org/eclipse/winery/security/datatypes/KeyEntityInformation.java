@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar.datatypes;
+package org.eclipse.winery.security.datatypes;
+
+import java.util.Base64;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-
-import java.util.Base64;
 
 @JsonDeserialize(builder = KeyEntityInformation.Builder.class)
 public class KeyEntityInformation {

@@ -12,18 +12,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar.support;
+package org.eclipse.winery.security.exceptions;
 
-public enum DigestAlgorithm {
-    SHA256("SHA-256"),
-    SHA384("SHA-384"),
-    SHA512("SHA-512");
-
-    private String name;
+public class GenericSecurityProcessorException extends Exception {
+    private static final long serialVersionUID = 1L;
     
-    DigestAlgorithm(String name) {
-        this.name = name;
+    public GenericSecurityProcessorException() { super(); }
+
+    public GenericSecurityProcessorException(String message)
+    {
+        super(message);
     }
-    
-    String getName() { return this.name; }
 }

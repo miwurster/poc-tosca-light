@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.security.csar;
+package org.eclipse.winery.security;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -20,6 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -44,29 +46,26 @@ import java.util.Objects;
 
 import javax.crypto.SecretKey;
 
-import org.eclipse.winery.common.RepositoryFileReference;
-import org.eclipse.winery.common.ids.admin.KeystoreId;
-import org.eclipse.winery.repository.backend.RepositoryFactory;
-import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
-import org.eclipse.winery.repository.security.csar.datatypes.CertificateInformation;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyType;
-import org.eclipse.winery.repository.security.csar.datatypes.KeystoreContentsInformation;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.support.AsymmetricEncryptionAlgorithm;
-import org.eclipse.winery.repository.security.csar.support.SymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.datatypes.CertificateInformation;
+import org.eclipse.winery.security.datatypes.KeyEntityInformation;
+import org.eclipse.winery.security.datatypes.KeyPairInformation;
+import org.eclipse.winery.security.datatypes.KeyType;
+import org.eclipse.winery.security.datatypes.KeystoreContentsInformation;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithm;
 
-//import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//import org.apache.commons.configuration.Configuration;
+
 public class JCEKSKeystoreManager implements KeystoreManager {
 
+    public static final String KEYSTORE_NAME = "winery-keystore.jceks";
     private static final String KEYSTORE_PASSWORD = "password";
     private static final String KEYSTORE_TYPE = "JCEKS";
-    private static final String KEYSTORE_NAME = "winery-keystore.jceks";
     private static final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
     private static final String END_CERT = "-----END CERTIFICATE-----";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -77,28 +76,27 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     private KeyStore keystore;
     private String keystorePath;
 
-    public JCEKSKeystoreManager(Configuration c) {
+    public JCEKSKeystoreManager(Configuration c, String absoluteKeystorePath) {
         // in case keystore's properties configuration is needed
         this.configuration = c;
-        loadKeystore();
+        loadKeystore(absoluteKeystorePath);
     }
 
-    public JCEKSKeystoreManager() {
-        this(null);
+    public JCEKSKeystoreManager(String absoluteKeystorePath) {
+        this(null, absoluteKeystorePath);
     }
 
-    private void loadKeystore() {
-        RepositoryFileReference keystoreRef = new RepositoryFileReference(new KeystoreId(), KEYSTORE_NAME);
-        FilebasedRepository fr = (FilebasedRepository) RepositoryFactory.getRepository();
-        fr.flagAsExisting(keystoreRef.getParent());
-        this.keystorePath = fr.ref2AbsolutePath(keystoreRef).toString();
+    private void loadKeystore(String absoluteKeystorePath) {
+
+        this.keystorePath = absoluteKeystorePath;
         try {
             KeyStore keystore = KeyStore.getInstance(KEYSTORE_TYPE);
-            if (!RepositoryFactory.getRepository().exists(keystoreRef)) {
+
+            if (!Files.exists(Paths.get(this.keystorePath))) {
                 keystore.load(null, null);
                 keystore.store(new FileOutputStream(keystorePath), KEYSTORE_PASSWORD.toCharArray());
-                this.keystore = keystore;
             }
+
             keystore.load(new FileInputStream(keystorePath), KEYSTORE_PASSWORD.toCharArray());
             this.keystore = keystore;
         } catch (Exception e) {

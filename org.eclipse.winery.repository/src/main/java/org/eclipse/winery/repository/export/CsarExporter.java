@@ -75,14 +75,14 @@ import org.eclipse.winery.repository.export.entries.BytesBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.CsarEntry;
 import org.eclipse.winery.repository.export.entries.RepositoryRefBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.StringBasedCsarEntry;
-import org.eclipse.winery.repository.security.csar.BCSecurityProcessor;
-import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
 import org.eclipse.winery.repository.security.csar.SecurityPolicyEnforcer;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.BCSecurityProcessor;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
 
 import de.danielbechler.util.Strings;
 import org.apache.commons.io.IOUtils;
@@ -286,7 +286,7 @@ public class CsarExporter {
 
         // add ToscaMetaFile's signature block file and certificate
         SecurityProcessor securityProcessor = new BCSecurityProcessor();
-        KeystoreManager keystoreManager = new JCEKSKeystoreManager();
+        KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
         Key signingKey = keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
         // TODO: notify a user if no master key is set
         if (Objects.nonNull(signingKey)) {
