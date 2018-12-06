@@ -272,21 +272,6 @@
                                         <artifacts>
                                             <artifact>
                                                 <id>
-                                                    org.eclipse.winery:org.eclipse.winery.accountability:${project.version}
-                                                </id>
-                                                <source>true</source>
-                                                <transitive>true</transitive>
-                                                <excludes>
-                                                    <exclude>org.eclipse.winery*</exclude>
-                                                    <exclude>com.github.jnr:*:::</exclude>
-                                                </excludes>
-                                                <instructions>
-                                                    <Import-Package>*;resolution:=optional</Import-Package>
-                                                    <Export-Package>org.eclipse.winery.accountability.*;-noimport:=true;version:=${project.version.osgi}</Export-Package>
-                                                </instructions>
-                                            </artifact>
-                                            <artifact>
-                                                <id>
                                                     org.eclipse.winery:org.eclipse.winery.model.bpmn4tosca:${project.version}
                                                 </id>
                                                 <source>true</source>
@@ -294,6 +279,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -309,6 +296,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -324,6 +313,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -338,6 +329,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -353,6 +346,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -383,6 +378,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -398,6 +395,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -425,6 +424,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <transitive>true</transitive>
                                                 <instructions>
@@ -441,6 +442,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>
@@ -459,6 +462,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -472,6 +477,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -485,6 +492,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -499,6 +508,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -514,6 +525,8 @@
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -522,17 +535,19 @@
                                             </artifact>
                                             <artifact>
                                                 <id>
-                                                    org.eclipse.winery:org.eclipse.winery.provenance:${project.version}
+                                                    org.eclipse.winery:org.eclipse.winery.accountability:${project.version}
                                                 </id>
                                                 <source>true</source>
-                                                <transitive>true</transitive>
+                                                <transitive>false</transitive>
                                                 <excludes>
                                                     <exclude>org.eclipse.winery*</exclude>
                                                     <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
-                                                    <Export-Package>org.eclipse.winery.provenance.*;-noimport:=true;version:=${project.version.osgi}</Export-Package>
+                                                    <Export-Package>org.eclipse.winery.accountability.*;-noimport:=true;version:=${project.version.osgi}</Export-Package>
                                                 </instructions>
                                             </artifact>
                                             <!-- 
