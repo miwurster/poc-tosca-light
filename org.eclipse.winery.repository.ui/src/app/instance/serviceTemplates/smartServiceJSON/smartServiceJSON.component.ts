@@ -7,14 +7,13 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
     templateUrl: './smartServiceJSON.component.html',
     providers: [SmartServiceJSONService],
     styleUrls: [
-        './css/custom.css'
+        './css/smartServiceJSON.css'
     ]
-    //styleUrls: ['./bootstrap.min.css']
 })
 
 export class SmartServiceJSONComponent {
 
-    //schema - "This document provides a schema for smart services which supports the specification of their data
+    //jsonSchema - "This document provides a schema for smart services which supports the specification of their data
     // providers, data consumers and/or data processors.",
     jsonSchema = require("./model/smart-service-schema.json");
     providerLayout = require("./model/smart-service-layout_provider.json"); // layout Providers
@@ -31,13 +30,7 @@ export class SmartServiceJSONComponent {
 
     serviceClass: any;
 
-    // compound Object for smartServiceJSON.component.html
-    compoundObject = {
-        schema: this.jsonSchema,
-        layout: this.jsonFormLayout,
-        data: this.flexibleData
-    };
-
+    //Anzeigenamen für das Select-Item
     exampleData = [
         { id: 0, name: "Example data input" },
         { id: 1, name: "Data Providers" },
@@ -45,9 +38,10 @@ export class SmartServiceJSONComponent {
         { id: 3, name: "Data Consumers" }
     ];
 
-    public onChange(event: any): void {  // event will give you full brief of action
-        const newVal = event.target.value;
-        if (newVal == 0) {
+    //Generierung Oberfläche anhand der jeweiligen Beispiel-Daten
+    public selectTemplate(event: any): void {
+        const newSelectedVal = event.target.value;
+        if (newSelectedVal == 0) {
             this.jsonFormLayout = [{
                 "type": "submit",
                 "title": "Save",
@@ -55,61 +49,58 @@ export class SmartServiceJSONComponent {
             }];
             this.flexibleData = {};
         }
-        if (newVal == 1) {
+        if (newSelectedVal == 1) {
             this.jsonFormLayout = this.providerLayout,
                 this.flexibleData = require("./model/smart-service-data-provider.json"),
                 this.serviceClass = 1;
 
         }
-        if (newVal == 2) {
+        if (newSelectedVal == 2) {
             this.jsonFormLayout = this.processorLayout,
                 this.flexibleData = require("./model/smart-service-data-processor.json")
             this.serviceClass = 2;
         }
-        if (newVal == 3) {
+        if (newSelectedVal == 3) {
 
             this.jsonFormLayout = this.consumerLayout,
                 this.flexibleData = require("./model/smart-service-data-consumer.json")
             this.serviceClass = 3;
 
         }
-        console.log(newVal);
+        console.log(newSelectedVal);
     }
 
     file: File = null;
-    i: number;
     /**
      * read and load data of extern file
      * @param {FileList} files
      */
-    handleFileInput(files: FileList) {
+    chooseFile(files: FileList) {
         this.file = files.item(0);
 
         let fileReader = new FileReader();
         fileReader.onload = (e) => {
             let data = JSON.parse(fileReader.result); //data input (string object) parse into json
-            let serviceClass = data.SmartService.ServiceClass; //get ServiceClass to define layout form and data input
-            this.serviceClass = serviceClass;
-            if (1 == serviceClass) {
+            if((data.SmartService.DataProviders)!=null) {
                 this.jsonFormLayout = this.providerLayout,
                     this.flexibleData = data
             }
-            if (2 == serviceClass) {
+            if((data.SmartService.DataProcessors)!=null) {
                 this.jsonFormLayout = this.processorLayout,
                     this.flexibleData = data
             }
-            if (3 == serviceClass) {
+            if((data.SmartService.DataConsumers)!=null)  {
                 this.jsonFormLayout = this.consumerLayout,
                     this.flexibleData = data
             }
-            //this.fileUpNotLoad = "Fail to load data! Please select other file or select example Data!"
         }
 
         fileReader.readAsText(this.file);
 
     }
 
-    public submit(event: any): void {
+    //download data
+    public save(event: any): void {
         var sJson = JSON.stringify(this.flexibleData);
         var element = document.createElement('a');
         element.setAttribute('href', "data:text/json;charset=UTF-8," + encodeURIComponent(sJson));
