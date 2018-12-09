@@ -15,7 +15,7 @@ The source for the documentation can be found at [docs/](docs).
 ## Running via docker
 
 1. `docker build -t winery .`.
-   In case, there are issues, you can also try `docker build --no-cache -t winery Dockerfiles/full`
+   In case, there are issues, you can also try `docker build --no-cache -t winery .`
 2. `docker run -p 8080:8080 winery` to run winery on http://localhost:8080/
 
 You can also use the pre-built image and bin it to a local repository:
@@ -30,12 +30,12 @@ You can also use the pre-built image and bin it to a local repository:
 You can also use the pre-built image:
 
 - Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery-cli`
-- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery`
+- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery-cli`
 
 In case you want to have verbose information, you can execute following:
 
-- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery winery -v`
-- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery winery -v`
+- Linux: `docker run -it -v ${pwd}:/root/winery-repository opentosca/winery-cli winery -v`
+- Windows: `docker run -it -v C:/winery-repository:/root/winery-repository opentosca/winery-cli winery -v`
 
 Currently supported CLI arguments:
 
@@ -83,6 +83,12 @@ Die Haftung für entgangenen Gewinn, Produktionsausfall, Betriebsunterbrechung, 
 Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
 You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
 
+## Acknowledgements
+
+The initial code contribution has been supported by the [Federal Ministry for Economic Affairs and Energy] as part of the [CloudCycle] project (01MD11023).
+Current development is supported by the Federal Ministry for Economic Affairs and Energy as part of the projects
+[SmartOrchestra] (01MD16001F) and [SePiA.Pro] (01MD16013F), as well as by the [DFG] (Deutsche Forschungsgemeinschaft) projects [SustainLife] (641730) and [ADDCompliance] (636503).
+
 ## License
 
 Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
@@ -96,3 +102,11 @@ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
 which is available at https://www.apache.org/licenses/LICENSE-2.0.
 
 SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+
+  [CloudCycle]: http://www.cloudcycle.org/en/
+  [Federal Ministry for Economic Affairs and Energy]: http://www.bmwi.de/EN/
+  [SmartOrchestra]: http://smartorchestra.de/en/
+  [SePiA.Pro]: http://projekt-sepiapro.de/en/
+  [ADDCompliance]: http://addcompliance.cs.univie.ac.at/
+  [SustainLife]: http://www.iaas.uni-stuttgart.de/forschung/projects/SustainLife
+  [DFG]: http://www.dfg.de/en/

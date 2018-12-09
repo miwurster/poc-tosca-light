@@ -82,6 +82,7 @@
         <org.jgrapht.jgrapht-core.version>1.0.1</org.jgrapht.jgrapht-core.version>
 
         <!-- grouped libraries -->
+        <org.apache.cxf.version>2.7.6</org.apache.cxf.version>
         <org.slf4j>1.7.25</org.slf4j>
         <junit.jupiter.version>5.2.0</junit.jupiter.version>
         <junit.platform.version>1.2.0</junit.platform.version>
@@ -92,7 +93,7 @@
         <module>org.eclipse.winery.model.selfservice</module>
         <module>org.eclipse.winery.model.tosca</module>
         <module>org.eclipse.winery.model.tosca.yaml</module>
-        <module>org.eclipse.winery.provenance</module>
+        <module>org.eclipse.winery.accountability</module>
         <module>org.eclipse.winery.common</module>
         <module>org.eclipse.winery.yaml.common</module>
         <module>org.eclipse.winery.yaml.converter</module>
@@ -172,8 +173,8 @@
                                 <goal>install-node-and-npm</goal>
                             </goals>
                             <configuration>
-                                <nodeVersion>v8.11.1</nodeVersion> <!-- LTS as of 2018-03-30 - see https://nodejs.org/en/blog/release/v8.11.1/ -->
-                                <npmVersion>5.6.0</npmVersion> <!-- defined as latest LTS version -->
+                                <nodeVersion>v8.11.4</nodeVersion> <!-- LTS as of 2018-03-30 - see https://nodejs.org/en/blog/release/v8.11.1/ -->
+                                <npmVersion>6.4.1</npmVersion> <!-- defined as latest LTS version -->
                             </configuration>
                         </execution>
                     </executions>
@@ -192,7 +193,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.0.1</version>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
@@ -276,7 +277,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -290,7 +294,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -304,7 +311,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -317,7 +327,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -331,7 +344,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -343,10 +359,11 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
                                                     <!-- Export-Package specification is incorrect, 
                                                          see https://github.com/SQiShER/java-object-diff/issues/205 -->
                                                     <exclude>de.danielbechler:java-object-diff:${de.danielbechler.java-object-diff}</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -359,7 +376,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -373,7 +393,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -387,7 +410,8 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -398,7 +422,10 @@
                                                 <id>org.eclipse.winery:org.eclipse.winery.repository:${project.version}</id>
                                                 <source>true</source>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery:::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <transitive>true</transitive>
                                                 <instructions>
@@ -413,7 +440,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>
@@ -430,7 +460,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -442,7 +475,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -454,7 +490,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -467,7 +506,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -481,7 +523,10 @@
                                                 <source>true</source>
                                                 <transitive>true</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
@@ -490,24 +535,34 @@
                                             </artifact>
                                             <artifact>
                                                 <id>
-                                                    org.eclipse.winery:org.eclipse.winery.provenance:${project.version}
+                                                    org.eclipse.winery:org.eclipse.winery.accountability:${project.version}
                                                 </id>
                                                 <source>true</source>
-                                                <transitive>true</transitive>
+                                                <transitive>false</transitive>
                                                 <excludes>
-                                                    <exclude>org.eclipse.winery::</exclude>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
                                                 </excludes>
                                                 <instructions>
                                                     <Import-Package>*;resolution:=optional</Import-Package>
-                                                    <Export-Package>org.eclipse.winery.provenance.*;-noimport:=true;version:=${project.version.osgi}</Export-Package>
+                                                    <Export-Package>org.eclipse.winery.accountability.*;-noimport:=true;version:=${project.version.osgi}</Export-Package>
                                                 </instructions>
                                             </artifact>
                                             <!-- 
                                                 SECTION: Special artifact imports that fix some failed dependency chains
                                              -->
-                                            
+                                            <!-- fixes missing sun misc provision on linux hosts -->
                                             <artifact>
                                                 <id>com.diffplug.osgi:com.diffplug.osgi.extension.sun.misc:0.0.0</id>
+                                            </artifact>
+                                            <!-- 
+                                                is only included in certain configurations of cxf-rt-frontent-jaxws
+                                                Accordingly we add it explicitly here
+                                             -->
+                                            <artifact>
+                                                <id>org.apache.cxf:cxf-rt-transports-http:${org.apache.cxf.version}</id>
                                             </artifact>
                                             <!-- Sidesteps the incorrect export, should be fixed with 0.96 -->
                                             <artifact>
@@ -535,15 +590,16 @@
                         </execution>
                     </executions>
                 </plugin>
-
-                <!-- TODO The following plugin should be used when the web3j-maven-plugin library starts using a version of solc >= 0.4.21
-            and a version of web3j >= 3.4.0 (most likely, release 0.4.0)-->
                 
-                <!--<plugin>-->
-                    <!--<groupId>org.web3j</groupId>-->
-                    <!--<artifactId>web3j-maven-plugin</artifactId>-->
-                    <!--<version>0.3.0</version>-->
-                <!--</plugin>-->
+                <!--
+                    This plugin allows generating java code that represents a given ethereum smart contract written in
+                    Solidity. The actual configuration of the plugin is found the pom file accountability module. 
+                -->
+                <plugin>
+                    <groupId>org.web3j</groupId>
+                    <artifactId>web3j-maven-plugin</artifactId>
+                    <version>0.3.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
