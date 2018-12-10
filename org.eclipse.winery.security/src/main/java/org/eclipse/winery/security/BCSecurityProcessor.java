@@ -59,9 +59,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.eclipse.winery.security.algorithm.SymmetricEncryptionAlgorithm;
 import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.SignatureAlgorithm;
+import org.eclipse.winery.security.support.SignatureAlgorithmEnum;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -90,8 +91,8 @@ import org.slf4j.LoggerFactory;
 public class BCSecurityProcessor implements SecurityProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BCSecurityProcessor.class);
-
     private Configuration configuration;
+    private SymmetricEncryptionAlgorithm symmetricEncryption;
 
     public BCSecurityProcessor(Configuration c) {
         this.configuration = c;
@@ -139,7 +140,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
     public Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException {
         String signatureAlgorithm;
         try {
-            signatureAlgorithm = SignatureAlgorithm.getDefaultOptionForAlgorithm(keypair.getPrivate().getAlgorithm());
+            signatureAlgorithm = SignatureAlgorithmEnum.getDefaultOptionForAlgorithm(keypair.getPrivate().getAlgorithm());
         } catch (IllegalArgumentException e) {
             LOGGER.error("Signature algorithm for keypair algorithm is not found", e);
             throw new GenericSecurityProcessorException("Signature algorithm for keypair algorithm is not found");
@@ -373,7 +374,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
     @Override
     public byte[] signBytes(Key privateKey, byte[] text) throws GenericSecurityProcessorException {
         try {
-            String algo = SignatureAlgorithm.getDefaultOptionForAlgorithm(privateKey.getAlgorithm());
+            String algo = SignatureAlgorithmEnum.getDefaultOptionForAlgorithm(privateKey.getAlgorithm());
             Signature privateSignature = Signature.getInstance(algo);
             privateSignature.initSign((PrivateKey) privateKey);
             privateSignature.update(text);
@@ -394,7 +395,7 @@ public class BCSecurityProcessor implements SecurityProcessor {
     public boolean verifyBytes(Certificate cert, byte[] text, byte[] signature) throws GenericSecurityProcessorException {
         try {
             PublicKey publicKey = cert.getPublicKey();
-            String algo = SignatureAlgorithm.getDefaultOptionForAlgorithm(publicKey.getAlgorithm());
+            String algo = SignatureAlgorithmEnum.getDefaultOptionForAlgorithm(publicKey.getAlgorithm());
             Signature publicSignature = Signature.getInstance(algo);
             publicSignature.initVerify(publicKey);
             publicSignature.update(text);

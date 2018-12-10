@@ -42,7 +42,7 @@ import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.datatypes.KeyPairInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.DigestAlgorithm;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import com.sun.jersey.multipart.FormDataParam;
 import io.swagger.annotations.ApiOperation;
@@ -86,7 +86,7 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
                 if (Objects.nonNull(setMasterKey)) {
                     alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
                 } else {
-                    alias = securityProcessor.calculateDigest(keypair.getPublic().getEncoded(), DigestAlgorithm.SHA256.name());
+                    alias = securityProcessor.calculateDigest(keypair.getPublic().getEncoded(), DigestAlgorithmEnum.SHA256.name());
                     this.checkAliasInsertEligibility(alias);
                 }
                 Certificate selfSignedCert = this.securityProcessor.generateSelfSignedX509Certificate(keypair, dn);
@@ -98,7 +98,7 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
                     if (Objects.nonNull(setMasterKey)) {
                         alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
                     } else {
-                        alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithm.SHA256.name());
+                        alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithmEnum.SHA256.name());
                         this.checkAliasInsertEligibility(alias);
                     }
                     entity = this.keystoreManager.storeKeyPair(alias, privateKey, cert[0]);

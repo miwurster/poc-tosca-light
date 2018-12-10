@@ -82,7 +82,7 @@ import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.DigestAlgorithm;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import org.apache.commons.io.Charsets;
 
@@ -106,7 +106,7 @@ public class SecurityPolicyEnforcer {
     }
 
     public SecurityPolicyEnforcer(IRepository repository) {
-        this(repository, DigestAlgorithm.SHA256.name());
+        this(repository, DigestAlgorithmEnum.SHA256.name());
     }
 
     public void enforceSecurityPolicies(Map<MetaFileEntry, CsarEntry> refMap) {

@@ -52,8 +52,8 @@ import org.eclipse.winery.security.datatypes.KeyPairInformation;
 import org.eclipse.winery.security.datatypes.KeyType;
 import org.eclipse.winery.security.datatypes.KeystoreContentsInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithm;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
 
 import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
@@ -534,13 +534,13 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     }
 
     @Override
-    public Collection<SymmetricEncryptionAlgorithm> getSymmetricAlgorithms() {
-        return Arrays.asList(SymmetricEncryptionAlgorithm.values());
+    public Collection<SymmetricEncryptionAlgorithmEnum> getSymmetricAlgorithms() {
+        return Arrays.asList(SymmetricEncryptionAlgorithmEnum.values());
     }
 
     @Override
-    public Collection<AsymmetricEncryptionAlgorithm> getAsymmetricAlgorithms() {
-        return Arrays.asList(AsymmetricEncryptionAlgorithm.values());
+    public Collection<AsymmetricEncryptionAlgorithmEnum> getAsymmetricAlgorithms() {
+        return Arrays.asList(AsymmetricEncryptionAlgorithmEnum.values());
     }
 
     @Override

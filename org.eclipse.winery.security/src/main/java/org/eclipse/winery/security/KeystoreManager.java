@@ -27,8 +27,8 @@ import org.eclipse.winery.security.datatypes.KeyPairInformation;
 import org.eclipse.winery.security.datatypes.KeyType;
 import org.eclipse.winery.security.datatypes.KeystoreContentsInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithm;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
 
 public interface KeystoreManager {
 
@@ -36,9 +36,9 @@ public interface KeystoreManager {
     
     boolean entityExists(String alias);
     
-    Collection<SymmetricEncryptionAlgorithm> getSymmetricAlgorithms();
+    Collection<SymmetricEncryptionAlgorithmEnum> getSymmetricAlgorithms();
     
-    Collection<AsymmetricEncryptionAlgorithm> getAsymmetricAlgorithms();
+    Collection<AsymmetricEncryptionAlgorithmEnum> getAsymmetricAlgorithms();
     
     Collection<KeyEntityInformation> getKeys(boolean withKeyEncoded);
 

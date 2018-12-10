@@ -35,8 +35,8 @@ import org.eclipse.winery.security.BCSecurityProcessor;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithm;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
 
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -109,8 +109,8 @@ public class KeyStoreAdminResource extends AbstractAdminResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSupportedAlgorithms() {
         Map<String, Object> result = new HashMap<>();
-        Collection<SymmetricEncryptionAlgorithm> sym = this.keystoreManager.getSymmetricAlgorithms();
-        Collection<AsymmetricEncryptionAlgorithm> asym = this.keystoreManager.getAsymmetricAlgorithms();
+        Collection<SymmetricEncryptionAlgorithmEnum> sym = this.keystoreManager.getSymmetricAlgorithms();
+        Collection<AsymmetricEncryptionAlgorithmEnum> asym = this.keystoreManager.getAsymmetricAlgorithms();
         result.put("symmetric", sym);
         result.put("asymmetric", asym);
 
