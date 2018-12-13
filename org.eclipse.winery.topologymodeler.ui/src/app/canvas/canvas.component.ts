@@ -50,6 +50,7 @@ import { DifferenceStates, VersionUtils } from '../models/ToscaDiff';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { DragSource } from '../models/DragSource';
 import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
+import { Utils } from '../models/utils';
 
 @Component({
     selector: 'winery-canvas',
@@ -316,12 +317,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.requirements.properties = this.setKVProperties(reqType);
+                                        this.requirements.properties = Utils.setKVProperties(reqType);
                                         this.setDefaultReqKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.requirements.properties = this.setKVProperties(reqType);
+                                    this.requirements.properties = Utils.setKVProperties(reqType);
                                     this.setDefaultReqKVProperties();
                                     return true;
                                 }
@@ -336,12 +337,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                             return true;
                                         } else {
                                             this.requirements.properties = defaultXML;
-                                            this.setDefaultReqKVProperties();
+                                            this.setDefaultReqXMLProperties();
                                             return true;
                                         }
                                     } else {
                                         this.requirements.properties = defaultXML;
-                                        this.setDefaultReqKVProperties();
+                                        this.setDefaultReqXMLProperties();
                                         return true;
                                     }
                                 }
@@ -398,12 +399,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.capabilities.properties = this.setKVProperties(capType);
+                                        this.capabilities.properties = Utils.setKVProperties(capType);
                                         this.setDefaultCapKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.capabilities.properties = this.setKVProperties(capType);
+                                    this.capabilities.properties = Utils.setKVProperties(capType);
                                     this.setDefaultCapKVProperties();
                                     return true;
                                 }
@@ -508,30 +509,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 };
             }
         });
-    }
-
-    /**
-     * This function sets the node's KV properties
-     * @param any type : the element type, e.g. capabilityType, requirementType etc.
-     * @returns newKVProperties     KV Properties as Object
-     */
-    setKVProperties(type: any): any {
-        let newKVProperies;
-        const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
-        for (const obj of kvProperties) {
-            const key = obj.key;
-            let value;
-            if (isNullOrUndefined(obj.value)) {
-                value = '';
-            } else {
-                value = obj.value;
-            }
-            const keyValuePair = {
-                [key]: value
-            };
-            newKVProperies = { ...newKVProperies, ...keyValuePair };
-        }
-        return newKVProperies;
     }
 
     /**
@@ -663,7 +640,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.capabilities.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.capabilities.properties = this.setKVProperties(cap);
+                    this.capabilities.properties = Utils.setKVProperties(cap);
                     // if propertiesDefinition is defined it's a XML property
                 } else if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
                     if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
@@ -769,7 +746,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.requirements.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.requirements.properties = this.setKVProperties(req);
+                    this.requirements.properties = Utils.setKVProperties(req);
                     return true;
                     // if propertiesDefinition is defined it's a XML property
                 } else if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
@@ -945,29 +922,34 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         if (rendererState) {
             this.topologyRendererState = rendererState;
             this.revalidateContainer();
-            let selectedNodes;
+            let leaveNodesAsSelectedAfterLayouting;
 
             if (this.topologyRendererState.buttonsState.layoutButton) {
-                this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
-                this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
-                selectedNodes = false;
-            } else if (this.topologyRendererState.buttonsState.alignHButton) {
-                if (this.selectedNodes.length >= 1) {
-                    this.layoutDirective.align(this.nodeChildrenArray, this.selectedNodes, align.Horizontal);
-                    selectedNodes = true;
-                } else {
-                    this.layoutDirective.align(this.nodeChildrenArray, this.allNodeTemplates, align.Horizontal);
-                    selectedNodes = false;
-                }
-                this.ngRedux.dispatch(this.topologyRendererActions.executeAlignH());
-            } else if (this.topologyRendererState.buttonsState.alignVButton) {
-                if (this.selectedNodes.length >= 1) {
-                    this.layoutDirective.align(this.nodeChildrenArray, this.selectedNodes, align.Vertical);
-                    selectedNodes = true;
-                } else {
-                    this.layoutDirective.align(this.nodeChildrenArray, this.allNodeTemplates, align.Vertical);
-                }
-                this.ngRedux.dispatch(this.topologyRendererActions.executeAlignV());
+                this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates)
+                    .then(done => {
+                        leaveNodesAsSelectedAfterLayouting = false;
+                        // This call might seem confusing as we are calling it again right after executing,
+                        // but this just toggles the button state back to false, so layout can be called again.
+                        // TODO: change this behavior to simple events without a boolean flag
+                        this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
+                    });
+            } else if (this.topologyRendererState.buttonsState.alignHButton
+                    || this.topologyRendererState.buttonsState.alignVButton) {
+                const selectionActive = (this.selectedNodes.length >= 1);
+                const nodesToBeAligned = selectionActive ? this.selectedNodes : this.allNodeTemplates;
+                leaveNodesAsSelectedAfterLayouting = selectionActive;
+                const alignmentMode = this.topologyRendererState.buttonsState.alignHButton ? align.Horizontal : align.Vertical;
+                this.layoutDirective.align(this.nodeChildrenArray, nodesToBeAligned, alignmentMode)
+                    .then(() => {
+                        leaveNodesAsSelectedAfterLayouting = false;
+                        // This call might seem confusing as we are calling it again right after executing,
+                        // but this just toggles the button state back to false, so layout can be called again.
+                        if (alignmentMode === align.Horizontal) {
+                            this.ngRedux.dispatch(this.topologyRendererActions.executeAlignH());
+                        } else {
+                            this.ngRedux.dispatch(this.topologyRendererActions.executeAlignV());
+                        }
+                    });
             } else if (this.topologyRendererState.buttonsState.importTopologyButton) {
                 if (!this.importTopologyData.allTopologyTemplates) {
                     this.importTopologyData.allTopologyTemplates = [];
@@ -993,7 +975,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             }
 
             setTimeout(() => {
-                if (selectedNodes === true) {
+                if (leaveNodesAsSelectedAfterLayouting === true) {
                     this.updateSelectedNodes();
                 } else {
                     this.updateAllNodes();
@@ -1047,7 +1029,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     }
 
     /**
-     * Updates the internal representation of all nodes with the actual dom information.
+     * Updates the internal representation of all nodes with the actual DOM information.
      */
     updateAllNodes(): void {
         if (this.allNodeTemplates.length > 0 && this.child) {
@@ -1103,7 +1085,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 // why not use name -> save the type's id into the name (without management version)
                 + newRelationship.name;
 
-            if (labelString.startsWith('con')) {
+            if (labelString.startsWith(this.backendService.configuration.relationshipPrefix)) {
                 // Workaround to support old topology templates with the real name
                 labelString = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
             }
@@ -1905,23 +1887,23 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             this.jsPlumbBindConnection = true;
             this.newJsPlumbInstance.bind('connection', info => {
                 const sourceElement = info.sourceId.substring(0, info.sourceId.indexOf('_E'));
-                info.sourceId = sourceElement;
                 const currentTypeValid = this.entityTypes.relationshipTypes.some(relType => relType.qName === this.selectedRelationshipType.qName);
                 const currentSourceIdValid = this.allNodeTemplates.some(node => node.id === sourceElement);
                 if (sourceElement && currentTypeValid && currentSourceIdValid) {
-                    const targetElement = info.targetId;
-                    let lastRelId = 'con_0';
-                    if (this.allRelationshipTemplates.length > 0) {
-                        lastRelId = this.allRelationshipTemplates[this.allRelationshipTemplates.length - 1].id;
-                    }
-                    const newRelCount = parseInt(lastRelId.substring(lastRelId.indexOf('_') + 1), 10) + 1;
-                    const relationshipId = 'con_' + newRelCount.toString();
-                    const relTypeExists = this.allRelationshipTemplates.some(rel => rel.id === relationshipId);
-                    if (relTypeExists === false && sourceElement !== targetElement) {
+                    const prefix = this.backendService.configuration.relationshipPrefix;
+                    const relName = this.selectedRelationshipType.name;
+                    let relNumber = 0;
+                    let relationshipId: string;
+
+                    do {
+                        relationshipId = prefix + '_' + relName + '_' + relNumber++;
+                    } while (this.allRelationshipTemplates.find(value => value.id === relationshipId));
+
+                    if (sourceElement !== info.targetId) {
                         const newRelationship = new TRelationshipTemplate(
                             { ref: sourceElement },
-                            { ref: targetElement },
-                            relationshipId,
+                            { ref: info.targetId },
+                            this.selectedRelationshipType.name,
                             relationshipId,
                             this.selectedRelationshipType.qName
                         );

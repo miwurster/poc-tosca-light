@@ -43,20 +43,16 @@ public class DefinitionsBasedCsarEntry implements CsarEntry {
     public Definitions getDefinitions() {
         return this.definitions;
     }
-
-    private static Marshaller getMarshaller() {
-        if (marshaller == null) {
-            marshaller = JAXBSupport.createMarshaller(true);
-        }
-
-        return marshaller;
+    
+    public DefinitionsChildId getDefinitionsChildId() {
+        return definitionsChildId;
     }
-
+    
     @Override
     public InputStream getInputStream() throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
-            getMarshaller().marshal(definitions, byteArrayOutputStream);
+            JAXBSupport.createMarshaller(true).marshal(definitions, byteArrayOutputStream);
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (JAXBException e) {
             throw new IOException(e);
@@ -66,13 +62,10 @@ public class DefinitionsBasedCsarEntry implements CsarEntry {
     @Override
     public void writeToOutputStream(OutputStream outputStream) throws IOException {
         try {
-            getMarshaller().marshal(definitions, outputStream);
+            JAXBSupport.createMarshaller(true).marshal(definitions, outputStream);
         } catch (JAXBException e) {
             throw new IOException(e);
         }
     }
-
-    public DefinitionsChildId getDefinitionsChildId() {
-        return definitionsChildId;
-    }
+    
 }
