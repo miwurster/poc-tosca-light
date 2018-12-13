@@ -15,16 +15,17 @@ package org.eclipse.winery.repository.export.entries.decorators;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
 
 import javax.crypto.SecretKey;
 
-import org.eclipse.winery.security.algorithm.SymmetricEncryptionAlgorithm;
+import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
 
 public class EncryptionDecorator extends CsarEntryDecorator {
-    private SymmetricEncryptionAlgorithm algorithm;
+    private EncryptionAlgorithm algorithm;
     private SecretKey key;
 
-    public EncryptionDecorator(SymmetricEncryptionAlgorithm algorithm, SecretKey key) {
+    public EncryptionDecorator(EncryptionAlgorithm algorithm, SecretKey key) {
         this.algorithm = algorithm;
         this.key = key;
     }
@@ -33,6 +34,11 @@ public class EncryptionDecorator extends CsarEntryDecorator {
     public InputStream getInputStream() throws IOException {
         InputStream beforeDecoration = this.toDecorate.getInputStream();
 
-        return algorithm.encryptStream(key, beforeDecoration);
+        try {
+            return algorithm.encryptStream(key, beforeDecoration);
+        } catch (InvalidKeyException e) {
+            // when passing a SecretKey, this exception should not happen.
+            throw new IOException("The key is invalid", e);
+        }
     }
 }

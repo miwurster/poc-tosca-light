@@ -12,10 +12,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.security.algorithm;
+package org.eclipse.winery.security.algorithm.signature;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -25,6 +26,7 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.util.Objects;
 
+import org.eclipse.winery.security.algorithm.AbstractSecurityTestClass;
 import org.eclipse.winery.security.support.SignatureAlgorithmEnum;
 
 import org.apache.commons.io.IOUtils;
@@ -46,7 +48,7 @@ class SignatureAlgorithmImplTest extends AbstractSecurityTestClass {
 
     @BeforeEach
     @Override
-    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException {
+    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         super.setUp();
         this.algorithm = new SignatureAlgorithmImpl(ALGORITHM);
         

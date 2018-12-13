@@ -11,15 +11,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-package org.eclipse.winery.security.algorithm;
+package org.eclipse.winery.security.algorithm.encryption;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.InvalidKeyException;
+import java.security.Key;
 
-public interface AsymmetricEncryptionAlgorithm {
-    void encrypt(PublicKey key, InputStream plaintext, OutputStream cipherText);
-    
-    void decrypt(PrivateKey key, InputStream cipherText, OutputStream plainText);
+public interface EncryptionAlgorithm {
+    InputStream encryptStream(Key key, InputStream plainText) throws InvalidKeyException;
+
+    byte[] encryptBytes(Key key, byte[] plainText) throws InvalidKeyException;
+
+    InputStream decryptStream(Key key, InputStream cipherText) throws IOException, InvalidKeyException;
+
+    byte[] decryptBytes(Key key, byte[] cipherText) throws InvalidKeyException;
 }

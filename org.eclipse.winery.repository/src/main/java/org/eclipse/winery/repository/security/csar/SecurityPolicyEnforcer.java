@@ -354,6 +354,7 @@ public class SecurityPolicyEnforcer {
                     if (Objects.isNull(nodeTemplate.getDeploymentArtifacts())) {
                         nodeTemplate.setDeploymentArtifacts(new TDeploymentArtifacts());
                     }
+                    
                     String daName = SecureCSARConstants.DA_PREFIX.concat(signTypeLevelPropsPolicy.getName());
                     TDeploymentArtifact propsSignatureDA = new TDeploymentArtifact
                         .Builder(daName, QNames.WINERY_SIGNATURE_ARTIFACT_TYPE)

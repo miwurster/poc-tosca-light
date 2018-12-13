@@ -14,27 +14,36 @@
 
 package org.eclipse.winery.security.support;
 
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.ECGenParameterSpec;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum AsymmetricEncryptionAlgorithmEnum {
-    RSA1024("RSA", 1024),
-    RSA2048("RSA", 2048),
-    ECIES256("ECIES", 256);
+    RSA1024("RSA", 1024, null),
+    RSA2048("RSA", 2048, null),
+    ECIES_secp256k1("ECIES", 256, new ECGenParameterSpec("secp256k1") );
 
     private String name;
     private int keySizeInBits;
+    private AlgorithmParameterSpec spec;
     
-    AsymmetricEncryptionAlgorithmEnum(String algorithm, int keySizeInBits) {
+    AsymmetricEncryptionAlgorithmEnum(String algorithm, int keySizeInBits, AlgorithmParameterSpec spec) {
         this.name = algorithm;
         this.keySizeInBits = keySizeInBits;
+        this.spec = spec;
     }
 
     public String getName() {
         return this.name;
     }
 
-    public int getkeySizeInBits() {
+    public int getKeySizeInBits() {
         return this.keySizeInBits;
+    }
+    
+    public AlgorithmParameterSpec getAlgorithmParameterSpec() {
+        return  this.spec;
     }
 }

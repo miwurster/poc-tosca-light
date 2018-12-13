@@ -20,7 +20,7 @@ import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 
-import org.eclipse.winery.security.algorithm.SignatureAlgorithm;
+import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

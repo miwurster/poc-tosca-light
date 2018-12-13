@@ -16,11 +16,16 @@ package org.eclipse.winery.security.exceptions;
 
 public class GenericSecurityProcessorException extends Exception {
     private static final long serialVersionUID = 1L;
-    
-    public GenericSecurityProcessorException() { super(); }
 
     public GenericSecurityProcessorException(String message)
     {
         super(message);
     }
+
+    public GenericSecurityProcessorException(String message, Exception internal)
+    {
+        super(message, internal);
+    }
+    
+    
 }

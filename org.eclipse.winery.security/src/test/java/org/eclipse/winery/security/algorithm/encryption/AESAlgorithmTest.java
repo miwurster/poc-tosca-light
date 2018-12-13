@@ -11,21 +11,46 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-package org.eclipse.winery.security.algorithm;
+
+package org.eclipse.winery.security.algorithm.encryption;
 
 import java.security.InvalidAlgorithmParameterException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Security;
+import java.security.SecureRandom;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 
-@Disabled
-public abstract class AbstractSecurityTestClass {
+class AESAlgorithmTest extends AbstractEncryptionTestingClass {
+    private static final int KEY_SIZE_BITS = 256;
+    private static final String ALGORITHM_NAME = "AES";
+    private SecretKey key;
+
+    
+    @BeforeEach
+    @Override
     public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        Security.addProvider(new BouncyCastleProvider());
-        // Available since Java8u151, allows 256bit key usage
-        Security.setProperty("crypto.policy", "unlimited");
+        super.setUp();
+        algorithm = new AESAlgorithm();
+
+        KeyGenerator keyGenerator;
+        keyGenerator = KeyGenerator.getInstance(ALGORITHM_NAME, BouncyCastleProvider.PROVIDER_NAME);
+        keyGenerator.init(KEY_SIZE_BITS, new SecureRandom());
+        this.key = keyGenerator.generateKey();
+    }
+
+    @Override
+    protected Key getEncryptionKey() {
+        return key;
+    }
+
+    @Override
+    protected Key getDecryptionKey() {
+        return key;
     }
 }

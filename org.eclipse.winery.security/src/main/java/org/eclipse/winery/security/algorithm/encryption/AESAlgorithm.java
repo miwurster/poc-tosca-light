@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-package org.eclipse.winery.security.algorithm;
+package org.eclipse.winery.security.algorithm.encryption;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -32,12 +33,12 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AESAlgorithm implements SymmetricEncryptionAlgorithm {
+public class AESAlgorithm extends BasicEncryptionAlgorithm {
 
     /**
      * The name of the encryption scheme
      */
-    public static final String SCHEME = "AES/CBC/PKCS5Padding";
+    private static final String SCHEME = "AES/CBC/PKCS5Padding";
 
     /**
      * The name of method used to implement a pseudo-random number generator
@@ -80,8 +81,13 @@ public class AESAlgorithm implements SymmetricEncryptionAlgorithm {
     }
 
     @Override
-    public InputStream encryptStream(SecretKey key, InputStream plainText) {
+    public InputStream encryptStream(Key key, InputStream plainText) throws InvalidKeyException{
+        if(!(key instanceof SecretKey)) {
+            throw new InvalidKeyException("AES algorithm expects a key of type SecretKey whereas the key passed is of type " + key.getClass().getTypeName());
+        }
+        
         SequenceInputStream result = null;
+        
         try {
             final Cipher cipher = Cipher.getInstance(SCHEME);
             final IvParameterSpec iv = generateRandomIV(cipher);
@@ -99,22 +105,11 @@ public class AESAlgorithm implements SymmetricEncryptionAlgorithm {
     }
 
     @Override
-    public byte[] encryptBytes(SecretKey key, byte[] plainText) {
-        byte[] result = null;
-
-        try (ByteArrayInputStream plainTextStream = new ByteArrayInputStream(plainText)) {
-            try (InputStream cipherStream = this.encryptStream(key, plainTextStream)) {
-                result = IOUtils.toByteArray(cipherStream);
-            }
-        } catch (IOException e) {
-            LOGGER.error("Unexpected IO exception occurred: {}", e.getMessage());
+    public InputStream decryptStream(Key key, InputStream cipherText) throws IOException, InvalidKeyException {
+        if(!(key instanceof SecretKey)) {
+            throw new InvalidKeyException("AES algorithm expects a key of type SecretKey whereas the key passed is of type " + key.getClass().getTypeName());
         }
-
-        return result;
-    }
-
-    @Override
-    public InputStream decryptStream(SecretKey key, InputStream cipherText) throws IOException {
+        
         CipherInputStream cipherStream = null;
         try {
             final Cipher cipher = Cipher.getInstance(SCHEME);
@@ -128,19 +123,5 @@ public class AESAlgorithm implements SymmetricEncryptionAlgorithm {
 
         return cipherStream;
     }
-
-    @Override
-    public byte[] decryptBytes(SecretKey key, byte[] cipherTextBytes) {
-        byte[] result = null;
-
-        try (ByteArrayInputStream cipherTextStream = new ByteArrayInputStream(cipherTextBytes)) {
-            try (InputStream plainTextStream = this.decryptStream(key, cipherTextStream)) {
-                result = IOUtils.toByteArray(plainTextStream);
-            }
-        } catch (IOException e) {
-            LOGGER.error("Unexpected IO exception occurred: {}", e.getMessage());
-        }
-
-        return result;
-    }
+    
 }

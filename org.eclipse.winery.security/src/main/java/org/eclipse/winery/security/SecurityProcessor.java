@@ -28,7 +28,7 @@ import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
 
 public interface SecurityProcessor {
 
-    Key generateSecretKey(String algorithm, int keySize) throws GenericSecurityProcessorException;
+    SecretKey generateSecretKey(String algorithm, int keySize) throws GenericSecurityProcessorException;
 
     KeyPair generateKeyPair(String algorithm, int keySize) throws GenericSecurityProcessorException;
 

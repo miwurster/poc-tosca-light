@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-package org.eclipse.winery.security.algorithm;
+package org.eclipse.winery.security.algorithm.signature;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,8 +25,12 @@ SignatureAlgorithm {
     byte[] signStream(InputStream plainText, PrivateKey key) throws IOException, SignatureException, InvalidKeyException;
 
     byte[] signFile(String filePath, PrivateKey key) throws IOException, SignatureException, InvalidKeyException;
+    
+    byte[] signBytes(byte[] plainText, PrivateKey key) throws SignatureException, InvalidKeyException;
 
     boolean verifyStream(byte[] signatureBytes, InputStream signedPlainText, PublicKey key) throws InvalidKeyException, IOException, SignatureException;
 
     boolean verifyFile(byte[] signatureBytes, String filePath, PublicKey key) throws InvalidKeyException, IOException, SignatureException;
+    
+    boolean verifyBytes(byte[] signatureBytes, byte[] plainText, PublicKey key) throws InvalidKeyException, SignatureException;
 }

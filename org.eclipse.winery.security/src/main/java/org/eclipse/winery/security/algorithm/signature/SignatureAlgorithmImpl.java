@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-package org.eclipse.winery.security.algorithm;
+package org.eclipse.winery.security.algorithm.signature;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,7 +60,7 @@ public class SignatureAlgorithmImpl implements SignatureAlgorithm {
         this(algorithm.getFullName(), true);
     }
 
-    private void FeedStreamToAlgorithm(InputStream stream) throws IOException, SignatureException {
+    private void feedStreamToAlgorithm(InputStream stream) throws IOException, SignatureException {
         byte[] buffer = new byte[BUFFER_LENGTH];
         int bufferLength;
 
@@ -72,7 +72,7 @@ public class SignatureAlgorithmImpl implements SignatureAlgorithm {
     @Override
     public byte[] signStream(InputStream plainText, PrivateKey key) throws IOException, SignatureException, InvalidKeyException {
         this.signature.initSign(key);
-        FeedStreamToAlgorithm(plainText);
+        feedStreamToAlgorithm(plainText);
 
         return signature.sign();
     }
@@ -90,9 +90,17 @@ public class SignatureAlgorithmImpl implements SignatureAlgorithm {
     }
 
     @Override
+    public byte[] signBytes(byte[] plainText, PrivateKey key) throws SignatureException, InvalidKeyException {
+        this.signature.initSign(key);
+        this.signature.update(plainText);
+        
+        return this.signature.sign();
+    }
+
+    @Override
     public boolean verifyStream(byte[] signatureBytes, InputStream signedPlainText, PublicKey key) throws InvalidKeyException, IOException, SignatureException {
         this.signature.initVerify(key);
-        FeedStreamToAlgorithm(signedPlainText);
+        feedStreamToAlgorithm(signedPlainText);
 
         return this.signature.verify(signatureBytes);
     }
@@ -107,5 +115,13 @@ public class SignatureAlgorithmImpl implements SignatureAlgorithm {
         }
 
         return result;
+    }
+
+    @Override
+    public boolean verifyBytes(byte[] signatureBytes, byte[] plainText, PublicKey key) throws InvalidKeyException, SignatureException {
+        this.signature.initVerify(key);
+        this.signature.update(plainText);
+
+        return this.signature.verify(signatureBytes);
     }
 }
