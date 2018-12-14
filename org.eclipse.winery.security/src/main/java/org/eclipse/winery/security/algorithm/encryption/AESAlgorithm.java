@@ -81,8 +81,8 @@ public class AESAlgorithm extends BasicEncryptionAlgorithm {
     }
 
     @Override
-    public InputStream encryptStream(Key key, InputStream plainText) throws InvalidKeyException{
-        if(!(key instanceof SecretKey)) {
+    public InputStream encryptStream(Key key, InputStream plainText) throws InvalidKeyException {
+        if (!(key instanceof SecretKey)) {
             throw new InvalidKeyException("AES algorithm expects a key of type SecretKey whereas the key passed is of type " + key.getClass().getTypeName());
         }
         
@@ -106,7 +106,7 @@ public class AESAlgorithm extends BasicEncryptionAlgorithm {
 
     @Override
     public InputStream decryptStream(Key key, InputStream cipherText) throws IOException, InvalidKeyException {
-        if(!(key instanceof SecretKey)) {
+        if (!(key instanceof SecretKey)) {
             throw new InvalidKeyException("AES algorithm expects a key of type SecretKey whereas the key passed is of type " + key.getClass().getTypeName());
         }
         

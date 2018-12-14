@@ -52,7 +52,7 @@ public class SmartContractProvider {
         final Provenance contract = Provenance.load(smartContractAddress, web3j, credentials, DefaultGasProvider.GAS_PRICE,
             DefaultGasProvider.GAS_LIMIT);
 
-        validateSmartContract(contract, smartContractAddress);
+        // validateSmartContract(contract, smartContractAddress);
         return contract;
     }
 
@@ -60,7 +60,7 @@ public class SmartContractProvider {
         final Authorization contract = Authorization.load(smartContractAddress, web3j, credentials, DefaultGasProvider.GAS_PRICE,
             DefaultGasProvider.GAS_LIMIT);
 
-        validateSmartContract(contract, smartContractAddress);
+        // validateSmartContract(contract, smartContractAddress);
         return contract;
     }
 }

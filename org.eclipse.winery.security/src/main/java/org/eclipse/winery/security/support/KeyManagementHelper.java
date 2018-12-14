@@ -58,7 +58,6 @@ public class KeyManagementHelper {
         }
     }
     
-    
     public static KeyPair generateKeyPair(String algorithm, int keySize) throws GenericSecurityProcessorException {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);

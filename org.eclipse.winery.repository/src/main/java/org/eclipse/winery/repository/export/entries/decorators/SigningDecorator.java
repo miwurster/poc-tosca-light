@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SigningDecorator extends CsarEntryDecorator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SigningDecorator.class);
     private PrivateKey key;
     private SignatureAlgorithm algorithm;
-    private static final Logger LOGGER = LoggerFactory.getLogger(SigningDecorator.class);
 
     public SigningDecorator(SignatureAlgorithm algorithm, PrivateKey key) {
         this.key = key;
@@ -38,16 +38,14 @@ public class SigningDecorator extends CsarEntryDecorator {
     @Override
     public InputStream getInputStream() throws IOException {
         InputStream result = null;
-        
-        try(InputStream beforeDecoration = this.toDecorate.getInputStream()) {
+
+        try (InputStream beforeDecoration = this.toDecorate.getInputStream()) {
             final byte[] signatureAsBytes = this.algorithm.signStream(beforeDecoration, key);
             result = new ByteArrayInputStream(signatureAsBytes);
-            
-        } catch (SignatureException|InvalidKeyException e) {
+        } catch (SignatureException | InvalidKeyException e) {
             LOGGER.error("Unexpected security exception occurred. Reason: {}", e.getMessage());
         }
-        
+
         return result;
     }
-    
 }

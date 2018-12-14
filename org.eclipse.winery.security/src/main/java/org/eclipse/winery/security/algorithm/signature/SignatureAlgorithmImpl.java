@@ -32,13 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SignatureAlgorithmImpl implements SignatureAlgorithm {
-    private Signature signature;
     private static final Logger LOGGER = LoggerFactory.getLogger(SignatureAlgorithmImpl.class);
 
     /**
      * buffer with a size of 1MB
      */
     private static final int BUFFER_LENGTH = 1048576;
+
+    private Signature signature;
 
     public SignatureAlgorithmImpl(String algorithmName, boolean isFullName) throws NoSuchAlgorithmException {
         try {

@@ -42,7 +42,7 @@ public class ECIESAlgorithm extends BasicEncryptionAlgorithm {
     
     @Override
     public InputStream encryptStream(Key key, InputStream plainText) throws InvalidKeyException {
-        if(!(key instanceof PublicKey)) {
+        if (!(key instanceof PublicKey)) {
             throw new InvalidKeyException("ECIES algorithm expects a key of type PublicKey for encryption whereas the key passed is of type " + key.getClass().getTypeName());
         }
         
@@ -60,10 +60,9 @@ public class ECIESAlgorithm extends BasicEncryptionAlgorithm {
         return result;
     }
     
-
     @Override
     public InputStream decryptStream(Key key, InputStream cipherText) throws InvalidKeyException {
-        if(!(key instanceof PrivateKey)) {
+        if (!(key instanceof PrivateKey)) {
             throw new InvalidKeyException("ECIES algorithm expects a key of type PrivateKey for decryption whereas the key passed is of type " + key.getClass().getTypeName());
         }
         

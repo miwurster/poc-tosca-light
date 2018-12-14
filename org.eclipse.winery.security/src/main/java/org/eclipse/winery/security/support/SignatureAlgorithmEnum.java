@@ -34,7 +34,9 @@ public enum SignatureAlgorithmEnum {
         this.fullName = fullName;
         this.isDefault = isDefault;
     }
+    
     public String getShortName() { return name; }
+    
     public String getFullName() {
         return fullName;
     }

@@ -121,7 +121,6 @@ public class BCSecurityProcessor implements SecurityProcessor {
         return  KeyManagementHelper.getX509EncodedPublicKeyFromInputStream(algorithm, publicKeyInputStream);
     }
     
-
     @Override
     public Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException {
         String signatureAlgorithm;
