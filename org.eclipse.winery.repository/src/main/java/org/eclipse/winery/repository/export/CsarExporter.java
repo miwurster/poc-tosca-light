@@ -24,8 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -34,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.SortedSet;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -139,29 +136,12 @@ public class CsarExporter {
     public static String getDefinitionsPathInsideCSAR(IGenericRepository repository, DefinitionsChildId id) {
         return CsarExporter.DEFINITONS_PATH_PREFIX + CsarExporter.getDefinitionsFileName(repository, id);
     }
-
-    public CompletableFuture<String> writeCsarAndSaveManifestInProvenanceLayer(IRepository repository, DefinitionsChildId entryId, OutputStream out)
-        throws IOException, RepositoryCorruptException, AccountabilityException, InterruptedException, ExecutionException {
-        LocalDateTime start = LocalDateTime.now();
-        Properties props = repository.getAccountabilityConfigurationManager().properties;
-        AccountabilityManager accountabilityManager = AccountabilityManagerFactory.getAccountabilityManager(props);
-
-        EnumSet<CsarExportConfiguration> exportConfiguration =
-            EnumSet.of(INCLUDE_HASHES, STORE_IMMUTABLY);
-
-        /*String manifestString = this.writeCsar(repository, entryId, out, exportConfiguration);*/
-        String qNameWithComponentVersionOnly = VersionUtils.getQNameWithComponentVersionOnly(entryId);
-        LOGGER.debug("Preparing CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
-
-        return accountabilityManager.storeFingerprint(qNameWithComponentVersionOnly, "");
-    }
-
+    
     /**
      * Writes a complete CSAR containing all necessary things reachable from the given service template
      *
      * @param entryId the id of the service template to export
      * @param out     the output stream to write to
-     * @return the TOSCA meta file for the generated Csar
      */
     public void writeCsar(IRepository repository, DefinitionsChildId entryId, OutputStream out, EnumSet<CsarExportConfiguration> exportConfiguration)
         throws IOException, RepositoryCorruptException, InterruptedException, AccountabilityException, ExecutionException {

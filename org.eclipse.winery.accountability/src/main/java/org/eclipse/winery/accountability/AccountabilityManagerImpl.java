@@ -196,7 +196,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
         this.storageProvider.close();
     }
 
-    private List<ModelProvenanceElement> enhanceHistoryElements(List<ModelProvenanceElement> historyElements, AuthorizationInfo authorizationInfo) {
+    private List<ModelProvenanceElement>enhanceHistoryElements(List<ModelProvenanceElement> historyElements, AuthorizationInfo authorizationInfo) {
         historyElements.forEach(element -> {
             element.setAuthorizedFlag(authorizationInfo);
             element.setAuthorName(
@@ -206,6 +206,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
             );
             this.fillFilesOfModel(element);
         });
+        
         return historyElements;
     }
 

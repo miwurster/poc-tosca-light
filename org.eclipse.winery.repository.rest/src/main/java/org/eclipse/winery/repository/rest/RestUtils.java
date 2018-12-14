@@ -237,20 +237,16 @@ public class RestUtils {
 
         StreamingOutput so = output -> {
             try {
-                // process CSAR with AddToProvenance option selected
-                if (options.isAddToProvenance()) {
-                    // We wait for the accountability layer to confirm the transaction
-                    String result = exporter.writeCsarAndSaveManifestInProvenanceLayer(RepositoryFactory.getRepository(), resource.getId(), output)
-                        .get();
-                    LOGGER.debug("Stored state in accountability layer in transaction " + result);
-                    LOGGER.debug("CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
-                } else {
-                    if (options.isSecure()) {
-                        exportConfiguration.add(CsarExportConfiguration.APPLY_SECURITY_POLICIES);
-                    }
-                    exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
-                    LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+                if (options.isSecure()) {
+                    exportConfiguration.add(CsarExportConfiguration.APPLY_SECURITY_POLICIES);
                 }
+                if (options.isAddToProvenance()) {
+                    exportConfiguration.add(CsarExportConfiguration.STORE_FINGERPRINT_IN_ACCOUNTABILITY);
+                    exportConfiguration.add(CsarExportConfiguration.INCLUDE_HASHES);
+                    exportConfiguration.add(CsarExportConfiguration.STORE_IMMUTABLY);
+                }
+                exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
+                LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
             } catch (Exception e) {
                 LOGGER.error("Error while exporting CSAR", e);
                 throw new WebApplicationException(e);

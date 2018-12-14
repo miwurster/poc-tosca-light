@@ -101,10 +101,14 @@ public class AccountabilityResource {
         String qNameWithComponentVersionOnly = VersionUtils.getQNameWithComponentVersionOnly(serviceTemplateId);
 
         try {
-            return getAccountabilityManager()
+            final List<ModelProvenanceElement> result = getAccountabilityManager()
                 .getHistory(qNameWithComponentVersionOnly)
-                .exceptionally(error -> null)
+                .exceptionally(error -> {
+                    LOGGER.error("Cannot get history of model. Reason: {}", error.getCause().getMessage());
+                    return null;
+                })
                 .get();
+            return result;
         } catch (InterruptedException | ExecutionException | AccountabilityException e) {
             LOGGER.error("Cannot get history of model. Reason: {}", e.getMessage());
             throw createException(e);

@@ -20,10 +20,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -42,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
 import static org.eclipse.winery.repository.export.CsarExportConfiguration.INCLUDE_HASHES;
+import static org.eclipse.winery.repository.export.CsarExportConfiguration.STORE_FINGERPRINT_IN_ACCOUNTABILITY;
 import static org.eclipse.winery.repository.export.CsarExportConfiguration.STORE_IMMUTABLY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -216,11 +215,9 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
         CsarExporter exporter = new CsarExporter();
         DefinitionsChildId id = new ServiceTemplateId("http://plain.winery.opentosca.org/servicetemplates", "ServiceTemplateWithAllReqCapVariants", false);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-        CompletableFuture<String> future = exporter.writeCsarAndSaveManifestInProvenanceLayer(RepositoryFactory.getRepository(), id, os);
-        String transactionHash = future.get();
-
-        assertNotNull(transactionHash);
+        EnumSet<CsarExportConfiguration> exportConfiguration = 
+            EnumSet.of(STORE_IMMUTABLY, STORE_FINGERPRINT_IN_ACCOUNTABILITY, INCLUDE_HASHES);
+        exporter.writeCsar(RepositoryFactory.getRepository(), id, os, exportConfiguration);
 
         try (InputStream inputStream = new ByteArrayInputStream(os.toByteArray());
              ZipInputStream zis = new ZipInputStream(inputStream)) {

@@ -27,7 +27,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.tx.Contract;
 import org.web3j.tx.gas.DefaultGasProvider;
 
-public class SmartContractProvider {
+class SmartContractProvider {
 
     private static final Logger log = LoggerFactory.getLogger(EthereumAccessLayer.class);
 
@@ -48,19 +48,15 @@ public class SmartContractProvider {
         }
     }
 
-    public static Provenance buildProvenanceSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
-        final Provenance contract = Provenance.load(smartContractAddress, web3j, credentials, DefaultGasProvider.GAS_PRICE,
-            DefaultGasProvider.GAS_LIMIT);
+    static Provenance buildProvenanceSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
 
         // validateSmartContract(contract, smartContractAddress);
-        return contract;
+        return Provenance.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
     }
 
-    public static Authorization buildAuthorizationSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
-        final Authorization contract = Authorization.load(smartContractAddress, web3j, credentials, DefaultGasProvider.GAS_PRICE,
-            DefaultGasProvider.GAS_LIMIT);
+    static Authorization buildAuthorizationSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
 
         // validateSmartContract(contract, smartContractAddress);
-        return contract;
+        return Authorization.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
     }
 }

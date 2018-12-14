@@ -77,6 +77,10 @@ public class AuthorizationSmartContractWrapper extends SmartContractWrapper {
             ethLog -> {
                 final List<EthLog.LogResult> logs = ethLog.getLogs();
                 LOGGER.info(logs.size() + " authorization elements detected.");
+
+                if (logs.size() == 0)
+                    return null;
+                
                 final List<AuthorizationElement> authorizationElements = new ArrayList<>();
 
                 try {
@@ -86,7 +90,7 @@ public class AuthorizationSmartContractWrapper extends SmartContractWrapper {
                             Contract.staticExtractEventParameters(Authorization.AUTHORIZED_EVENT, log);
                         authorizationElements.add(this.generateAuthorizationElement(eventValues, log));
                     }
-
+                    
                     return new AuthorizationTree(authorizationElements);
                 } catch (EthereumException e) {
                     throw new CompletionException(e);

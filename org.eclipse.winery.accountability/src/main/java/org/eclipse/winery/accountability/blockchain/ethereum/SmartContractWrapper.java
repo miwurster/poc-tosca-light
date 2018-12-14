@@ -21,7 +21,7 @@ public abstract class SmartContractWrapper {
     protected final Web3j web3j;
     protected final Contract contract;
 
-    public SmartContractWrapper(Web3j web3j, Contract contract) {
+    SmartContractWrapper(Web3j web3j, Contract contract) {
         this.web3j = web3j;
         this.contract = contract;
     }

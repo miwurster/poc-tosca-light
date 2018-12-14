@@ -31,5 +31,9 @@ public enum CsarExportConfiguration {
      */
     APPLY_SECURITY_POLICIES,
 
+    /**
+     * Indicates that the a blockchain transaction containing the state of the exported CSAR (its meta-file) 
+     * should be issued.
+     */
     STORE_FINGERPRINT_IN_ACCOUNTABILITY
 }
