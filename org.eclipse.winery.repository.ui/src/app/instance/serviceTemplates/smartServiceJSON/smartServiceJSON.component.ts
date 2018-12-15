@@ -30,7 +30,7 @@ export class SmartServiceJSONComponent {
 
     serviceClass: any;
 
-    //Anzeigenamen für das Select-Item
+    //Viewname of selected Item
     exampleData = [
         { id: 0, name: "Example data input" },
         { id: 1, name: "Data Providers" },
@@ -38,10 +38,10 @@ export class SmartServiceJSONComponent {
         { id: 3, name: "Data Consumers" }
     ];
 
-    //Generierung Oberfläche anhand der jeweiligen Beispiel-Daten
+    //Create UI dependent of Templates
     public selectTemplate(event: any): void {
         const newSelectedVal = event.target.value;
-        if (newSelectedVal == 0) {
+        if (newSelectedVal == 0) {  //if is nothing selected
             this.jsonFormLayout = [{
                 "type": "submit",
                 "title": "Save",
@@ -49,18 +49,18 @@ export class SmartServiceJSONComponent {
             }];
             this.flexibleData = {};
         }
-        if (newSelectedVal == 1) {
+        if (newSelectedVal == 1) { //if Data Provider is seleted
             this.jsonFormLayout = this.providerLayout,
                 this.flexibleData = require("./model/smart-service-data-provider.json"),
                 this.serviceClass = 1;
 
         }
-        if (newSelectedVal == 2) {
+        if (newSelectedVal == 2) { //if Data Processor is selected
             this.jsonFormLayout = this.processorLayout,
                 this.flexibleData = require("./model/smart-service-data-processor.json")
             this.serviceClass = 2;
         }
-        if (newSelectedVal == 3) {
+        if (newSelectedVal == 3) { //if Data Consumer is selected
 
             this.jsonFormLayout = this.consumerLayout,
                 this.flexibleData = require("./model/smart-service-data-consumer.json")
@@ -69,6 +69,7 @@ export class SmartServiceJSONComponent {
         }
         console.log(newSelectedVal);
     }
+
 
     file: File = null;
     /**
