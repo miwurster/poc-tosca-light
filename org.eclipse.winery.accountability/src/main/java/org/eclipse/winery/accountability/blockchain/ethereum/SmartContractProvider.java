@@ -14,6 +14,7 @@
 package org.eclipse.winery.accountability.blockchain.ethereum;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Authorization;
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Provenance;
@@ -49,14 +50,22 @@ class SmartContractProvider {
     }
 
     static Provenance buildProvenanceSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
+        Provenance contract = Provenance.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
+        validateSmartContract(contract, smartContractAddress);
+        return contract;
+    }
 
-        // validateSmartContract(contract, smartContractAddress);
-        return Provenance.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
+    static CompletableFuture<Provenance> deployProvenanceSmartContract(final Web3j web3j, final Credentials credentials) {
+        return Provenance.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync();
     }
 
     static Authorization buildAuthorizationSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
+        Authorization contract = Authorization.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
+        validateSmartContract(contract, smartContractAddress);
+        return contract;
+    }
 
-        // validateSmartContract(contract, smartContractAddress);
-        return Authorization.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
+    static CompletableFuture<Authorization> deployAuthorizationSmartContract(final Web3j web3j, final Credentials credentials) {
+        return Authorization.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync();
     }
 }

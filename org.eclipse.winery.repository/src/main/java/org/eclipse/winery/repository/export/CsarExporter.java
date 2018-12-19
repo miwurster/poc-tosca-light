@@ -136,7 +136,7 @@ public class CsarExporter {
     public static String getDefinitionsPathInsideCSAR(IGenericRepository repository, DefinitionsChildId id) {
         return CsarExporter.DEFINITONS_PATH_PREFIX + CsarExporter.getDefinitionsFileName(repository, id);
     }
-    
+
     /**
      * Writes a complete CSAR containing all necessary things reachable from the given service template
      *
@@ -145,7 +145,7 @@ public class CsarExporter {
      */
     public void writeCsar(IRepository repository, DefinitionsChildId entryId, OutputStream out, EnumSet<CsarExportConfiguration> exportConfiguration)
         throws IOException, RepositoryCorruptException, InterruptedException, AccountabilityException, ExecutionException {
-        CsarExporter.LOGGER.trace("Starting CSAR export with {}", entryId.toString());
+        CsarExporter.LOGGER.debug("Starting CSAR export with {}", entryId.toString());
 
         Map<MetaFileEntry, CsarEntry> refMap = new HashMap<>();
 
@@ -158,13 +158,13 @@ public class CsarExporter {
 
         /* now, refMap contains all files to be added to the CSAR */
         if (exportConfiguration.contains(INCLUDE_HASHES) || exportConfiguration.contains(APPLY_SECURITY_POLICIES)) {
-            LOGGER.trace("Calculating checksum for {} files.", refMap.size());
+            LOGGER.debug("Calculating checksum for {} files.", refMap.size());
             calculateFileHashes(refMap);
         }
 
         if (exportConfiguration.contains(STORE_IMMUTABLY)) {
             try {
-                LOGGER.trace("Storing {} files in the immutable file storage", refMap.size());
+                LOGGER.debug("Storing {} files in the immutable file storage", refMap.size());
                 immutablyStoreRefFiles(refMap, repository);
             } catch (InterruptedException | ExecutionException | AccountabilityException e) {
                 LOGGER.error("Failed to store files in immutable storage. Reason: {}", e.getMessage());
@@ -254,6 +254,7 @@ public class CsarExporter {
                 builder.append(
                     new ToscaMetaEntry.Builder(m.getPathInsideCsar())
                         .contentType(m.getMimeType())
+                        // todo why are we hashing the hash?
                         .digestValueUsingDefaultAlgorithm(HashingUtil.getChecksum(m.getFileHash(), HASH))
                         .build()
                         .toString()
@@ -261,6 +262,7 @@ public class CsarExporter {
             }
         }
 
+        // the added files should be also appended to the TOSCA-Meta file
         MetaFileEntry metaFileEntry = new MetaFileEntry(TOSCA_META_SIGN_FILE_PATH, MimeTypes.MIMETYPE_MANIFEST);
         refMap.put(metaFileEntry, new StringBasedCsarEntry(builder.toString()));
 
@@ -270,6 +272,7 @@ public class CsarExporter {
         Key signingKey = keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
         // TODO: notify a user if no master key is set
         if (Objects.nonNull(signingKey)) {
+            // todo here hashing is not necessary as signing does it already
             String blockSignatureFileHash = HashingUtil.getChecksum(builder.toString(), HASH);
             byte[] blockSignatureFileContent = securityProcessor.signBytes(signingKey, blockSignatureFileHash.getBytes());
             MetaFileEntry blockSignatureFileEntry = new MetaFileEntry(TOSCA_META_SIGN_BLOCK_FILE_PATH, MimeTypes.MIMETYPE_OCTET_STREAM);

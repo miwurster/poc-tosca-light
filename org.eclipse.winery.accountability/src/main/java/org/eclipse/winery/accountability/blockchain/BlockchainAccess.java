@@ -62,6 +62,18 @@ public interface BlockchainAccess {
     CompletableFuture<AuthorizationInfo> getAuthorizationTree(final String processIdentifier);
 
     /**
+     * Deploys the Authorization smart contract to the active blockchain network
+     * @return a completable future that, when completed, returns the address of the contract.
+     */
+    CompletableFuture<String> deployAuthorizationSmartContract();
+
+    /**
+     * Deploys the Authorization smart contract to the active blockchain network
+     * @return a completable future that, when completed, returns the address of the contract.
+     */
+    CompletableFuture<String> deployProvenanceSmartContract();
+    
+    /**
      * Releases resources relevant to this instance
      */
     void close();

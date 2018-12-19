@@ -25,4 +25,5 @@ public abstract class SmartContractWrapper {
         this.web3j = web3j;
         this.contract = contract;
     }
+    
 }

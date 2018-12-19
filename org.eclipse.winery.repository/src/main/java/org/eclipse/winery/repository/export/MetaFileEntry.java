@@ -14,9 +14,9 @@
 
 package org.eclipse.winery.repository.export;
 
-import java.util.Objects;
-
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
+
+import de.danielbechler.util.Strings;
 
 public class MetaFileEntry {
     
@@ -72,11 +72,31 @@ public class MetaFileEntry {
     public String getMetaFileEntryString() {
         StringBuilder entry = new StringBuilder();
         
-        entry.append(TOSCAMetaFileAttributes.NAME).append(": ").append(pathInsideCsar).append("\n");
-        entry.append(TOSCAMetaFileAttributes.CONTENT_TYPE).append(": ").append(mimeType).append("\n");
+        entry
+            .append(TOSCAMetaFileAttributes.NAME)
+            .append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR)
+            .append(pathInsideCsar)
+            .append(System.lineSeparator());
+        entry
+            .append(TOSCAMetaFileAttributes.CONTENT_TYPE)
+            .append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR)
+            .append(mimeType)
+            .append(System.lineSeparator());
         
-        if (Objects.nonNull(fileHash)) {
-            entry.append(TOSCAMetaFileAttributes.HASH).append(": ").append(fileHash).append("\n");
+        if (Strings.hasText(fileHash)) {
+            entry
+                .append(TOSCAMetaFileAttributes.HASH)
+                .append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR)
+                .append(fileHash)
+                .append(System.lineSeparator());
+        }
+        
+        if (Strings.hasText(immutableAddress)) {
+            entry
+                .append(TOSCAMetaFileAttributes.IMMUTABLE_ADDRESS)
+                .append(TOSCAMetaFileAttributes.NAME_VALUE_SEPARATOR)
+                .append(immutableAddress)
+                .append(System.lineSeparator());
         }
         
         // todo: add everything else here

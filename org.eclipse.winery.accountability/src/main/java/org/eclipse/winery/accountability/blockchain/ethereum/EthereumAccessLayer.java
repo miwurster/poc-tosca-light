@@ -31,6 +31,7 @@ import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.Contract;
 
 public class EthereumAccessLayer implements BlockchainAccess {
 
@@ -88,7 +89,21 @@ public class EthereumAccessLayer implements BlockchainAccess {
     public CompletableFuture<AuthorizationInfo> getAuthorizationTree(final String processIdentifier) {
         return this.authorizationContract.getAuthorizationTree(processIdentifier);
     }
-    
+
+    @Override
+    public CompletableFuture<String> deployAuthorizationSmartContract() {
+        return SmartContractProvider
+            .deployAuthorizationSmartContract(authorizationContract.web3j, credentials)
+            .thenApply(Contract::getContractAddress);
+    }
+
+    @Override
+    public CompletableFuture<String> deployProvenanceSmartContract() {
+        return SmartContractProvider
+            .deployProvenanceSmartContract(authorizationContract.web3j, credentials)
+            .thenApply(Contract::getContractAddress);
+    }
+
     @Override
     public void close() {
         // we can get a reference to web3j from either of the smart contracts.

@@ -191,6 +191,16 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
+    public CompletableFuture<String> deployAuthorizationSmartContract() {
+        return this.blockchain.deployAuthorizationSmartContract();
+    }
+
+    @Override
+    public CompletableFuture<String> deployProvenanceSmartContract() {
+        return this.blockchain.deployProvenanceSmartContract();
+    }
+
+    @Override
     public void close() {
         this.blockchain.close();
         this.storageProvider.close();
