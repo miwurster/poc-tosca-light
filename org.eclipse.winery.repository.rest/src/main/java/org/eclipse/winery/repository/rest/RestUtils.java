@@ -906,18 +906,14 @@ public class RestUtils {
      * @param content the data to write
      * @return a JAX-RS Response containing the result. NOCONTENT if successful, InternalSeverError otherwise
      */
-    public static Response putContentToFile(RepositoryFileReference ref, String content, @SuppressWarnings("SameParameterValue") org.apache.tika.mime.MediaType mediaType) {
+    public static Response putContentToFile(RepositoryFileReference ref, String content, MediaType mediaType) {
         try {
-            RepositoryFactory.getRepository().putContentToFile(ref, content, mediaType);
+            RepositoryFactory.getRepository().putContentToFile(ref, content, org.apache.tika.mime.MediaType.parse(mediaType.toString()));
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             return Response.serverError().entity(e.getMessage()).build();
         }
         return Response.noContent().build();
-    }
-
-    public static Response putContentToFile(RepositoryFileReference ref, String content, @SuppressWarnings("SameParameterValue") MediaType mediaType) {
-        return putContentToFile(ref, content, org.apache.tika.mime.MediaType.parse(mediaType.toString()));
     }
 
     public static Response putContentToFile(RepositoryFileReference ref, InputStream inputStream, org.apache.tika.mime.MediaType mediaType) {
@@ -941,7 +937,7 @@ public class RestUtils {
      * @param qname           the QName of the color attribute
      * @param otherAttributes the plain "XML" attributes. They are used to check
      */
-    public static String getColor(String name, QName qname, Map<QName, String> otherAttributes, TopologyGraphElementEntityTypeResource res) {
+    public static String getColor(String name, QName qname, Map<QName, String> otherAttributes) {
         String colorStr = otherAttributes.get(qname);
         if (colorStr == null) {
             colorStr = ModelUtilities.getColor(name);

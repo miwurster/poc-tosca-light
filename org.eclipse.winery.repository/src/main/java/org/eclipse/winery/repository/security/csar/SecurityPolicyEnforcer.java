@@ -55,6 +55,7 @@ import org.eclipse.winery.model.tosca.TEntityType;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TPolicies;
 import org.eclipse.winery.model.tosca.TPolicy;
 import org.eclipse.winery.model.tosca.TPolicyTemplate;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
@@ -251,7 +252,7 @@ public class SecurityPolicyEnforcer {
 
     private void addPolicyToNodeTemplate(TNodeTemplate nodeTemplate, TPolicy policy) {
         if (nodeTemplate.getPolicies() == null) {
-            nodeTemplate.setPolicies(new TNodeTemplate.Policies());
+            nodeTemplate.setPolicies(new TPolicies());
         }
         nodeTemplate.getPolicies().getPolicy().add(policy);
     }
