@@ -24,6 +24,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class ConfigurationComponent implements OnInit {
     configuration: Configuration;
     loading = true;
+    deployingProvenanceSC = false;
+    deployingAuthorizationSC = false;
     error: string;
     selectedKeystoreFile: File = undefined;
 
@@ -87,5 +89,33 @@ export class ConfigurationComponent implements OnInit {
         }
         this.selectedKeystoreFile = undefined;
         this.notify.success('Configuration applied successfully!');
+    }
+
+    onDeployProvenanceSmartContract() {
+        this.deployingProvenanceSC = true;
+        this.service.deployProvenanceSmartContract()
+            .subscribe(
+                address => {
+                    this.configuration.provenanceSmartContractAddress = address;
+                    this.deployingProvenanceSC = false;
+                },
+                e => {
+                    this.deployingProvenanceSC = false;
+                    this.notify.error('Failed to deploy smart contract!');
+                });
+    }
+
+    onDeployAuthorizationSmartContract() {
+        this.deployingAuthorizationSC = true;
+        this.service.deployAuthorizationSmartContract()
+            .subscribe(
+                address => {
+                    this.configuration.authorizationSmartContractAddress = address;
+                    this.deployingAuthorizationSC = false;
+                },
+                e => {
+                    this.deployingAuthorizationSC = false;
+                    this.notify.error('Failed to deploy smart contract!');
+                });
     }
 }

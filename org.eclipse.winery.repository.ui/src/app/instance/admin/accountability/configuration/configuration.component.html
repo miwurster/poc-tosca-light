@@ -25,7 +25,7 @@
                 </div>
                 <br/>
 
-                <div *ngIf="configuration.enableAccountability">
+                <div *ngIf="configuration.enableAccountability" style="margin-bottom: 10px;">
                     <label for="blockchainNodeUrl">Geth JSON-RPC API URL (with port number)</label>
                     <input type="text" id="blockchainNodeUrl" class="form-control" name="blockchainNodeUrl"
                            [(ngModel)]="configuration.blockchainNodeUrl" required>
@@ -53,18 +53,38 @@
                     <br/>
 
                     <label for="provenanceSmartContract">Provenance Smart Contract Address</label>
-                    <input type="text" id="provenanceSmartContract" class="form-control" name="provenanceSmartContract"
-                           pattern="^0x[a-fA-F0-9]{40}$"
-                           [(ngModel)]="configuration.provenanceSmartContractAddress" required>
+
+                    <div class="form-inline" *ngIf="!deployingProvenanceSC; else showLoader">
+                        <input type="text" id="provenanceSmartContract" class="form-control"
+                               name="provenanceSmartContract" style="width: 91%; margin-right: 1%;"
+                               pattern="^0x[a-fA-F0-9]{40}$"
+                               [(ngModel)]="configuration.provenanceSmartContractAddress" required>
+
+                        <button type="button" class="btn btn-outline-secondary" style="width: 8%;"
+                                (click)="onDeployProvenanceSmartContract()"
+                                [disabled]="loading">
+                            Deploy
+                        </button>
+                    </div>
+
                     <br/>
 
                     <label for="authorizationSmartContract">Authorization Smart Contract Address</label>
-                    <input type="text" id="authorizationSmartContract" class="form-control"
-                           name="authorizationSmartContract"
-                           pattern="^0x[a-fA-F0-9]{40}$"
-                           [(ngModel)]="configuration.authorizationSmartContractAddress" required>
-                    <br/>
+
+                    <div class="form-inline" *ngIf="!deployingAuthorizationSC; else showLoader">
+                        <input type="text" id="authorizationSmartContract" class="form-control"
+                               name="authorizationSmartContract" style="width: 91%; margin-right: 1%;"
+                               pattern="^0x[a-fA-F0-9]{40}$"
+                               [(ngModel)]="configuration.authorizationSmartContractAddress" required>
+                        <button type="button" class="btn btn-outline-secondary"
+                                (click)="onDeployAuthorizationSmartContract()"
+                                [disabled]="loading" style="width: 8%;">
+                            Deploy
+                        </button>
+                    </div>
                 </div>
+
+                <br/>
 
                 <button type="button" class="btn btn-primary" (click)="onSave()"
                         [disabled]="(!configurationForm?.valid && configuration.enableAccountability) || loading">

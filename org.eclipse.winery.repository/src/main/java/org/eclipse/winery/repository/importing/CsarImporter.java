@@ -120,13 +120,13 @@ import org.eclipse.winery.repository.datatypes.ids.elements.DirectoryId;
 import org.eclipse.winery.repository.datatypes.ids.elements.SelfServiceMetaDataId;
 import org.eclipse.winery.repository.datatypes.ids.elements.VisualAppearanceId;
 import org.eclipse.winery.repository.export.CsarExporter;
-import org.eclipse.winery.repository.security.csar.BCSecurityProcessor;
-import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.BCSecurityProcessor;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -298,7 +298,7 @@ public class CsarImporter {
     }
 
     private void verifyExternalSignature(final Path path, ImportMetaInformation importMetaInformation, TOSCAMetaFile tmf) throws IOException, NoSuchAlgorithmException {
-        KeystoreManager km = new JCEKSKeystoreManager();
+        KeystoreManager km = KeystoreManagerFactory.getInstance();
         SecurityProcessor sp = new BCSecurityProcessor();
         TOSCAMetaFileParser tmfp = new TOSCAMetaFileParser();
         TOSCAMetaFile signatureFile;
@@ -919,7 +919,7 @@ public class CsarImporter {
     }
 
     private Certificate loadPolicyCertificate(TPolicy signPolicy, Path csarRoot) {
-        KeystoreManager km = new JCEKSKeystoreManager();
+        KeystoreManager km = KeystoreManagerFactory.getInstance();
         Certificate c = null;
         try {
             // if the corresponding keypair does not exist, import certificate from policy template

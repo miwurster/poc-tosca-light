@@ -12,18 +12,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
-import { EntityType, TNodeTemplate, Visuals } from '../models/ttopology-template';
+import { TNodeTemplate, Visuals } from '../models/ttopology-template';
 import { NewNodeIdTypeColorPropertiesModel } from '../models/newNodeIdTypeColorModel';
 import { isNullOrUndefined } from 'util';
 import { Subscription } from 'rxjs';
 import { Utils } from '../models/utils';
 import { EntityTypesModel } from '../models/entityTypesModel';
-import { NodeVisualsModel } from '../models/nodeVisualsModel';
 import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
 import { hostURL } from '../models/configuration';
 
@@ -65,9 +64,9 @@ import { hostURL } from '../models/configuration';
             })),
             transition('left => top', animate('50ms ease-in')),
             transition('top => left', animate('50ms ease-in', keyframes([
-                style({opacity: '1', transform: 'rotate(0deg) translateY(0px) translateX(0px)'}),
-                style({opacity: '0', transform: 'rotate(-45deg) translateY(-75px) translateX(-75px)'}),
-                style({opacity: '1', transform: 'rotate(-90deg) translateY(-135px) translateX(-135px)'})
+                style({ opacity: '1', transform: 'rotate(0deg) translateY(0px) translateX(0px)' }),
+                style({ opacity: '0', transform: 'rotate(-45deg) translateY(-75px) translateX(-75px)' }),
+                style({ opacity: '1', transform: 'rotate(-90deg) translateY(-135px) translateX(-135px)' })
             ])))
         ])
     ]
@@ -172,7 +171,6 @@ export class PaletteComponent implements OnDestroy {
             for (let i = this.allNodeTemplates.length - 1; i >= 0; i--) {
                 // get type of node Template
                 const type = this.allNodeTemplates[i].type;
-                const color = this.allNodeTemplates[i].visuals.color;
                 // split it to get a string like "NodeTypeWithTwoProperties"
                 let typeOfCurrentNode = type.split('}').pop();
                 // eliminate whitespaces from both strings, important for string comparison
@@ -201,30 +199,6 @@ export class PaletteComponent implements OnDestroy {
     }
 
     /**
-     * This function transforms the node's KV properties from an array to an object representation
-     * @param any type : the element type, e.g. capabilityType, requirementType etc.
-     * @return newKvProperties : properties as a object
-     */
-    setKVProperties(type: any): any {
-        let newKVProperies;
-        const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
-        for (const obj of kvProperties) {
-            const key = obj.key;
-            let value;
-            if (isNullOrUndefined(obj.value)) {
-                value = '';
-            } else {
-                value = obj.value;
-            }
-            const keyValuePair = {
-                [key]: value
-            };
-            newKVProperies = { ...newKVProperies, ...keyValuePair };
-        }
-        return newKVProperies;
-    }
-
-    /**
      * Generates node id, type, color and properties from the node types
      * @param name
      * @return result
@@ -238,8 +212,7 @@ export class PaletteComponent implements OnDestroy {
                     const result = {
                         id: node.id,
                         type: node.qName,
-                        properties: this.getDefaultPropertiesFromNodeTypes(name),
-                        color: node.color,
+                        properties: this.getDefaultPropertiesFromNodeTypes(name)
                     };
                     return result;
                 }
@@ -259,20 +232,21 @@ export class PaletteComponent implements OnDestroy {
                 // if any is defined with at least one element it's a KV property, sets default values if there aren't
                 // any in the node template
                 if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any) {
-                    if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
+                    if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0 &&
+                        nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList) {
                         const properties = {
-                            kvproperties: this.setKVProperties(nodeType)
+                            kvproperties: Utils.setKVProperties(nodeType)
                         };
                         return properties;
                     }
                     // if propertiesDefinition is defined it's a XML property
-                } else if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
-                    if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
-                        const properties = {
-                            any: nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element
-                        };
-                        return properties;
-                    }
+                } else if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition
+                    && nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                    const properties = {
+                        any: nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element
+                    };
+                    return properties;
+
                 } else {
                     // else no properties
                     return null;

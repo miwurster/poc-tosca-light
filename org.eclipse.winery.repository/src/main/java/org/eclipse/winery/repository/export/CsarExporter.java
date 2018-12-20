@@ -24,8 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -34,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.SortedSet;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -75,14 +72,14 @@ import org.eclipse.winery.repository.export.entries.BytesBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.CsarEntry;
 import org.eclipse.winery.repository.export.entries.RepositoryRefBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.StringBasedCsarEntry;
-import org.eclipse.winery.repository.security.csar.BCSecurityProcessor;
-import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
 import org.eclipse.winery.repository.security.csar.SecurityPolicyEnforcer;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.BCSecurityProcessor;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
 
 import de.danielbechler.util.Strings;
 import org.apache.commons.io.IOUtils;
@@ -140,32 +137,15 @@ public class CsarExporter {
         return CsarExporter.DEFINITONS_PATH_PREFIX + CsarExporter.getDefinitionsFileName(repository, id);
     }
 
-    public CompletableFuture<String> writeCsarAndSaveManifestInProvenanceLayer(IRepository repository, DefinitionsChildId entryId, OutputStream out)
-        throws IOException, RepositoryCorruptException, AccountabilityException, InterruptedException, ExecutionException {
-        LocalDateTime start = LocalDateTime.now();
-        Properties props = repository.getAccountabilityConfigurationManager().properties;
-        AccountabilityManager accountabilityManager = AccountabilityManagerFactory.getAccountabilityManager(props);
-
-        EnumSet<CsarExportConfiguration> exportConfiguration =
-            EnumSet.of(INCLUDE_HASHES, STORE_IMMUTABLY);
-
-        /*String manifestString = this.writeCsar(repository, entryId, out, exportConfiguration);*/
-        String qNameWithComponentVersionOnly = VersionUtils.getQNameWithComponentVersionOnly(entryId);
-        LOGGER.debug("Preparing CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
-
-        return accountabilityManager.storeFingerprint(qNameWithComponentVersionOnly, "");
-    }
-
     /**
      * Writes a complete CSAR containing all necessary things reachable from the given service template
      *
      * @param entryId the id of the service template to export
      * @param out     the output stream to write to
-     * @return the TOSCA meta file for the generated Csar
      */
     public void writeCsar(IRepository repository, DefinitionsChildId entryId, OutputStream out, EnumSet<CsarExportConfiguration> exportConfiguration)
         throws IOException, RepositoryCorruptException, InterruptedException, AccountabilityException, ExecutionException {
-        CsarExporter.LOGGER.trace("Starting CSAR export with {}", entryId.toString());
+        CsarExporter.LOGGER.debug("Starting CSAR export with {}", entryId.toString());
 
         Map<MetaFileEntry, CsarEntry> refMap = new HashMap<>();
 
@@ -178,13 +158,13 @@ public class CsarExporter {
 
         /* now, refMap contains all files to be added to the CSAR */
         if (exportConfiguration.contains(INCLUDE_HASHES) || exportConfiguration.contains(APPLY_SECURITY_POLICIES)) {
-            LOGGER.trace("Calculating checksum for {} files.", refMap.size());
+            LOGGER.debug("Calculating checksum for {} files.", refMap.size());
             calculateFileHashes(refMap);
         }
 
         if (exportConfiguration.contains(STORE_IMMUTABLY)) {
             try {
-                LOGGER.trace("Storing {} files in the immutable file storage", refMap.size());
+                LOGGER.debug("Storing {} files in the immutable file storage", refMap.size());
                 immutablyStoreRefFiles(refMap, repository);
             } catch (InterruptedException | ExecutionException | AccountabilityException e) {
                 LOGGER.error("Failed to store files in immutable storage. Reason: {}", e.getMessage());
@@ -274,6 +254,7 @@ public class CsarExporter {
                 builder.append(
                     new ToscaMetaEntry.Builder(m.getPathInsideCsar())
                         .contentType(m.getMimeType())
+                        // todo why are we hashing the hash?
                         .digestValueUsingDefaultAlgorithm(HashingUtil.getChecksum(m.getFileHash(), HASH))
                         .build()
                         .toString()
@@ -281,15 +262,17 @@ public class CsarExporter {
             }
         }
 
+        // the added files should be also appended to the TOSCA-Meta file
         MetaFileEntry metaFileEntry = new MetaFileEntry(TOSCA_META_SIGN_FILE_PATH, MimeTypes.MIMETYPE_MANIFEST);
         refMap.put(metaFileEntry, new StringBasedCsarEntry(builder.toString()));
 
         // add ToscaMetaFile's signature block file and certificate
         SecurityProcessor securityProcessor = new BCSecurityProcessor();
-        KeystoreManager keystoreManager = new JCEKSKeystoreManager();
+        KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
         Key signingKey = keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
         // TODO: notify a user if no master key is set
         if (Objects.nonNull(signingKey)) {
+            // todo here hashing is not necessary as signing does it already
             String blockSignatureFileHash = HashingUtil.getChecksum(builder.toString(), HASH);
             byte[] blockSignatureFileContent = securityProcessor.signBytes(signingKey, blockSignatureFileHash.getBytes());
             MetaFileEntry blockSignatureFileEntry = new MetaFileEntry(TOSCA_META_SIGN_BLOCK_FILE_PATH, MimeTypes.MIMETYPE_OCTET_STREAM);
@@ -587,22 +570,33 @@ public class CsarExporter {
         }
 
         Application application = SelfServiceMetaDataUtils.getApplication(selfServiceMetaDataId);
+        // set to true only if changes are applied to application
+        boolean isApplicationChanged = false;
 
-        // clear CSAR name as this may change.
-        application.setCsarName(null);
+        if (application.getCsarName() != null) {
+            // clear CSAR name as this may change.
+            application.setCsarName(null);
+            isApplicationChanged = true;
+        }
 
-        // hack for the OpenTOSCA container to display something
-        application.setVersion("1.0");
+        if (application.getVersion() == null || !application.getVersion().equals("1.0")) {
+            // hack for the OpenTOSCA container to display something
+            application.setVersion("1.0");
+            isApplicationChanged = true;
+        }
         List<String> authors = application.getAuthors();
         if (authors.isEmpty()) {
             authors.add("Winery");
+            isApplicationChanged = true;
         }
 
-        // make the patches to data.xml permanent
-        try {
-            BackendUtils.persist(application, SelfServiceMetaDataUtils.getDataXmlRef(selfServiceMetaDataId), MediaTypes.MEDIATYPE_TEXT_XML);
-        } catch (IOException e) {
-            LOGGER.error("Could not persist patches to data.xml", e);
+        if (isApplicationChanged) {
+            // make the patches to data.xml permanent
+            try {
+                BackendUtils.persist(application, SelfServiceMetaDataUtils.getDataXmlRef(selfServiceMetaDataId), MediaTypes.MEDIATYPE_TEXT_XML);
+            } catch (IOException e) {
+                LOGGER.error("Could not persist patches to data.xml", e);
+            }
         }
 
         Options options = application.getOptions();

@@ -16,15 +16,19 @@ package org.eclipse.winery.repository.rest.resources.admin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.winery.accountability.AccountabilityManagerFactory;
+import org.eclipse.winery.accountability.exceptions.AccountabilityException;
 import org.eclipse.winery.repository.backend.AccountabilityConfigurationManager;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.rest.resources.apiData.AccountabilityConfigurationData;
@@ -77,6 +81,32 @@ public class AccountabilityConfigurationResource {
             manager.saveProperties();
             return Response.noContent().build();
         } catch (IOException e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/authorizationSC")
+    public Response deployAuthorizationSmartContract() {
+        try {
+            final Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
+            final String address = AccountabilityManagerFactory.getAccountabilityManager(props).deployAuthorizationSmartContract().get();
+            
+            return Response.ok(address).build();
+        } catch (AccountabilityException | InterruptedException | ExecutionException e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/provenanceSC")
+    public Response deployProvenanceSmartContract() {
+        try {
+            final Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
+            final String address = AccountabilityManagerFactory.getAccountabilityManager(props).deployProvenanceSmartContract().get();
+
+            return Response.ok(address).build();
+        } catch (AccountabilityException | InterruptedException | ExecutionException e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
     }

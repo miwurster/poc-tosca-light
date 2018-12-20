@@ -103,7 +103,10 @@ public class AccountabilityResource {
         try {
             return getAccountabilityManager()
                 .getHistory(qNameWithComponentVersionOnly)
-                .exceptionally(error -> null)
+                .exceptionally(error -> {
+                    LOGGER.error("Cannot get history of model. Reason: {}", error.getCause().getMessage());
+                    return null;
+                })
                 .get();
         } catch (InterruptedException | ExecutionException | AccountabilityException e) {
             LOGGER.error("Cannot get history of model. Reason: {}", e.getMessage());

@@ -14,6 +14,7 @@
 package org.eclipse.winery.accountability.blockchain.ethereum;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Authorization;
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Provenance;
@@ -27,7 +28,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.tx.Contract;
 import org.web3j.tx.gas.DefaultGasProvider;
 
-public class SmartContractProvider {
+class SmartContractProvider {
 
     private static final Logger log = LoggerFactory.getLogger(EthereumAccessLayer.class);
 
@@ -48,19 +49,23 @@ public class SmartContractProvider {
         }
     }
 
-    public static Provenance buildProvenanceSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
-        final Provenance contract = Provenance.load(smartContractAddress, web3j, credentials, DefaultGasProvider.GAS_PRICE,
-            DefaultGasProvider.GAS_LIMIT);
-
+    static Provenance buildProvenanceSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
+        Provenance contract = Provenance.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
         validateSmartContract(contract, smartContractAddress);
         return contract;
     }
 
-    public static Authorization buildAuthorizationSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
-        final Authorization contract = Authorization.load(smartContractAddress, web3j, credentials, DefaultGasProvider.GAS_PRICE,
-            DefaultGasProvider.GAS_LIMIT);
+    static CompletableFuture<Provenance> deployProvenanceSmartContract(final Web3j web3j, final Credentials credentials) {
+        return Provenance.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync();
+    }
 
+    static Authorization buildAuthorizationSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws BlockchainException {
+        Authorization contract = Authorization.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
         validateSmartContract(contract, smartContractAddress);
         return contract;
+    }
+
+    static CompletableFuture<Authorization> deployAuthorizationSmartContract(final Web3j web3j, final Credentials credentials) {
+        return Authorization.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync();
     }
 }

@@ -14,9 +14,9 @@
 
 package org.eclipse.winery.repository.export;
 
-import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
-
 import java.util.Objects;
+
+import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
 
 public class ToscaMetaEntry {
     

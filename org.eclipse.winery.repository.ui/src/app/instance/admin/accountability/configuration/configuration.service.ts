@@ -15,9 +15,8 @@ import { HttpClient } from '@angular/common/http';
 import { Configuration } from './Configuration';
 import { Observable } from 'rxjs/Rx';
 import { backendBaseURL } from '../../../../configuration';
-import { catchError, map, mergeMap } from 'rxjs/internal/operators';
+import { map, mergeMap } from 'rxjs/internal/operators';
 import { Injectable } from '@angular/core';
-import { throwError } from 'rxjs/index';
 import { ConfigurationDTO } from './ConfigurationDTO';
 
 /**
@@ -28,6 +27,8 @@ import { ConfigurationDTO } from './ConfigurationDTO';
 @Injectable()
 export class ConfigurationService {
     private accountabilityUrl = backendBaseURL + '/API/accountability/configuration';
+    private deployProvenanceSCUrl = this.accountabilityUrl + '/provenanceSC';
+    private deployAuthorizationSCUrl = this.accountabilityUrl + '/authorizationSC';
     private readonly enableAccountabilityCheckDefaultValue = false;
     private readonly enableAccountabilityCheckKey = 'AccountabilityCheck';
 
@@ -73,7 +74,8 @@ export class ConfigurationService {
         }
 
         formData.append('blockhainNodeUrl', config.blockchainNodeUrl);
-        // formData.append('activeKeystore', config.activeKeystore); this is set only by the backend -readonly to front end-.
+        // formData.append('activeKeystore', config.activeKeystore); this is set only by the backend -readonly to front
+        // end-.
         formData.append('keystorePassword', config.keystorePassword);
         formData.append('authorizationSmartContractAddress', config.authorizationSmartContractAddress);
         formData.append('provenanceSmartContractAddress', config.provenanceSmartContractAddress);
@@ -83,10 +85,19 @@ export class ConfigurationService {
     }
 
     restoreDefaults(): Observable<Configuration> {
-        // this.setAccountabilityCheckEnabled(this.enableAccountabilityCheckDefaultValue); do not change this option when "Restore Defaults" is pressed.
+        // this.setAccountabilityCheckEnabled(this.enableAccountabilityCheckDefaultValue); do not change this option
+        // when "Restore Defaults" is pressed.
         return this.http.delete<void>(this.accountabilityUrl)
             .pipe(
                 mergeMap(() => this.loadConfiguration())
             );
+    }
+
+    deployProvenanceSmartContract(): Observable<string> {
+        return this.http.get(this.deployProvenanceSCUrl, { responseType: 'text' });
+    }
+
+    deployAuthorizationSmartContract(): Observable<string> {
+        return this.http.get(this.deployAuthorizationSCUrl, { responseType: 'text' });
     }
 }

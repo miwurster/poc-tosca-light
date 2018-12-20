@@ -46,6 +46,16 @@ public class MockedTestAccessLayer implements BlockchainAccess {
     }
 
     @Override
+    public CompletableFuture<String> deployAuthorizationSmartContract() {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<String> deployProvenanceSmartContract() {
+        return null;
+    }
+
+    @Override
     public void close() {
         // no resources to release.
     }

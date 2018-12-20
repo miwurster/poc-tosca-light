@@ -33,12 +33,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.datatypes.KeyEntityInformation;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import com.sun.jersey.multipart.FormDataParam;
 import io.swagger.annotations.ApiOperation;
@@ -72,7 +72,7 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
                 } else {
                     key = securityProcessor.getSecretKeyFromInputStream(algo, uploadedSecretKey);
                 }
-                String alias = securityProcessor.calculateDigest(key.getEncoded(), DigestAlgorithm.SHA256.name());
+                String alias = securityProcessor.calculateDigest(key.getEncoded(), DigestAlgorithmEnum.SHA256.name());
                 this.checkAliasInsertEligibility(alias);
                 KeyEntityInformation entity = keystoreManager.storeKey(alias, key);
                 URI uri = uriInfo.getAbsolutePathBuilder().path(alias).build();

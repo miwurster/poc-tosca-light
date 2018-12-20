@@ -29,12 +29,12 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.datatypes.CertificateInformation;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.repository.security.csar.support.DigestAlgorithm;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.datatypes.CertificateInformation;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -64,7 +64,7 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
         try {
             Certificate[] cert = this.securityProcessor.getX509Certificates(certificate);
             if (Objects.nonNull(cert) && cert.length > 0) {
-                String alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithm.SHA256.name());
+                String alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithmEnum.SHA256.name());
                 this.checkAliasInsertEligibility(alias);
 
                 this.keystoreManager.storeCertificate(alias, cert[0]);

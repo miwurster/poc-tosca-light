@@ -25,9 +25,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
-import org.eclipse.winery.repository.security.csar.SecurityProcessor;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 
 import io.swagger.annotations.ApiOperation;
 

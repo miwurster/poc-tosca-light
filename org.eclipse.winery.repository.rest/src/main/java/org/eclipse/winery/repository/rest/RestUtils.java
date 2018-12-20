@@ -105,13 +105,13 @@ import org.eclipse.winery.repository.rest.resources.entitytemplates.policytempla
 import org.eclipse.winery.repository.rest.resources.entitytemplates.policytemplates.PolicyTemplatesResource;
 import org.eclipse.winery.repository.rest.resources.entitytypes.TopologyGraphElementEntityTypeResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
-import org.eclipse.winery.repository.security.csar.JCEKSKeystoreManager;
-import org.eclipse.winery.repository.security.csar.KeystoreManager;
+import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
 import org.eclipse.winery.repository.security.csar.SecurityPolicyEnforcer;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyEntityInformation;
-import org.eclipse.winery.repository.security.csar.datatypes.KeyPairInformation;
-import org.eclipse.winery.repository.security.csar.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.datatypes.KeyEntityInformation;
+import org.eclipse.winery.security.datatypes.KeyPairInformation;
+import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.yaml.common.exception.MultiException;
 import org.eclipse.winery.yaml.converter.Converter;
 
@@ -237,20 +237,16 @@ public class RestUtils {
 
         StreamingOutput so = output -> {
             try {
-                // process CSAR with AddToProvenance option selected
-                if (options.isAddToProvenance()) {
-                    // We wait for the accountability layer to confirm the transaction
-                    String result = exporter.writeCsarAndSaveManifestInProvenanceLayer(RepositoryFactory.getRepository(), resource.getId(), output)
-                        .get();
-                    LOGGER.debug("Stored state in accountability layer in transaction " + result);
-                    LOGGER.debug("CSAR export (provenance) lasted {}", Duration.between(LocalDateTime.now(), start).toString());
-                } else {
-                    if (options.isSecure()) {
-                        exportConfiguration.add(CsarExportConfiguration.APPLY_SECURITY_POLICIES);
-                    }
-                    exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
-                    LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+                if (options.isSecure()) {
+                    exportConfiguration.add(CsarExportConfiguration.APPLY_SECURITY_POLICIES);
                 }
+                if (options.isAddToProvenance()) {
+                    exportConfiguration.add(CsarExportConfiguration.STORE_FINGERPRINT_IN_ACCOUNTABILITY);
+                    exportConfiguration.add(CsarExportConfiguration.INCLUDE_HASHES);
+                    exportConfiguration.add(CsarExportConfiguration.STORE_IMMUTABLY);
+                }
+                exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
+                LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
             } catch (Exception e) {
                 LOGGER.error("Error while exporting CSAR", e);
                 throw new WebApplicationException(e);
@@ -1060,7 +1056,7 @@ public class RestUtils {
                     .build();
             }
             try {
-                KeystoreManager keystoreManager = new JCEKSKeystoreManager();
+                KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
                 String keyAlias = encPolicy.getPolicyRef().getLocalPart();
                 Key secretKey = keystoreManager.loadKey(keyAlias);
                 Set<RepositoryFileReference> files = RepositoryFactory.getRepository().getContainedFiles(filesDirectoryId);

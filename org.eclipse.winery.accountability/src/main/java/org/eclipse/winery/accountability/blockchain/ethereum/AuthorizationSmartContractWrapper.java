@@ -15,10 +15,9 @@ package org.eclipse.winery.accountability.blockchain.ethereum;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Authorization;
 import org.eclipse.winery.accountability.exceptions.EthereumException;
@@ -29,19 +28,15 @@ import org.eclipse.winery.accountability.model.authorization.AuthorizationTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.abi.EventEncoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Event;
-import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.EventValues;
 import org.web3j.crypto.Hash;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthLog;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.Contract;
-import rx.Subscriber;
-import rx.Subscription;
 
 /**
  * Provide access to the authorization smart contract
@@ -70,76 +65,42 @@ public class AuthorizationSmartContractWrapper extends SmartContractWrapper {
      * @param identifier The process identifier identifying the collaboration process.
      * @return A completable future containing the authorization information.
      */
-    public CompletableFuture<AuthorizationInfo> getAuthorizationTree(final String identifier) {
-        // eventName, indexed parameters, unindexed parameters
-        final Event event = new Event("Authorized",
-            Arrays.asList(new TypeReference<Utf8String>() {
-            }, new TypeReference<Address>() {
-            }, new TypeReference<Address>() {
-            }),
-            Collections.singletonList(new TypeReference<Utf8String>() {
-            }));
+    CompletableFuture<AuthorizationInfo> getAuthorizationTree(final String identifier) {
         EthFilter filter = new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST,
             contract.getContractAddress()).
-            addSingleTopic(EventEncoder.encode(event)).
+            addSingleTopic(EventEncoder.encode(Authorization.AUTHORIZED_EVENT)).
             addOptionalTopics(Hash.sha3String(identifier)).
             addNullTopic().
             addNullTopic();
-        final CompletableFuture<AuthorizationInfo> result = new CompletableFuture<>();
 
-        try {
-            final int recordsCount = web3j.ethGetLogs(filter).send().getLogs().size();
-            LOGGER.info(recordsCount + " authorization elements detected.");
+        return web3j.ethGetLogs(filter).sendAsync().thenApply(
+            ethLog -> {
+                final List<EthLog.LogResult> logs = ethLog.getLogs();
+                LOGGER.info(logs.size() + " authorization elements detected.");
 
-            if (recordsCount > 0) {
-                final Subscription subscription = ((Authorization) contract).authorizedEventObservable(filter)
-                    .subscribe(new Subscriber<Authorization.AuthorizedEventResponse>() {
-                        private List<AuthorizationElement> authorizationElements = new ArrayList<>();
+                if (logs.size() == 0)
+                    return null;
+                
+                final List<AuthorizationElement> authorizationElements = new ArrayList<>();
 
-                        @Override
-                        public void onCompleted() {
-
-                        }
-
-                        @Override
-                        public void onError(Throwable throwable) {
-                            LOGGER.error("Error detected. Reason: " + throwable.getMessage());
-                            result.completeExceptionally(new EthereumException(throwable));
-                        }
-
-                        @Override
-                        public void onNext(Authorization.AuthorizedEventResponse authorizedEventResponse) {
-                            try {
-                                final AuthorizationElement currentElement = generateAuthorizationElement(authorizedEventResponse);
-                                authorizationElements.add(currentElement);
-
-                                if (authorizationElements.size() == recordsCount) {
-                                    final AuthorizationTree tree = new AuthorizationTree(authorizationElements);
-                                    result.complete(tree);
-                                }
-                            } catch (EthereumException e) {
-                                result.completeExceptionally(e);
-                            }
-                        }
-                    });
-                // unsubscribe the observable when the CompletableFuture completes (this frees threads)
-                result.whenComplete((r, e) -> subscription.unsubscribe());
-            } else { // empty result
-                result.complete(null);
+                try {
+                    for (EthLog.LogResult logResult : logs) {
+                        final Log log = (Log) logResult.get();
+                        final EventValues eventValues =
+                            Contract.staticExtractEventParameters(Authorization.AUTHORIZED_EVENT, log);
+                        authorizationElements.add(this.generateAuthorizationElement(eventValues, log));
+                    }
+                    
+                    return new AuthorizationTree(authorizationElements);
+                } catch (EthereumException e) {
+                    throw new CompletionException(e);
+                }
             }
-        } catch (IOException e) {
-            final String msg = "Failed detecting the number of authorization elements for the collaboration resource. Reason: " +
-                e.getMessage();
-            LOGGER.error(msg);
-            result.completeExceptionally(new EthereumException(msg, e));
-        }
-
-        return result;
+        );
     }
 
-    private AuthorizationElement generateAuthorizationElement(final Authorization.AuthorizedEventResponse event) throws EthereumException {
+    private AuthorizationElement generateAuthorizationElement(EventValues event, Log log) throws EthereumException {
         try {
-            final Log log = event.log;
             final AuthorizationElement result = new AuthorizationElement();
             result.setTransactionHash(log.getTransactionHash());
             // get the timestamp of the block that includes the tx that includes the authorization record
@@ -149,9 +110,9 @@ public class AuthorizationSmartContractWrapper extends SmartContractWrapper {
                 .getTimestamp()
                 .longValue());
 
-            result.setAuthorizerBlockchainAddress(event._authorizer);
-            result.setAuthorizedBlockchainAddress(event._authorized);
-            result.setAuthorizedIdentity(event.realWorldIdentity);
+            result.setAuthorizerBlockchainAddress((String) event.getIndexedValues().get(1).getValue());
+            result.setAuthorizedBlockchainAddress((String) event.getIndexedValues().get(2).getValue());
+            result.setAuthorizedIdentity((String) event.getNonIndexedValues().get(0).getValue());
 
             return result;
         } catch (IOException e) {
