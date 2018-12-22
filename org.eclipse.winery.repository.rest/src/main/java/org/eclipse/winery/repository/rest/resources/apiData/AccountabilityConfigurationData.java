@@ -23,6 +23,7 @@ public class AccountabilityConfigurationData implements Serializable {
     private String keystorePassword;
     private String authorizationSmartContractAddress;
     private String provenanceSmartContractAddress;
+    private String permissionsSmartContractAddress;
     private String swarmGatewayUrl;
 
     public String getBlockchainNodeUrl() {
@@ -71,5 +72,13 @@ public class AccountabilityConfigurationData implements Serializable {
 
     public void setSwarmGatewayUrl(String swarmGatewayUrl) {
         this.swarmGatewayUrl = swarmGatewayUrl;
+    }
+
+    public String getPermissionsSmartContractAddress() {
+        return permissionsSmartContractAddress;
+    }
+
+    public void setPermissionsSmartContractAddress(String permissionsSmartContractAddress) {
+        this.permissionsSmartContractAddress = permissionsSmartContractAddress;
     }
 }

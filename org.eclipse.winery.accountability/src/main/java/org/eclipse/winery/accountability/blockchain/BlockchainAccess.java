@@ -14,9 +14,16 @@
 
 package org.eclipse.winery.accountability.blockchain;
 
+import java.security.InvalidKeyException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import javax.crypto.SecretKey;
+
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
 
@@ -30,7 +37,7 @@ public interface BlockchainAccess {
      * @return a completable future that, when completed, returns the blockchain address of the transaction that contains
      * the stored version.
      */
-    CompletableFuture<String> saveFingerprint(final String processIdentifier, final String fingerprint);
+    CompletableFuture<String> saveFingerprint(final String processIdentifier, final String fingerprint) throws BlockchainException;
 
     /**
      * Gets the history of a given collaboration process
@@ -39,7 +46,7 @@ public interface BlockchainAccess {
      * @return a completable future that, when completed, returns a list containing the historic versions of the
      * collaborative resource.
      */
-    CompletableFuture<List<ModelProvenanceElement>> getProvenance(final String processIdentifier);
+    CompletableFuture<List<ModelProvenanceElement>> getProvenance(final String processIdentifier) throws BlockchainException;
 
     /**
      * Authorizes a new participant for the given collaboration process.
@@ -51,7 +58,7 @@ public interface BlockchainAccess {
      * the authorization information.
      */
     CompletableFuture<String> authorize(final String processIdentifier, final String authorizedEthereumAddress,
-                                        final String authorizedIdentity);
+                                        final String authorizedIdentity) throws BlockchainException;
 
     /**
      * Gets the authorization tree of a given process which allows various querying capabilities.
@@ -59,20 +66,49 @@ public interface BlockchainAccess {
      * @param processIdentifier the identifier of the collaboration process
      * @return a completable future that, when completed, returns the authorization tree.
      */
-    CompletableFuture<AuthorizationInfo> getAuthorizationTree(final String processIdentifier);
+    CompletableFuture<AuthorizationInfo> getAuthorizationTree(final String processIdentifier) throws BlockchainException;
 
     /**
      * Deploys the Authorization smart contract to the active blockchain network
+     *
      * @return a completable future that, when completed, returns the address of the contract.
      */
     CompletableFuture<String> deployAuthorizationSmartContract();
 
     /**
-     * Deploys the Authorization smart contract to the active blockchain network
+     * Deploys the provenance smart contract to the active blockchain network
+     *
      * @return a completable future that, when completed, returns the address of the contract.
      */
     CompletableFuture<String> deployProvenanceSmartContract();
-    
+
+    /**
+     * Deploys the permissions smart contract to the active blockchain network
+     *
+     * @return a completable future that, when completed, returns the address of the contract.
+     */
+    CompletableFuture<String> deployPermissionsSmartContract();
+
+    /**
+     * Sets the permissions given from the active user to a certain address.
+     *
+     * @param takerAddress   the address to set the permissions for.
+     * @param takerPublicKey the public key of the receiver (used to encrypt the set of the given permissions).
+     * @param permissions    the set secret keys (permissions) to give.
+     * @return a completable future the finishes when the transaction to set the permissions succeeds.
+     * @throws InvalidKeyException if encrypting the permissions fails due to invalid public key format.
+     */
+    CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, BlockchainException;
+
+    /**
+     * Gets the set of permissions given to the active user.
+     *
+     * @param myPrivateKey The private key to decrypt the set of permissions given to the current user.
+     * @return a completable future that, when completed, returns a map of the giver addresses associated
+     * to the set of permissions they have given to the active user.
+     */
+    CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) throws BlockchainException;
+
     /**
      * Releases resources relevant to this instance
      */

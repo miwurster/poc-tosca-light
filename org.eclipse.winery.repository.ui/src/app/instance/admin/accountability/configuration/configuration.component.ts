@@ -26,6 +26,7 @@ export class ConfigurationComponent implements OnInit {
     loading = true;
     deployingProvenanceSC = false;
     deployingAuthorizationSC = false;
+    deployingPermissionsSC = false;
     error: string;
     selectedKeystoreFile: File = undefined;
 
@@ -99,7 +100,7 @@ export class ConfigurationComponent implements OnInit {
                     this.configuration.provenanceSmartContractAddress = address;
                     this.deployingProvenanceSC = false;
                 },
-                e => {
+                () => {
                     this.deployingProvenanceSC = false;
                     this.notify.error('Failed to deploy smart contract!');
                 });
@@ -113,8 +114,22 @@ export class ConfigurationComponent implements OnInit {
                     this.configuration.authorizationSmartContractAddress = address;
                     this.deployingAuthorizationSC = false;
                 },
-                e => {
+                () => {
                     this.deployingAuthorizationSC = false;
+                    this.notify.error('Failed to deploy smart contract!');
+                });
+    }
+
+    onDeployPermissionsSmartContract() {
+        this.deployingPermissionsSC = true;
+        this.service.deployPermissionsSmartContract()
+            .subscribe(
+                address => {
+                    this.configuration.permissionsSmartContractAddress = address;
+                    this.deployingPermissionsSC = false;
+                },
+                () => {
+                    this.deployingPermissionsSC = false;
                     this.notify.error('Failed to deploy smart contract!');
                 });
     }

@@ -39,6 +39,7 @@ import java.util.zip.ZipOutputStream;
 import org.eclipse.winery.accountability.AccountabilityManager;
 import org.eclipse.winery.accountability.AccountabilityManagerFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.Util;
@@ -144,7 +145,7 @@ public class CsarExporter {
      * @param out     the output stream to write to
      */
     public void writeCsar(IRepository repository, DefinitionsChildId entryId, OutputStream out, EnumSet<CsarExportConfiguration> exportConfiguration)
-        throws IOException, RepositoryCorruptException, InterruptedException, AccountabilityException, ExecutionException {
+        throws IOException, RepositoryCorruptException, InterruptedException, AccountabilityException, ExecutionException, BlockchainException {
         CsarExporter.LOGGER.debug("Starting CSAR export with {}", entryId.toString());
 
         Map<MetaFileEntry, CsarEntry> refMap = new HashMap<>();
@@ -313,7 +314,7 @@ public class CsarExporter {
         }
     }
 
-    private void storeFingerprintInAccountability(IRepository repository, DefinitionsChildId entryId, String manifestString) throws AccountabilityException, ExecutionException, InterruptedException {
+    private void storeFingerprintInAccountability(IRepository repository, DefinitionsChildId entryId, String manifestString) throws AccountabilityException, ExecutionException, InterruptedException, BlockchainException {
         Properties props = repository.getAccountabilityConfigurationManager().properties;
         AccountabilityManager accountabilityManager = AccountabilityManagerFactory.getAccountabilityManager(props);
         String qNameWithComponentVersionOnly = VersionUtils.getQNameWithComponentVersionOnly(entryId);

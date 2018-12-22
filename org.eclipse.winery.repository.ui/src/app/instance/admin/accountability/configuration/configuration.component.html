@@ -58,7 +58,7 @@
                         <input type="text" id="provenanceSmartContract" class="form-control"
                                name="provenanceSmartContract" style="width: 91%; margin-right: 1%;"
                                pattern="^0x[a-fA-F0-9]{40}$"
-                               [(ngModel)]="configuration.provenanceSmartContractAddress" required>
+                               [(ngModel)]="configuration.provenanceSmartContractAddress">
 
                         <button type="button" class="btn btn-outline-secondary" style="width: 8%;"
                                 (click)="onDeployProvenanceSmartContract()"
@@ -75,9 +75,25 @@
                         <input type="text" id="authorizationSmartContract" class="form-control"
                                name="authorizationSmartContract" style="width: 91%; margin-right: 1%;"
                                pattern="^0x[a-fA-F0-9]{40}$"
-                               [(ngModel)]="configuration.authorizationSmartContractAddress" required>
+                               [(ngModel)]="configuration.authorizationSmartContractAddress">
                         <button type="button" class="btn btn-outline-secondary"
                                 (click)="onDeployAuthorizationSmartContract()"
+                                [disabled]="loading" style="width: 8%;">
+                            Deploy
+                        </button>
+                    </div>
+
+                    <br/>
+
+                    <label for="permissionsSmartContract">Permissions Smart Contract Address</label>
+
+                    <div class="form-inline" *ngIf="!deployingPermissionsSC; else showLoader">
+                        <input type="text" id="permissionsSmartContract" class="form-control"
+                               name="permissionsSmartContract" style="width: 91%; margin-right: 1%;"
+                               pattern="^0x[a-fA-F0-9]{40}$"
+                               [(ngModel)]="configuration.permissionsSmartContractAddress">
+                        <button type="button" class="btn btn-outline-secondary"
+                                (click)="onDeployPermissionsSmartContract()"
                                 [disabled]="loading" style="width: 8%;">
                             Deploy
                         </button>
@@ -92,7 +108,7 @@
                 </button>
 
                 <button type="button" class="btn btn-primary" (click)="onRestore()" style="margin-left: 10px;"
-                        [disabled]="(!configurationForm?.valid && configuration.enableAccountability) || loading">
+                        [disabled]="loading">
                     Restore Defaults
                 </button>
             </div>

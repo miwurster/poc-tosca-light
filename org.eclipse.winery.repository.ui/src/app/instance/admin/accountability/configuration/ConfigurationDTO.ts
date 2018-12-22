@@ -21,5 +21,6 @@ export class ConfigurationDTO {
     public keystorePassword: string;
     public authorizationSmartContractAddress: string;
     public provenanceSmartContractAddress: string;
+    public permissionsSmartContractAddress: string;
     public swarmGatewayUrl: string;
 }

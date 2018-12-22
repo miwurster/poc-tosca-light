@@ -29,6 +29,7 @@ export class ConfigurationService {
     private accountabilityUrl = backendBaseURL + '/API/accountability/configuration';
     private deployProvenanceSCUrl = this.accountabilityUrl + '/provenanceSC';
     private deployAuthorizationSCUrl = this.accountabilityUrl + '/authorizationSC';
+    private deployPermissionsSCUrl = this.accountabilityUrl + '/permissionsSC';
     private readonly enableAccountabilityCheckDefaultValue = false;
     private readonly enableAccountabilityCheckKey = 'AccountabilityCheck';
 
@@ -77,8 +78,25 @@ export class ConfigurationService {
         // formData.append('activeKeystore', config.activeKeystore); this is set only by the backend -readonly to front
         // end-.
         formData.append('keystorePassword', config.keystorePassword);
-        formData.append('authorizationSmartContractAddress', config.authorizationSmartContractAddress);
-        formData.append('provenanceSmartContractAddress', config.provenanceSmartContractAddress);
+
+        if (config.authorizationSmartContractAddress == null) {
+            formData.append('authorizationSmartContractAddress', '');
+        } else {
+            formData.append('authorizationSmartContractAddress', config.authorizationSmartContractAddress);
+        }
+
+        if (config.provenanceSmartContractAddress == null) {
+            formData.append('provenanceSmartContractAddress', '');
+        } else {
+            formData.append('provenanceSmartContractAddress', config.provenanceSmartContractAddress);
+        }
+
+        if (config.permissionsSmartContractAddress == null) {
+            formData.append('permissionsSmartContractAddress', '');
+        } else {
+            formData.append('permissionsSmartContractAddress', config.permissionsSmartContractAddress);
+        }
+
         formData.append('swarmGatewayUrl', config.swarmGatewayUrl);
 
         return this.http.put(this.accountabilityUrl, formData);
@@ -99,5 +117,9 @@ export class ConfigurationService {
 
     deployAuthorizationSmartContract(): Observable<string> {
         return this.http.get(this.deployAuthorizationSCUrl, { responseType: 'text' });
+    }
+
+    deployPermissionsSmartContract(): Observable<string> {
+        return this.http.get(this.deployPermissionsSCUrl, { responseType: 'text' });
     }
 }

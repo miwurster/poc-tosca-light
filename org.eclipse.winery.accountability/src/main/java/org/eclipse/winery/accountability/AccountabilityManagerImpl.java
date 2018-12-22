@@ -18,7 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,7 +32,10 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import javax.crypto.SecretKey;
+
 import org.eclipse.winery.accountability.blockchain.BlockchainAccess;
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.FileProvenanceElement;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.ProvenanceVerification;
@@ -68,7 +74,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
-    public CompletableFuture<Map<String, ProvenanceVerification>> verify(String processIdentifier, String manifestId, Map<String, File> files) {
+    public CompletableFuture<Map<String, ProvenanceVerification>> verify(String processIdentifier, String manifestId, Map<String, File> files) throws BlockchainException {
         Objects.requireNonNull(processIdentifier);
         Objects.requireNonNull(manifestId);
         Objects.requireNonNull(files);
@@ -103,7 +109,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
-    public CompletableFuture<String> storeFingerprint(String processIdentifier, String fingerprint) {
+    public CompletableFuture<String> storeFingerprint(String processIdentifier, String fingerprint) throws BlockchainException {
         Objects.requireNonNull(processIdentifier);
         Objects.requireNonNull(fingerprint);
 
@@ -121,7 +127,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
 
         return CompletableFuture
             // execute all futures on parallel
-            .allOf(allFuturesMap.values().toArray(new CompletableFuture[allFuturesMap.size()]))
+            .allOf(allFuturesMap.values().toArray(new CompletableFuture[0]))
             // when all done, collect the results
             .thenApply((Void) -> {
                 Map<String, String> result = new HashMap<>();
@@ -147,7 +153,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
-    public CompletableFuture<List<ModelProvenanceElement>> getHistory(String processIdentifier) {
+    public CompletableFuture<List<ModelProvenanceElement>> getHistory(String processIdentifier) throws BlockchainException {
         CompletableFuture<AuthorizationInfo> authorizationTree = this.blockchain.getAuthorizationTree(processIdentifier);
 
         return this.blockchain
@@ -156,7 +162,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
-    public CompletableFuture<List<FileProvenanceElement>> getHistory(String processIdentifier, String fileId) {
+    public CompletableFuture<List<FileProvenanceElement>> getHistory(String processIdentifier, String fileId) throws BlockchainException {
         CompletableFuture<AuthorizationInfo> authorizationTree = this.blockchain.getAuthorizationTree(processIdentifier);
 
         return this.blockchain
@@ -179,13 +185,13 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
-    public CompletableFuture<String> authorize(String processIdentifier, String authorizedEthereumAddress, String authorizedIdentity) {
+    public CompletableFuture<String> authorize(String processIdentifier, String authorizedEthereumAddress, String authorizedIdentity) throws BlockchainException {
         LOGGER.info("Authorizing \"" + authorizedEthereumAddress + "\" for " + processIdentifier);
         return this.blockchain.authorize(processIdentifier, authorizedEthereumAddress, authorizedIdentity);
     }
 
     @Override
-    public CompletableFuture<AuthorizationInfo> getAuthorization(String processIdentifier) {
+    public CompletableFuture<AuthorizationInfo> getAuthorization(String processIdentifier) throws BlockchainException {
         LOGGER.info("Retrieving authorization info for process " + processIdentifier);
         return this.blockchain.getAuthorizationTree(processIdentifier);
     }
@@ -201,12 +207,27 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
+    public CompletableFuture<String> deployPermissionsSmartContract() {
+        return this.blockchain.deployPermissionsSmartContract();
+    }
+
+    @Override
+    public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, BlockchainException {
+        return this.blockchain.setPermissions(takerAddress, takerPublicKey, permissions);
+    }
+
+    @Override
+    public CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) throws BlockchainException {
+        return this.blockchain.getMyPermissions(myPrivateKey);
+    }
+
+    @Override
     public void close() {
         this.blockchain.close();
         this.storageProvider.close();
     }
 
-    private List<ModelProvenanceElement>enhanceHistoryElements(List<ModelProvenanceElement> historyElements, AuthorizationInfo authorizationInfo) {
+    private List<ModelProvenanceElement> enhanceHistoryElements(List<ModelProvenanceElement> historyElements, AuthorizationInfo authorizationInfo) {
         historyElements.forEach(element -> {
             element.setAuthorizedFlag(authorizationInfo);
             element.setAuthorName(
@@ -216,12 +237,12 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
             );
             this.fillFilesOfModel(element);
         });
-        
+
         return historyElements;
     }
 
-    protected List<FileProvenanceElement> getHistoryOfSingleFile(List<ModelProvenanceElement> historyElements, String fileId,
-                                                                 AuthorizationInfo authorizationInfo) {
+    List<FileProvenanceElement> getHistoryOfSingleFile(List<ModelProvenanceElement> historyElements, String fileId,
+                                                       AuthorizationInfo authorizationInfo) {
         List<FileProvenanceElement> history = new ArrayList<>();
 
         if (Objects.nonNull(historyElements) && historyElements.size() > 0) {
@@ -260,8 +281,8 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
         return null;
     }
 
-    protected Map<String, ProvenanceVerification> validateBlockchainInput(List<ModelProvenanceElement> historyElements, String manifestId,
-                                                                          Map<String, File> files, AuthorizationInfo authorizationInfo) throws IOException, NoSuchAlgorithmException {
+    Map<String, ProvenanceVerification> validateBlockchainInput(List<ModelProvenanceElement> historyElements, String manifestId,
+                                                                Map<String, File> files, AuthorizationInfo authorizationInfo) throws IOException, NoSuchAlgorithmException {
         LOGGER.info("Start validating...");
         Map<String, ProvenanceVerification> verificationMap = new HashMap<>();
         ModelProvenanceElement validHistoryElement = verifyManifest(historyElements, manifestId, files, verificationMap, authorizationInfo);
@@ -275,8 +296,8 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
         return verificationMap;
     }
 
-    protected ModelProvenanceElement verifyManifest(List<ModelProvenanceElement> historyElements, String manifestId, Map<String, File> files,
-                                                    Map<String, ProvenanceVerification> verificationMap, AuthorizationInfo authorizationInfo) throws NoSuchAlgorithmException, IOException {
+    ModelProvenanceElement verifyManifest(List<ModelProvenanceElement> historyElements, String manifestId, Map<String, File> files,
+                                          Map<String, ProvenanceVerification> verificationMap, AuthorizationInfo authorizationInfo) throws NoSuchAlgorithmException, IOException {
         LOGGER.info("Start validating manifest file...");
         ModelProvenanceElement validHistoryElement = null;
         ProvenanceVerification manifestVerification = INVALID;
@@ -304,7 +325,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
         return validHistoryElement;
     }
 
-    protected void verifyFiles(ModelProvenanceElement validHistoryElement, Map<String, File> files, Map<String, ProvenanceVerification> verificationMap)
+    void verifyFiles(ModelProvenanceElement validHistoryElement, Map<String, File> files, Map<String, ProvenanceVerification> verificationMap)
         throws SerializationException, IOException, NoSuchAlgorithmException {
         LOGGER.info("Start validating files...");
         for (Map.Entry<String, File> entry : files.entrySet()) {
@@ -320,7 +341,7 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
         LOGGER.info("Completed files validation.");
     }
 
-    protected ProvenanceVerification verifyFileInManifest(ModelProvenanceElement element, String fileId, String checksum) throws SerializationException {
+    ProvenanceVerification verifyFileInManifest(ModelProvenanceElement element, String fileId, String checksum) throws SerializationException {
         // 1. parse element.state as ManifestContent
         ManifestContents manifestContents = new RecoveringManifestParser()
             .parse(element.getFingerprint());

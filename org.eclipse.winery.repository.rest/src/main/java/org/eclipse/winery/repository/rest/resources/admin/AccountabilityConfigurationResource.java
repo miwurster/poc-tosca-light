@@ -45,6 +45,7 @@ public class AccountabilityConfigurationResource {
         AccountabilityConfigurationData result = new AccountabilityConfigurationData();
         result.setAuthorizationSmartContractAddress(props.getProperty("ethereum-authorization-smart-contract-address"));
         result.setProvenanceSmartContractAddress(props.getProperty("ethereum-provenance-smart-contract-address"));
+        result.setPermissionsSmartContractAddress(props.getProperty("ethereum-permissions-smart-contract-address"));
         result.setBlockchainNodeUrl(props.getProperty("geth-url"));
         result.setActiveKeystore(props.getProperty("ethereum-credentials-file-name"));
         result.setKeystorePassword(props.getProperty("ethereum-password"));
@@ -62,6 +63,7 @@ public class AccountabilityConfigurationResource {
         @FormDataParam("keystorePassword") String keystorePassword,
         @FormDataParam("authorizationSmartContractAddress") String authorizationSmartContractAddress,
         @FormDataParam("provenanceSmartContractAddress") String provenanceSmartContractAddress,
+        @FormDataParam("permissionsSmartContractAddress") String permissionsSmartContractAddress,
         @FormDataParam("swarmGatewayUrl") String swarmGatewayUrl
     ) {
         AccountabilityConfigurationManager manager = RepositoryFactory.getRepository().getAccountabilityConfigurationManager();
@@ -74,6 +76,7 @@ public class AccountabilityConfigurationResource {
             Properties props = manager.properties;
             props.setProperty("ethereum-authorization-smart-contract-address", authorizationSmartContractAddress);
             props.setProperty("ethereum-provenance-smart-contract-address", provenanceSmartContractAddress);
+            props.setProperty("ethereum-permissions-smart-contract-address", permissionsSmartContractAddress);
             props.setProperty("geth-url", blockchainNodeUrl);
             props.setProperty("ethereum-password", keystorePassword);
             props.setProperty("swarm-gateway-url", swarmGatewayUrl);
@@ -91,7 +94,7 @@ public class AccountabilityConfigurationResource {
         try {
             final Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
             final String address = AccountabilityManagerFactory.getAccountabilityManager(props).deployAuthorizationSmartContract().get();
-            
+
             return Response.ok(address).build();
         } catch (AccountabilityException | InterruptedException | ExecutionException e) {
             return Response.serverError().entity(e.getMessage()).build();
@@ -104,6 +107,19 @@ public class AccountabilityConfigurationResource {
         try {
             final Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
             final String address = AccountabilityManagerFactory.getAccountabilityManager(props).deployProvenanceSmartContract().get();
+
+            return Response.ok(address).build();
+        } catch (AccountabilityException | InterruptedException | ExecutionException e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/permissionsSC")
+    public Response deployPermissionsSmartContract() {
+        try {
+            final Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
+            final String address = AccountabilityManagerFactory.getAccountabilityManager(props).deployPermissionsSmartContract().get();
 
             return Response.ok(address).build();
         } catch (AccountabilityException | InterruptedException | ExecutionException e) {

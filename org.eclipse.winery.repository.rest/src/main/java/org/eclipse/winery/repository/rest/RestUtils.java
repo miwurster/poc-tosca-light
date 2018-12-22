@@ -103,7 +103,6 @@ import org.eclipse.winery.repository.rest.resources.entitytemplates.artifacttemp
 import org.eclipse.winery.repository.rest.resources.entitytemplates.artifacttemplates.ArtifactTemplatesResource;
 import org.eclipse.winery.repository.rest.resources.entitytemplates.policytemplates.PolicyTemplateResource;
 import org.eclipse.winery.repository.rest.resources.entitytemplates.policytemplates.PolicyTemplatesResource;
-import org.eclipse.winery.repository.rest.resources.entitytypes.TopologyGraphElementEntityTypeResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
@@ -240,11 +239,13 @@ public class RestUtils {
                 if (options.isSecure()) {
                     exportConfiguration.add(CsarExportConfiguration.APPLY_SECURITY_POLICIES);
                 }
+
                 if (options.isAddToProvenance()) {
                     exportConfiguration.add(CsarExportConfiguration.STORE_FINGERPRINT_IN_ACCOUNTABILITY);
                     exportConfiguration.add(CsarExportConfiguration.INCLUDE_HASHES);
                     exportConfiguration.add(CsarExportConfiguration.STORE_IMMUTABLY);
                 }
+                
                 exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
                 LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
             } catch (Exception e) {
@@ -252,6 +253,7 @@ public class RestUtils {
                 throw new WebApplicationException(e);
             }
         };
+
         String contentDisposition = String.format("attachment;filename=\"%s%s\"",
             resource.getXmlId().getEncoded(),
             Constants.SUFFIX_CSAR);

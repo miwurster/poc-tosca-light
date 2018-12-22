@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Authorization;
+import org.eclipse.winery.accountability.blockchain.ethereum.generated.Permissions;
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Provenance;
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.exceptions.EthereumException;
@@ -28,7 +29,7 @@ import org.web3j.protocol.Web3j;
 import org.web3j.tx.Contract;
 import org.web3j.tx.gas.DefaultGasProvider;
 
-class SmartContractProvider {
+public class SmartContractProvider {
 
     private static final Logger log = LoggerFactory.getLogger(EthereumAccessLayer.class);
 
@@ -67,5 +68,15 @@ class SmartContractProvider {
 
     static CompletableFuture<Authorization> deployAuthorizationSmartContract(final Web3j web3j, final Credentials credentials) {
         return Authorization.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync();
+    }
+    
+    static Permissions buildPermissionsSmartContract(final Web3j web3j, final Credentials credentials, String smartContractAddress) throws EthereumException {
+        Permissions contract = Permissions.load(smartContractAddress, web3j, credentials, new DefaultGasProvider());
+        validateSmartContract(contract, smartContractAddress);
+        return contract;
+    }
+
+    static CompletableFuture<Permissions> deployPermissionsSmartContract(final Web3j web3j, final Credentials credentials) {
+        return Permissions.deploy(web3j, credentials, new DefaultGasProvider()).sendAsync();
     }
 }

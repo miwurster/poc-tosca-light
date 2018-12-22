@@ -36,4 +36,13 @@ public enum SymmetricEncryptionAlgorithmEnum {
     public int getkeySizeInBits() {
         return this.keySizeInBits;
     }
+
+    public static SymmetricEncryptionAlgorithmEnum findKey(String algorithm, int keySizeInBits) {
+        for (SymmetricEncryptionAlgorithmEnum current : values()) {
+            if (current.getName().equalsIgnoreCase(algorithm) && current.getkeySizeInBits() == keySizeInBits)
+                return current;
+        }
+        
+        throw new IllegalArgumentException("The specified algorithm and keysize are not supported!");
+    }
 }

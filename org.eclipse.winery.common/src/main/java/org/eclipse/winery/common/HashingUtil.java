@@ -55,6 +55,13 @@ public class HashingUtil {
     }
 
     public static String getChecksum(InputStream content, String algorithm) throws IOException, NoSuchAlgorithmException {
+        byte[] result = getChecksumAsBytes(content, algorithm);
+
+        return new BigInteger(1, result)
+            .toString(16);
+    }
+    
+    public static byte[] getChecksumAsBytes(InputStream content, String algorithm) throws NoSuchAlgorithmException, IOException {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
 
         // buffer with a size of 1MB
@@ -64,8 +71,7 @@ public class HashingUtil {
         while ((bufferLength = content.read(buffer)) != -1) {
             digest.update(buffer, 0, bufferLength);
         }
-
-        return new BigInteger(1, digest.digest())
-            .toString(16);
+        
+        return  digest.digest();
     }
 }

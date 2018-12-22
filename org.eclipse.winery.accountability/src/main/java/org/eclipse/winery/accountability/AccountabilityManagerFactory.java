@@ -24,6 +24,7 @@ import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.storage.ImmutableStorageProvider;
 import org.eclipse.winery.accountability.storage.ImmutableStorageProviderFactory;
 
+import de.danielbechler.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class AccountabilityManagerFactory {
         if (Objects.isNull(accountabilityManager) || requiresRecreation) {
             BlockchainFactory.reset();
             ImmutableStorageProviderFactory.reset();
-            
+
             // if there is an older accountability manager, we should shut it down
             if (!Objects.isNull(accountabilityManager)) {
                 accountabilityManager.close();
@@ -58,22 +59,33 @@ public class AccountabilityManagerFactory {
                 LOGGER.error(msg, e);
                 throw new AccountabilityException(msg, e);
             }
-            
         }
 
         return accountabilityManager;
     }
-    
+
     private static boolean checkIfChanged(Properties accountabilityConfiguration) {
-        return !(accountabilityConfiguration.getProperty("geth-url").equalsIgnoreCase(activeProperties.getProperty("geth-url")) &&
-            accountabilityConfiguration.getProperty("swarm-gateway-url").equals(activeProperties.getProperty("swarm-gateway-url")) &&
-            accountabilityConfiguration.getProperty("ethereum-credentials-file-path").equals(activeProperties.getProperty("ethereum-credentials-file-path")) &&
-            accountabilityConfiguration.getProperty("ethereum-credentials-file-name").equals(activeProperties.getProperty("ethereum-credentials-file-name")) &&
-            accountabilityConfiguration.getProperty("ethereum-password").equals(activeProperties.getProperty("ethereum-password")) &&
-            accountabilityConfiguration.getProperty("ethereum-provenance-smart-contract-address").equalsIgnoreCase(activeProperties.getProperty("ethereum-provenance-smart-contract-address")) &&
-            accountabilityConfiguration.getProperty("ethereum-authorization-smart-contract-address").equalsIgnoreCase(activeProperties.getProperty("ethereum-authorization-smart-contract-address")));
+        return isPropChanged(accountabilityConfiguration, "geth-url", true) ||
+            isPropChanged(accountabilityConfiguration, "swarm-gateway-url", false) ||
+            isPropChanged(accountabilityConfiguration, "ethereum-credentials-file-path", false) ||
+            isPropChanged(accountabilityConfiguration, "ethereum-credentials-file-name", false) ||
+            isPropChanged(accountabilityConfiguration, "ethereum-password", false) ||
+            isPropChanged(accountabilityConfiguration, "ethereum-provenance-smart-contract-address", true) ||
+            isPropChanged(accountabilityConfiguration, "ethereum-authorization-smart-contract-address", true) ||
+            isPropChanged(accountabilityConfiguration, "ethereum-permissions-smart-contract-address", true);
     }
-    
+
+    private static boolean isPropChanged(Properties newProps, String name, boolean ignoreCase) {
+        if (Strings.hasText(newProps.getProperty(name)))
+            if (ignoreCase)
+                return newProps.getProperty(name).equalsIgnoreCase(activeProperties.getProperty(name));
+            else
+                return newProps.getProperty(name).equals(activeProperties.getProperty(name));
+
+        // we are here if new property is empty
+        return Strings.isEmpty(activeProperties.getProperty(name));
+    }
+
     private static void copyProperties(Properties accountabilityConfiguration) {
         activeProperties = new Properties();
         accountabilityConfiguration.stringPropertyNames().forEach(name -> activeProperties.setProperty(name, accountabilityConfiguration.getProperty(name)));

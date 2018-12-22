@@ -14,9 +14,16 @@
 
 package org.eclipse.winery.accountability.blockchain;
 
+import java.security.InvalidKeyException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import javax.crypto.SecretKey;
+
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
 
@@ -52,6 +59,21 @@ public class MockedTestAccessLayer implements BlockchainAccess {
 
     @Override
     public CompletableFuture<String> deployProvenanceSmartContract() {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<String> deployPermissionsSmartContract() {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, BlockchainException {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) throws BlockchainException {
         return null;
     }
 

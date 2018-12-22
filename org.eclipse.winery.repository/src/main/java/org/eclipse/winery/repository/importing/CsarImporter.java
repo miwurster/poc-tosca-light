@@ -57,6 +57,7 @@ import javax.xml.bind.Unmarshaller;
 import org.eclipse.winery.accountability.AccountabilityManager;
 import org.eclipse.winery.accountability.AccountabilityManagerFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.ProvenanceVerification;
 import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.common.RepositoryFileReference;
@@ -170,7 +171,7 @@ public class CsarImporter {
      * @param options the set of options applicable for importing the csar
      */
     public ImportMetaInformation readCSAR(InputStream in, CsarImportOptions options)
-        throws IOException, AccountabilityException, ExecutionException, InterruptedException {
+        throws IOException, AccountabilityException, ExecutionException, InterruptedException, BlockchainException {
         // we have to extract the file to a temporary directory as
         // the .definitions file does not necessarily have to be the first entry in the archive
         Path csarDir = Files.createTempDirectory("winery");
@@ -193,11 +194,11 @@ public class CsarImporter {
             }
 
             return this.importFromDir(csarDir, options, fileMap);
-        } catch (AccountabilityException e) {
-            LOGGER.debug("Error while checking the accountability of the CSAR");
+        } catch (AccountabilityException | BlockchainException e) {
+            LOGGER.debug("Error while checking the accountability of the CSAR", e);
             throw e;
         } catch (IOException e) {
-            CsarImporter.LOGGER.debug("Could not import CSAR", e);
+            LOGGER.debug("Could not import CSAR", e);
             throw e;
         } finally {
             // cleanup: delete all contents of the temporary directory
@@ -213,7 +214,7 @@ public class CsarImporter {
      * @param fileMap Contains all files which were extracted from the CSAR and have to be validated using the accountability layer
      */
     private ImportMetaInformation importFromDir(final Path path, CsarImportOptions options,
-                                                Map<String, File> fileMap) throws IOException, AccountabilityException, ExecutionException, InterruptedException {
+                                                Map<String, File> fileMap) throws IOException, AccountabilityException, ExecutionException, InterruptedException, BlockchainException {
         final ImportMetaInformation importMetaInformation = new ImportMetaInformation();
         Path toscaMetaPath = path.resolve(TOSCAMetaFileAttributes.LOCATION_IN_CSAR);
 
@@ -359,7 +360,7 @@ public class CsarImporter {
     }
 
     private boolean isValid(ImportMetaInformation metaInformation, Map<String, File> fileMap)
-        throws ExecutionException, InterruptedException, AccountabilityException {
+        throws ExecutionException, InterruptedException, AccountabilityException, BlockchainException {
         ServiceTemplateId entryServiceTemplate = metaInformation.entryServiceTemplate;
         metaInformation.verificationMap = new HashMap<>();
 

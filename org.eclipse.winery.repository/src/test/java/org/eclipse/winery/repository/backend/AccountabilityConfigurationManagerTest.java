@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AccountabilityConfigurationManagerTest {
     private static final String APPLICATION_CONFIGURATION_FILE = "test/appConfig.properties";
@@ -70,8 +71,8 @@ class AccountabilityConfigurationManagerTest {
         this.manager.properties.setProperty("geth-url", "http://mytesturl.com:5555");
         this.manager.properties.setProperty("ethereum-password", "mypassword");
         this.manager.saveProperties();
-        assertEquals(true, appConfigFile.exists());
-        assertEquals(true, defaultKeystoreFile.exists());
+        assertTrue(appConfigFile.exists());
+        assertTrue(defaultKeystoreFile.exists());
         Properties fromFile = new Properties();
 
         try (InputStream stream = new FileInputStream(appConfigFile)) {

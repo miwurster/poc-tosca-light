@@ -38,6 +38,7 @@ import javax.xml.namespace.QName;
 import org.eclipse.winery.accountability.AccountabilityManager;
 import org.eclipse.winery.accountability.AccountabilityManagerFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.FileProvenanceElement;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
@@ -87,8 +88,8 @@ public class AccountabilityResource {
                 .getHistory(qNameWithComponentVersionOnly, fileIdDecoded)
                 .exceptionally(error -> null)
                 .get();
-        } catch (InterruptedException | ExecutionException | AccountabilityException e) {
-            LOGGER.error("Cannot history of file {}. Reason: {}", fileId, e.getMessage());
+        } catch (InterruptedException | ExecutionException | AccountabilityException | BlockchainException e) {
+            LOGGER.error("Cannot get history of file {}. Reason: {}", fileId, e.getMessage());
             throw createException(e);
         }
     }
@@ -108,7 +109,7 @@ public class AccountabilityResource {
                     return null;
                 })
                 .get();
-        } catch (InterruptedException | ExecutionException | AccountabilityException e) {
+        } catch (InterruptedException | ExecutionException | AccountabilityException | BlockchainException e) {
             LOGGER.error("Cannot get history of model. Reason: {}", e.getMessage());
             throw createException(e);
         }
@@ -124,7 +125,7 @@ public class AccountabilityResource {
                 .getAuthorization(provenanceId)
                 .exceptionally(error -> null)
                 .get();
-        } catch (InterruptedException | ExecutionException | AccountabilityException e) {
+        } catch (InterruptedException | ExecutionException | AccountabilityException | BlockchainException e) {
             LOGGER.error("Cannot authenticate participant {}. Reason: {}", participantAddress, e.getMessage());
             throw createException(e);
         }
@@ -147,7 +148,7 @@ public class AccountabilityResource {
                 .authorize(Util.URLdecode(Util.URLdecode(provenanceId)), participant.getAddress(), participant.getIdentity())
                 .exceptionally(error -> null)
                 .get();
-        } catch (InterruptedException | ExecutionException | AccountabilityException e) {
+        } catch (InterruptedException | ExecutionException | AccountabilityException | BlockchainException e) {
             LOGGER.error("Cannot authorize participant {}. Reason: {}", participant.getAddress(), e.getMessage());
             throw createException(e);
         }

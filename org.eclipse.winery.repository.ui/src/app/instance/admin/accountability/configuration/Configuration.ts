@@ -24,6 +24,7 @@ export class Configuration extends ConfigurationDTO {
         this.keystorePassword = dto.keystorePassword;
         this.authorizationSmartContractAddress = dto.authorizationSmartContractAddress;
         this.provenanceSmartContractAddress = dto.provenanceSmartContractAddress;
+        this.permissionsSmartContractAddress = dto.permissionsSmartContractAddress;
         this.swarmGatewayUrl = dto.swarmGatewayUrl;
     }
 
@@ -35,6 +36,7 @@ export class Configuration extends ConfigurationDTO {
         dto.authorizationSmartContractAddress = this.authorizationSmartContractAddress;
         dto.provenanceSmartContractAddress = this.provenanceSmartContractAddress;
         dto.swarmGatewayUrl = this.swarmGatewayUrl;
+        dto.permissionsSmartContractAddress = this.permissionsSmartContractAddress;
 
         return dto;
     }

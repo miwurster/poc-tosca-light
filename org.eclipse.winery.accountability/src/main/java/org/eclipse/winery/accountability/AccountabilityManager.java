@@ -15,10 +15,16 @@ package org.eclipse.winery.accountability;
 
 import java.io.File;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import javax.crypto.SecretKey;
+
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.FileProvenanceElement;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.ProvenanceVerification;
@@ -35,7 +41,7 @@ public interface AccountabilityManager {
      * @param manifestId        The identifier of the manifest file inside the given files map
      * @param files             The map of {@link TOSCAMetaFileAttributes} NAME attributes identifying the file inside the manifest pointing to the
      */
-    CompletableFuture<Map<String, ProvenanceVerification>> verify(String processIdentifier, String manifestId, Map<String, File> files);
+    CompletableFuture<Map<String, ProvenanceVerification>> verify(String processIdentifier, String manifestId, Map<String, File> files) throws BlockchainException;
 
     /**
      * Stores the given manifest file in as the fingerprint of the current state for the given process id.
@@ -43,7 +49,7 @@ public interface AccountabilityManager {
      * @param processIdentifier Identifies the provenance object .
      * @param fingerprint       The manifest file as a string describing the current state of the provenance object.
      */
-    CompletableFuture<String> storeFingerprint(String processIdentifier, String fingerprint);
+    CompletableFuture<String> storeFingerprint(String processIdentifier, String fingerprint) throws BlockchainException;
 
     /**
      * Stores the given files in the immutable storage. Files that have been stored before are not stored again, and
@@ -77,7 +83,7 @@ public interface AccountabilityManager {
      *
      * @param processIdentifier Identifies of the collaboration process
      */
-    CompletableFuture<List<ModelProvenanceElement>> getHistory(String processIdentifier);
+    CompletableFuture<List<ModelProvenanceElement>> getHistory(String processIdentifier) throws BlockchainException;
 
     /**
      * Retrieves the history of a specific file inside the given provenance object.
@@ -85,7 +91,7 @@ public interface AccountabilityManager {
      * @param processIdentifier Identifies of the collaboration process
      * @param fileId            The {@link TOSCAMetaFileAttributes} NAME attribute of the file inside the manifest.
      */
-    CompletableFuture<List<FileProvenanceElement>> getHistory(String processIdentifier, String fileId);
+    CompletableFuture<List<FileProvenanceElement>> getHistory(String processIdentifier, String fileId) throws BlockchainException;
 
     /**
      * Authorizes a new participant for the given collaboration process.
@@ -95,7 +101,7 @@ public interface AccountabilityManager {
      * @param authorizedIdentity        the real-world-identity of the participant we want to authorize - e.g., his name
      * @return a completable future that, when completed, returns the transaction hash that contains the authorization information.
      */
-    CompletableFuture<String> authorize(String processIdentifier, String authorizedEthereumAddress, String authorizedIdentity);
+    CompletableFuture<String> authorize(String processIdentifier, String authorizedEthereumAddress, String authorizedIdentity) throws BlockchainException;
 
     /**
      * Gets the authorization tree of a given process which allows various querying capabilities.
@@ -103,7 +109,7 @@ public interface AccountabilityManager {
      * @param processIdentifier the identifier of the collaboration process
      * @return a completable future that, when completed, returns the authorization tree.
      */
-    CompletableFuture<AuthorizationInfo> getAuthorization(String processIdentifier);
+    CompletableFuture<AuthorizationInfo> getAuthorization(String processIdentifier) throws BlockchainException;
 
     /**
      * Deploys the Authorization smart contract to the active blockchain network
@@ -118,7 +124,34 @@ public interface AccountabilityManager {
      * @return a completable future that, when completed, returns the address of the contract.
      */
     CompletableFuture<String> deployProvenanceSmartContract();
-    
+
+    /**
+     * Deploys the permissions smart contract to the active blockchain network
+     *
+     * @return a completable future that, when completed, returns the address of the contract.
+     */
+    CompletableFuture<String> deployPermissionsSmartContract();
+
+    /**
+     * Sets the permissions given from the active user to a certain address.
+     *
+     * @param takerAddress   the address to set the permissions for.
+     * @param takerPublicKey the public key of the receiver (used to encrypt the set of the given permissions).
+     * @param permissions    the set secret keys (permissions) to give.
+     * @return a completable future the finishes when the transaction to set the permissions succeeds.
+     * @throws InvalidKeyException if encrypting the permissions fails due to invalid public key format.
+     */
+    CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, BlockchainException;
+
+    /**
+     * Gets the set of permissions given to the active user.
+     *
+     * @param myPrivateKey The private key to decrypt the set of permissions given to the current user.
+     * @return a completable future that, when completed, returns a map of the giver addresses associated
+     * to the set of permissions they have given to the active user.
+     */
+    CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) throws BlockchainException;
+
     /**
      * Releases resources attached to this instance.
      */
