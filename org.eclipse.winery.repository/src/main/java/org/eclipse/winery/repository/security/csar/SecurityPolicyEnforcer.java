@@ -15,13 +15,14 @@
 package org.eclipse.winery.repository.security.csar;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap;
+import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -33,10 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 
-import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.constants.MimeTypes;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
@@ -61,7 +59,6 @@ import org.eclipse.winery.model.tosca.TPolicyTemplate;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.model.tosca.constants.QNames;
-import org.eclipse.winery.repository.JAXBSupport;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
@@ -78,29 +75,31 @@ import org.eclipse.winery.repository.export.entries.BytesBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.CsarEntry;
 import org.eclipse.winery.repository.export.entries.DefinitionsBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.StringBasedCsarEntry;
-import org.eclipse.winery.security.BCSecurityProcessor;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
 import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import org.apache.commons.io.Charsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SecurityPolicyEnforcer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SecurityPolicyEnforcer.class);
     private SecurityProcessor securityProcessor;
     private KeystoreManager keystoreManager;
-    private String digestAlgorithm;
+    private DigestAlgorithmEnum digestAlgorithm;
     private IRepository repository;
     private Map<MetaFileEntry, CsarEntry> addedReferences;
     private Map<String, DefinitionsChildId> addedIdsForImports;
     private Map<RepositoryFileReference, String> encryptedFilesDigests;
 
-    public SecurityPolicyEnforcer(IRepository repository, String digestAlgorithm) {
-        this.securityProcessor = new BCSecurityProcessor();
+    public SecurityPolicyEnforcer(IRepository repository, String digestAlgorithm) throws IllegalArgumentException {
+        this.securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
         this.keystoreManager = KeystoreManagerFactory.getInstance();
         this.repository = repository;
-        this.digestAlgorithm = digestAlgorithm;
+        this.digestAlgorithm = DigestAlgorithmEnum.findByName(digestAlgorithm);
         this.addedReferences = new HashMap<>();
         this.addedIdsForImports = new HashMap<>();
         this.encryptedFilesDigests = new HashMap<>();
@@ -280,7 +279,7 @@ public class SecurityPolicyEnforcer {
                     Key encryptionKey = this.keystoreManager.loadKey(keyAlias);
                     for (String p : propertyNamesForEncryption) {
                         assert nodeTemplateKVProperties != null;
-                        byte[] encValue = this.securityProcessor.encryptBytes(encryptionKey, nodeTemplateKVProperties.get(p).getBytes(Charsets.UTF_8));
+                        byte[] encValue = this.securityProcessor.getSymmetricEncryptionAlgorithm().encryptBytes(encryptionKey, nodeTemplateKVProperties.get(p).getBytes(Charsets.UTF_8));
                         nodeTemplateKVProperties.replace(p, Base64.getEncoder().encodeToString(encValue));
                         numPropsSecured++;
                     }
@@ -289,8 +288,8 @@ public class SecurityPolicyEnforcer {
                         encTypeLevelPolicy.setIsApplied(true);
                         addPolicyToNodeTemplate(nodeTemplate, encTypeLevelPolicy);
                     }
-                } catch (GenericKeystoreManagerException | GenericSecurityProcessorException e) {
-                    e.printStackTrace();
+                } catch (GenericKeystoreManagerException | InvalidKeyException e) {
+                    LOGGER.error(e.getMessage(), e);
                 }
             } else {
                 // properties were not set or do not match
@@ -318,7 +317,7 @@ public class SecurityPolicyEnforcer {
             boolean propertiesAreValid = verifyPropertiesCorrespondence(nodeTemplateKVProperties, propertyNamesForSigning);
             if (propertiesAreValid) {
                 try {
-                    Key signingKey = this.keystoreManager.loadKey(keyAlias);
+                    PrivateKey signingKey = (PrivateKey) this.keystoreManager.loadKey(keyAlias);
 
                     // Generate Atempl and add it to referencedDefinitionsChildIds so that it's exported
                     String signatureATName = generateSignatureArtifactTemplateName(nodeTemplate.getId(), signPropsPolicyTemplate.getName());
@@ -355,7 +354,7 @@ public class SecurityPolicyEnforcer {
                     if (Objects.isNull(nodeTemplate.getDeploymentArtifacts())) {
                         nodeTemplate.setDeploymentArtifacts(new TDeploymentArtifacts());
                     }
-                    
+
                     String daName = SecureCSARConstants.DA_PREFIX.concat(signTypeLevelPropsPolicy.getName());
                     TDeploymentArtifact propsSignatureDA = new TDeploymentArtifact
                         .Builder(daName, QNames.WINERY_SIGNATURE_ARTIFACT_TYPE)
@@ -369,8 +368,8 @@ public class SecurityPolicyEnforcer {
 
                     this.addedIdsForImports.put(sigArtifactTypeId.getQName().toString(), sigArtifactTypeId);
                     this.addedIdsForImports.put(sigATemplateId.getQName().toString(), sigATemplateId);
-                } catch (GenericKeystoreManagerException | GenericSecurityProcessorException e) {
-                    e.printStackTrace();
+                } catch (GenericKeystoreManagerException | SignatureException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+                    LOGGER.error(e.getMessage(), e);
                 }
             } else {
                 // properties were not set or do not match
@@ -388,8 +387,8 @@ public class SecurityPolicyEnforcer {
         addedReferences.put(manifestEntry, new StringBasedCsarEntry(manifestContent));
     }
 
-    private String generatePropsManifestSignature(ArtifactTemplateId sigATempId, TArtifactTemplate sigATemp, String manifestContent, Map<String, String> propertiesDigests, Map<String, String> plainDigests) throws GenericSecurityProcessorException {
-        String manifestDigest = this.securityProcessor.calculateDigest(manifestContent.getBytes(), this.digestAlgorithm);
+    private String generatePropsManifestSignature(ArtifactTemplateId sigATempId, TArtifactTemplate sigATemp, String manifestContent, Map<String, String> propertiesDigests, Map<String, String> plainDigests) throws IOException, NoSuchAlgorithmException {
+        String manifestDigest = this.securityProcessor.getChecksumForString(manifestContent, this.digestAlgorithm);
         String sigPropManifestContent = generateSignedPropertiesSignatureFile(manifestDigest, propertiesDigests, plainDigests);
         String sigPropManifestName = generatePropertiesSignatureFileName(sigATemp.getId());
         String sigPropSigFilePath = BackendUtils.addFileRefToArtifactTemplate(sigATempId, sigATemp, sigPropManifestName);
@@ -400,8 +399,8 @@ public class SecurityPolicyEnforcer {
         return sigPropManifestContent;
     }
 
-    private void generatePropsBlockSignature(ArtifactTemplateId sigATempId, TArtifactTemplate sigATemp, String propManifestSigContent, Key signingKey) throws GenericSecurityProcessorException {
-        byte[] blockSigFileContent = this.securityProcessor.signBytes(signingKey, propManifestSigContent.getBytes());
+    private void generatePropsBlockSignature(ArtifactTemplateId sigATempId, TArtifactTemplate sigATemp, String propManifestSigContent, PrivateKey signingKey) throws SignatureException, InvalidKeyException {
+        byte[] blockSigFileContent = this.securityProcessor.getSignatureAlgorithm().signBytes(propManifestSigContent.getBytes(), signingKey);
         String blockSigFileName = sigATemp.getId().concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
         String blockSigFilePath = BackendUtils.addFileRefToArtifactTemplate(sigATempId, sigATemp, blockSigFileName);
 
@@ -425,7 +424,7 @@ public class SecurityPolicyEnforcer {
                 if (Objects.nonNull(refs) && refs.getArtifactReference().size() > 0) {
                     String signingKeyAlias = signingPolicy.getPolicyRef().getLocalPart();
                     try {
-                        Key signingKey = this.keystoreManager.loadKey(signingKeyAlias);
+                        PrivateKey signingKey = (PrivateKey) this.keystoreManager.loadKey(signingKeyAlias);
                         signFilesOfArtifactTemplate(aTempId, artifactTemplate, signingKey, files, SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN);
 
                         if (Objects.nonNull(encPolicy) && !encPolicy.getIsApplied()) {
@@ -455,7 +454,7 @@ public class SecurityPolicyEnforcer {
         }
     }
 
-    private void signFilesOfArtifactTemplate(ArtifactTemplateId tcId, TArtifactTemplate artifactTemplate, Key signingKey, Set<RepositoryFileReference> files, String mode) {
+    private void signFilesOfArtifactTemplate(ArtifactTemplateId tcId, TArtifactTemplate artifactTemplate, PrivateKey signingKey, Set<RepositoryFileReference> files, String mode) {
         try {
             for (RepositoryFileReference fileRef : files) {
                 if (!fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) || !fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED)) {
@@ -464,13 +463,13 @@ public class SecurityPolicyEnforcer {
                     String fileHash;
 
                     if (mode.equals(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN)) {
-                        fileHash = HashingUtil.getHashForFile(((FilebasedRepository) repository).ref2AbsolutePath(fileRef).toString(), TOSCAMetaFileAttributes.HASH);
+                        fileHash = securityProcessor.getChecksumForFile(((FilebasedRepository) repository).ref2AbsolutePath(fileRef).toString(), digestAlgorithm);
                     } else {
                         fileHash = encryptedFilesDigests.get(fileRef);
                     }
 
                     if (Objects.nonNull(fileHash)) {
-                        blockSignatureFileContent = this.securityProcessor.signBytes(signingKey, fileHash.getBytes());
+                        blockSignatureFileContent = this.securityProcessor.getSignatureAlgorithm().signBytes(fileHash.getBytes(), signingKey);
                         // generate signature block file                
                         String blockSignatureFileName = fileRef.getFileName().concat(mode).concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
                         blockSignatureFilePath = BackendUtils.addFileRefToArtifactTemplate(tcId, artifactTemplate, blockSignatureFileName);
@@ -484,8 +483,8 @@ public class SecurityPolicyEnforcer {
                 }
             }
             artifactTemplate.getSigningPolicy().setIsApplied(true);
-        } catch (GenericSecurityProcessorException e) {
-            e.printStackTrace();
+        } catch (SignatureException | InvalidKeyException e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
@@ -495,29 +494,30 @@ public class SecurityPolicyEnforcer {
                 if (!fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) || !fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED)) {
                     Path absolutePath = ((FilebasedRepository) repository).ref2AbsolutePath(fileRef);
                     byte[] fileBytes = Files.readAllBytes(absolutePath);
-                    byte[] encryptedFileBytes = this.securityProcessor.encryptBytes(encryptionKey, fileBytes);
+                    byte[] encryptedFileBytes = this.securityProcessor.getSymmetricEncryptionAlgorithm().encryptBytes(encryptionKey, fileBytes);
 
                     String pathInRepo = BackendUtils.getPathInsideRepo(fileRef);
 
                     MetaFileEntry blockSigEntry = new MetaFileEntry(pathInRepo, MimeTypes.MIMETYPE_OCTET_STREAM);
                     addedReferences.put(blockSigEntry, new BytesBasedCsarEntry(encryptedFileBytes));
-                    encryptedFilesDigests.put(fileRef, HashingUtil.getChecksum(new ByteArrayInputStream(encryptedFileBytes), TOSCAMetaFileAttributes.HASH));
+                    encryptedFilesDigests.put(fileRef, securityProcessor.getChecksum(new ByteArrayInputStream(encryptedFileBytes), digestAlgorithm));
                 }
             }
             artifactTemplate.getEncryptionPolicy().setIsApplied(true);
-        } catch (IOException | GenericSecurityProcessorException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
     public static Response decryptFilesOfArtifactTemplate(TArtifactTemplate artifactTemplate, Key secretKey, Set<RepositoryFileReference> files) {
         try {
-            SecurityProcessor securityProcessor = new BCSecurityProcessor();
+            SecurityProcessor securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
+            ;
             for (RepositoryFileReference fileRef : files) {
                 if (!(fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) || fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED))) {
                     Path absolutePath = ((FilebasedRepository) RepositoryFactory.getRepository()).ref2AbsolutePath(fileRef);
                     byte[] fileBytes = Files.readAllBytes(absolutePath);
-                    byte[] decrypted = securityProcessor.decryptBytes(secretKey, fileBytes);
+                    byte[] decrypted = securityProcessor.getSymmetricEncryptionAlgorithm().decryptBytes(secretKey, fileBytes);
                     Files.write(absolutePath, decrypted);
                 }
             }
@@ -525,8 +525,8 @@ public class SecurityPolicyEnforcer {
             return Response.ok()
                 .entity("Artifact Template files were successfully decrypted")
                 .build();
-        } catch (IOException | GenericSecurityProcessorException e) {
-            e.printStackTrace();
+        } catch (IOException | InvalidKeyException e) {
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError()
                 .entity(e.getMessage())
                 .build();
@@ -538,10 +538,10 @@ public class SecurityPolicyEnforcer {
         String digest;
         for (String p : propertyNames) {
             try {
-                digest = this.securityProcessor.calculateDigest(artifactTemplateKVProperties.get(p), this.digestAlgorithm);
+                digest = this.securityProcessor.getChecksumForString(artifactTemplateKVProperties.get(p), this.digestAlgorithm);
                 propDigests.put(p, digest);
-            } catch (GenericSecurityProcessorException e) {
-                e.printStackTrace();
+            } catch (IOException | NoSuchAlgorithmException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
         return propDigests;
@@ -565,13 +565,13 @@ public class SecurityPolicyEnforcer {
             ToscaMetaEntry entry;
             if (Objects.nonNull(overlappingPropsDigestsBeforeEncryption) && overlappingPropsDigestsBeforeEncryption.containsKey(p)) {
                 entry = new ToscaMetaEntry.Builder(p)
-                    .digestAlgorithm(digestAlgorithm)
+                    .digestAlgorithm(digestAlgorithm.getName())
                     .digestValue(overlappingPropsDigestsBeforeEncryption.get(p))
                     .digestOfEncryptedProperty(propertiesDigestsAfterEncryption.get(p))
                     .build();
             } else {
                 entry = new ToscaMetaEntry.Builder(p)
-                    .digestAlgorithm(digestAlgorithm)
+                    .digestAlgorithm(digestAlgorithm.getName())
                     .digestValue(propertiesDigestsAfterEncryption.get(p))
                     .build();
             }
@@ -585,7 +585,7 @@ public class SecurityPolicyEnforcer {
         StringBuilder sb = new StringBuilder();
         ToscaMetaFirstBlockEntry firstBlock = new ToscaMetaFirstBlockEntry
             .Builder(TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION, TOSCAMetaFileAttributes.TOSCA_PROPSSIGNATURE_VERSION_VALUE)
-            .digestAlgorithm(this.digestAlgorithm)
+            .digestAlgorithm(this.digestAlgorithm.getName())
             .digestManifest(manifestDigest)
             .createdBy(TOSCAMetaFileAttributes.CREATED_BY)
             .creatorName(TOSCAMetaFileAttributes.CREATOR_NAME)
@@ -599,23 +599,23 @@ public class SecurityPolicyEnforcer {
             ToscaMetaEntry entry;
             try {
                 if (Objects.nonNull(overlappingPropsDigestsBeforeEncryption) && overlappingPropsDigestsBeforeEncryption.containsKey(p)) {
-                    digest = this.securityProcessor.calculateDigest(propsDigests.get(p), this.digestAlgorithm);
-                    String digestEncrypted = this.securityProcessor.calculateDigest(overlappingPropsDigestsBeforeEncryption.get(p), this.digestAlgorithm);
+                    digest = this.securityProcessor.getChecksumForString(propsDigests.get(p), this.digestAlgorithm);
+                    String digestEncrypted = this.securityProcessor.getChecksumForString(overlappingPropsDigestsBeforeEncryption.get(p), this.digestAlgorithm);
                     entry = new ToscaMetaEntry.Builder(p)
-                        .digestAlgorithm(digestAlgorithm)
+                        .digestAlgorithm(digestAlgorithm.getName())
                         .digestValue(digest)
                         .digestOfEncryptedProperty(digestEncrypted)
                         .build();
                 } else {
-                    digest = this.securityProcessor.calculateDigest(propsDigests.get(p), this.digestAlgorithm);
+                    digest = this.securityProcessor.getChecksumForString(propsDigests.get(p), this.digestAlgorithm);
                     entry = new ToscaMetaEntry.Builder(p)
-                        .digestAlgorithm(digestAlgorithm)
+                        .digestAlgorithm(digestAlgorithm.getName())
                         .digestValue(digest)
                         .build();
                 }
                 sb.append(entry.toString());
-            } catch (GenericSecurityProcessorException e) {
-                e.printStackTrace();
+            } catch (IOException | NoSuchAlgorithmException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
 
@@ -649,20 +649,6 @@ public class SecurityPolicyEnforcer {
 
     private String generatePropertiesSignatureFileName(String fileName) {
         return fileName.concat(SecureCSARConstants.ARTIFACT_SIGNPROP_SF_EXTENSION);
-    }
-
-    public Map.Entry<String, String> calculateDefinitionDigest(Definitions entryDefinitions, DefinitionsChildId tcId) {
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            Marshaller m = JAXBSupport.createMarshaller(true);
-            m.marshal(entryDefinitions, byteArrayOutputStream);
-            String checksum = securityProcessor.calculateDigest(byteArrayOutputStream.toByteArray(), this.digestAlgorithm);
-            String defName = CsarExporter.getDefinitionsPathInsideCSAR(repository, tcId);
-            return new AbstractMap.SimpleEntry<>(defName, checksum);
-        } catch (GenericSecurityProcessorException | JAXBException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private class EntitySecurityState {

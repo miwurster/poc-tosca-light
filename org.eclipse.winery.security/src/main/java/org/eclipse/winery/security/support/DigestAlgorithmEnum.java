@@ -25,5 +25,14 @@ public enum DigestAlgorithmEnum {
         this.name = name;
     }
     
-    String getName() { return this.name; }
+    public String getName() { return this.name; }
+    
+    public static DigestAlgorithmEnum findByName(String name) throws IllegalArgumentException {
+        for(DigestAlgorithmEnum current : values()) {
+            if (current.name.equalsIgnoreCase(name))
+                return current;
+        }
+        
+        throw new IllegalArgumentException("The specified digest algorithm is not supported: " + name);
+    }
 }

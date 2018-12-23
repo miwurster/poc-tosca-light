@@ -14,47 +14,59 @@
 
 package org.eclipse.winery.security;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.security.Key;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 
 import javax.crypto.SecretKey;
 
+import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
+import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithm;
 import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
 
+/**
+ * Provides access to cryptographic primitives (symmetric and asymmetric encryption, key generation and certificate 
+ * generation, signing and verification of signatures, and calculation of message digests.
+ * Use the SecurityProcessorFactory to get an instance of this type.
+ */
 public interface SecurityProcessor {
 
-    SecretKey generateSecretKey(String algorithm, int keySize) throws GenericSecurityProcessorException;
+    SecretKey generateSecretKey(SymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException;
 
-    KeyPair generateKeyPair(String algorithm, int keySize) throws GenericSecurityProcessorException;
+    KeyPair generateKeyPair(AsymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException;
 
-    Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException;
+    SecretKey getSecretKeyFromInputStream(SymmetricEncryptionAlgorithmEnum algorithm, InputStream secretKeyInputStream) throws GenericSecurityProcessorException;
 
-    SecretKey getSecretKeyFromInputStream(String algorithm, InputStream secretKeyInputStream) throws GenericSecurityProcessorException;
+    PrivateKey getPKCS8PrivateKeyFromInputStream(AsymmetricEncryptionAlgorithmEnum algorithm, InputStream privateKeyInputStream) throws GenericSecurityProcessorException;
 
-    PrivateKey getPKCS8PrivateKeyFromInputStream(String algorithm, InputStream privateKeyInputStream) throws GenericSecurityProcessorException;
-
-    PublicKey getX509EncodedPublicKeyFromInputStream(String algorithm, InputStream publicKeyInputStream) throws GenericSecurityProcessorException;
+    PublicKey getX509EncodedPublicKeyFromInputStream(AsymmetricEncryptionAlgorithmEnum algorithm, InputStream publicKeyInputStream) throws GenericSecurityProcessorException;
 
     Certificate[] getX509Certificates(InputStream certInputStream) throws GenericSecurityProcessorException;
 
-    byte[] encryptBytes(Key k, byte[] sequence) throws GenericSecurityProcessorException;
+    Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException;
 
-    byte[] decryptBytes(Key k, byte[] sequence) throws GenericSecurityProcessorException;
+    EncryptionAlgorithm getSymmetricEncryptionAlgorithm();
+    
+    EncryptionAlgorithm getAsymmetricEncryptionAlgorithm();
+    
+    SignatureAlgorithm getSignatureAlgorithm();
 
-    String calculateDigest(String str, String digestAlgorithm) throws GenericSecurityProcessorException;
+    String getChecksumForFile(String absolutePath, DigestAlgorithmEnum algorithm);
 
-    String calculateDigest(byte[] bytes, String digestAlgorithm) throws GenericSecurityProcessorException;
+    String getChecksumForFile(File file, DigestAlgorithmEnum algorithm) throws IOException, NoSuchAlgorithmException;
 
-    byte[] signText(Key privateKey, String text) throws GenericSecurityProcessorException;
+    String getChecksumForString(String str, DigestAlgorithmEnum algorithm) throws IOException, NoSuchAlgorithmException;
 
-    byte[] signBytes(Key privateKey, byte[] text) throws GenericSecurityProcessorException;
+    String getChecksum(InputStream content, DigestAlgorithmEnum algorithm) throws IOException, NoSuchAlgorithmException;
 
-    boolean verifyText(Certificate cert, String text, byte[] signature) throws GenericSecurityProcessorException;
-
-    boolean verifyBytes(Certificate cert, byte[] text, byte[] signature) throws GenericSecurityProcessorException;
+    byte[] getChecksumAsBytes(InputStream content, DigestAlgorithmEnum algorithm) throws NoSuchAlgorithmException, IOException;
 }

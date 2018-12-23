@@ -14,7 +14,10 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Objects;
@@ -64,7 +67,7 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
         try {
             Certificate[] cert = this.securityProcessor.getX509Certificates(certificate);
             if (Objects.nonNull(cert) && cert.length > 0) {
-                String alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithmEnum.SHA256.name());
+                String alias = securityProcessor.getChecksum(new ByteArrayInputStream(cert[0].getPublicKey().getEncoded()), DigestAlgorithmEnum.SHA256);
                 this.checkAliasInsertEligibility(alias);
 
                 this.keystoreManager.storeCertificate(alias, cert[0]);
@@ -77,7 +80,7 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
                         .build()
                 );
             }
-        } catch (GenericKeystoreManagerException | GenericSecurityProcessorException e) {
+        } catch (GenericKeystoreManagerException | GenericSecurityProcessorException | IOException | NoSuchAlgorithmException e) {
             throw new WebApplicationException(
                 Response.serverError()
                     .entity(e.getMessage())

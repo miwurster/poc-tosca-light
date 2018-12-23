@@ -40,8 +40,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KeyManagementHelper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KeyManagementHelper.class);
+public class KeyGenerationHelper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KeyGenerationHelper.class);
     
     public static SecretKey generateSecretKey(String algorithm, int keySize) throws GenericSecurityProcessorException {
         try {
@@ -114,8 +114,7 @@ public class KeyManagementHelper {
     public static PublicKey getX509EncodedPublicKeyFromInputStream(String algorithm, InputStream publicKeyInputStream) throws GenericSecurityProcessorException {
         try {
             KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
-            byte[] publicKeyByteArray = new byte[0];
-            publicKeyByteArray = IOUtils.toByteArray(publicKeyInputStream);
+            byte[] publicKeyByteArray = IOUtils.toByteArray(publicKeyInputStream);
             X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyByteArray);
             return keyFactory.generatePublic(publicKeySpec);
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {

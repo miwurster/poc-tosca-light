@@ -7,7 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.eclipse.winery.common.HashingUtil;
+import org.eclipse.winery.security.support.DigestHelper;
 import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
 
 import org.apache.commons.io.IOUtils;
@@ -56,7 +56,7 @@ class SecretKeyEncoderTest {
         if (algorithm.getkeySizeInBits() > 512)
             throw new IllegalArgumentException("key size not supported by this test!");
 
-        byte[] hash = HashingUtil.getChecksumAsBytes(IOUtils.toInputStream(passphrase, Charset.defaultCharset()), "SHA-512");
+        byte[] hash = DigestHelper.getChecksumAsBytes(IOUtils.toInputStream(passphrase, Charset.defaultCharset()), "SHA-512");
         byte[] keyBytes = new byte[algorithm.getkeySizeInBits() / 8];
         System.arraycopy(hash, 0, keyBytes, 0, keyBytes.length);
 
@@ -64,7 +64,7 @@ class SecretKeyEncoderTest {
     }
 
     private boolean verifyKey(SecretKey key, String passphrase) throws IOException, NoSuchAlgorithmException {
-        byte[] hash = HashingUtil.getChecksumAsBytes(IOUtils.toInputStream(passphrase, Charset.defaultCharset()), "SHA-512");
+        byte[] hash = DigestHelper.getChecksumAsBytes(IOUtils.toInputStream(passphrase, Charset.defaultCharset()), "SHA-512");
         byte[] keyBytes = key.getEncoded();
 
         for (int i = 0; i < keyBytes.length; i++) {

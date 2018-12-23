@@ -28,7 +28,9 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +61,6 @@ import org.eclipse.winery.accountability.AccountabilityManagerFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.model.ProvenanceVerification;
-import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.XmlId;
@@ -123,11 +124,11 @@ import org.eclipse.winery.repository.datatypes.ids.elements.VisualAppearanceId;
 import org.eclipse.winery.repository.export.CsarExporter;
 import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
-import org.eclipse.winery.security.BCSecurityProcessor;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -300,7 +301,8 @@ public class CsarImporter {
 
     private void verifyExternalSignature(final Path path, ImportMetaInformation importMetaInformation, TOSCAMetaFile tmf) throws IOException, NoSuchAlgorithmException {
         KeystoreManager km = KeystoreManagerFactory.getInstance();
-        SecurityProcessor sp = new BCSecurityProcessor();
+        SecurityProcessor sp = SecurityProcessorFactory.getDefaultSecurityProcessor();
+        DigestAlgorithmEnum digestAlgorithm = DigestAlgorithmEnum.findByName(TOSCAMetaFileAttributes.HASH);
         TOSCAMetaFileParser tmfp = new TOSCAMetaFileParser();
         TOSCAMetaFile signatureFile;
 
@@ -315,12 +317,12 @@ public class CsarImporter {
                 // return importMetaInformation;
             }
 
-            String sigFileToscaMetaHash = HashingUtil.getHashForFile(sigFileToscaMetaPath.toString(), TOSCAMetaFileAttributes.HASH);
+            String sigFileToscaMetaHash = sp.getChecksumForFile(sigFileToscaMetaPath.toString(), digestAlgorithm);
             byte[] sigBlockFileToscaMeta = Files.readAllBytes(sigBlockFileToscaMetaPath);
             Certificate c = km.storeCertificate(SecureCSARConstants.MASTER_IMPORT_CERT_NAME, fis);
             boolean isSFSignatureCorrect = false;
             if (Objects.nonNull(sigFileToscaMetaHash)) {
-                isSFSignatureCorrect = sp.verifyBytes(c, sigFileToscaMetaHash.getBytes(), sigBlockFileToscaMeta);
+                isSFSignatureCorrect = sp.getSignatureAlgorithm().verifyBytes(sigFileToscaMetaHash.getBytes(), sigBlockFileToscaMeta, c.getPublicKey());
             }
             // Verify the signature file
             if (!isSFSignatureCorrect) {
@@ -334,7 +336,7 @@ public class CsarImporter {
                 String manifestDigest = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.HASH);
                 String digest;
                 try (InputStream is = Files.newInputStream(toscaMetaPath)) {
-                    digest = HashingUtil.getChecksum(is, TOSCAMetaFileAttributes.HASH);
+                    digest = sp.getChecksum(is, digestAlgorithm);
                 }
                 if (!manifestDigest.equals(digest)) {
                     importMetaInformation.errors.add("Corrupt external signature: TOSCAMetFile is invalid");
@@ -345,7 +347,7 @@ public class CsarImporter {
                         Path p = path.resolve(fileBlock.get(TOSCAMetaFileAttributes.NAME));
                         String fileDigest;
                         try (InputStream is = Files.newInputStream(p)) {
-                            fileDigest = HashingUtil.getChecksum(is, TOSCAMetaFileAttributes.HASH);
+                            fileDigest = sp.getChecksum(is, digestAlgorithm);
                         }
                         if (!fileBlock.get(TOSCAMetaFileAttributes.HASH).equals(fileDigest)) {
                             importMetaInformation.errors.add("Corrupt external signature: the content of CSAR is invalid");
@@ -354,8 +356,8 @@ public class CsarImporter {
                     }
                 }
             }
-        } catch (GenericKeystoreManagerException | GenericSecurityProcessorException e) {
-            e.printStackTrace();
+        } catch (GenericKeystoreManagerException | InvalidKeyException | SignatureException e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
@@ -701,22 +703,23 @@ public class CsarImporter {
                     sigFilePath = csarRoot.resolve(sigFile);
 
                     if (Files.exists(artifactFilePath) && Files.exists(sigFilePath)) {
-                        SecurityProcessor sp = new BCSecurityProcessor();
+                        SecurityProcessor sp = SecurityProcessorFactory.getDefaultSecurityProcessor();
+                        DigestAlgorithmEnum digestAlgorithm = DigestAlgorithmEnum.findByName(TOSCAMetaFileAttributes.HASH);
                         Certificate c = loadPolicyCertificate(signPolicy, csarRoot);
                         if (Objects.nonNull(c)) {
                             try {
-                                String artifactFileBytesHash = HashingUtil.getHashForFile(artifactFilePath.toString(), TOSCAMetaFileAttributes.HASH);
+                                String artifactFileBytesHash = sp.getChecksumForFile(artifactFilePath.toString(), digestAlgorithm);
                                 byte[] sigFileBytes = Files.readAllBytes(sigFilePath);
                                 boolean isSFSignatureCorrect = false;
                                 if (Objects.nonNull(artifactFileBytesHash)) {
                                     // Verify signature block file
-                                    isSFSignatureCorrect = sp.verifyBytes(c, artifactFileBytesHash.getBytes(), sigFileBytes);
+                                    isSFSignatureCorrect = sp.getSignatureAlgorithm().verifyBytes(artifactFileBytesHash.getBytes(), sigFileBytes, c.getPublicKey());
                                 }
                                 if (!isSFSignatureCorrect) {
                                     errors.add("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());
                                     LOGGER.error("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());
                                 }
-                            } catch (GenericSecurityProcessorException e1) {
+                            } catch (InvalidKeyException | SignatureException e1) {
                                 e1.printStackTrace();
                                 errors.add(e1.getMessage());
                             }
@@ -736,6 +739,7 @@ public class CsarImporter {
     }
 
     private List<String> verifyPropertySignatures(Path defsPath, TDefinitions defs, List<String> errors) throws IOException {
+        DigestAlgorithmEnum digestAlgorithm;
         for (TExtensibleElements e : defs.getServiceTemplateOrNodeTypeOrNodeTypeImplementation()) {
             if (e instanceof TServiceTemplate) {
                 Path csarRoot = defsPath.getParent().getParent();
@@ -807,7 +811,7 @@ public class CsarImporter {
                                 return errors;
                             }
 
-                            SecurityProcessor sp = new BCSecurityProcessor();
+                            SecurityProcessor sp = SecurityProcessorFactory.getDefaultSecurityProcessor();
                             TOSCAMetaFileParser tmfp = new TOSCAMetaFileParser();
                             Certificate c = loadPolicyCertificate(typeSignPolicy, csarRoot);
                             if (Objects.isNull(c)) {
@@ -824,7 +828,7 @@ public class CsarImporter {
                                 byte[] sigBlockFileToscaMeta = Files.readAllBytes(sigBlockFilePath);
 
                                 // Verify signature block file
-                                boolean isSFSignatureCorrect = sp.verifyBytes(c, sigFileToscaMeta, sigBlockFileToscaMeta);
+                                boolean isSFSignatureCorrect = sp.getSignatureAlgorithm().verifyBytes(sigFileToscaMeta, sigBlockFileToscaMeta, c.getPublicKey());
                                 if (!isSFSignatureCorrect) {
                                     errors.add("Corrupt properties signature file for entity: " + nTempl.getName());
                                     LOGGER.error("Corrupt properties signature file for entity: " + nTempl.getName());
@@ -832,12 +836,11 @@ public class CsarImporter {
                                     // Parse signature file to perform comparison with original meta
                                     signatureFile = tmfp.parse(sigFilePath);
                                     String manifestDigestAlgorithm = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.DIGEST_ALGORITHM);
-
+                                    digestAlgorithm = DigestAlgorithmEnum.findByName(manifestDigestAlgorithm);
                                     // Validate TOSCAMetaFile against its digest in SignatureFile 
                                     String manifestDigest = signatureFile.getBlock0().get(TOSCAMetaFileAttributes.DIGEST_MANIFEST);
-                                    byte[] propsMetaFileBytes = Files.readAllBytes(propsMetaPath);
                                     String digest;
-                                    digest = sp.calculateDigest(propsMetaFileBytes, manifestDigestAlgorithm);
+                                    digest = sp.getChecksumForFile(propsMetaPath.toFile(), digestAlgorithm);
                                     if (!manifestDigest.equals(digest)) {
                                         errors.add("Corrupt properties manifest file for entity: " + nTempl.getName());
                                         LOGGER.error("Corrupt properties manifest file for entity: " + nTempl.getName());
@@ -853,7 +856,8 @@ public class CsarImporter {
                                                 String propName = fileBlock.get(TOSCAMetaFileAttributes.NAME);
                                                 String nodeTemplatePropertyValue = ntprops.get(propName);
                                                 String fileDigestAlgorithm = fileBlock.get(TOSCAMetaFileAttributes.DIGEST_ALGORITHM);
-                                                String propDigest = sp.calculateDigest(nodeTemplatePropertyValue.getBytes(), fileDigestAlgorithm);
+                                                digestAlgorithm = DigestAlgorithmEnum.findByName(fileDigestAlgorithm);
+                                                String propDigest = sp.getChecksumForString(nodeTemplatePropertyValue, digestAlgorithm);
                                                 if (!encPropNames.isEmpty() && encPropNames.contains(propName)) {
                                                     if (!fileBlock.get(TOSCAMetaFileAttributes.DIGEST_PROP_ENCRYPTED).equals(propDigest)) {
                                                         errors.add("Corrupt encrypted property (propname=" + propName + ") digest for entity: " + nTempl.getName());
@@ -869,8 +873,8 @@ public class CsarImporter {
                                         }
                                     }
                                 }
-                            } catch (GenericSecurityProcessorException e1) {
-                                e1.printStackTrace();
+                            } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException e1) {
+                                LOGGER.error(e1.getMessage(), e);
                                 errors.add(e1.getMessage());
                             }
                         }

@@ -31,9 +31,9 @@ import org.eclipse.winery.common.ids.admin.KeystoreId;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.repository.rest.resources.admin.AbstractAdminResource;
 import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
-import org.eclipse.winery.security.BCSecurityProcessor;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
 import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
@@ -61,7 +61,7 @@ public class KeyStoreAdminResource extends AbstractAdminResource {
                     .build()
             );
         }
-        securityProcessor = new BCSecurityProcessor(this.configuration);
+        securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
     }
 
     @ApiOperation(value = "Gets the list of entities in the keystore",

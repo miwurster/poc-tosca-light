@@ -22,8 +22,10 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Key;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -40,7 +42,6 @@ import org.eclipse.winery.accountability.AccountabilityManager;
 import org.eclipse.winery.accountability.AccountabilityManagerFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
-import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.constants.MimeTypes;
@@ -76,11 +77,11 @@ import org.eclipse.winery.repository.export.entries.StringBasedCsarEntry;
 import org.eclipse.winery.repository.security.csar.KeystoreManagerFactory;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
 import org.eclipse.winery.repository.security.csar.SecurityPolicyEnforcer;
-import org.eclipse.winery.security.BCSecurityProcessor;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import de.danielbechler.util.Strings;
 import org.apache.commons.io.IOUtils;
@@ -178,7 +179,7 @@ public class CsarExporter {
         if (exportConfiguration.contains(APPLY_SECURITY_POLICIES)) {
             try {
                 this.generateSecuredManifest(refMap, metaFileEntry);
-            } catch (GenericSecurityProcessorException | GenericKeystoreManagerException | NoSuchAlgorithmException e) {
+            } catch (GenericKeystoreManagerException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
                 LOGGER.error("Specified digest algorithm is not found. Message: {}", e.getMessage());
             }
         }
@@ -237,10 +238,12 @@ public class CsarExporter {
         return metaFileEntry;
     }
 
-    private void generateSecuredManifest(Map<MetaFileEntry, CsarEntry> refMap, MetaFileEntry manifest) throws IOException, NoSuchAlgorithmException, GenericKeystoreManagerException, GenericSecurityProcessorException {
+    private void generateSecuredManifest(Map<MetaFileEntry, CsarEntry> refMap, MetaFileEntry manifest) throws IOException, NoSuchAlgorithmException, GenericKeystoreManagerException, SignatureException, InvalidKeyException {
+        SecurityProcessor sp = SecurityProcessorFactory.getDefaultSecurityProcessor();
+        DigestAlgorithmEnum digestAlgorithm = DigestAlgorithmEnum.findByName(HASH);
         StringBuilder builder = new StringBuilder();
         StringBasedCsarEntry manifestEntry = (StringBasedCsarEntry) refMap.get(manifest);
-        String manifestDigest = HashingUtil.getChecksum(manifestEntry.getInputStream(), HASH);
+        String manifestDigest = sp.getChecksum(manifestEntry.getInputStream(), digestAlgorithm);
 
         ToscaMetaFirstBlockEntry firstBlock = new ToscaMetaFirstBlockEntry.Builder(TOSCA_SIGNATURE_VERSION, TOSCA_SIGNATURE_VERSION_VALUE)
             .createdBy(CREATED_BY)
@@ -255,8 +258,7 @@ public class CsarExporter {
                 builder.append(
                     new ToscaMetaEntry.Builder(m.getPathInsideCsar())
                         .contentType(m.getMimeType())
-                        // todo why are we hashing the hash?
-                        .digestValueUsingDefaultAlgorithm(HashingUtil.getChecksum(m.getFileHash(), HASH))
+                        .digestValueUsingDefaultAlgorithm(sp.getChecksumForString(m.getFileHash(), digestAlgorithm))
                         .build()
                         .toString()
                 );
@@ -268,14 +270,14 @@ public class CsarExporter {
         refMap.put(metaFileEntry, new StringBasedCsarEntry(builder.toString()));
 
         // add ToscaMetaFile's signature block file and certificate
-        SecurityProcessor securityProcessor = new BCSecurityProcessor();
+        SecurityProcessor securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
         KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
-        Key signingKey = keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
+        PrivateKey signingKey = (PrivateKey) keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
         // TODO: notify a user if no master key is set
         if (Objects.nonNull(signingKey)) {
             // todo here hashing is not necessary as signing does it already
-            String blockSignatureFileHash = HashingUtil.getChecksum(builder.toString(), HASH);
-            byte[] blockSignatureFileContent = securityProcessor.signBytes(signingKey, blockSignatureFileHash.getBytes());
+            String blockSignatureFileHash = sp.getChecksumForString(builder.toString(), digestAlgorithm);
+            byte[] blockSignatureFileContent = securityProcessor.getSignatureAlgorithm().signBytes(blockSignatureFileHash.getBytes(), signingKey);
             MetaFileEntry blockSignatureFileEntry = new MetaFileEntry(TOSCA_META_SIGN_BLOCK_FILE_PATH, MimeTypes.MIMETYPE_OCTET_STREAM);
             refMap.put(blockSignatureFileEntry, new BytesBasedCsarEntry(blockSignatureFileContent));
 
@@ -323,9 +325,12 @@ public class CsarExporter {
     }
 
     private void calculateFileHashes(Map<MetaFileEntry, CsarEntry> files) {
+        SecurityProcessor sp = SecurityProcessorFactory.getDefaultSecurityProcessor();
+        DigestAlgorithmEnum digestAlgorithm = DigestAlgorithmEnum.findByName(HASH);
+
         files.forEach((properties, entry) -> {
             try (InputStream is = entry.getInputStream()) {
-                properties.setFileHash(HashingUtil.getChecksum(is, HASH));
+                properties.setFileHash(sp.getChecksum(is, digestAlgorithm));
             } catch (IOException | NoSuchAlgorithmException e) {
                 LOGGER.error("Failed to calculate hash for {}. Reason: {}.", properties.getPathInsideCsar(), e.getMessage());
             }

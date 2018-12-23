@@ -13,7 +13,7 @@
  *******************************************************************************/
 
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/index';
+import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { backendBaseURL } from '../../../../configuration';
 import { AddKeypairData, AddSecretKeyData } from './keystoreEntity.component';
@@ -87,20 +87,23 @@ export class KeystoreEntityService {
     }
 
     addKeypair(data: AddKeypairData) {
-        const keysPath = this.path + '/keypairs';
-        // TODO build DN string
-        const dn = 'CN=' + data.commonName + ','
-            + 'O=' + data.organizationName + ','
-            + 'C=' + data.countryName;
-
         const formData: FormData = new FormData();
+        const keysPath = this.path + '/keypairs';
+
+        if (data.commonName !== null && data.commonName !== undefined) {
+            const dn = 'CN=' + data.commonName + ','
+                + 'O=' + data.organizationName + ','
+                + 'C=' + data.countryName;
+            formData.append('dn', dn);
+        }
+
         formData.append('algo', data.algorithm);
         formData.append('keySize', data.keySizeInBits);
-        formData.append('dn', dn);
-        if (data.privateKeyFile  !== null && data.privateKeyFile !== undefined) {
+
+        if (data.privateKeyFile !== null && data.privateKeyFile !== undefined) {
             formData.append('privateKeyFile', data.privateKeyFile, data.privateKeyFile.name);
         }
-        if (data.certificateFile  !== null && data.certificateFile !== undefined) {
+        if (data.certificateFile !== null && data.certificateFile !== undefined) {
             formData.append('certificate', data.certificateFile, data.certificateFile.name);
         }
 

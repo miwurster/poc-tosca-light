@@ -27,7 +27,7 @@ import javax.crypto.SecretKey;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Permissions;
 import org.eclipse.winery.accountability.blockchain.util.SecretKeyEncoder;
-import org.eclipse.winery.security.algorithm.encryption.ECIESAlgorithm;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -47,7 +47,7 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
     }
 
     public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException {
-        ECIESAlgorithm algorithm = new ECIESAlgorithm();
+        EncryptionAlgorithm algorithm = SecurityProcessorFactory.getDefaultSecurityProcessor().getAsymmetricEncryptionAlgorithm();
         byte[] encryptedKeys = algorithm.encryptBytes(takerPublicKey, SecretKeyEncoder.encode(permissions));
         return ((Permissions) contract)
             .setPermission(takerAddress, encryptedKeys)

@@ -1,4 +1,4 @@
-/*******************************************************************************
+/********************************************************************************
  * Copyright (c) 2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-package org.eclipse.winery.common;
+package org.eclipse.winery.security.support;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,32 +25,32 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HashingUtil {
+public class DigestHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HashingUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DigestHelper.class);
 
-    public static String getHashForFile(String absolutePath, String algorithm) {
+    public static String getChecksumForFile(String absolutePath, String algorithm) {
         try {
             File file = new File(absolutePath);
-            return getChecksum(file, algorithm);
+            return getChecksumForFile(file, algorithm);
         } catch (NoSuchAlgorithmException e) {
-            HashingUtil.LOGGER.error("Could not instantiate hash algorithm.", e);
+            LOGGER.error("Could not instantiate hash algorithm.", e);
         } catch (IOException e) {
-            HashingUtil.LOGGER.error("Could not get the specified file for hashing.", e);
+            LOGGER.error("Could not get the specified file for hashing.", e);
         } catch (Exception e) {
-            HashingUtil.LOGGER.info("Could not create hash for file <" + absolutePath + ">");
+            LOGGER.info("Could not create hash for file <" + absolutePath + ">");
         }
 
         return null;
     }
 
-    public static String getChecksum(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
+    public static String getChecksumForFile(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             return getChecksum(fileInputStream, algorithm);
         }
     }
 
-    public static String getChecksum(String str, String algorithm) throws IOException, NoSuchAlgorithmException {
+    public static String getChecksumForString(String str, String algorithm) throws IOException, NoSuchAlgorithmException {
         return getChecksum(IOUtils.toInputStream(str), algorithm);
     }
 
@@ -66,7 +66,7 @@ public class HashingUtil {
 
         // buffer with a size of 1MB
         byte[] buffer = new byte[1048576];
-        int bufferLength = 0;
+        int bufferLength;
 
         while ((bufferLength = content.read(buffer)) != -1) {
             digest.update(buffer, 0, bufferLength);

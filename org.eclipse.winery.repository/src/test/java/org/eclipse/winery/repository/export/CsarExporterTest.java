@@ -25,13 +25,15 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
 import org.eclipse.winery.repository.TestWithGitBackedRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.SecurityProcessorFactory;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.virgo.util.parser.manifest.ManifestContents;
@@ -144,6 +146,8 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
 
     @Test
     public void testHashesForEachFile() throws Exception {
+        SecurityProcessor sp = SecurityProcessorFactory.getDefaultSecurityProcessor();
+        DigestAlgorithmEnum digestAlgorithm = DigestAlgorithmEnum.findByName(TOSCAMetaFileAttributes.HASH);
         EnumSet<CsarExportConfiguration> exportConfiguration = EnumSet.of(INCLUDE_HASHES);
 
         try (InputStream inputStream = this.createOutputAndInputStream(
@@ -161,7 +165,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
                 elementsList.add(fileProperties);
                 byte[] array = IOUtils.toByteArray(zis);
                 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(array);
-                fileProperties.setFileHash(HashingUtil.getChecksum(byteArrayInputStream, TOSCAMetaFileAttributes.HASH));
+                fileProperties.setFileHash(sp.getChecksum(byteArrayInputStream, digestAlgorithm));
 
                 if ("TOSCA-Metadata/TOSCA.meta".equals(fileProperties.getPathInsideCsar())) {
                     String s = new String(array, StandardCharsets.UTF_8);
@@ -215,7 +219,7 @@ public class CsarExporterTest extends TestWithGitBackedRepository {
         CsarExporter exporter = new CsarExporter();
         DefinitionsChildId id = new ServiceTemplateId("http://plain.winery.opentosca.org/servicetemplates", "ServiceTemplateWithAllReqCapVariants", false);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        EnumSet<CsarExportConfiguration> exportConfiguration = 
+        EnumSet<CsarExportConfiguration> exportConfiguration =
             EnumSet.of(STORE_IMMUTABLY, STORE_FINGERPRINT_IN_ACCOUNTABILITY, INCLUDE_HASHES);
         exporter.writeCsar(RepositoryFactory.getRepository(), id, os, exportConfiguration);
 

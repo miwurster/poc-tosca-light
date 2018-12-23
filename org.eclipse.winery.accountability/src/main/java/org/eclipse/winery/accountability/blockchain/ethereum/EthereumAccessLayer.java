@@ -30,7 +30,7 @@ import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.exceptions.EthereumException;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
-import org.eclipse.winery.security.algorithm.encryption.ECIESAlgorithm;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 
 import de.danielbechler.util.Strings;
 import org.slf4j.Logger;
@@ -71,7 +71,7 @@ public class EthereumAccessLayer implements BlockchainAccess {
         if (Strings.hasText(permissionsSmartContractAddress)) {
             permissionsContract = new PermissionsSmartContractWrapper(web3j,
                 SmartContractProvider.buildPermissionsSmartContract(web3j, this.credentials, permissionsSmartContractAddress),
-                new ECIESAlgorithm());
+                SecurityProcessorFactory.getDefaultSecurityProcessor().getAsymmetricEncryptionAlgorithm());
         }
     }
 
@@ -169,7 +169,7 @@ public class EthereumAccessLayer implements BlockchainAccess {
 
         return this.permissionsContract.getMyPermissions(myPrivateKey);
     }
-    
+
     @Override
     public void close() {
         if (this.web3j != null)

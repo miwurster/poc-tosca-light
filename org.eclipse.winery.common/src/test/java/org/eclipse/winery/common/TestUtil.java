@@ -13,9 +13,6 @@
  *******************************************************************************/
 package org.eclipse.winery.common;
 
-import java.io.File;
-
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -52,17 +49,5 @@ public class TestUtil {
         assertEquals("NCName", Util.makeNCName("NCName"));
     }
 
-    @Test
-    public void testGetChecksum() throws Exception {
-        String text = "my super content of any file which will be hashed using a SHA-256 hash.";
-        assertEquals("c0af55785d21197a9fe4c5e9435fa77bb763f386810909e97f646eba7c827df7",
-            HashingUtil.getChecksum(IOUtils.toInputStream(text), "SHA-256"));
-    }
-
-    @Test
-    public void testGetChecksumOfFile() throws Exception {
-        File file = new File(ClassLoader.getSystemClassLoader().getResource("org/eclipse/winery/common/invalid.xml").getFile());
-        assertEquals("4406bff97249955ef46ea3ae590f9813fd44dcd769b8204cbb702ee6767173b0",
-            HashingUtil.getChecksum(file, "SHA-256"));
-    }
+    
 }

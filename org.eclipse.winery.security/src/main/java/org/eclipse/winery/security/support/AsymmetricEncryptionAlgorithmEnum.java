@@ -46,4 +46,13 @@ public enum AsymmetricEncryptionAlgorithmEnum {
     public AlgorithmParameterSpec getAlgorithmParameterSpec() {
         return  this.spec;
     }
+    
+    public static AsymmetricEncryptionAlgorithmEnum findAnyByName(String name) throws IllegalArgumentException {
+        for (AsymmetricEncryptionAlgorithmEnum current : values()) {
+            if (current.name.equalsIgnoreCase(name))
+                return current;
+        }
+        
+        throw new IllegalArgumentException("Asymmetric algorithm not supported: " + name);
+    }
 }

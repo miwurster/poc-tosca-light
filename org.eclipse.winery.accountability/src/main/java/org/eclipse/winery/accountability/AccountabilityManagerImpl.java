@@ -17,7 +17,6 @@ package org.eclipse.winery.accountability;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -41,12 +40,13 @@ import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.ProvenanceVerification;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
 import org.eclipse.winery.accountability.storage.ImmutableStorageProvider;
-import org.eclipse.winery.common.HashingUtil;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFile;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileParser;
+import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.SecurityProcessorFactory;
+import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationException;
 import org.eclipse.virgo.util.parser.manifest.ManifestContents;
 import org.eclipse.virgo.util.parser.manifest.RecoveringManifestParser;
@@ -301,12 +301,14 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
         LOGGER.info("Start validating manifest file...");
         ModelProvenanceElement validHistoryElement = null;
         ProvenanceVerification manifestVerification = INVALID;
+        SecurityProcessor securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
+        DigestAlgorithmEnum digestAlgorithm = DigestAlgorithmEnum.findByName(TOSCAMetaFileAttributes.HASH);
 
         if (Objects.nonNull(historyElements) && historyElements.size() > 0) {
             File manifestFile = files.remove(manifestId);
-            String checksum = HashingUtil.getChecksum(manifestFile, TOSCAMetaFileAttributes.HASH);
+            String checksum = securityProcessor.getChecksumForFile(manifestFile, digestAlgorithm);
             for (ModelProvenanceElement element : historyElements) {
-                String retrievedChecksum = HashingUtil.getChecksum(IOUtils.toInputStream(element.getFingerprint(), StandardCharsets.UTF_8), TOSCAMetaFileAttributes.HASH);
+                String retrievedChecksum = securityProcessor.getChecksumForString(element.getFingerprint(), digestAlgorithm);
                 if (retrievedChecksum.compareTo(checksum) == 0) {
                     validHistoryElement = element;
                     manifestVerification = authorizationInfo.isAuthorized(validHistoryElement.getAuthorAddress())
@@ -328,10 +330,13 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     void verifyFiles(ModelProvenanceElement validHistoryElement, Map<String, File> files, Map<String, ProvenanceVerification> verificationMap)
         throws SerializationException, IOException, NoSuchAlgorithmException {
         LOGGER.info("Start validating files...");
+        SecurityProcessor securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
+        DigestAlgorithmEnum digestAlgorithm = DigestAlgorithmEnum.findByName(TOSCAMetaFileAttributes.HASH);
+
         for (Map.Entry<String, File> entry : files.entrySet()) {
             String fileId = entry.getKey();
             LOGGER.info("Validating \"" + fileId + "\"");
-            String checksum = HashingUtil.getChecksum(entry.getValue(), TOSCAMetaFileAttributes.HASH);
+            String checksum = securityProcessor.getChecksumForFile(entry.getValue(), digestAlgorithm);
             ProvenanceVerification verified = verifyFileInManifest(validHistoryElement, fileId, checksum);
 
             verificationMap.put(entry.getKey(), verified);

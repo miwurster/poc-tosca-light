@@ -14,9 +14,12 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.Collection;
@@ -35,13 +38,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
+import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.datatypes.KeyPairInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
 import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import com.sun.jersey.multipart.FormDataParam;
@@ -82,23 +86,25 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
 
             if (this.parametersAreNonNull(algorithm, distinguishedName)) {
                 DistinguishedName dn = new DistinguishedName(distinguishedName);
-                KeyPair keypair = this.securityProcessor.generateKeyPair(algorithm, keySize);
+                KeyPair keypair = this.securityProcessor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.findAnyByName(algorithm), keySize);
                 if (Objects.nonNull(setMasterKey)) {
                     alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
                 } else {
-                    alias = securityProcessor.calculateDigest(keypair.getPublic().getEncoded(), DigestAlgorithmEnum.SHA256.name());
+                    alias = securityProcessor.getChecksum(new ByteArrayInputStream(keypair.getPublic().getEncoded()),
+                        DigestAlgorithmEnum.SHA256);
                     this.checkAliasInsertEligibility(alias);
                 }
                 Certificate selfSignedCert = this.securityProcessor.generateSelfSignedX509Certificate(keypair, dn);
                 entity = this.keystoreManager.storeKeyPair(alias, keypair.getPrivate(), selfSignedCert);
             } else if (this.parametersAreNonNull(privateKeyInputStream, certificatesInputStream)) {
-                PrivateKey privateKey = this.securityProcessor.getPKCS8PrivateKeyFromInputStream(algorithm, privateKeyInputStream);
+                PrivateKey privateKey = this.securityProcessor.getPKCS8PrivateKeyFromInputStream(AsymmetricEncryptionAlgorithmEnum.findAnyByName(algorithm), privateKeyInputStream);
                 Certificate[] cert = this.securityProcessor.getX509Certificates(certificatesInputStream);
                 if (Objects.nonNull(cert) && cert.length > 0) {
                     if (Objects.nonNull(setMasterKey)) {
                         alias = SecureCSARConstants.MASTER_SIGNING_KEYNAME;
                     } else {
-                        alias = securityProcessor.calculateDigest(cert[0].getPublicKey().getEncoded(), DigestAlgorithmEnum.SHA256.name());
+                        alias = securityProcessor.getChecksum(new ByteArrayInputStream(cert[0].getPublicKey().getEncoded()),
+                            DigestAlgorithmEnum.SHA256);
                         this.checkAliasInsertEligibility(alias);
                     }
                     entity = this.keystoreManager.storeKeyPair(alias, privateKey, cert[0]);
@@ -121,9 +127,7 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
 
             URI uri = uriInfo.getAbsolutePathBuilder().path(alias).build();
             return Response.created(uri).entity(entity).build();
-        } catch (WebApplicationException e) {
-            throw e;
-        } catch (GenericSecurityProcessorException | GenericKeystoreManagerException e) {
+        } catch (GenericSecurityProcessorException | GenericKeystoreManagerException | IllegalArgumentException | IOException | NoSuchAlgorithmException e) {
             throw new WebApplicationException(
                 Response.status(Response.Status.BAD_REQUEST)
                     .entity(e.getMessage())

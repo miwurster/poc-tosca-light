@@ -14,9 +14,12 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -39,6 +42,7 @@ import org.eclipse.winery.security.datatypes.KeyEntityInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
 import org.eclipse.winery.security.support.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
 
 import com.sun.jersey.multipart.FormDataParam;
 import io.swagger.annotations.ApiOperation;
@@ -68,11 +72,11 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
             if (this.parametersAreNonNull(algo)) {
                 Key key;
                 if (Objects.isNull(uploadedSecretKey)) {
-                    key = securityProcessor.generateSecretKey(algo, keySize);
+                    key = securityProcessor.generateSecretKey(SymmetricEncryptionAlgorithmEnum.findAnyByName(algo), keySize);
                 } else {
-                    key = securityProcessor.getSecretKeyFromInputStream(algo, uploadedSecretKey);
+                    key = securityProcessor.getSecretKeyFromInputStream(SymmetricEncryptionAlgorithmEnum.findAnyByName(algo), uploadedSecretKey);
                 }
-                String alias = securityProcessor.calculateDigest(key.getEncoded(), DigestAlgorithmEnum.SHA256.name());
+                String alias = securityProcessor.getChecksum(new ByteArrayInputStream(key.getEncoded()), DigestAlgorithmEnum.SHA256);
                 this.checkAliasInsertEligibility(alias);
                 KeyEntityInformation entity = keystoreManager.storeKey(alias, key);
                 URI uri = uriInfo.getAbsolutePathBuilder().path(alias).build();
@@ -85,7 +89,7 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
                         .build()
                 );
             }
-        } catch (GenericKeystoreManagerException | GenericSecurityProcessorException | IllegalArgumentException e) {
+        } catch (GenericKeystoreManagerException | GenericSecurityProcessorException | IllegalArgumentException | IOException | NoSuchAlgorithmException e) {
             throw new WebApplicationException(
                 Response.serverError()
                     .entity(e.getMessage())
