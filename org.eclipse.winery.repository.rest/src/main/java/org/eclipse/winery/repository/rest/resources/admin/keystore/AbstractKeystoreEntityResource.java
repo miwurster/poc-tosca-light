@@ -54,7 +54,6 @@ abstract class AbstractKeystoreEntityResource {
         }
     }
     
-
     protected String generateUniqueAlias(Key key) throws IOException, NoSuchAlgorithmException {
         String alias = securityProcessor.getChecksum(new ByteArrayInputStream(key.getEncoded()),
             DigestAlgorithmEnum.SHA256);

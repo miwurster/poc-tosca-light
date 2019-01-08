@@ -39,7 +39,7 @@ SignatureAlgorithm {
     
     static SignatureAlgorithmEnum getDefaultAlgorithmForKey(Key key) throws IllegalArgumentException {
 
-        if(key instanceof PublicKey || key instanceof PrivateKey) {
+        if (key instanceof PublicKey || key instanceof PrivateKey) {
             String algorithm = key.getAlgorithm();
             return SignatureAlgorithmEnum.getDefaultOptionForAlgorithm(algorithm);
         }
