@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.security.support;
+package org.eclipse.winery.security.support.enums;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,21 +21,22 @@ import java.util.Objects;
 public enum SignatureAlgorithmEnum {
     RSA_SHA256("RSA", DigestAlgorithmEnum.SHA256, "SHA256withRSA", true),
     RSA_SHA384("RSA", DigestAlgorithmEnum.SHA384, "SHA384withRSA", false),
-    RSA_SHA512("RSA", DigestAlgorithmEnum.SHA512, "SHA512withRSA", false);
+    RSA_SHA512("RSA", DigestAlgorithmEnum.SHA512, "SHA512withRSA", false),
+    ECDSA("EC", DigestAlgorithmEnum.SHA256, "SHA256withECDSA", true);
     
-    private String name;
+    private String family;
     private DigestAlgorithmEnum digestAlgorithm;
     private String fullName;
     private boolean isDefault;
 
-    SignatureAlgorithmEnum(String name, DigestAlgorithmEnum digestAlgorithm, String fullName, boolean isDefault) {
-        this.name = name;
+    SignatureAlgorithmEnum(String family, DigestAlgorithmEnum digestAlgorithm, String fullName, boolean isDefault) {
+        this.family = family;
         this.digestAlgorithm = digestAlgorithm;
         this.fullName = fullName;
         this.isDefault = isDefault;
     }
     
-    public String getShortName() { return name; }
+    public String getFamily() { return family; }
     
     public String getFullName() {
         return fullName;
@@ -45,7 +46,7 @@ public enum SignatureAlgorithmEnum {
         if (Objects.nonNull(algorithm)) {
             Collection<String> result = new ArrayList<>();
             for (SignatureAlgorithmEnum a : values()) {
-                if (algorithm.equals(a.name))
+                if (algorithm.equals(a.family))
                     result.add(a.fullName);
             }
             return result;
@@ -53,11 +54,16 @@ public enum SignatureAlgorithmEnum {
         throw new IllegalArgumentException("Chosen signature algorithm is not supported");
     }
     
-    public static String getDefaultOptionForAlgorithm(String algorithm) {
-        if (Objects.nonNull(algorithm)) {
+    public static String getDefaultOptionForAlgorithmAsString(String algorithm) {
+        return getDefaultOptionForAlgorithm(algorithm).fullName;
+    }
+
+    public static SignatureAlgorithmEnum getDefaultOptionForAlgorithm(String algorithmFamily) {
+        if (Objects.nonNull(algorithmFamily)) {
             for (SignatureAlgorithmEnum a : values()) {
-                if (algorithm.equals(a.name) && a.isDefault)
-                    return a.fullName;
+                // the following allows matching ECIES to EC
+                if (algorithmFamily.startsWith(a.family) && a.isDefault)
+                    return a;
             }
         }
         throw new IllegalArgumentException("Chosen signature algorithm is not supported");

@@ -14,7 +14,10 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -25,21 +28,22 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 
 abstract class AbstractKeystoreEntityResource {
     protected final KeystoreManager keystoreManager;
     protected final SecurityProcessor securityProcessor;
-    
+
     public AbstractKeystoreEntityResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
         this.keystoreManager = keystoreManager;
-        this.securityProcessor = securityProcessor;        
+        this.securityProcessor = securityProcessor;
     }
-    
+
     protected String prepareAlias(String alias) {
         return alias.trim().toLowerCase();
     }
-    
-    protected void checkAliasInsertEligibility(String alias) {
+
+    protected void checkAliasInsertEligibility(String alias) throws WebApplicationException {
         if (alias == null || this.keystoreManager.entityExists(alias.trim().toLowerCase())) {
             throw new WebApplicationException(
                 Response.status(Response.Status.CONFLICT)
@@ -50,14 +54,19 @@ abstract class AbstractKeystoreEntityResource {
         }
     }
     
-    protected boolean parametersAreNonNull(String... params) {
+
+    protected String generateUniqueAlias(Key key) throws IOException, NoSuchAlgorithmException {
+        String alias = securityProcessor.getChecksum(new ByteArrayInputStream(key.getEncoded()),
+            DigestAlgorithmEnum.SHA256);
+        this.checkAliasInsertEligibility(alias);
+        
+        return alias;
+    }
+
+    protected boolean parametersAreNonNull(Object... params) {
         return Stream.of(params).noneMatch(Objects::isNull);
     }
-    
-    protected boolean parametersAreNonNull(InputStream... params) {
-        return Stream.of(params).noneMatch(Objects::isNull);
-    }
-    
+
     protected StreamingOutput keyToStreamingOutput(byte[] key) {
         return output -> {
             try {
@@ -70,5 +79,4 @@ abstract class AbstractKeystoreEntityResource {
             }
         };
     }
-    
 }

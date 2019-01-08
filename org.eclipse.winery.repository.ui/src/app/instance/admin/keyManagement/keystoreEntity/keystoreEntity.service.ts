@@ -100,6 +100,9 @@ export class KeystoreEntityService {
         formData.append('algo', data.algorithm);
         formData.append('keySize', data.keySizeInBits);
 
+        if (data.setAsMaster !== null && data.setAsMaster !== undefined && data.setAsMaster === true) {
+            formData.append('setAsMaster', 'true');
+        }
         if (data.privateKeyFile !== null && data.privateKeyFile !== undefined) {
             formData.append('privateKeyFile', data.privateKeyFile, data.privateKeyFile.name);
         }

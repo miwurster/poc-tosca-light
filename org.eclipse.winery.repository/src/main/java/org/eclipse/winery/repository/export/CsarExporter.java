@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -80,8 +80,9 @@ import org.eclipse.winery.repository.security.csar.SecurityPolicyEnforcer;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
+import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithm;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 
 import de.danielbechler.util.Strings;
 import org.apache.commons.io.IOUtils;
@@ -180,7 +181,7 @@ public class CsarExporter {
             try {
                 this.generateSecuredManifest(refMap, metaFileEntry);
             } catch (GenericKeystoreManagerException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
-                LOGGER.error("Specified digest algorithm is not found. Message: {}", e.getMessage());
+                LOGGER.error("An error occurred when trying to generate the secured manifest file. Reason: {}", e.getMessage());
             }
         }
 
@@ -270,14 +271,18 @@ public class CsarExporter {
         refMap.put(metaFileEntry, new StringBasedCsarEntry(builder.toString()));
 
         // add ToscaMetaFile's signature block file and certificate
-        SecurityProcessor securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
         KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
         PrivateKey signingKey = (PrivateKey) keystoreManager.loadKey(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
+
+        SecurityProcessor securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
+            
         // TODO: notify a user if no master key is set
         if (Objects.nonNull(signingKey)) {
             // todo here hashing is not necessary as signing does it already
             String blockSignatureFileHash = sp.getChecksumForString(builder.toString(), digestAlgorithm);
-            byte[] blockSignatureFileContent = securityProcessor.getSignatureAlgorithm().signBytes(blockSignatureFileHash.getBytes(), signingKey);
+            byte[] blockSignatureFileContent = securityProcessor
+                .getSignatureAlgorithm(SignatureAlgorithm.getDefaultAlgorithmForKey(signingKey))
+                .signBytes(blockSignatureFileHash.getBytes(), signingKey);
             MetaFileEntry blockSignatureFileEntry = new MetaFileEntry(TOSCA_META_SIGN_BLOCK_FILE_PATH, MimeTypes.MIMETYPE_OCTET_STREAM);
             refMap.put(blockSignatureFileEntry, new BytesBasedCsarEntry(blockSignatureFileContent));
 

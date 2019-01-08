@@ -54,11 +54,9 @@ export class AddKeypairData {
     algorithm: string;
     keySizeInBits: string;
     commonName: string;
-    localityName: string;
-    stateOrProvinceName: string;
-    organizationalUnitName: string;
     organizationName: string;
     countryName: string;
+    setAsMaster: boolean;
     privateKeyFile: File;
     certificateFile: File;
 

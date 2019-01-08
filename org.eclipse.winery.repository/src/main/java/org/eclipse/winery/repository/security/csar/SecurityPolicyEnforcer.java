@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -78,8 +78,9 @@ import org.eclipse.winery.repository.export.entries.StringBasedCsarEntry;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
+import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithm;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 
 import org.apache.commons.io.Charsets;
 import org.slf4j.Logger;
@@ -106,7 +107,7 @@ public class SecurityPolicyEnforcer {
     }
 
     public SecurityPolicyEnforcer(IRepository repository) {
-        this(repository, DigestAlgorithmEnum.SHA256.name());
+        this(repository, DigestAlgorithmEnum.SHA256.getName());
     }
 
     public void enforceSecurityPolicies(Map<MetaFileEntry, CsarEntry> refMap) {
@@ -399,8 +400,10 @@ public class SecurityPolicyEnforcer {
         return sigPropManifestContent;
     }
 
-    private void generatePropsBlockSignature(ArtifactTemplateId sigATempId, TArtifactTemplate sigATemp, String propManifestSigContent, PrivateKey signingKey) throws SignatureException, InvalidKeyException {
-        byte[] blockSigFileContent = this.securityProcessor.getSignatureAlgorithm().signBytes(propManifestSigContent.getBytes(), signingKey);
+    private void generatePropsBlockSignature(ArtifactTemplateId sigATempId, TArtifactTemplate sigATemp, String propManifestSigContent, PrivateKey signingKey) throws SignatureException, InvalidKeyException, NoSuchAlgorithmException {
+        byte[] blockSigFileContent = this.securityProcessor
+            .getSignatureAlgorithm(SignatureAlgorithm.getDefaultAlgorithmForKey(signingKey))
+            .signBytes(propManifestSigContent.getBytes(), signingKey);
         String blockSigFileName = sigATemp.getId().concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
         String blockSigFilePath = BackendUtils.addFileRefToArtifactTemplate(sigATempId, sigATemp, blockSigFileName);
 
@@ -469,7 +472,9 @@ public class SecurityPolicyEnforcer {
                     }
 
                     if (Objects.nonNull(fileHash)) {
-                        blockSignatureFileContent = this.securityProcessor.getSignatureAlgorithm().signBytes(fileHash.getBytes(), signingKey);
+                        blockSignatureFileContent = this.securityProcessor
+                            .getSignatureAlgorithm(SignatureAlgorithm.getDefaultAlgorithmForKey(signingKey))
+                            .signBytes(fileHash.getBytes(), signingKey);
                         // generate signature block file                
                         String blockSignatureFileName = fileRef.getFileName().concat(mode).concat(SecureCSARConstants.ARTIFACT_SIGNEXTENSION);
                         blockSignatureFilePath = BackendUtils.addFileRefToArtifactTemplate(tcId, artifactTemplate, blockSignatureFileName);
@@ -483,7 +488,7 @@ public class SecurityPolicyEnforcer {
                 }
             }
             artifactTemplate.getSigningPolicy().setIsApplied(true);
-        } catch (SignatureException | InvalidKeyException e) {
+        } catch (SignatureException | InvalidKeyException | NoSuchAlgorithmException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }

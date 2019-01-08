@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.security.support;
+package org.eclipse.winery.security.support.enums;
 
 public enum DigestAlgorithmEnum {
     SHA256("SHA-256"),
@@ -20,19 +20,21 @@ public enum DigestAlgorithmEnum {
     SHA512("SHA-512");
 
     private String name;
-    
+
     DigestAlgorithmEnum(String name) {
         this.name = name;
     }
-    
-    public String getName() { return this.name; }
-    
+
+    public String getName() {
+        return this.name;
+    }
+
     public static DigestAlgorithmEnum findByName(String name) throws IllegalArgumentException {
-        for(DigestAlgorithmEnum current : values()) {
+        for (DigestAlgorithmEnum current : values()) {
             if (current.name.equalsIgnoreCase(name))
                 return current;
         }
-        
+
         throw new IllegalArgumentException("The specified digest algorithm is not supported: " + name);
     }
 }

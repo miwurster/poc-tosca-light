@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -127,8 +127,9 @@ import org.eclipse.winery.repository.security.csar.SecureCSARConstants;
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
+import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithm;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -322,7 +323,9 @@ public class CsarImporter {
             Certificate c = km.storeCertificate(SecureCSARConstants.MASTER_IMPORT_CERT_NAME, fis);
             boolean isSFSignatureCorrect = false;
             if (Objects.nonNull(sigFileToscaMetaHash)) {
-                isSFSignatureCorrect = sp.getSignatureAlgorithm().verifyBytes(sigFileToscaMetaHash.getBytes(), sigBlockFileToscaMeta, c.getPublicKey());
+                isSFSignatureCorrect = sp
+                    .getSignatureAlgorithm(SignatureAlgorithm.getDefaultAlgorithmForKey(c.getPublicKey()))
+                    .verifyBytes(sigFileToscaMetaHash.getBytes(), sigBlockFileToscaMeta, c.getPublicKey());
             }
             // Verify the signature file
             if (!isSFSignatureCorrect) {
@@ -713,14 +716,16 @@ public class CsarImporter {
                                 boolean isSFSignatureCorrect = false;
                                 if (Objects.nonNull(artifactFileBytesHash)) {
                                     // Verify signature block file
-                                    isSFSignatureCorrect = sp.getSignatureAlgorithm().verifyBytes(artifactFileBytesHash.getBytes(), sigFileBytes, c.getPublicKey());
+                                    isSFSignatureCorrect = sp
+                                        .getSignatureAlgorithm(SignatureAlgorithm.getDefaultAlgorithmForKey(c.getPublicKey()))
+                                        .verifyBytes(artifactFileBytesHash.getBytes(), sigFileBytes, c.getPublicKey());
                                 }
                                 if (!isSFSignatureCorrect) {
                                     errors.add("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());
                                     LOGGER.error("Corrupt signature file (fileRef=" + ref.getReference() + ") for entity: " + at.getId());
                                 }
-                            } catch (InvalidKeyException | SignatureException e1) {
-                                e1.printStackTrace();
+                            } catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException e1) {
+                                LOGGER.error(e1.getMessage());
                                 errors.add(e1.getMessage());
                             }
                         } else {
@@ -828,7 +833,9 @@ public class CsarImporter {
                                 byte[] sigBlockFileToscaMeta = Files.readAllBytes(sigBlockFilePath);
 
                                 // Verify signature block file
-                                boolean isSFSignatureCorrect = sp.getSignatureAlgorithm().verifyBytes(sigFileToscaMeta, sigBlockFileToscaMeta, c.getPublicKey());
+                                boolean isSFSignatureCorrect = sp
+                                    .getSignatureAlgorithm(SignatureAlgorithm.getDefaultAlgorithmForKey(c.getPublicKey()))
+                                    .verifyBytes(sigFileToscaMeta, sigBlockFileToscaMeta, c.getPublicKey());
                                 if (!isSFSignatureCorrect) {
                                     errors.add("Corrupt properties signature file for entity: " + nTempl.getName());
                                     LOGGER.error("Corrupt properties signature file for entity: " + nTempl.getName());
@@ -845,7 +852,7 @@ public class CsarImporter {
                                         errors.add("Corrupt properties manifest file for entity: " + nTempl.getName());
                                         LOGGER.error("Corrupt properties manifest file for entity: " + nTempl.getName());
                                     } else {
-                                        if (Objects.isNull(nTempl.getProperties()) && Objects.isNull(nTempl.getProperties().getKVProperties())) {
+                                        if (Objects.isNull(nTempl.getProperties()) || Objects.isNull(nTempl.getProperties().getKVProperties())) {
                                             errors.add("No properties found for entity: " + nTempl.getName());
                                             LOGGER.error("No properties found for entity: " + nTempl.getName());
                                         } else {

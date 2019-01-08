@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,9 +16,12 @@ package org.eclipse.winery.security.algorithm.signature;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+
+import org.eclipse.winery.security.support.enums.SignatureAlgorithmEnum;
 
 public interface
 SignatureAlgorithm {
@@ -33,4 +36,14 @@ SignatureAlgorithm {
     boolean verifyFile(byte[] signatureBytes, String filePath, PublicKey key) throws InvalidKeyException, IOException, SignatureException;
     
     boolean verifyBytes(byte[] signatureBytes, byte[] plainText, PublicKey key) throws InvalidKeyException, SignatureException;
+    
+    static SignatureAlgorithmEnum getDefaultAlgorithmForKey(Key key) throws IllegalArgumentException {
+
+        if(key instanceof PublicKey || key instanceof PrivateKey) {
+            String algorithm = key.getAlgorithm();
+            return SignatureAlgorithmEnum.getDefaultOptionForAlgorithm(algorithm);
+        }
+        
+        throw new IllegalArgumentException("PublicKey or PrivateKey expected but " + key.getClass().getName() + " was found!");
+    }
 }

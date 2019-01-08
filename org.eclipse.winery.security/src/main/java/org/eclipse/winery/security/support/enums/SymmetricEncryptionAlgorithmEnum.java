@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.security.support;
+package org.eclipse.winery.security.support.enums;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

@@ -27,8 +27,8 @@ import org.eclipse.winery.security.datatypes.KeyPairInformation;
 import org.eclipse.winery.security.datatypes.KeyType;
 import org.eclipse.winery.security.datatypes.KeystoreContentsInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
 public interface KeystoreManager {
 

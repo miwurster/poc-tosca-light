@@ -25,7 +25,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
-import org.eclipse.winery.security.support.SignatureAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SignatureAlgorithmEnum;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class SignatureAlgorithmImpl implements SignatureAlgorithm {
                 fullName = algorithmName;
             } else {
                 // e.g., RSA
-                fullName = SignatureAlgorithmEnum.getDefaultOptionForAlgorithm(algorithmName);
+                fullName = SignatureAlgorithmEnum.getDefaultOptionForAlgorithmAsString(algorithmName);
             }
             this.signature = Signature.getInstance(fullName, BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchProviderException e) {

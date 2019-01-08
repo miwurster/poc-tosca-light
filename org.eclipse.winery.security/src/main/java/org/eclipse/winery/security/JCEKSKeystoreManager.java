@@ -35,8 +35,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -52,8 +50,8 @@ import org.eclipse.winery.security.datatypes.KeyPairInformation;
 import org.eclipse.winery.security.datatypes.KeyType;
 import org.eclipse.winery.security.datatypes.KeystoreContentsInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
-import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
 import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
@@ -582,16 +580,6 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     }
 
     private static int getPublicKeyLength(final PublicKey pk) {
-        if (pk instanceof RSAPublicKey) {
-            return ((RSAPublicKey) pk).getModulus().bitLength();
-        } else if (pk instanceof DSAPublicKey) {
-            final DSAPublicKey dsapub = (DSAPublicKey) pk;
-            if (dsapub.getParams() != null) {
-                return dsapub.getParams().getP().bitLength();
-            } else {
-                return dsapub.getY().bitLength();
-            }
-        }
-        return -1;
+        return pk.getEncoded().length * 8;
     }
 }

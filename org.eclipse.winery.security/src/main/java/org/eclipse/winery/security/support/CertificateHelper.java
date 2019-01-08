@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.enums.SignatureAlgorithmEnum;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -68,7 +69,7 @@ public class CertificateHelper {
     public static Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException {
         String signatureAlgorithm;
         try {
-            signatureAlgorithm = SignatureAlgorithmEnum.getDefaultOptionForAlgorithm(keypair.getPrivate().getAlgorithm());
+            signatureAlgorithm = SignatureAlgorithmEnum.getDefaultOptionForAlgorithmAsString(keypair.getPrivate().getAlgorithm());
         } catch (IllegalArgumentException e) {
             LOGGER.error("Signature algorithm for keypair algorithm is not found", e);
             throw new GenericSecurityProcessorException("Signature algorithm for keypair algorithm is not found", e);

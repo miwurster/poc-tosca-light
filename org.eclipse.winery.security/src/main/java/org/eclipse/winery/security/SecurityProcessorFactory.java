@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,13 +13,12 @@
  *******************************************************************************/
 package org.eclipse.winery.security;
 
-import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 
 import org.eclipse.winery.security.algorithm.encryption.AESAlgorithm;
 import org.eclipse.winery.security.algorithm.encryption.ECIESAlgorithm;
-import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithmImpl;
-import org.eclipse.winery.security.support.SignatureAlgorithmEnum;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,18 +27,17 @@ public class SecurityProcessorFactory {
     private static BCSecurityProcessor bcSecurityProcessor;
 
     private static BCSecurityProcessor getDefaultBcSecurityProcessorInstance() {
-        try {
-            if (bcSecurityProcessor == null) {
-                bcSecurityProcessor = new BCSecurityProcessor(new AESAlgorithm(), new ECIESAlgorithm(), new SignatureAlgorithmImpl(SignatureAlgorithmEnum.RSA_SHA256));
-            }
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("Cannot instantiate SecurityProcessor", e);
+        if (bcSecurityProcessor == null) {
+            Security.addProvider(new BouncyCastleProvider());
+            // Available since Java8u151, allows 256bit key usage
+            Security.setProperty("crypto.policy", "unlimited");
+            bcSecurityProcessor = new BCSecurityProcessor(new AESAlgorithm(), new ECIESAlgorithm());
         }
-        
+
         return bcSecurityProcessor;
     }
-    
+
     public static SecurityProcessor getDefaultSecurityProcessor() {
-        return  getDefaultBcSecurityProcessorInstance();
+        return getDefaultBcSecurityProcessorInstance();
     }
 }

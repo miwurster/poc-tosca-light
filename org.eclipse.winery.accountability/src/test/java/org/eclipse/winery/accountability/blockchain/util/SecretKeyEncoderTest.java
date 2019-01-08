@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.eclipse.winery.security.support.DigestHelper;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;

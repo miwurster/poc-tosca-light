@@ -27,7 +27,7 @@ import java.security.SignatureException;
 import java.util.Objects;
 
 import org.eclipse.winery.security.algorithm.AbstractSecurityTestClass;
-import org.eclipse.winery.security.support.SignatureAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SignatureAlgorithmEnum;
 
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -52,7 +52,7 @@ class SignatureAlgorithmImplTest extends AbstractSecurityTestClass {
         super.setUp();
         this.algorithm = new SignatureAlgorithmImpl(ALGORITHM);
         
-        final KeyPairGenerator generator = KeyPairGenerator.getInstance(ALGORITHM.getShortName(), BouncyCastleProvider.PROVIDER_NAME);
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance(ALGORITHM.getFamily(), BouncyCastleProvider.PROVIDER_NAME);
         generator.initialize(KEY_SIZE_BITS, new SecureRandom());
         this.keyPair = generator.generateKeyPair();
     }

@@ -45,7 +45,7 @@ import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes;
 import org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileParser;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 
 import org.apache.commons.lang3.SerializationException;
 import org.eclipse.virgo.util.parser.manifest.ManifestContents;

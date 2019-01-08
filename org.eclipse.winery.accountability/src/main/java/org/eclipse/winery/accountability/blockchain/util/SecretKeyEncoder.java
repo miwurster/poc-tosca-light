@@ -19,7 +19,7 @@ import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;

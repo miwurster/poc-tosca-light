@@ -14,7 +14,6 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +36,6 @@ import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.datatypes.CertificateInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -67,10 +65,9 @@ public class CertificatesResource extends AbstractKeystoreEntityResource {
         try {
             Certificate[] cert = this.securityProcessor.getX509Certificates(certificate);
             if (Objects.nonNull(cert) && cert.length > 0) {
-                String alias = securityProcessor.getChecksum(new ByteArrayInputStream(cert[0].getPublicKey().getEncoded()), DigestAlgorithmEnum.SHA256);
-                this.checkAliasInsertEligibility(alias);
-
+                String alias = this.generateUniqueAlias(cert[0].getPublicKey());
                 this.keystoreManager.storeCertificate(alias, cert[0]);
+                
                 return Response.ok().build();
             } else {
                 throw new WebApplicationException(

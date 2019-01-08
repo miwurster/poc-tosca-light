@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,9 +29,10 @@ import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
 import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithm;
 import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SignatureAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
 /**
  * Provides access to cryptographic primitives (symmetric and asymmetric encryption, key generation and certificate 
@@ -40,6 +41,7 @@ import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
  */
 public interface SecurityProcessor {
 
+    /* Key Generation */
     SecretKey generateSecretKey(SymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException;
 
     KeyPair generateKeyPair(AsymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException;
@@ -50,16 +52,21 @@ public interface SecurityProcessor {
 
     PublicKey getX509EncodedPublicKeyFromInputStream(AsymmetricEncryptionAlgorithmEnum algorithm, InputStream publicKeyInputStream) throws GenericSecurityProcessorException;
 
+    /* Certificate Generation */
     Certificate[] getX509Certificates(InputStream certInputStream) throws GenericSecurityProcessorException;
 
     Certificate generateSelfSignedX509Certificate(KeyPair keypair, DistinguishedName distinguishedName) throws GenericSecurityProcessorException;
 
+    /* Symmetric Encryption */
     EncryptionAlgorithm getSymmetricEncryptionAlgorithm();
     
+    /* Asymmetric Encryption */
     EncryptionAlgorithm getAsymmetricEncryptionAlgorithm();
     
-    SignatureAlgorithm getSignatureAlgorithm();
+    /* Signature */
+    SignatureAlgorithm getSignatureAlgorithm(SignatureAlgorithmEnum algorithm) throws NoSuchAlgorithmException;
 
+    /* Checksum */
     String getChecksumForFile(String absolutePath, DigestAlgorithmEnum algorithm);
 
     String getChecksumForFile(File file, DigestAlgorithmEnum algorithm) throws IOException, NoSuchAlgorithmException;

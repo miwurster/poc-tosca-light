@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,23 +21,25 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.cert.Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 
 import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
 import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithm;
+import org.eclipse.winery.security.algorithm.signature.SignatureAlgorithmImpl;
 import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.AsymmetricEncryptionAlgorithmEnum;
 import org.eclipse.winery.security.support.CertificateHelper;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
 import org.eclipse.winery.security.support.DigestHelper;
 import org.eclipse.winery.security.support.KeyGenerationHelper;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SignatureAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,18 +51,13 @@ class BCSecurityProcessor implements SecurityProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(BCSecurityProcessor.class);
     private EncryptionAlgorithm symmetricEncryption;
     private EncryptionAlgorithm asymmetricEncryption;
-    private SignatureAlgorithm signatureAlgorithm;
+    private Map<SignatureAlgorithmEnum, SignatureAlgorithm> signatureAlgorithms;
 
-    BCSecurityProcessor(EncryptionAlgorithm symmetricEncryption, EncryptionAlgorithm asymmetricEncryption, SignatureAlgorithm signatureAlgorithm) {
+    BCSecurityProcessor(EncryptionAlgorithm symmetricEncryption, EncryptionAlgorithm asymmetricEncryption) {
         this.symmetricEncryption = symmetricEncryption;
         this.asymmetricEncryption = asymmetricEncryption;
-        this.signatureAlgorithm = signatureAlgorithm;
-
-        Security.addProvider(new BouncyCastleProvider());
-        // Available since Java8u151, allows 256bit key usage
-        Security.setProperty("crypto.policy", "unlimited");
+        this.signatureAlgorithms = new HashMap<>();
     }
-    
 
     @Override
     public SecretKey generateSecretKey(SymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException {
@@ -111,8 +108,12 @@ class BCSecurityProcessor implements SecurityProcessor {
     }
 
     @Override
-    public SignatureAlgorithm getSignatureAlgorithm() {
-        return this.signatureAlgorithm;
+    public SignatureAlgorithm getSignatureAlgorithm(SignatureAlgorithmEnum algorithm) throws NoSuchAlgorithmException {
+        if (!this.signatureAlgorithms.containsKey(algorithm)) {
+            this.signatureAlgorithms.put(algorithm, new SignatureAlgorithmImpl(algorithm));
+        }
+        
+        return this.signatureAlgorithms.get(algorithm);
     }
 
     @Override

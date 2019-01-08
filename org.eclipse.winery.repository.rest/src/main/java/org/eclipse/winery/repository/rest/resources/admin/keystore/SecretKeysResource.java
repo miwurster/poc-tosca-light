@@ -14,7 +14,6 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -41,8 +40,7 @@ import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.datatypes.KeyEntityInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
-import org.eclipse.winery.security.support.SymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
 import com.sun.jersey.multipart.FormDataParam;
 import io.swagger.annotations.ApiOperation;
@@ -76,8 +74,7 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
                 } else {
                     key = securityProcessor.getSecretKeyFromInputStream(SymmetricEncryptionAlgorithmEnum.findAnyByName(algo), uploadedSecretKey);
                 }
-                String alias = securityProcessor.getChecksum(new ByteArrayInputStream(key.getEncoded()), DigestAlgorithmEnum.SHA256);
-                this.checkAliasInsertEligibility(alias);
+                String alias = this.generateUniqueAlias(key);
                 KeyEntityInformation entity = keystoreManager.storeKey(alias, key);
                 URI uri = uriInfo.getAbsolutePathBuilder().path(alias).build();
                 return Response.created(uri).entity(entity).build();

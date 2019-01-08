@@ -33,7 +33,7 @@ import org.eclipse.winery.repository.TestWithGitBackedRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
-import org.eclipse.winery.security.support.DigestAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.virgo.util.parser.manifest.ManifestContents;
