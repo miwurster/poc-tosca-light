@@ -16,6 +16,7 @@ package org.eclipse.winery.repository.rest.resources.admin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -136,11 +137,16 @@ public class AccountabilityConfigurationResource {
         }
     }
 
+    // the password is transmitted as a plain query parameter which is (probably) subject to injection
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/createKeystore")
     public Response createNewKeystoreFile(@QueryParam("keystorePassword") String password) {
         try {
+            if (Objects.isNull(password)) {
+                return Response.serverError().entity("Password cannot be passed empty").build();
+            }
+
             final Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
             final java.nio.file.Path filePath = AccountabilityManagerFactory.getAccountabilityManager(props).createNewKeystore(password);
 
@@ -155,7 +161,7 @@ public class AccountabilityConfigurationResource {
 
             String contentDisposition = String.format("attachment;filename=\"%s\"",
                 filePath.getFileName());
-            
+
             return Response.ok()
                 .header("Content-Disposition", contentDisposition)
                 .type(MimeTypes.MIMETYPE_JSON)

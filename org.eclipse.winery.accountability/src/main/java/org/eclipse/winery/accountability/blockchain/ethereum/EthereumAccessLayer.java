@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.List;
@@ -34,17 +36,13 @@ import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.exceptions.EthereumException;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
-import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
-import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
 
 import de.danielbechler.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
-import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
@@ -94,7 +92,7 @@ public class EthereumAccessLayer implements BlockchainAccess {
         );
     }
 
-    private void unlockCredentials(String password, String fileSource) throws EthereumException {
+    public void unlockCredentials(String password, String fileSource) throws EthereumException {
         try {
             this.credentials = WalletUtils.loadCredentials(password, fileSource);
         } catch (IOException | CipherException e) {
@@ -167,14 +165,11 @@ public class EthereumAccessLayer implements BlockchainAccess {
                 log.debug("Created new temp directory for storing newly created Ethereum keystore (wallet) files {}", path);
             }
             
-            // we manually generate the KeyPair used for the wallet because asking web3j to generate it causes a BouncyCastle-conflict
-            SecurityProcessor processor = SecurityProcessorFactory.getDefaultSecurityProcessor();
-            KeyPair keyPair = processor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.ECIES_secp256k1);
-            final String fileName = WalletUtils.generateWalletFile(password, ECKeyPair.create(keyPair), path.toFile(),true);
+            final String fileName = WalletUtils.generateFullNewWalletFile(password, path.toFile());
             
             return path.resolve(fileName);
         }
-        catch (IOException | CipherException | GenericSecurityProcessorException e) {
+        catch (IOException | CipherException | NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
             String msg = String.format("An error occurred while creating a new keystore file. Reason: %s", e.getMessage());
             log.error(msg, e);
             throw new EthereumException(msg, e);
