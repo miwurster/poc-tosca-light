@@ -42,9 +42,9 @@ import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnu
 public interface SecurityProcessor {
 
     /* Key Generation */
-    SecretKey generateSecretKey(SymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException;
+    SecretKey generateSecretKey(SymmetricEncryptionAlgorithmEnum algorithm) throws GenericSecurityProcessorException;
 
-    KeyPair generateKeyPair(AsymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException;
+    KeyPair generateKeyPair(AsymmetricEncryptionAlgorithmEnum algorithm) throws GenericSecurityProcessorException;
 
     SecretKey getSecretKeyFromInputStream(SymmetricEncryptionAlgorithmEnum algorithm, InputStream secretKeyInputStream) throws GenericSecurityProcessorException;
 

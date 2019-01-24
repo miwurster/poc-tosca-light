@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,6 +17,7 @@ package org.eclipse.winery.accountability;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -194,6 +195,11 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     public CompletableFuture<AuthorizationInfo> getAuthorization(String processIdentifier) throws BlockchainException {
         LOGGER.info("Retrieving authorization info for process " + processIdentifier);
         return this.blockchain.getAuthorizationTree(processIdentifier);
+    }
+
+    @Override
+    public Path createNewKeystore(String password) throws BlockchainException {
+        return this.blockchain.createNewKeystore(password);
     }
 
     @Override

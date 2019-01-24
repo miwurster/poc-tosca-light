@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,6 +15,7 @@ package org.eclipse.winery.accountability;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -112,6 +113,14 @@ public interface AccountabilityManager {
     CompletableFuture<AuthorizationInfo> getAuthorization(String processIdentifier) throws BlockchainException;
 
     /**
+     * Creates a new blockchain keystore file
+     * @param password a password to secure the file with
+     * @return the full path of the generated keystore file.
+     * @throws BlockchainException when an error occurs while creating the new keystore file. 
+     */
+    Path createNewKeystore(String password) throws BlockchainException;
+
+    /**
      * Deploys the Authorization smart contract to the active blockchain network
      * 
      * @return a completable future that, when completed, returns the address of the contract.
@@ -137,7 +146,7 @@ public interface AccountabilityManager {
      *
      * @param takerAddress   the address to set the permissions for.
      * @param takerPublicKey the public key of the receiver (used to encrypt the set of the given permissions).
-     * @param permissions    the set secret keys (permissions) to give.
+     * @param permissions    the set of secret keys (permissions) to give.
      * @return a completable future the finishes when the transaction to set the permissions succeeds.
      * @throws InvalidKeyException if encrypting the permissions fails due to invalid public key format.
      */

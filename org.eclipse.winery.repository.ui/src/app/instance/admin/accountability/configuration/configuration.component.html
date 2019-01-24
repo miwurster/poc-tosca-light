@@ -1,6 +1,5 @@
-<!DOCTYPE html>
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  ~ Copyright (c) 2018 Contributors to the Eclipse Foundation
+  ~ Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
   ~
   ~ See the NOTICE file(s) distributed with this work for additional
   ~ information regarding copyright ownership.
@@ -39,7 +38,12 @@
                     <label for="keystorePathOnServer">Active Keystore</label>
                     <input type="text" id="keystorePathOnServer" class="form-control" name="keystorePathOnServer"
                            [(ngModel)]="configuration.activeKeystore" readonly="readonly">
-                    <br/>
+                    <button type="button" class="buttonAsLink"
+                            (click)="onCreateNewKeystore(createKeystoreModal)"
+                            [disabled]="loading">
+                        Create New Keystore File
+                    </button>
+                    <br />
 
                     <label for="fileUploader">Change Keystore (will be uploaded when clicking on "Save")</label>
                     <input type="file" id="fileUploader" name="fileUploader"
@@ -125,3 +129,22 @@
     </ng-template>
 
 </form>
+
+<ng-template #createKeystoreModal>
+    <winery-modal-header [modalRef]="modalRef" [title]="'Create New Blockchain Keystore'">-->
+    </winery-modal-header>
+
+    <winery-modal-body>
+        <form #createKeystoreForm="ngForm">
+            <label for="newKeystorePassword">Keystore Password (Caution: password is transmitted in
+                plaintext!)</label>
+            <input type="password" id="newKeystorePassword" class="form-control" name="newKeystorePassword"
+                   [(ngModel)]="newPassword" required>
+            <p style="padding: 5px;text-align: justify;">
+                When clicking on 'Create' a new keystore file which is protected with the provided password will be generated. Afterwards it will be downloaded.
+                <b>The generated keystore file will not be automatically set as the active keystore.</b> You need to do that manually.
+            </p>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer [modalRef]="modalRef" [showDefaultButtons]="true" [closeButtonLabel]="'Cancel'"  [okButtonLabel]="'Create'"  (onOk)="createNewKeystoreFile()"></winery-modal-footer>
+</ng-template>

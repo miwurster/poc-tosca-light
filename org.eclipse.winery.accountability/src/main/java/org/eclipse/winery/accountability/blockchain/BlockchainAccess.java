@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.accountability.blockchain;
 
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -90,6 +91,14 @@ public interface BlockchainAccess {
     CompletableFuture<String> deployPermissionsSmartContract();
 
     /**
+     * Creates a new blockchain keystore file
+     * @param password a password to secure the file with
+     * @return the full path of the generated keystore file.
+     * @throws BlockchainException when an error occurs while creating the new keystore file. 
+     */
+    Path createNewKeystore(String password) throws BlockchainException;
+
+    /**
      * Sets the permissions given from the active user to a certain address.
      *
      * @param takerAddress   the address to set the permissions for.
@@ -108,6 +117,7 @@ public interface BlockchainAccess {
      * to the set of permissions they have given to the active user.
      */
     CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) throws BlockchainException;
+    
 
     /**
      * Releases resources relevant to this instance

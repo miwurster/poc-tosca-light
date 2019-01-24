@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -95,7 +95,7 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
 
             if (this.parametersAreNonNull(algorithm, distinguishedName)) {
                 DistinguishedName dn = new DistinguishedName(distinguishedName);
-                KeyPair keypair = this.securityProcessor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.findAnyByName(algorithm), keySize);
+                KeyPair keypair = this.securityProcessor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.findKey(algorithm, keySize));
                 privateKey = keypair.getPrivate();
                 certificate = this.securityProcessor.generateSelfSignedX509Certificate(keypair, dn);
             } else {

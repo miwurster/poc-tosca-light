@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -46,6 +46,16 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
         this.algorithm = algorithm;
     }
 
+    /**
+     * Gives a set of SecretKeys (permissions) to a specific taker.
+     * @param takerAddress the unique Ethereum address for the taker.
+     * @param takerPublicKey the public key of the taker (used to encrypt the collection of secret keys so only the taker
+     *                       can access them)
+     * @param permissions an array of SecretKeys (permissions) to give to the taker
+     * @return a completable future that, when successfully executes, indicates that the permissions were successfully
+     *          given to the designated taker.
+     * @throws InvalidKeyException If the public key of the taker is invalid.
+     */
     public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException {
         EncryptionAlgorithm algorithm = SecurityProcessorFactory.getDefaultSecurityProcessor().getAsymmetricEncryptionAlgorithm();
         byte[] encryptedKeys = algorithm.encryptBytes(takerPublicKey, SecretKeyEncoder.encode(permissions));
@@ -57,6 +67,12 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
             );
     }
 
+    /**
+     * Retrieves all the keys given to me by all givers.
+     * @param myPrivateKey used to decrypt the collection of keys I have been given
+     * @return a completable future that, when successfully executes, returns a map of givers and given SecretKeys (permissions).
+     * Here, givers are identified via their blockchain unique id. 
+     */
     public CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) {
         return ((Permissions) contract)
             .getGivers()

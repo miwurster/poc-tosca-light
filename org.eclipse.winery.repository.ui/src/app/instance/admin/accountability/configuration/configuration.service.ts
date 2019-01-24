@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,6 +18,7 @@ import { backendBaseURL } from '../../../../configuration';
 import { map, mergeMap } from 'rxjs/internal/operators';
 import { Injectable } from '@angular/core';
 import { ConfigurationDTO } from './ConfigurationDTO';
+import { parseSelectorToR3Selector } from '@angular/compiler/src/core';
 
 /**
  * Manages accountability configurations. Configuration entries are divided into two groups: (i) a group that is managed
@@ -30,6 +31,7 @@ export class ConfigurationService {
     private deployProvenanceSCUrl = this.accountabilityUrl + '/provenanceSC';
     private deployAuthorizationSCUrl = this.accountabilityUrl + '/authorizationSC';
     private deployPermissionsSCUrl = this.accountabilityUrl + '/permissionsSC';
+    private createKeystoreUrl = this.accountabilityUrl + '/createKeystore';
     private readonly enableAccountabilityCheckDefaultValue = false;
     private readonly enableAccountabilityCheckKey = 'AccountabilityCheck';
 
@@ -121,5 +123,10 @@ export class ConfigurationService {
 
     deployPermissionsSmartContract(): Observable<string> {
         return this.http.get(this.deployPermissionsSCUrl, { responseType: 'text' });
+    }
+
+    createNewKeystoreFile(password: string): void {
+        // handle entries managed by the backend
+        window.open(this.createKeystoreUrl + '?keystorePassword=' + password, '_blank');
     }
 }

@@ -517,7 +517,6 @@ public class SecurityPolicyEnforcer {
     public static Response decryptFilesOfArtifactTemplate(TArtifactTemplate artifactTemplate, Key secretKey, Set<RepositoryFileReference> files) {
         try {
             SecurityProcessor securityProcessor = SecurityProcessorFactory.getDefaultSecurityProcessor();
-            ;
             for (RepositoryFileReference fileRef : files) {
                 if (!(fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_PLAIN) || fileRef.getFileName().contains(SecureCSARConstants.ARTIFACT_SIGN_MODE_ENCRYPTED))) {
                     Path absolutePath = ((FilebasedRepository) RepositoryFactory.getRepository()).ref2AbsolutePath(fileRef);

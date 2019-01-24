@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,19 +14,28 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keypermissions;
 
-import io.swagger.annotations.ApiOperation;
-import org.eclipse.winery.common.ids.admin.ACListId;
-import org.eclipse.winery.repository.rest.resources.admin.AbstractAdminResource;
-import org.eclipse.winery.repository.security.csar.PartnerACListProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URI;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
+
+import org.eclipse.winery.common.ids.admin.ACListId;
+import org.eclipse.winery.repository.rest.resources.admin.AbstractAdminResource;
+import org.eclipse.winery.repository.security.csar.PartnerACListProcessor;
+
+import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AccessControlListAdminResource extends AbstractAdminResource {
 
@@ -36,7 +45,7 @@ public class AccessControlListAdminResource extends AbstractAdminResource {
         super(new ACListId());
     }
 
-    @ApiOperation(value = "Gets the list of all particpant-policy permissions")
+    @ApiOperation(value = "Gets the list of all participant-policy permissions")
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public Response listKeyPermissions() {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,14 +12,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { WineryNotificationService } from '../../../../wineryNotificationModule/wineryNotification.service';
 import { Configuration } from './Configuration';
 import { ConfigurationService } from './configuration.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap';
 
 @Component({
-    templateUrl: 'configuration.component.html'
+    templateUrl: 'configuration.component.html',
+    styleUrls: ['configuration.component.css']
 })
 export class ConfigurationComponent implements OnInit {
     configuration: Configuration;
@@ -29,8 +31,10 @@ export class ConfigurationComponent implements OnInit {
     deployingPermissionsSC = false;
     error: string;
     selectedKeystoreFile: File = undefined;
+    newPassword: string;
+    modalRef: BsModalRef;
 
-    constructor(protected service: ConfigurationService, protected notify: WineryNotificationService) {
+    constructor(protected service: ConfigurationService, protected notify: WineryNotificationService, protected modalService: BsModalService) {
     }
 
     ngOnInit(): void {
@@ -81,6 +85,15 @@ export class ConfigurationComponent implements OnInit {
                 e => this.handleError(e));
     }
 
+    onCreateNewKeystore(modalTemplate: TemplateRef<any>) {
+        this.modalRef = this.modalService.show(modalTemplate);
+    }
+
+    createNewKeystoreFile() {
+        this.service.createNewKeystoreFile(this.newPassword);
+        this.newPassword = '';
+    }
+
     handleConfigurationSaved() {
         this.loading = false;
         // selectedKeystoreFile can be undefined at this point if the configuration change did not include changing
@@ -105,6 +118,8 @@ export class ConfigurationComponent implements OnInit {
                     this.notify.error('Failed to deploy smart contract!');
                 });
     }
+
+
 
     onDeployAuthorizationSmartContract() {
         this.deployingAuthorizationSC = true;

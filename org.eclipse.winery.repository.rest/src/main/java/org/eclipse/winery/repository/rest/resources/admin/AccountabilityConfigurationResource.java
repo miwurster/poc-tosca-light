@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,6 +15,7 @@ package org.eclipse.winery.repository.rest.resources.admin;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
@@ -24,19 +25,27 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.eclipse.winery.accountability.AccountabilityManagerFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
+import org.eclipse.winery.accountability.exceptions.BlockchainException;
+import org.eclipse.winery.common.constants.MimeTypes;
 import org.eclipse.winery.repository.backend.AccountabilityConfigurationManager;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.rest.resources.apiData.AccountabilityConfigurationData;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AccountabilityConfigurationResource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountabilityConfigurationResource.class);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -123,6 +132,37 @@ public class AccountabilityConfigurationResource {
 
             return Response.ok(address).build();
         } catch (AccountabilityException | InterruptedException | ExecutionException e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/createKeystore")
+    public Response createNewKeystoreFile(@QueryParam("keystorePassword") String password) {
+        try {
+            final Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
+            final java.nio.file.Path filePath = AccountabilityManagerFactory.getAccountabilityManager(props).createNewKeystore(password);
+
+            StreamingOutput so = output -> {
+                try {
+                    Files.copy(filePath, output);
+                } catch (IOException e) {
+                    LOGGER.error("Error while downloading generated keystore file", e);
+                    throw new WebApplicationException(e);
+                }
+            };
+
+            String contentDisposition = String.format("attachment;filename=\"%s\"",
+                filePath.getFileName());
+            
+            return Response.ok()
+                .header("Content-Disposition", contentDisposition)
+                .type(MimeTypes.MIMETYPE_JSON)
+                .entity(so)
+                .build();
+        } catch (BlockchainException | AccountabilityException e) {
+            // todo exposing this error message might be unsafe!
             return Response.serverError().entity(e.getMessage()).build();
         }
     }

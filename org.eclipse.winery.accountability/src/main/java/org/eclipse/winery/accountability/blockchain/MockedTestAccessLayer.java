@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.accountability.blockchain;
 
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -64,6 +65,11 @@ public class MockedTestAccessLayer implements BlockchainAccess {
 
     @Override
     public CompletableFuture<String> deployPermissionsSmartContract() {
+        return null;
+    }
+
+    @Override
+    public Path createNewKeystore(String password) throws BlockchainException {
         return null;
     }
 

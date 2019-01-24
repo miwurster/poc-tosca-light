@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,7 +14,11 @@
 package org.eclipse.winery.accountability.blockchain.ethereum;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.List;
@@ -30,20 +34,24 @@ import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.accountability.exceptions.EthereumException;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
+import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
 
 import de.danielbechler.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.Contract;
 
 public class EthereumAccessLayer implements BlockchainAccess {
-
+    private static final String NEW_KEYSTORES_DIR_NAME = "ethereum-keystores";
     private static final Logger log = LoggerFactory.getLogger(EthereumAccessLayer.class);
 
     private Credentials credentials;
@@ -88,7 +96,6 @@ public class EthereumAccessLayer implements BlockchainAccess {
 
     private void unlockCredentials(String password, String fileSource) throws EthereumException {
         try {
-
             this.credentials = WalletUtils.loadCredentials(password, fileSource);
         } catch (IOException | CipherException e) {
             final String msg = "Error occurred while setting the user credentials for Ethereum. Reason: " +
@@ -149,6 +156,29 @@ public class EthereumAccessLayer implements BlockchainAccess {
         return SmartContractProvider
             .deployPermissionsSmartContract(this.web3j, credentials)
             .thenApply(Contract::getContractAddress);
+    }
+
+    @Override
+    public Path createNewKeystore(String password) throws BlockchainException {
+        Path path = Paths.get(System.getProperty("java.io.tmpdir")).resolve(NEW_KEYSTORES_DIR_NAME);
+        try {
+            if (!Files.exists(path)) {
+                Files.createDirectory(path);
+                log.debug("Created new temp directory for storing newly created Ethereum keystore (wallet) files {}", path);
+            }
+            
+            // we manually generate the KeyPair used for the wallet because asking web3j to generate it causes a BouncyCastle-conflict
+            SecurityProcessor processor = SecurityProcessorFactory.getDefaultSecurityProcessor();
+            KeyPair keyPair = processor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.ECIES_secp256k1);
+            final String fileName = WalletUtils.generateWalletFile(password, ECKeyPair.create(keyPair), path.toFile(),true);
+            
+            return path.resolve(fileName);
+        }
+        catch (IOException | CipherException | GenericSecurityProcessorException e) {
+            String msg = String.format("An error occurred while creating a new keystore file. Reason: %s", e.getMessage());
+            log.error(msg, e);
+            throw new EthereumException(msg, e);
+        } 
     }
 
     @Override

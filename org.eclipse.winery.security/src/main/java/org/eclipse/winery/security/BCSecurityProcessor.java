@@ -40,15 +40,11 @@ import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 import org.eclipse.winery.security.support.enums.SignatureAlgorithmEnum;
 import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * An implementation of the SecurityProcessor interface that uses the BouncyCastle security provider.
  */
 class BCSecurityProcessor implements SecurityProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BCSecurityProcessor.class);
     private EncryptionAlgorithm symmetricEncryption;
     private EncryptionAlgorithm asymmetricEncryption;
     private Map<SignatureAlgorithmEnum, SignatureAlgorithm> signatureAlgorithms;
@@ -60,12 +56,12 @@ class BCSecurityProcessor implements SecurityProcessor {
     }
 
     @Override
-    public SecretKey generateSecretKey(SymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException {
-        return KeyGenerationHelper.generateSecretKey(algorithm.getName(), keySize);
+    public SecretKey generateSecretKey(SymmetricEncryptionAlgorithmEnum algorithm) throws GenericSecurityProcessorException {
+        return KeyGenerationHelper.generateSecretKey(algorithm.getName(), algorithm.getkeySizeInBits());
     }
 
     @Override
-    public KeyPair generateKeyPair(AsymmetricEncryptionAlgorithmEnum algorithm, int keySize) throws GenericSecurityProcessorException {
+    public KeyPair generateKeyPair(AsymmetricEncryptionAlgorithmEnum algorithm) throws GenericSecurityProcessorException {
         // keys for algorithms with parameter specifications set (e.g., ECIES) is generated differently 
         if (algorithm.getAlgorithmParameterSpec() != null)
             return KeyGenerationHelper.generateKeyPair(algorithm.getName(), algorithm.getAlgorithmParameterSpec());
@@ -112,7 +108,7 @@ class BCSecurityProcessor implements SecurityProcessor {
         if (!this.signatureAlgorithms.containsKey(algorithm)) {
             this.signatureAlgorithms.put(algorithm, new SignatureAlgorithmImpl(algorithm));
         }
-        
+
         return this.signatureAlgorithms.get(algorithm);
     }
 

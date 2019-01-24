@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -70,7 +70,7 @@ public class SecretKeysResource extends AbstractKeystoreEntityResource {
             if (this.parametersAreNonNull(algo)) {
                 Key key;
                 if (Objects.isNull(uploadedSecretKey)) {
-                    key = securityProcessor.generateSecretKey(SymmetricEncryptionAlgorithmEnum.findAnyByName(algo), keySize);
+                    key = securityProcessor.generateSecretKey(SymmetricEncryptionAlgorithmEnum.findKey(algo, keySize));
                 } else {
                     key = securityProcessor.getSecretKeyFromInputStream(SymmetricEncryptionAlgorithmEnum.findAnyByName(algo), uploadedSecretKey);
                 }

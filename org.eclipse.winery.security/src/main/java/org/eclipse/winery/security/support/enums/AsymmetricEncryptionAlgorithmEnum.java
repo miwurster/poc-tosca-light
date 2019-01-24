@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -53,6 +53,15 @@ public enum AsymmetricEncryptionAlgorithmEnum {
                 return current;
         }
         
+        throw new IllegalArgumentException("Asymmetric algorithm not supported: " + name);
+    }
+
+    public static AsymmetricEncryptionAlgorithmEnum findKey(String name, int keySizeInBits) throws IllegalArgumentException {
+        for (AsymmetricEncryptionAlgorithmEnum current : values()) {
+            if (current.name.equalsIgnoreCase(name) && current.keySizeInBits == keySizeInBits)
+                return current;
+        }
+
         throw new IllegalArgumentException("Asymmetric algorithm not supported: " + name);
     }
 }
