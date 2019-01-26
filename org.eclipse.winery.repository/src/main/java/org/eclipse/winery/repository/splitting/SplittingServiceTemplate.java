@@ -17,16 +17,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
-import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
@@ -104,8 +102,9 @@ public class SplittingServiceTemplate {
 					if (!newTopologyTemplate.getNodeTemplates().stream().anyMatch(n -> n.getId().equals(targetElement.getId()))) {
 						newTargetElement = BackendUtils.clone(targetElement);
 						newTopologyTemplate.getNodeTemplateOrRelationshipTemplate().add(newTargetElement);
-						if (ModelUtilities.getPropertiesKV(newSourceElement) != null &&
-							ModelUtilities.getPropertiesKV(newSourceElement).getProperty("State").equalsIgnoreCase("running")) {
+						if (newSourceElement.getProperties().getKVProperties() != null &&
+                            newSourceElement.getProperties().getKVProperties().containsKey("State") &&
+                            newSourceElement.getProperties().getKVProperties().get("State").equalsIgnoreCase("running")) {
 							setStatePropertyToRunning(newTargetElement);
 						} else {
 							List<TNodeTemplate> appSpecificHostedOnPredecessors =
@@ -444,11 +443,9 @@ public class SplittingServiceTemplate {
 	}
 	
 	private static void setStatePropertyToRunning (TNodeTemplate nodeTemplate) {
-		Properties nodeTemplateProperties = ModelUtilities.getPropertiesKV(nodeTemplate);
-		nodeTemplateProperties.setProperty("State", "running");
-		NodeTypeId nodeTypeId = new NodeTypeId(nodeTemplate.getType());
-		TNodeType nodeType = RepositoryFactory.getRepository().getElement(nodeTypeId);
-		ModelUtilities.setPropertiesKV(ModelUtilities.getWinerysPropertiesDefinition(nodeType), nodeTemplate, nodeTemplateProperties);
+		Map<String,String> properties = nodeTemplate.getProperties().getKVProperties();
+        properties.put("State", "running");
+		nodeTemplate.getProperties().setKVProperties(properties);
 	}
 	
 	/**

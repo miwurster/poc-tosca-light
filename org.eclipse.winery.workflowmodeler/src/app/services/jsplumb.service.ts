@@ -1,17 +1,19 @@
-/**
- * Copyright (c) 2017 ZTE Corporation.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     ZTE - initial API and implementation and/or initial documentation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 
 import { Injectable } from '@angular/core';
-import { jsPlumb } from 'jsplumb/dist/js/jsplumb.js';
+import { jsPlumb } from 'jsplumb';
 
 import { Node } from '../model/workflow/node';
 import { BroadcastService } from './broadcast.service';
@@ -37,7 +39,7 @@ export class JsPlumbService {
     }
 
     public initJsPlumbInstance() {
-        jsPlumb.ready(() => {
+        jsPlumb.getInstance().ready(() => {
             this.jsplumbInstance = jsPlumb.getInstance();
 
             this.jsplumbInstance.importDefaults({
@@ -69,7 +71,7 @@ export class JsPlumbService {
 
                 info.connection.bind('click', connection => {
                     this.modelService.deleteConnection(connection.sourceId, connection.targetId);
-                    jsPlumb.detach(connection);
+                    this.jsplumbInstance.deleteConnection(connection);
                 });
             });
         });

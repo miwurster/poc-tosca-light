@@ -1,18 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,55 +28,15 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
-
-/**
- * <p>Java class for tOperation complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tOperation">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;sequence>
- *         &lt;element name="InputParameters" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="InputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="OutputParameters" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="OutputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tOperation", propOrder = {
-        "inputParameters",
-        "outputParameters"
+    "inputParameters",
+    "outputParameters"
 })
 public class TOperation extends TExtensibleElements {
     @XmlElement(name = "InputParameters")
@@ -103,8 +65,8 @@ public class TOperation extends TExtensibleElements {
         if (!super.equals(o)) return false;
         TOperation that = (TOperation) o;
         return Objects.equals(inputParameters, that.inputParameters) &&
-                Objects.equals(outputParameters, that.outputParameters) &&
-                Objects.equals(name, that.name);
+            Objects.equals(outputParameters, that.outputParameters) &&
+            Objects.equals(name, that.name);
     }
 
     @Override
@@ -112,110 +74,46 @@ public class TOperation extends TExtensibleElements {
         return Objects.hash(super.hashCode(), inputParameters, outputParameters, name);
     }
 
-    /**
-     * Gets the value of the inputParameters property.
-     *
-     * @return possible object is {@link TOperation.InputParameters }
-     */
-    /*@Nullable*/
-    public TOperation.InputParameters getInputParameters() {
+    public TOperation.@Nullable InputParameters getInputParameters() {
         return inputParameters;
     }
 
-    /**
-     * Sets the value of the inputParameters property.
-     *
-     * @param value allowed object is {@link TOperation.InputParameters }
-     */
-    public void setInputParameters(TOperation.InputParameters value) {
+    public void setInputParameters(TOperation.@Nullable InputParameters value) {
         this.inputParameters = value;
     }
 
-    /**
-     * Gets the value of the outputParameters property.
-     *
-     * @return possible object is {@link TOperation.OutputParameters }
-     */
-    /*@Nullable*/
-    public TOperation.OutputParameters getOutputParameters() {
+    public TOperation.@Nullable OutputParameters getOutputParameters() {
         return outputParameters;
     }
 
-    /**
-     * Sets the value of the outputParameters property.
-     *
-     * @param value allowed object is {@link TOperation.OutputParameters }
-     */
-    public void setOutputParameters(TOperation.OutputParameters value) {
+    public void setOutputParameters(TOperation.@Nullable OutputParameters value) {
         this.outputParameters = value;
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    public void setName(@NonNull String value) {
+        Objects.requireNonNull(value);
         this.name = value;
     }
 
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="InputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "inputParameter"
+        "inputParameter"
     })
-    public static class InputParameters {
+    public static class InputParameters implements Serializable {
 
         @XmlElement(name = "InputParameter", required = true)
         protected List<TParameter> inputParameter;
 
-        /**
-         * Gets the value of the inputParameter property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the inputParameter property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getInputParameter().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TParameter }
-         */
         @NonNull
         public List<TParameter> getInputParameter() {
             if (inputParameter == null) {
@@ -223,55 +121,30 @@ public class TOperation extends TExtensibleElements {
             }
             return this.inputParameter;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            InputParameters that = (InputParameters) o;
+            return Objects.equals(inputParameter, that.inputParameter);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(inputParameter);
+        }
     }
 
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="OutputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "outputParameter"
+        "outputParameter"
     })
-    public static class OutputParameters {
+    public static class OutputParameters implements Serializable {
 
         @XmlElement(name = "OutputParameter", required = true)
         protected List<TParameter> outputParameter;
 
-        /**
-         * Gets the value of the outputParameter property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the outputParameter property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getOutputParameter().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TParameter }
-         */
         @NonNull
         public List<TParameter> getOutputParameter() {
             if (outputParameter == null) {
@@ -279,9 +152,22 @@ public class TOperation extends TExtensibleElements {
             }
             return this.outputParameter;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            OutputParameters that = (OutputParameters) o;
+            return Objects.equals(outputParameter, that.outputParameter);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(outputParameter);
+        }
     }
 
-    public static class Builder extends TExtensibleElements.Builder {
+    public static class Builder extends TExtensibleElements.Builder<Builder> {
         private final String name;
         private InputParameters inputParameters;
         private OutputParameters outputParameters;
@@ -364,6 +250,11 @@ public class TOperation extends TExtensibleElements {
             TOperation.OutputParameters tmp = new TOperation.OutputParameters();
             tmp.getOutputParameter().add(outputParameters);
             return addOutputParameters(tmp);
+        }
+
+        @Override
+        public Builder self() {
+            return this;
         }
 
         public TOperation build() {

@@ -1,14 +1,16 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { NgModule } from '@angular/core';
 import { CapOrReqDefComponent } from '../../instance/nodeTypes/capabilityOrRequirementDefinitions/capOrReqDef.component';
 import { CommonModule } from '@angular/common';
@@ -26,7 +28,9 @@ import { VisualAppearanceModule } from '../../instance/sharedComponents/visualAp
 import { InstanceStatesModule } from '../../instance/sharedComponents/instanceStates/instanceStates.module';
 import { PropertiesDefinitionModule } from '../../instance/sharedComponents/propertiesDefinition/propertiesDefinition.module';
 import { InheritanceModule } from '../../instance/sharedComponents/inheritance/inheritance.module';
-import { WineryArtifactModule } from '../../instance/sharedComponents/wineryArtifacts/artifact.module';
+import { WineryReadmeModule } from '../../wineryReadmeModule/wineryReadme.module';
+import { WineryLicenseModule } from '../../wineryLicenseModule/wineryLicense.module';
+import { TagModule } from '../../instance/sharedComponents/tag/tag.module';
 
 @NgModule({
     imports: [
@@ -39,12 +43,15 @@ import { WineryArtifactModule } from '../../instance/sharedComponents/wineryArti
         ImplementationsModule,
         SelectModule,
         SpinnerWithInfinityModule,
+        TagModule,
         WineryLoaderModule,
         WineryQNameSelectorModule,
         WineryTableModule,
         WineryModalModule,
         WineryEditorModule,
-        NodeTypeRouterModule
+        NodeTypeRouterModule,
+        WineryReadmeModule,
+        WineryLicenseModule
     ],
     exports: [],
     declarations: [CapOrReqDefComponent],

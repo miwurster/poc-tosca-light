@@ -1,45 +1,36 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Niko Stadelmaier - initial API and implementation
- */
-import { Injectable, ViewContainerRef } from '@angular/core';
-import { ToastsManager } from 'ng2-toastr/ng2-toastr';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import { Injectable } from '@angular/core';
+import { ToastrService } from 'ngx-toastr';
 import { DatePipe } from '@angular/common';
 
 @Injectable()
 export class WineryNotificationService {
 
-    toastr: ToastsManager;
+    toastr: ToastrService;
     notifications: Array<WineryNotification> = [];
 
-    constructor(private pToastr: ToastsManager,
+    constructor(private pToastr: ToastrService,
                 private datePipe: DatePipe) {
         this.toastr = pToastr;
-    }
-
-    /**
-     * Initializes the Notification Service
-     * Important: this function must be called before using the the service
-     *
-     * @param rootVcr - View Container Reference of the root component
-     */
-    init(rootVcr: ViewContainerRef) {
-        this.toastr.setRootViewContainerRef(rootVcr);
-
     }
 
     /**
      * returns a List of all previously created notifications
      * @returns {Array<any>} - contains the notification objects
      */
-    getHistory(): Array<any> {
+    getHistory(): Array<WineryNotification> {
         return this.notifications;
     }
 
@@ -50,7 +41,7 @@ export class WineryNotificationService {
      */
     success(message: string, title = 'Success', options = {}) {
         this.toastr.success(message, title, options);
-        this.notifications.push({title: title, message: message, type: 'success', createdOn: this.getCurrentDate()});
+        this.notifications.push({ title: title, message: message, type: 'success', createdOn: this.getCurrentDate() });
     }
 
     /**
@@ -60,7 +51,7 @@ export class WineryNotificationService {
      */
     error(message: string, title = 'Error') {
         this.toastr.error(message, title);
-        this.notifications.push({title: title, message: message, type: 'error', createdOn: this.getCurrentDate()});
+        this.notifications.push({ title: title, message: message, type: 'error', createdOn: this.getCurrentDate() });
     }
 
     /**
@@ -70,7 +61,7 @@ export class WineryNotificationService {
      */
     warning(message: string, title = 'Warning') {
         this.toastr.warning(message, title);
-        this.notifications.push({title: title, message: message, type: 'warning', createdOn: this.getCurrentDate()});
+        this.notifications.push({ title: title, message: message, type: 'warning', createdOn: this.getCurrentDate() });
     }
 
     /**

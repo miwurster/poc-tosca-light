@@ -1,55 +1,57 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Balzer - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { Headers, Http, RequestOptions, Response } from '@angular/http';
 import { backendBaseURL } from '../../../../configuration';
 import { PropertyConstraintApiData } from './propertyConstraintApiData';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { ConstraintTypeApiData } from './constraintTypesApiData';
 
 @Injectable()
 export class PropertyConstraintsService {
 
     private path: string;
 
-    constructor(private http: Http,
+    constructor(private http: HttpClient,
                 private route: Router) {
-        this.path = decodeURIComponent(this.route.url);
+        this.path = backendBaseURL + this.route.url;
     }
 
     getConstraints(): Observable<PropertyConstraintApiData[]> {
-        const headers = new Headers({'Accept': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.get(backendBaseURL + this.path + '/', options)
-            .map(res => res.json());
+        return this.http.get<PropertyConstraintApiData[]>(this.path);
     }
 
-    postConstraint(data: PropertyConstraintApiData): Observable<Response> {
-        const headers = new Headers({'Content-Type': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        data.fragments = null;
-        return this.http.post(backendBaseURL + this.path + '/', JSON.stringify(data), options);
+    postConstraint(data: PropertyConstraintApiData): Observable<HttpResponse<string>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http
+            .post(
+                this.path,
+                data,
+                { headers: headers, observe: 'response', responseType: 'text' }
+            );
     }
 
-    deleteConstraints(data: PropertyConstraintApiData) {
-        const headers = new Headers({'Accept': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.delete(backendBaseURL + this.path + '/' + data.property, options);
+    deleteConstraints(data: PropertyConstraintApiData): Observable<HttpResponse<string>> {
+        return this.http
+            .delete(
+                this.path + '/' + encodeURIComponent(encodeURIComponent(data.property)),
+                { observe: 'response', responseType: 'text' }
+            );
     }
 
-    getConstraintTypes(): Observable<any> {
-        const headers = new Headers({'Accept': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.get(backendBaseURL + '/admin/constrainttypes/', options)
-            .map(res => res.json());
+    getConstraintTypes(): Observable<ConstraintTypeApiData[]> {
+        return this.http.get<ConstraintTypeApiData[]>(backendBaseURL + '/admin/constrainttypes/');
     }
 }

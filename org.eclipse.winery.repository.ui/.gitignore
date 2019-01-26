@@ -8,7 +8,9 @@
 npm-debug.log
 
 !/src/static/**/*
-/build/
+/orion
 /doc/
 /dist/
-/src/typings.d.ts
+/src/assets/built-codeEdit15_1
+/src/assets/licenses/*
+!/src/assets/licenses/Proprietary.txt

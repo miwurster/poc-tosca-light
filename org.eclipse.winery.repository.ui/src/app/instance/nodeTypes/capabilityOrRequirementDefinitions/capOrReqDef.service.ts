@@ -1,40 +1,34 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Philipp Meyer, Tino Stadelmaier - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Injectable } from '@angular/core';
-import { Headers, Http, Response, RequestOptions } from '@angular/http';
+import { Response } from '@angular/http';
 import { Observable } from 'rxjs';
 import { CapabilityOrRequirementDefinition, CapOrReqDefinition, Constraint } from './capOrReqDefResourceApiData';
 import { Router } from '@angular/router';
 import { backendBaseURL } from '../../../configuration';
 import { NameAndQNameApiData } from '../../../wineryQNameSelector/wineryNameAndQNameApiData';
 import { TypeWithShortName } from '../../admin/typesWithShortName/typeWithShortName.service';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
 @Injectable()
 export class CapabilityOrRequirementDefinitionsService {
 
     private path: string;
 
-    constructor(private http: Http,
+    constructor(private http: HttpClient,
                 private route: Router) {
-        this.path = decodeURIComponent(this.route.url);
-    }
-
-    /**
-     * Sets the path this service should use as base path.
-     *
-     * @param path string
-     */
-    setPath(path: string): void {
-        this.path = path;
+        this.path = this.route.url;
     }
 
     /**
@@ -43,7 +37,7 @@ export class CapabilityOrRequirementDefinitionsService {
      * @returns {Observable<CapabilityOrRequirementDefinition[]>} data
      */
     getCapOrReqDefinitionsData(): Observable<CapabilityOrRequirementDefinition[]> {
-        return this.sendJsonRequest(this.path);
+        return this.sendJsonRequest<CapabilityOrRequirementDefinition[]>(this.path);
     }
 
     /**
@@ -51,7 +45,7 @@ export class CapabilityOrRequirementDefinitionsService {
      * @returns {Observable<NameAndQNameApiData>}
      */
     getAllCapOrReqTypes(types: string): Observable<NameAndQNameApiData[]> {
-        return this.sendJsonRequest('/' + types);
+        return this.sendJsonRequest<NameAndQNameApiData[]>('/' + types);
     }
 
     /**
@@ -59,8 +53,8 @@ export class CapabilityOrRequirementDefinitionsService {
      * @returns {Observable<TypeWithShortName[]>} list of constraint types
      */
     getConstraintTypes(): Observable<TypeWithShortName[]> {
-        return this.sendJsonRequest('/admin/constrainttypes/');
-    };
+        return this.sendJsonRequest<TypeWithShortName[]>('/admin/constrainttypes/');
+    }
 
     /**
      * Sends a GET request to get a list of all constraints from one capability definition
@@ -68,7 +62,7 @@ export class CapabilityOrRequirementDefinitionsService {
      * @returns {Observable<Constraint[]>} list of constraints
      */
     getConstraints(capabilityDefinition: string): Observable<Constraint[]> {
-        return this.sendJsonRequest(this.path + '/' + capabilityDefinition + '/constraints/');
+        return this.sendJsonRequest<Constraint[]>(this.path + '/' + capabilityDefinition + '/constraints/');
     }
 
     /**
@@ -79,11 +73,13 @@ export class CapabilityOrRequirementDefinitionsService {
      * @returns {Observable<string>} new id of the modified constraint
      */
     updateConstraint(capabilityDefinition: string, id: string, data: string): Observable<string> {
-        const headers = new Headers({'Content-Type': 'text/xml'});
-        const options = new RequestOptions({headers: headers});
-
-        return this.http.put(backendBaseURL + this.path + '/' + capabilityDefinition
-            + '/constraints/' + id + '/', data, options).map(res => res.text());
+        const headers = new HttpHeaders({ 'Content-Type': 'text/xml' });
+        return this.http
+            .put(
+                backendBaseURL + this.path + '/' + capabilityDefinition + '/constraints/' + id + '/',
+                data,
+                { headers: headers, responseType: 'text' }
+            );
     }
 
     /**
@@ -93,11 +89,13 @@ export class CapabilityOrRequirementDefinitionsService {
      * @returns {Observable<string>} provides id of the newly created constraint
      */
     createConstraint(capabilityDefinition: string, constraintData: string): Observable<string> {
-        const headers = new Headers({'Accept': 'text/plain', 'Content-Type': 'text/xml'});
-        const options = new RequestOptions({headers: headers});
-
-        return this.http.post(backendBaseURL + this.path + '/' + capabilityDefinition
-            + '/constraints/', constraintData, options).map(res => res.text());
+        const headers = new HttpHeaders({ 'Accept': 'text/plain', 'Content-Type': 'text/xml' });
+        return this.http
+            .post(
+                backendBaseURL + this.path + '/' + capabilityDefinition + '/constraints/',
+                constraintData,
+                { headers: headers, responseType: 'text' }
+            );
     }
 
     /**
@@ -106,10 +104,12 @@ export class CapabilityOrRequirementDefinitionsService {
      * @param id of the constraint, which is to be deleted
      * @returns {Observable<Response>}
      */
-    deleteConstraint(capabilityDefinition: string, id: string): Observable<Response> {
-        const headers = new Headers({'Accept': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.delete(backendBaseURL + this.path + '/' + capabilityDefinition + '/constraints/' + id + '/', options);
+    deleteConstraint(capabilityDefinition: string, id: string): Observable<HttpResponse<string>> {
+        return this.http
+            .delete(
+                backendBaseURL + this.path + '/' + capabilityDefinition + '/constraints/' + id + '/',
+                { observe: 'response', responseType: 'text' }
+            );
     }
 
     /**
@@ -117,11 +117,14 @@ export class CapabilityOrRequirementDefinitionsService {
      * @param capDef the CapabilityDefinition to be added
      * @returns {Observable<Response>}
      */
-    sendPostRequest(capDef: CapOrReqDefinition): Observable<Response> {
-        const headers = new Headers({'Content-Type': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-
-        return this.http.post(backendBaseURL + this.path + '/', capDef, options);
+    sendPostRequest(capDef: CapOrReqDefinition): Observable<HttpResponse<string>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http
+            .post(
+                backendBaseURL + this.path + '/',
+                capDef,
+                { headers: headers, observe: 'response', responseType: 'text' }
+            );
     }
 
     /**
@@ -129,10 +132,12 @@ export class CapabilityOrRequirementDefinitionsService {
      *
      * @returns {Observable<Response>}
      */
-    deleteCapOrReqDef(id: any): Observable<Response> {
-        const headers = new Headers({'Accept': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.delete(backendBaseURL + this.path + '/' + id + '/', options);
+    deleteCapOrReqDef(id: any): Observable<HttpResponse<string>> {
+        return this.http
+            .delete(
+                backendBaseURL + this.path + '/' + id + '/',
+                { observe: 'response', responseType: 'text' }
+            );
     }
 
     /**
@@ -142,12 +147,8 @@ export class CapabilityOrRequirementDefinitionsService {
      * @param requestPath string The path which is specific for each request.
      * @returns {Observable<any>}
      */
-    private sendJsonRequest(requestPath: string): Observable<any> {
-        const headers = new Headers({'Accept': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-
-        return this.http.get(backendBaseURL + requestPath, options)
-            .map(res => res.json());
+    private sendJsonRequest<T>(requestPath: string): Observable<T> {
+        return this.http.get<T>(backendBaseURL + requestPath);
     }
 
 }

@@ -1,23 +1,26 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
 import { WineryNotificationService } from '../../wineryNotificationModule/wineryNotification.service';
 import { isNullOrUndefined } from 'util';
 import { Utils } from '../../wineryUtils/utils';
 import { ActivatedRoute, Params } from '@angular/router';
 import { backendBaseURL } from '../../configuration';
-import { Observable } from 'rxjs/Observable';
-import { Subscriber } from 'rxjs/Subscriber';
+import { Observable } from 'rxjs';
+import { Subscriber } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { LoginData, StorageElements, Token } from './oAuthInterfaces';
 
 /**
  * This service provides OAuth login service. If the credentials are not set, it defaults
@@ -36,7 +39,7 @@ export class WineryOAuthService {
     private storage: Storage = localStorage;
     private observer: Subscriber<LoginData>;
 
-    constructor(private http: Http, private activatedRoute: ActivatedRoute,
+    constructor(private http: HttpClient, private activatedRoute: ActivatedRoute,
                 private notify: WineryNotificationService) {
     }
 
@@ -97,12 +100,9 @@ export class WineryOAuthService {
             return;
         }
 
-        const headers = new Headers();
-        const options = new RequestOptions({ headers: headers });
-        headers.set('Accept', 'application/json');
+        const headers = new HttpHeaders({ 'Accept': 'application/json' });
 
-        this.http.get('https://api.github.com/user?access_token=' + this.storage.getItem(StorageElements.accessToken), options)
-            .map(res => res.json())
+        this.http.get('https://api.github.com/user?access_token=' + this.storage.getItem(StorageElements.accessToken))
             .subscribe(
                 data => this.handleUserInformation(data),
                 error => this.handleError(error)
@@ -112,17 +112,19 @@ export class WineryOAuthService {
     private parseParamsAndGetToken(params: Params) {
         if (!isNullOrUndefined(params['code']) && !isNullOrUndefined(params['state'])) {
             if (params['state'] === this.storage.getItem(StorageElements.state)) {
-                const headers = new Headers();
-                const options = new RequestOptions({ headers: headers });
-                headers.set('Content-Type', 'application/json');
+                const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
                 const payload = {
                     code: params['code'],
                     state: params['state']
                 };
 
-                this.http.post(backendBaseURL + '/admin/githubaccesstoken', payload, options)
-                    .map(res => res.json())
+                this.http
+                    .post<Token>(
+                        backendBaseURL + '/admin/githubaccesstoken',
+                        payload,
+                        { headers: headers }
+                    )
                     .subscribe(
                         data => this.processAccessToken(data),
                         error => this.handleError(error)
@@ -161,21 +163,3 @@ export class WineryOAuthService {
 
 }
 
-enum StorageElements {
-    state = 'state',
-    accessToken = 'accessToken',
-    tokenType = 'tokenType',
-    userName = 'name'
-}
-
-interface Token {
-    access_token: string;
-    token_type: string;
-    scope: string;
-}
-
-export interface LoginData {
-    success: boolean;
-    userName?: string;
-    message?: string;
-}

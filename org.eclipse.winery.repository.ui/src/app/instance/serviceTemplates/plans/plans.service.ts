@@ -1,30 +1,32 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Headers, Http, RequestOptions, Response } from '@angular/http';
 import { Observable } from 'rxjs';
 import { PlansApiData } from './plansApiData';
 import { backendBaseURL } from '../../../configuration';
-import { SelectData } from '../../../wineryInterfaces/selectData';
+import { SelectData } from '../../../model/selectData';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
 @Injectable()
 export class PlansService {
 
-    path: string;
+    readonly path: string;
 
-    constructor(private http: Http,
+    constructor(private http: HttpClient,
                 private route: Router) {
-        this.path = backendBaseURL + decodeURIComponent(this.route.url) + '/';
+        this.path = backendBaseURL + this.route.url + '/';
     }
 
     getPlansData(url?: string): Observable<PlansApiData[]> {
@@ -39,29 +41,43 @@ export class PlansService {
         return this.getJson(backendBaseURL + '/admin/planlanguages/?ngSelect=true');
     }
 
-    addPlan(newPlan: PlansApiData): Observable<Response> {
-        const headers = new Headers({'Content-Type': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-
-        return this.http.post(this.path, JSON.stringify(newPlan), options);
+    addPlan(newPlan: PlansApiData): Observable<HttpResponse<string>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http
+            .post(
+                this.path,
+                newPlan,
+                { headers: headers, observe: 'response', responseType: 'text' }
+            );
     }
 
-    deletePlan(id: string): Observable<Response> {
-        return this.http.delete(this.path + id + '/');
+    deletePlan(id: string): Observable<HttpResponse<string>> {
+        return this.http
+            .delete(
+                this.path + id + '/',
+                { observe: 'response', responseType: 'text' }
+            );
     }
 
-    private getJson(path: string): Observable<any> {
-        const headers = new Headers({'Accept': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-
-        return this.http.get(path, options)
-            .map(res => res.json());
+    private getJson<T>(path: string): Observable<T> {
+        return this.http.get<T>(path);
     }
 
-    updatePlan(plan: PlansApiData): Observable<Response> {
-        const headers = new Headers({'Content-Type': 'application/json'});
-        const options = new RequestOptions({headers: headers});
+    updatePlan(plan: PlansApiData): Observable<HttpResponse<string>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http
+            .put(
+                this.path + plan.id + '/',
+                plan,
+                { headers: headers, observe: 'response', responseType: 'text' }
+            );
+    }
 
-        return this.http.put(this.path + plan.id + '/', JSON.stringify(plan), options);
+    public generatePlans(): Observable<HttpResponse<string>> {
+        const url = this.path + 'generate';
+        const headers = new HttpHeaders({ 'Content-Type': 'text/plain' });
+        return this.http.post(url, null,
+            { headers: headers, observe: 'response', responseType: 'text' }
+        );
     }
 }

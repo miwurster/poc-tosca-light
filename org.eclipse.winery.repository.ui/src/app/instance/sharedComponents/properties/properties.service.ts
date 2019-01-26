@@ -1,26 +1,29 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Injectable } from '@angular/core';
-import { Headers, Http, Response, RequestOptions } from '@angular/http';
 import { InstanceService } from '../../instance.service';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { backendBaseURL } from '../../../configuration';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class PropertiesService {
 
     path: string;
 
-    constructor(private http: Http,
+    constructor(private http: HttpClient,
                 private sharedData: InstanceService) {
         this.path = backendBaseURL + this.sharedData.path + '/properties/';
     }
@@ -30,13 +33,26 @@ export class PropertiesService {
      * and the value the value. Example: { "property": "this is my property" }.
      */
     public getProperties(): Observable<any> {
-        return this.http.get(this.path)
-            .map(res => res.json());
+        return this.http.get(this.path, { observe: 'response', responseType: 'text' })
+            .pipe(map(res => {
+                if (res.headers.get('Content-Type') === 'application/json') {
+                    return {
+                        isXML: false, properties: JSON.parse(res.body)
+                    };
+                } else {
+                    return { isXML: true, properties: res.body };
+                }
+            }));
     }
 
-    public saveProperties(properties: any): Observable<Response> {
-        const headers = new Headers({'Content-Type': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.put(this.path, properties, options);
+    public saveProperties(properties: any, isXML: boolean): Observable<HttpResponse<string>> {
+        const headers = new HttpHeaders();
+        headers.set('Content-Type', isXML ? 'application/xml' : 'application/json');
+        return this.http
+            .put(
+                this.path,
+                properties,
+                { headers: headers, observe: 'response', responseType: 'text' }
+            );
     }
 }

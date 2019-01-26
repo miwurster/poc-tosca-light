@@ -1,16 +1,17 @@
-/*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/********************************************************************************
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Oliver Kopp - initial API, implementation, maintenance
- *     Pascal Hirmer - support for instantiation of node templates and relationship templates
- *     Karoline Saatkamp - support for target location labels
- *******************************************************************************/
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ ********************************************************************************/
+
 package org.eclipse.winery.model.tosca.utils;
 
 import java.io.IOException;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -54,15 +54,14 @@ import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.model.tosca.constants.QNames;
-import org.eclipse.winery.model.tosca.propertydefinitionkv.PropertyDefinitionKV;
-import org.eclipse.winery.model.tosca.propertydefinitionkv.PropertyDefinitionKVList;
-import org.eclipse.winery.model.tosca.propertydefinitionkv.WinerysPropertiesDefinition;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
+import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -73,54 +72,27 @@ public class ModelUtilities {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ModelUtilities.class);
 
     /**
-     * This is a special method for Winery. Winery allows to define a property definition by specifying name/type
-     * values. Instead of parsing the extensible elements returned TDefinitions, this method is a convenience method to
-     * access this information
-     *
-     * @param et the entitytype to read the properties definition from
-     * @return a WinerysPropertiesDefinition object, which includes a map of name/type-pairs denoting the associated
-     * property definitions. A default element name and namespace is added if it is not defined in the underlying XML.
-     * null if no Winery specific KV properties are defined for the given entity type
+     * @param et the entity type to query
+     * @return null if et == null
+     * @deprecated Use {@link TEntityType#getWinerysPropertiesDefinition()}
      */
+    @Deprecated
     public static WinerysPropertiesDefinition getWinerysPropertiesDefinition(TEntityType et) {
-        // similar implementation as org.eclipse.winery.repository.resources.entitytypes.properties.PropertiesDefinitionResource.getListFromEntityType(TEntityType)
-        WinerysPropertiesDefinition res = null;
-        for (Object o : et.getAny()) {
-            if (o instanceof WinerysPropertiesDefinition) {
-                res = (WinerysPropertiesDefinition) o;
-            }
+        if (et != null) {
+            return et.getWinerysPropertiesDefinition();
         }
-
-        if (res != null) {
-            // we put defaults if elementname and namespace have not been set
-
-            if (res.getElementName() == null) {
-                res.setElementName("Properties");
-            }
-
-            if (res.getNamespace() == null) {
-                // we use the targetnamespace of the original element
-                String ns = et.getTargetNamespace();
-                if (!ns.endsWith("/")) {
-                    ns += "/";
-                }
-                ns += "propertiesdefinition/winery";
-                res.setNamespace(ns);
-            }
-        }
-
-        return res;
+        return null;
     }
 
     /**
      * This is a special method for Winery. Winery allows to define a property by specifying name/value values. Instead
      * of parsing the XML contained in TNodeType, this method is a convenience method to access this information
-     *
+     * <p>
      * The return type "Properties" is used because of the key/value properties.
      *
      * @param template the node template to get the associated properties
      */
-    public static Properties getPropertiesKV(TEntityTemplate template) {
+    public static Map<String, String> getPropertiesKV(TEntityTemplate template) {
         if (template.getProperties() != null) {
             return template.getProperties().getKVProperties();
         } else {
@@ -129,59 +101,20 @@ public class ModelUtilities {
     }
 
     /**
-     * This is a special method for Winery. Winery allows to define a property by specifying name/value values. We
-     * convert the given Properties to XML.
-     *
-     * @param wpd      the Winery's properties definition of the type of the given template (i.e., wpd =
-     *                 getWinerysPropertiesDefinition(template.getType()))
-     * @param template the node template to set the associated properties
-     */
-    public static void setPropertiesKV(WinerysPropertiesDefinition wpd, TEntityTemplate template, Properties properties) {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db;
-        try {
-            db = dbf.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            ModelUtilities.LOGGER.debug(e.getMessage(), e);
-            throw new IllegalStateException("Could not instantiate document builder", e);
-        }
-        Document doc = db.newDocument();
-
-        Element root = doc.createElementNS(wpd.getNamespace(), wpd.getElementName());
-        doc.appendChild(root);
-
-        // we produce the serialization in the same order the XSD would be generated (because of the usage of xsd:sequence)
-        for (PropertyDefinitionKV prop : wpd.getPropertyDefinitionKVList()) {
-            // we always write the element tag as the XSD forces that
-            Element element = doc.createElementNS(wpd.getNamespace(), prop.getKey());
-            root.appendChild(element);
-            String value = properties.getProperty(prop.getKey());
-            if (value != null) {
-                Text text = doc.createTextNode(value);
-                element.appendChild(text);
-            }
-        }
-
-        org.eclipse.winery.model.tosca.TEntityTemplate.Properties tprops = new org.eclipse.winery.model.tosca.TEntityTemplate.Properties();
-        tprops.setAny(doc.getDocumentElement());
-        template.setProperties(tprops);
-    }
-
-    /**
      * Generates a XSD when Winery's K/V properties are used. This method is put here instead of
      * WinerysPropertiesDefinitionResource to avoid generating the subresource
-     *
+     * <p>
      * public because of the usage by TOSCAEXportUtil
      *
      * @return empty Document, if Winery's Properties Definition is not fully filled (e.g., no wrapping element defined)
      */
-    public static Document getWinerysPropertiesDefinitionXSDAsDocument(WinerysPropertiesDefinition wpd) {
+    public static Document getWinerysPropertiesDefinitionXsdAsDocument(WinerysPropertiesDefinition wpd) {
         /*
-		 * This is a quick hack: an XML schema container is created for each
-		 * element. Smarter solution: create a hash from namespace to XML schema
-		 * element and re-use that for each new element
-		* Drawback of "smarter" solution: not a single XSD file any more
-		 */
+         * This is a quick hack: an XML schema container is created for each
+         * element. Smarter solution: create a hash from namespace to XML schema
+         * element and re-use that for each new element
+         * Drawback of "smarter" solution: not a single XSD file any more
+         */
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder;
         try {
@@ -297,12 +230,12 @@ public class ModelUtilities {
     /**
      * Special method to get the name of an extensible element as the TOSCA specification does not have a separate super
      * type for elements with a name
-     *
-     * {@link Util#instanceSupportsNameAttribute(java.lang.Class)} is related
+     * <p>
      *
      * @param e the extensible element offering a name attribute (besides an id attribute)
      * @return the name of the extensible element
      * @throws IllegalStateException if e does not offer the method "getName"
+     * @see Util#instanceSupportsNameAttribute(java.lang.Class) is related
      */
     public static String getName(TExtensibleElements e) {
         Method method;
@@ -318,8 +251,8 @@ public class ModelUtilities {
 
     /**
      * Returns the name of the given element. If the name does not exist or is empty, the id is returned
-     *
-     * {@see getName}
+     * <p>
+     * {@link #getName}
      *
      * @return the name if there is a name field, if not, the id is returned. In case there is a Name field,
      */
@@ -377,12 +310,20 @@ public class ModelUtilities {
         return valid;
     }
 
-    /**
-     * @return null if no explicit left is set
-     */
-    public static String getLeft(TNodeTemplate nodeTemplate) {
+    public static Optional<Integer> getLeft(TNodeTemplate nodeTemplate) {
         Map<QName, String> otherAttributes = nodeTemplate.getOtherAttributes();
-        return otherAttributes.get(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x"));
+        String x = otherAttributes.get(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x"));
+        if (x == null) {
+            return Optional.empty();
+        }
+        Float floatValue;
+        try {
+            floatValue = Float.parseFloat(x);
+        } catch (NumberFormatException e) {
+            LOGGER.debug("Could not parse x value", e);
+            return Optional.empty();
+        }
+        return Optional.of(floatValue.intValue());
     }
 
     /**
@@ -441,10 +382,10 @@ public class ModelUtilities {
 
     /**
      * Returns the id of the given element
-     *
+     * <p>
      * The TOSCA specification does NOT always put an id field. In the case of EntityTypes and
      * EntityTypeImplementations, there is no id, but a name field
-     *
+     * <p>
      * This method abstracts from that fact.
      */
     public static String getId(TExtensibleElements ci) {
@@ -615,20 +556,30 @@ public class ModelUtilities {
         return relationshipTemplate;
     }
 
+    /**
+     * Target label is not present if - empty string - undefined - null Target Label is not case sensitive -> always
+     * lower case.
+     */
     public static Optional<String> getTargetLabel(TNodeTemplate nodeTemplate) {
         if (nodeTemplate == null) {
             return Optional.empty();
         }
         Map<QName, String> otherAttributes = nodeTemplate.getOtherAttributes();
         String targetLabel = otherAttributes.get(QNAME_LOCATION);
-        return Optional.ofNullable(targetLabel);
+        if (targetLabel != null && (targetLabel.equals("undefined") || targetLabel.equals(""))) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(targetLabel).map(String::toLowerCase);
     }
 
+    /**
+     * Target Label is not case sensitive -> set to lowercase.
+     */
     public static void setTargetLabel(TNodeTemplate nodeTemplate, String targetLabel) {
         Objects.requireNonNull(nodeTemplate);
         Objects.requireNonNull(targetLabel);
         Map<QName, String> otherAttributes = nodeTemplate.getOtherAttributes();
-        otherAttributes.put(QNAME_LOCATION, targetLabel);
+        otherAttributes.put(QNAME_LOCATION, targetLabel.toLowerCase());
     }
 
     public static TNodeTemplate getSourceNodeTemplateOfRelationshipTemplate(TTopologyTemplate topologyTemplate, TRelationshipTemplate relationshipTemplate) {
@@ -717,11 +668,11 @@ public class ModelUtilities {
      * When sending JSON to the server, the content of "any" is a String and not some JSON data structure. To be able to
      * save it as XML, we have to "objectize" the content of Any
      *
-     * @param nodeTemplates The node templates to update. The content of the given collection is modified.
+     * @param templates The templates (node, relationship) to update. The content of the given collection is modified.
      * @throws IllegalStateException if DocumentBuilder could not iniitialized
      * @throws IOException           if something goes wrong during parsing
      */
-    public static void patchAnyAttributes(Collection<TNodeTemplate> nodeTemplates) throws IOException {
+    public static void patchAnyAttributes(Collection<? extends TEntityTemplate> templates) throws IOException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = null;
         try {
@@ -733,21 +684,29 @@ public class ModelUtilities {
 
         Map<QName, String> tempConvertedOtherAttributes = new HashMap<>();
 
-        for (TNodeTemplate nodeTemplate : nodeTemplates) {
+        for (TEntityTemplate template : templates) {
 
             //Convert the wrong QName created by the JSON serialization back to a right QName
-            for (Map.Entry<QName, String> otherAttribute : nodeTemplate.getOtherAttributes().entrySet()) {
-                QName qName = QName.valueOf(otherAttribute.getKey().getLocalPart());
+            for (Map.Entry<QName, String> otherAttribute : template.getOtherAttributes().entrySet()) {
+                QName qName;
+                String localPart = otherAttribute.getKey().getLocalPart();
+                if (localPart.startsWith("{")) {
+                    // QName is stored as plain string - this is the case when nested in "any"
+                    qName = QName.valueOf(localPart);
+                } else {
+                    // sometimes, the QName is retrieved properly. So, we just keep it. This is the case when directly nested in nodetemplate's JSON
+                    qName = new QName(otherAttribute.getKey().getNamespaceURI(), localPart);
+                }
                 tempConvertedOtherAttributes.put(qName, otherAttribute.getValue());
             }
-            nodeTemplate.getOtherAttributes().clear();
-            nodeTemplate.getOtherAttributes().putAll(tempConvertedOtherAttributes);
+            template.getOtherAttributes().clear();
+            template.getOtherAttributes().putAll(tempConvertedOtherAttributes);
             tempConvertedOtherAttributes.clear();
 
             // Convert the String created by the JSON serialization back to a XML dom document
-            TEntityTemplate.Properties properties = nodeTemplate.getProperties();
+            TEntityTemplate.Properties properties = template.getProperties();
             if (properties != null) {
-                Object any = properties.getAny();
+                Object any = properties.getInternalAny();
                 if (any instanceof String) {
                     Document doc = null;
                     try {
@@ -759,9 +718,21 @@ public class ModelUtilities {
                         LOGGER.error("Could not parse", e);
                         throw e;
                     }
-                    nodeTemplate.getProperties().setAny(doc.getDocumentElement());
+                    template.getProperties().setAny(doc.getDocumentElement());
                 }
             }
         }
+    }
+
+    public static boolean isOfType(QName requiredType, QName givenType, Map<QName, ? extends TEntityType> elements) {
+        if (!givenType.equals(requiredType)) {
+            TEntityType entityType = elements.get(givenType);
+            if (Objects.isNull(entityType) || Objects.isNull(entityType.getDerivedFrom())) {
+                return false;
+            } else {
+                return isOfType(requiredType, entityType.getDerivedFrom().getTypeAsQName(), elements);
+            }
+        }
+        return true;
     }
 }

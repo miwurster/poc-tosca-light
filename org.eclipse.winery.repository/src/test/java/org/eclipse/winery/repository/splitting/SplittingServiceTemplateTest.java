@@ -23,9 +23,9 @@ import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.Group
 import org.eclipse.winery.repository.splitting.groupprovisioninggraphmodel.OrderRelation;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SplittingServiceTemplateTest extends TestWithGitBackedRepository {
 

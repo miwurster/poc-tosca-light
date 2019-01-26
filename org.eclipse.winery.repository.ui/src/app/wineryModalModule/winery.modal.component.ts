@@ -1,65 +1,43 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Tino Stadelmaier - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { AfterContentInit, AfterViewInit, Component, ContentChild, HostBinding, Input } from '@angular/core';
-import { isNullOrUndefined } from 'util';
+import { deprecate, isNullOrUndefined } from 'util';
 import { WineryModalFooterComponent } from './winery.modal.footer.component';
 import { WineryModalHeaderComponent } from './winery.modal.header.component';
 import { ModalDirective } from 'ngx-bootstrap';
-
-const SMALL = 'sm';
-const LARGE = 'lg';
+import { WineryModalSize } from './wineryModalSize';
 
 /**
- * This component provides a generic modal component for any kind of pop-ups.
- * To use it, the {@link WineryModalModule} must be imported in the corresponding module.
- *
- * In order to use this component, see the following example, note that the <code>modalRef</code> must be set.
- * For further information, see the sub-components {@link WineryModalHeaderComponent}, {@link WineryModalBodyComponent},
- * and {@link WineryModalFooterComponent}.
- *
- * <label>Inputs</label>
- * <ul>
- *     <li><code>modalRef</code> The modalRef must be set, otherwise the component will not work!
- *     </li>
- *     <li><code>size</code>
- *     </li>
- *     <li><code>keyboard</code>
- *     </li>
- *     <li><code>backdrop</code>
- *     </li>
- * </ul>
- *
- * @example <caption>Short Example</caption>
- * ```html
- * <winery-modal bsModal #confirmDeleteModal="bs-modal" [modalRef]="confirmDeleteModal">
- *     <winery-modal-header [title]="'Delete Property'">
- *     </winery-modal-header>
+ * @deprecated
+ * This component should not be used anymore
+ * Please use <ng-template> and the BsModalService to show a modal (e.g. plan.component.ts).
+ * @example
+ * <ng-template #removeElementModal>
+ *     <winery-modal-header [modalRef]="removeElementModalRef" [title]="modalTitle"></winery-modal-header>
  *     <winery-modal-body>
- *         <p *ngIf="elementToRemove != null">
- *         Do you want to delete the Element
- *             <span style="font-weight:bold;">{{ elementToRemove.key }}</span>?
- *         </p>
+ *         <p>Test</p>
  *     </winery-modal-body>
- *     <winery-modal-footer (onOk)="removeConfirmed();"
- *                          [closeButtonLabel]="'Cancel'"
- *                          [okButtonLabel]="'Delete'">
- *     </winery-modal-footer>
- * </winery-modal>
- * ```
+ *     <winery-modal-footer [modalRef]="removeElementModalRef"
+ *              [closeButtonLabel]="'Cancel'" [okButtonLabel]="'Delete'"
+ *              (onOk)="onRemoveElement()"></winery-modal-footer>
+ *</ng-template>
  */
 @Component({
     selector: 'winery-modal',
     templateUrl: 'winery.modal.component.html',
 })
+
 export class WineryModalComponent implements AfterViewInit, AfterContentInit {
 
     @Input() modalRef: ModalDirective;
@@ -87,15 +65,15 @@ export class WineryModalComponent implements AfterViewInit, AfterContentInit {
     }
 
     ngAfterViewInit(): void {
-        if (!this.backdrop) {
-            this.modalRef.config.backdrop = 'static';
+        if (this.backdrop) {
+            this.modalRef.config.backdrop = true;
         } else {
-            this.modalRef.config.backdrop = this.backdrop;
+            this.modalRef.config.backdrop = 'static';
         }
 
         this.modalRef.config.keyboard = this.keyboard;
 
-        if (ModalSize.validSize(this.size)) {
+        if (WineryModalSize.validSize(this.size)) {
             this.overrideSize = this.size;
         }
     }
@@ -104,11 +82,11 @@ export class WineryModalComponent implements AfterViewInit, AfterContentInit {
         const classes: string[] = [];
 
         if (this.isSmall()) {
-            classes.push('modal-sm');
+            classes.push(WineryModalSize.SMALL);
         }
 
         if (this.isLarge()) {
-            classes.push('modal-lg');
+            classes.push(WineryModalSize.LARGE);
         }
 
         if (this.cssClass !== '') {
@@ -119,24 +97,14 @@ export class WineryModalComponent implements AfterViewInit, AfterContentInit {
     }
 
     private isSmall() {
-        return this.overrideSize !== LARGE
-            && this.size === SMALL
-            || this.overrideSize === SMALL;
+        return this.overrideSize !== WineryModalSize.LARGE
+            && this.size === WineryModalSize.SMALL
+            || this.overrideSize === WineryModalSize.SMALL;
     }
 
     private isLarge() {
-        return this.overrideSize !== SMALL
-            && this.size === LARGE
-            || this.overrideSize === LARGE;
+        return this.overrideSize !== WineryModalSize.SMALL
+            && this.size === WineryModalSize.LARGE
+            || this.overrideSize === WineryModalSize.LARGE;
     }
-}
-
-/**
- * This class is used to determine the modal's size
- */
-export class ModalSize {
-    static validSize(size: string) {
-        return size && (size === SMALL || size === LARGE);
-    }
-
 }

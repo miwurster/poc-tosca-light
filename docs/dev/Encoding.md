@@ -5,7 +5,7 @@
 ## Example to understand double encoding of URIs in Winery
 
 In file systems, characters `/` and `:` are not allowed [source](https://stackoverflow.com/a/31976060/873282).
-The [design decision](../adr/0002-filesystem-folder-structure-using-type-namespace-id-structure) is that all files (node types, imports in CSARs, ...) are stored and structured using directories with human readable names.
+The [design decision](../adr/0002-filesystem-folder-structure-using-type-namespace-id-structure.md) is that all files (node types, imports in CSARs, ...) are stored and structured using directories with human readable names.
 Therefore, the namespace URI must be used in a encoded form, otherwise the name would not be valid (`http://www...`). 
 An example for such a directory name is `http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema`.
 Since (1) namespaces are URIs and (2) [percent-encoded](https://tools.ietf.org/html/rfc3986#section-2.1) URIs form valid directory names, URL encoding is used.
@@ -54,11 +54,14 @@ Summary: Because the namespace is part of the used URIs and the ns itself is a U
 
 ## License
 
-Copyright (c) 2017 University of Stuttgart.
+Copyright (c) 2017 Contributors to the Eclipse Foundation
 
-All rights reserved. This program and the accompanying materials
-are made available under the terms of the [Eclipse Public License v1.0]
-and the [Apache License v2.0] which both accompany this distribution.
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
 
-  [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
-  [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0

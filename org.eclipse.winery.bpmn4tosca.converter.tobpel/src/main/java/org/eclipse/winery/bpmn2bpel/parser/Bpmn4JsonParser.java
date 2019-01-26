@@ -1,15 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2015-2017 University of Stuttgart.
- * Copyright (c) 2017 ZTE Corporation.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2015-2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Sebastian Wagner - initial API and implementation
- *     ZTE - support of more gateways
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 package org.eclipse.winery.bpmn2bpel.parser;
 
@@ -102,7 +102,7 @@ public class Bpmn4JsonParser extends Parser {
 			 * Now since all node models are created they can be linked with each other in the management flow
 			 */
 			ManagementFlow managementFlow =
-			          new SortParser(nodeMap, nodeWithTargetsMap).buildManagementFlow();
+					new SortParser(nodeMap, nodeWithTargetsMap).buildManagementFlow();
 			return managementFlow;
 
 		} catch (Exception e) {
@@ -130,24 +130,24 @@ public class Bpmn4JsonParser extends Parser {
 				+ "'");
 
 		switch (nodeType) {
-		case JsonKeys.NODE_TYPE_START_EVENT:
-			node = createStartTaskFromJson(jsonNode);
-			break;
-		case JsonKeys.NODE_TYPE_MGMT_TASK:
-			node = createManagementTaskFromJson(jsonNode);
-			break;
-		case JsonKeys.NODE_TYPE_END_EVENT:
-			node = createEndTaskFromJson(jsonNode);
-			break;
-		case JsonKeys.NODE_TYPE_GATEWAY_EXCLUSIVE:
-			node = createOrGatewaySplitFromJson(jsonNode);
-			break;
-		case JsonKeys.NODE_TYPE_GATEWAY_EXCLUSIVE_END:
-			node = createOrGatewayMergeFromJson(jsonNode);
-			break;
-		default:
-			LOGGER.warn("Ignoring node: type '" + nodeType + "' is unkown");
-			return null;
+			case JsonKeys.NODE_TYPE_START_EVENT:
+				node = createStartTaskFromJson(jsonNode);
+				break;
+			case JsonKeys.NODE_TYPE_MGMT_TASK:
+				node = createManagementTaskFromJson(jsonNode);
+				break;
+			case JsonKeys.NODE_TYPE_END_EVENT:
+				node = createEndTaskFromJson(jsonNode);
+				break;
+			case JsonKeys.NODE_TYPE_GATEWAY_EXCLUSIVE:
+				node = createOrGatewaySplitFromJson(jsonNode);
+				break;
+			case JsonKeys.NODE_TYPE_GATEWAY_EXCLUSIVE_END:
+				node = createOrGatewayMergeFromJson(jsonNode);
+				break;
+			default:
+				LOGGER.warn("Ignoring node: type '" + nodeType + "' is unkown");
+				return null;
 		}
 
 		/* Set generic node attributes */
@@ -155,7 +155,7 @@ public class Bpmn4JsonParser extends Parser {
 		node.setName(nodeName);
 		node.setType(nodeType);
 		if (node instanceof Task) {
-			loadParameter4Task((Task)node, jsonNode);
+			loadParameter4Task((Task) node, jsonNode);
 		}
 
 		return node;
@@ -256,7 +256,7 @@ public class Bpmn4JsonParser extends Parser {
 	protected ManagementTask createManagementTaskFromJson(JsonNode managementTaskNode) {
 
 		if (!hasRequiredFields(managementTaskNode, Arrays.asList(JsonKeys.NODE_TEMPLATE, JsonKeys.NODE_OPERATION))) {
-			LOGGER.warn("Ignoring mangement node: One of the fields '" + JsonKeys.NODE_TEMPLATE +  "' or '"
+			LOGGER.warn("Ignoring mangement node: One of the fields '" + JsonKeys.NODE_TEMPLATE + "' or '"
 					+ JsonKeys.NODE_OPERATION + "' is missing");
 			return null;
 		}
@@ -265,7 +265,7 @@ public class Bpmn4JsonParser extends Parser {
 		String nodeOperation = managementTaskNode.get(JsonKeys.NODE_OPERATION).asText();
 
 		LOGGER.debug("Creating management task with id '" + managementTaskNode.get(JsonKeys.ID) + "', name '" + managementTaskNode.get(JsonKeys.NAME)
-					+ "', node template '" + nodeTemplate + "', node operation '" + "', node operation '" + nodeOperation + "'");
+				+ "', node template '" + nodeTemplate + "', node operation '" + "', node operation '" + nodeOperation + "'");
 
 		ManagementTask task = new ManagementTask();
 		task.setNodeTemplateId(QName.valueOf(nodeTemplate));
@@ -279,7 +279,7 @@ public class Bpmn4JsonParser extends Parser {
 	protected Parameter createParameterFromJson(String paramName, JsonNode paramNode) {
 
 		if (!hasRequiredFields(paramNode, Arrays.asList(JsonKeys.TYPE, JsonKeys.VALUE))) {
-			LOGGER.warn("Ignoring parameter node: One of the fields '" + JsonKeys.TYPE +  "' or '"
+			LOGGER.warn("Ignoring parameter node: One of the fields '" + JsonKeys.TYPE + "' or '"
 					+ JsonKeys.VALUE + "' is missing");
 			return null;
 		}
@@ -290,27 +290,27 @@ public class Bpmn4JsonParser extends Parser {
 
 		Parameter param = null;
 		switch (paramType) {
-		case JsonKeys.PARAM_TYPE_VALUE_CONCAT:
-			param = new ConcatParameter(); // TODO add concat operands
-			break;
-		case JsonKeys.PARAM_TYPE_VALUE_DA:
-			param = new DeploymentArtefactParameter();
-			break;
-		case JsonKeys.PARAM_TYPE_VALUE_IA:
-			param = new ImplementationArtefactParameter();
-			break;
-		case JsonKeys.PARAM_TYPE_VALUE_PLAN:
-			param = new PlanParameter(); // TODO add task name
-			break;
-		case JsonKeys.PARAM_TYPE_VALUE_STRING:
-			param = new StringParameter();
-			break;
-		case JsonKeys.PARAM_TYPE_VALUE_TOPOLOGY:
-			param = new TopologyParameter();
-			break;
-		default:
-			LOGGER.warn("JSON parameter type '" + paramType + "' unknown");
-			return null;
+			case JsonKeys.PARAM_TYPE_VALUE_CONCAT:
+				param = new ConcatParameter(); // TODO add concat operands
+				break;
+			case JsonKeys.PARAM_TYPE_VALUE_DA:
+				param = new DeploymentArtefactParameter();
+				break;
+			case JsonKeys.PARAM_TYPE_VALUE_IA:
+				param = new ImplementationArtefactParameter();
+				break;
+			case JsonKeys.PARAM_TYPE_VALUE_PLAN:
+				param = new PlanParameter(); // TODO add task name
+				break;
+			case JsonKeys.PARAM_TYPE_VALUE_STRING:
+				param = new StringParameter();
+				break;
+			case JsonKeys.PARAM_TYPE_VALUE_TOPOLOGY:
+				param = new TopologyParameter();
+				break;
+			default:
+				LOGGER.warn("JSON parameter type '" + paramType + "' unknown");
+				return null;
 		}
 
 		/* Set generic parameter attributes */

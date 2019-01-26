@@ -1,17 +1,17 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Niko Stadelmaier, Lukas Harzenetter - initial API and implementation
- *     Oliver Kopp - quick fix to enable IA generation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Response } from '@angular/http';
 import { isNullOrUndefined } from 'util';
 import { backendBaseURL } from '../../../configuration';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
@@ -21,12 +21,17 @@ import { InstanceService } from '../../instance.service';
 import { GenerateArtifactApiData } from './generateArtifactApiData';
 import { InterfacesService } from './interfaces.service';
 import { InterfaceOperationApiData, InterfacesApiData } from './interfacesApiData';
-import { InputParameters, InterfaceParameter, OutputParameters } from '../../../wineryInterfaces/parameters';
+import { InputParameters, InterfaceParameter, OutputParameters } from '../../../model/parameters';
 import { ModalDirective } from 'ngx-bootstrap';
 import { NgForm } from '@angular/forms';
 import { GenerateData } from '../../../wineryComponentExists/wineryComponentExists.component';
-import { ToscaTypes } from '../../../wineryInterfaces/enums';
+import { ToscaTypes } from '../../../model/enums';
 import { Utils } from '../../../wineryUtils/utils';
+import { SelectableListComponent } from './selectableList/selectableList.component';
+import { WineryVersion } from '../../../model/wineryVersion';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Interfaces } from './interfaces';
 
 @Component({
     selector: 'winery-instance-interfaces',
@@ -59,6 +64,7 @@ export class InterfacesComponent implements OnInit {
     @ViewChild('addElementForm') addElementForm: NgForm;
 
     @ViewChild('generateImplModal') generateImplModal: ModalDirective;
+    @ViewChild('itemList') interfaceComponent: SelectableListComponent;
     generateArtifactApiData = new GenerateArtifactApiData();
     toscaType: ToscaTypes;
     createImplementation = true;
@@ -69,7 +75,8 @@ export class InterfacesComponent implements OnInit {
     artifactTemplate: GenerateData = new GenerateData();
 
     constructor(private service: InterfacesService, private notify: WineryNotificationService,
-                private sharedData: InstanceService, private existService: ExistService) {
+                public sharedData: InstanceService, private existService: ExistService,
+                private route: Router) {
     }
 
     ngOnInit() {
@@ -185,34 +192,65 @@ export class InterfacesComponent implements OnInit {
 
     // region ########## Generate Implementation ##########
     showGenerateImplementationModal(): void {
-        this.artifactTemplate.name =
-            this.sharedData.toscaComponent.localName + '_' + this.selectedInterface.name.replace(/\W/g, '_') + '_IA';
-        this.artifactTemplate.namespace = this.sharedData.toscaComponent.namespace;
+        this.artifactTemplate.name = this.sharedData.toscaComponent.localNameWithoutVersion
+            + '-' + this.sharedData.currentVersion.toString()
+            + '-' + this.selectedInterface.name.replace(/\W/g, '-')
+            + '-IA';
+
+        let artifactTemplateNamespace = '';
+        if (this.sharedData.toscaComponent.namespace.includes('nodetypes')) {
+            artifactTemplateNamespace = this.sharedData.toscaComponent.namespace.replace('nodetypes', 'artifacttemplates');
+        } else if (this.sharedData.toscaComponent.namespace.includes('relationshiptypes')) {
+            artifactTemplateNamespace = this.sharedData.toscaComponent.namespace.replace('relationshiptypes', 'artifacttemplates');
+        } else {
+            artifactTemplateNamespace = this.sharedData.toscaComponent.namespace;
+        }
+
+        this.artifactTemplate.namespace = artifactTemplateNamespace;
         this.artifactTemplate.toscaType = ToscaTypes.ArtifactTemplate;
 
         this.generateArtifactApiData = new GenerateArtifactApiData();
-        this.generateArtifactApiData.javaPackage = this.getPackageNameFromNamespace();
+        const packageName = this.getPackageNameFromNamespace();
+
+        let javaPackageName = '';
+        if (packageName.includes('nodetypes')) {
+            javaPackageName = packageName.replace('nodetypes', 'nodetypeimplementations');
+        } else if (packageName.includes('relationshiptypes')) {
+            javaPackageName = packageName.replace('relationshiptypes', 'relationshiptypeimplementations');
+        } else {
+            javaPackageName = packageName;
+        }
+        this.generateArtifactApiData.javaPackage = javaPackageName;
 
         this.generateArtifactApiData.autoCreateArtifactTemplate = 'yes';
         this.generateArtifactApiData.interfaceName = this.selectedInterface.name;
-
-        // enable autogenreation of the implementation artifact
-        // currently works for node types only, not for relationship types
         this.generateArtifactApiData.autoGenerateIA = 'yes';
 
-        this.implementation.name = this.sharedData.toscaComponent.localName + '_impl';
-        this.implementation.namespace = this.sharedData.toscaComponent.namespace;
-        this.implementation.toscaType = Utils.getToscaOfTypeOrImplementation(this.toscaType);
+        this.implementation.name = this.sharedData.toscaComponent.localNameWithoutVersion
+            + '-' + this.sharedData.currentVersion.toString()
+            + '-Implementation';
+
+        let implementationNamespace = '';
+        if (this.sharedData.toscaComponent.namespace.includes('nodetypes')) {
+            implementationNamespace = this.sharedData.toscaComponent.namespace.replace('nodetypes', 'nodetypeimplementations');
+        } else if (this.sharedData.toscaComponent.namespace.includes('relationshiptypes')) {
+            implementationNamespace = this.sharedData.toscaComponent.namespace.replace('relationshiptypes', 'relationshiptypeimplementations');
+        } else {
+            implementationNamespace = this.sharedData.toscaComponent.namespace;
+        }
+        this.implementation.namespace = implementationNamespace;
+        this.implementation.toscaType = Utils.getImplementationOrTemplateOfType(this.toscaType);
 
         this.generateImplModal.show();
     }
 
     generateImplementationArtifact(): void {
         this.generating = true;
+        this.generateArtifactApiData.artifactTemplateName = this.artifactTemplate.name;
+        this.generateArtifactApiData.artifactTemplateNamespace = this.artifactTemplate.namespace;
         this.generateArtifactApiData.artifactName = this.generateArtifactApiData.artifactTemplateName;
-        if (this.toscaType !== ToscaTypes.NodeType) {
-            delete this.generateArtifactApiData.autoGenerateIA;
-        }
+        // Fix this prevent weired renaming by backend
+        this.generateArtifactApiData.artifactTemplate = null;
         // Save the current interfaces & operations first in order to prevent inconsistencies.
         this.save();
     }
@@ -221,25 +259,38 @@ export class InterfacesComponent implements OnInit {
 
     // region ########## Generate Lifecycle Interface ##########
     generateLifecycleInterface(): void {
-        const lifecycle = new InterfacesApiData('http://www.example.com/interfaces/lifecycle');
-        lifecycle.operation.push(new InterfaceOperationApiData('install'));
-        lifecycle.operation.push(new InterfaceOperationApiData('configure'));
-        lifecycle.operation.push(new InterfaceOperationApiData('start'));
-        lifecycle.operation.push(new InterfaceOperationApiData('stop'));
-        lifecycle.operation.push(new InterfaceOperationApiData('uninstall'));
+        const lifecycle = new InterfacesApiData();
+        if (this.toscaType === ToscaTypes.RelationshipType && this.route.url.endsWith('/interfaces')) {
+            lifecycle.name = Interfaces.RELATIONSHIP_CONFIGURE;
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.RELATIONSHIP_CONFIGURE_PRE_CONFIGURE_SOURCE));
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.RELATIONSHIP_CONFIGURE_PRE_CONFIGURE_TARGET));
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.RELATIONSHIP_CONFIGURE_POST_CONFIGURE_SOURCE));
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.RELATIONSHIP_CONFIGURE_POST_CONFIGURE_TARGET));
+        } else {
+            // Node Types and Relationship Types (Source and Target Interface)
+            lifecycle.name = Interfaces.LIFECYCLE_STANDARD;
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.LIFECYCLE_STANDARD_INSTALL));
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.LIFECYCLE_STANDARD_CONFIGURE));
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.LIFECYCLE_STANDARD_START));
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.LIFECYCLE_STANDARD_STOP));
+            lifecycle.operation.push(new InterfaceOperationApiData(Interfaces.LIFECYCLE_STANDARD_UNINSTALL));
+        }
         this.interfacesData.push(lifecycle);
+        this.interfaceComponent.selectItem(lifecycle);
     }
 
     containsDefaultLifecycle(): boolean {
-        if (isNullOrUndefined(this.interfacesData)) {
-            return false;
+        if (this.sharedData.currentVersion.editable) {
+            if (this.interfacesData === null || this.interfacesData === undefined) {
+                return false;
+            }
+            const lifecycleId = this.interfacesData.findIndex((value) => {
+                return value.name.startsWith(Interfaces.LIFECYCLE_STANDARD)
+                    || value.name.startsWith(Interfaces.RELATIONSHIP_CONFIGURE);
+            });
+            return lifecycleId !== -1;
         }
-
-        const lifecycleId = this.interfacesData.findIndex((value) => {
-            return value.name.endsWith('http://www.example.com/interfaces/lifecycle');
-        });
-
-        return lifecycleId !== -1;
+        return true;
     }
 
     // endregion
@@ -248,7 +299,7 @@ export class InterfacesComponent implements OnInit {
     checkImplementationExists(): void {
         if (!this.implementationNamespace.endsWith('/')) {
             this.existService.check(backendBaseURL + '/'
-                + Utils.getTypeOrImplementationOf(this.toscaType)
+                + Utils.getTypeOfTemplateOrImplementation(this.toscaType)
                 + encodeURIComponent(encodeURIComponent(this.implementationNamespace)) + '/'
                 + this.implementationName + '/'
             ).subscribe(
@@ -309,6 +360,7 @@ export class InterfacesComponent implements OnInit {
         // If there is a generation of implementations in progress, generate those now.
         if (this.generating) {
             if (this.implementation.createComponent) {
+                this.implementation.name += WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + this.implementation.version.toString();
                 this.service.createImplementation(this.implementation.name, this.implementation.namespace)
                     .subscribe(
                         data => this.handleGeneratedImplementation(data),
@@ -322,10 +374,10 @@ export class InterfacesComponent implements OnInit {
         }
     }
 
-    private handleError(error: Error) {
+    private handleError(error: HttpErrorResponse) {
         this.loading = false;
         this.generating = false;
-        this.notify.error(error.toString());
+        this.notify.error(error.error);
     }
 
     private getPackageNameFromNamespace(): string {
@@ -365,13 +417,14 @@ export class InterfacesComponent implements OnInit {
         }
     }
 
-    private handleGeneratedArtifact(response: Response) {
+    private handleGeneratedArtifact(response: HttpResponse<string>) {
         let message = '';
         if (this.toscaType === ToscaTypes.NodeType) {
+            // backend return a path to the created artifacttemplate in the form: http://localhost:8080/winery/
+            // therefore truncate backendBaseUrl to receive path
+            const artifacttemplateUrl = response.url.replace(backendBaseURL, '');
             message = 'It\'s available for download at ' +
-                '<a style="color: black;" href="' + response.headers.get('Location') + '">'
-                + this.implementation.name
-                + ' source</a>.';
+                '<a style="color: black;" href="/#/' + artifacttemplateUrl + '">' + ' source</a>.';
         }
         this.generating = false;
         this.generateImplModal.hide();

@@ -1,23 +1,25 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- *     Niko Stadelmaier - module refactoring
- */
-import { Component, EventEmitter, Input, OnInit, Output, OnChanges } from '@angular/core';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { isNullOrUndefined } from 'util';
 import { WineryUploaderService } from './wineryUploader.service';
 import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
+import { FileUploader } from 'ng2-file-upload';
 
 /**
- * This component provides a modal popup with a <code>title</code> and optional progress bar <code>showProgress</code> for file uploads.
- * The file will be uploaded to the given <code>uploadUrl</code>.
+ * This component provides a modal popup with a <code>title</code> and optional progress bar <code>showProgress</code>
+ * for file uploads. The file will be uploaded to the given <code>uploadUrl</code>.
  *
  *
  * <label>Inputs</label>
@@ -29,8 +31,8 @@ import { WineryNotificationService } from '../wineryNotificationModule/wineryNot
  *     </li>
  *     <li><code>modalRef</code> The reference to the modal.
  *     </li>
- *     <li><code>uploadImmediately</code> This flag is set to true by default. If no immediate upload is desired, you can
- *     set this to false. However, if set to false, you need to call the upload method yourself.
+ *     <li><code>uploadImmediately</code> This flag is set to true by default. If no immediate upload is desired, you
+ *     can set this to false. However, if set to false, you need to call the upload method yourself.
  *     </li>
  *     <li><code>uploadMethod</code> Specifies the http method used to upload the file. By default POST is used.
  *     </li>
@@ -59,6 +61,9 @@ export class WineryUploaderComponent implements OnInit, OnChanges {
 
     fileOver = false;
     loading = false;
+    error = false;
+
+    errorMessage = '';
 
     @Input() uploadUrl: string;
     @Input() showProgress = true;
@@ -66,6 +71,7 @@ export class WineryUploaderComponent implements OnInit, OnChanges {
     @Input() uploadImmediately = true;
     @Input() uploadMethod = 'POST';
     @Input() allowMultipleFiles = false;
+    @Input() isEditable: boolean;
 
     @Output() onFileDropped = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
@@ -84,14 +90,20 @@ export class WineryUploaderComponent implements OnInit, OnChanges {
         this.service.uploadUrl = this.uploadUrl;
     }
 
+    getUploader(): FileUploader {
+        return this.service.uploader;
+    }
+
     dropFile(event?: any) {
-        if (!isNullOrUndefined(event) && isNullOrUndefined(this.service.uploader.queue[0])) {
-            this.fileOver = event;
-        } else {
-            this.fileOver = false;
-            this.onFileDropped.emit(this.service.uploader.queue[0]);
-            if (this.uploadImmediately) {
-                this.upload();
+        if (this.isEditable) {
+            if (!isNullOrUndefined(event) && isNullOrUndefined(this.service.uploader.queue[0])) {
+                this.fileOver = event;
+            } else {
+                this.fileOver = false;
+                this.onFileDropped.emit(this.service.uploader.queue[0]);
+                if (this.uploadImmediately) {
+                    this.upload();
+                }
             }
         }
     }
@@ -102,21 +114,32 @@ export class WineryUploaderComponent implements OnInit, OnChanges {
             this.service.uploadUrl = uploadTo;
 
         }
+
+        this.service.uploader.onBeforeUploadItem = (item) => {
+            item.withCredentials = false;
+        };
+
         this.service.uploader.onCompleteItem = (item: any, response: string, status: number, headers: any) => {
             this.loading = false;
 
             if (status >= 200 && status <= 204) {
-                this.notify.success('Successfully saved file ' + item.file.name);
+                this.notify.success('Successfully uploaded file ' + item.file.name);
                 if (!isNullOrUndefined(this.modalRef)) {
                     this.modalRef.hide();
                 }
-                this.onSuccess.emit();
+                this.onSuccess.emit(response);
             } else {
-                this.notify.error('Error while uploading file ' + item.file.name);
-                this.onError.emit(new Error('Error while uploading file ' + item.file.name));
+                if (response) {
+                    this.error = true;
+                    this.errorMessage = response;
+                    this.notify.error('<pre>'.concat(this.errorMessage, '</pre>'), 'Error while uploading file ' + item.file.name);
+                } else {
+                    this.notify.error('Error while uploading file ' + item.file.name);
+                }
+                this.onError.emit(response);
             }
 
-            return {item, response, status, headers};
+            return { item, response, status, headers };
         };
 
         this.service.uploader.onCompleteAll = () => {

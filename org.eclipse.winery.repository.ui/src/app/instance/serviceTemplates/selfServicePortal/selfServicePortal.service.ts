@@ -1,21 +1,22 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Niko Stadelmaier - initial API and implementation
- *     Lukas Balzer - corrected image upload of SelfServicePortal
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Headers, Http, RequestOptions } from '@angular/http';
 import { backendBaseURL } from '../../../configuration';
 import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
 export interface ApplicationOption {
     description: string;
@@ -48,11 +49,9 @@ export class SelfServicePortalService {
     private path: string;
     selfServiceData: SelfServiceApiData;
 
-    constructor(private http: Http,
+    constructor(private http: HttpClient,
                 private route: Router) {
-        let path = this.route.url;
-        path = path.substring(0, path.lastIndexOf('/'));
-        this.url = decodeURIComponent(path);
+        this.url = this.route.url.substring(0, this.route.url.lastIndexOf('/'));
     }
 
     getIconPath(): string {
@@ -64,26 +63,27 @@ export class SelfServicePortalService {
     }
 
     getSelfServiceData(): Observable<SelfServiceApiData> {
-        const headers = new Headers({ 'Accept': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
-
-        return this.http.get(backendBaseURL + this.path, options)
-            .map(res => this.selfServiceData = res.json());
+        const o = this.http.get<SelfServiceApiData>(backendBaseURL + this.path);
+        o.subscribe(data => this.selfServiceData = data);
+        return o;
     }
 
-    saveName(displayName: string): Observable<any> {
-        return this.saveSingleProperty({ 'displayName': displayName }, this.path + 'displayname');
+    saveName(displayName: string): Observable<HttpResponse<string>> {
+        return this.saveSingleProperty({ displayName: displayName }, this.path + 'displayname');
     }
 
-    saveDescription(description: string): Observable<any> {
-        return this.saveSingleProperty({ 'description': description }, this.path + 'description');
+    saveDescription(description: string): Observable<HttpResponse<string>> {
+        return this.saveSingleProperty({ description: description }, this.path + 'description');
     }
 
-    saveSingleProperty(property: any, path: string): Observable<any> {
-        const headers = new Headers({ 'Content-Type': 'application/json' });
-        const options = new RequestOptions({ headers: headers });
-
-        return this.http.put(backendBaseURL + path, JSON.stringify(property), options);
+    saveSingleProperty(property: any, path: string): Observable<HttpResponse<string>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http
+            .put(
+                backendBaseURL + path,
+                property,
+                { headers: headers, observe: 'response', responseType: 'text' }
+            );
     }
 
     setPath(path: string) {

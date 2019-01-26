@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-	Topology and Orchestration Specification for Cloud Applications Version 1.0
-	Committee Specification Draft 08
-	09 May 2013
-	Copyright (c) OASIS Open 2013. All rights reserved.
-     Source: http://docs.oasis-open.org/tosca/TOSCA/v1.0/csd08/schemas/
+ Topology and Orchestration Specification for Cloud Applications Version 1.0
+ OASIS Standard
+ 25 November 2013
+ Copyright (c) OASIS Open 2013. All rights reserved.
+ Source: http://docs.oasis-open.org/tosca/TOSCA/v1.0/os/schemas/
+
+ Includes following modifications by the University of Stuttgart:
+
+ - Added "name" at implementation artifacts.
+   This is necessary to identify a single implementation artifact in a list of implementation artifacts.
+   See https://github.com/eclipse/winery/issues/71 for a discussion.
+ - `processContents="lax"` was added to Properties at Boundary definitions.
+ - Make "Types" in "<Definitions>" valid as the only nested element in "<Definitions>"
+ - Add "PatternRefinementModels" as tPatternRefinementModel
+   - tRelationMapping
+   - tDirection
+   - tPrmPropertyMapping
+   - tPrmPropertyMappingType
+ - Add "ComplianceRules" as tComplianceRule
+ - Add tPolicies to Relationship Templates
+ - Add "TestRefinementModels" as tTestRefinementModel
 -->
-<xs:schema targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns="http://docs.oasis-open.org/tosca/ns/2011/12" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema targetNamespace="http://docs.oasis-open.org/tosca/ns/2011/12" elementFormDefault="qualified"
+           attributeFormDefault="unqualified" xmlns="http://docs.oasis-open.org/tosca/ns/2011/12"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
  <xs:element name="documentation" type="tDocumentation"/>
  <xs:complexType name="tDocumentation" mixed="true">
@@ -51,14 +69,14 @@
       </xs:complexType>
      </xs:element>
      <xs:element name="Import" type="tImport" minOccurs="0" maxOccurs="unbounded"/>
-     <xs:element name="Types" minOccurs="0">
-      <xs:complexType>
-       <xs:sequence>
-        <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
-       </xs:sequence>
-      </xs:complexType>
-     </xs:element>
      <xs:choice maxOccurs="unbounded">
+      <xs:element name="Types">
+       <xs:complexType>
+        <xs:sequence>
+         <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+       </xs:complexType>
+      </xs:element>
       <xs:element name="ServiceTemplate" type="tServiceTemplate"/>
       <xs:element name="NodeType" type="tNodeType"/>
       <xs:element name="NodeTypeImplementation" type="tNodeTypeImplementation"/>
@@ -70,6 +88,9 @@
       <xs:element name="ArtifactTemplate" type="tArtifactTemplate"/>
       <xs:element name="PolicyType" type="tPolicyType"/>
       <xs:element name="PolicyTemplate" type="tPolicyTemplate"/>
+      <xs:element name="PatternRefinementModel" type="tPatternRefinementModel"/>
+      <xs:element name="ComplianceRule" type="tComplianceRule"/>
+      <xs:element name="TestRefinementModel" type="tTestRefinementModel"/>
      </xs:choice>
     </xs:sequence>
     <xs:attribute name="id" type="xs:ID" use="required"/>
@@ -108,7 +129,7 @@
    <xs:element name="Properties" minOccurs="0">
     <xs:complexType>
      <xs:sequence>
-      <xs:any namespace="##other"/>
+      <xs:any namespace="##other" processContents="lax"/>
       <xs:element name="PropertyMappings" minOccurs="0">
        <xs:complexType>
         <xs:sequence>
@@ -357,6 +378,13 @@
        </xs:sequence>
       </xs:complexType>
      </xs:element>
+     <xs:element name="Policies" minOccurs="0">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="Policy" type="tPolicy" maxOccurs="unbounded"/>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="optional"/>
    </xs:extension>
@@ -369,14 +397,16 @@
      <xs:element name="RequirementDefinitions" minOccurs="0">
       <xs:complexType>
        <xs:sequence>
-        <xs:element name="RequirementDefinition" type="tRequirementDefinition" maxOccurs="unbounded"/>
+        <xs:element name="RequirementDefinition" type="tRequirementDefinition"
+                    maxOccurs="unbounded"/>
        </xs:sequence>
       </xs:complexType>
      </xs:element>
      <xs:element name="CapabilityDefinitions" minOccurs="0">
       <xs:complexType>
        <xs:sequence>
-        <xs:element name="CapabilityDefinition" type="tCapabilityDefinition" maxOccurs="unbounded"/>
+        <xs:element name="CapabilityDefinition" type="tCapabilityDefinition"
+                    maxOccurs="unbounded"/>
        </xs:sequence>
       </xs:complexType>
      </xs:element>
@@ -779,6 +809,60 @@
  <xs:complexType name="tRequiredContainerFeature">
   <xs:attribute name="feature" type="xs:anyURI" use="required"/>
  </xs:complexType>
+ <xs:complexType name="tPatternRefinementModel">
+  <xs:complexContent>
+   <xs:extension base="tExtensibleElements">
+    <xs:sequence>
+     <xs:element name="Detector" type="tTopologyTemplate"/>
+     <xs:element name="RefinementStructure" type="tTopologyTemplate"/>
+     <xs:element name="RelationMappings">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="RelationMapping" type="tRelationMapping" maxOccurs="unbounded"/>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
+     <xs:element name="PropertyMappings">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="PropertyMapping" type="tPrmPropertyMapping" maxOccurs="unbounded"/>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="optional"/>
+    <xs:attribute name="targetNamespace" type="xs:anyURI"/>
+   </xs:extension>
+  </xs:complexContent>
+ </xs:complexType>
+ <xs:complexType name="tRelationMapping">
+  <xs:attribute name="id" type="xs:ID" use="required"/>
+  <xs:attribute name="detectorNode" type="xs:string" use="required"/>
+  <xs:attribute name="refinementNode" type="xs:string" use="required"/>
+  <xs:attribute name="relationType" type="xs:QName" use="required"/>
+  <xs:attribute name="direction" type="tDirection" use="required"/>
+  <xs:attribute name="validSourceOrTarget" type="xs:QName"/>
+ </xs:complexType>
+ <xs:complexType name="tPrmPropertyMapping">
+  <xs:attribute name="id" type="xs:ID" use="required"/>
+  <xs:attribute name="detectorNode" type="xs:string" use="required"/>
+  <xs:attribute name="refinementNode" type="xs:string" use="required"/>
+  <xs:attribute name="type" type="tPrmPropertyMappingType" use="required"/>
+  <xs:attribute name="detectorProperty" type="xs:string" use="optional"/>
+  <xs:attribute name="refinementProperty" type="xs:string" use="optional"/>
+ </xs:complexType>
+ <xs:simpleType name="tDirection">
+  <xs:restriction base="xs:string">
+   <xs:enumeration value="ingoing"/>
+   <xs:enumeration value="outgoing"/>
+  </xs:restriction>
+ </xs:simpleType>
+ <xs:simpleType name="tPrmPropertyMappingType">
+  <xs:restriction base="xs:string">
+   <xs:enumeration value="all"/>
+   <xs:enumeration value="selective"/>
+  </xs:restriction>
+ </xs:simpleType>
  <xs:simpleType name="tBoolean">
   <xs:restriction base="xs:string">
    <xs:enumeration value="yes"/>
@@ -788,4 +872,36 @@
  <xs:simpleType name="importedURI">
   <xs:restriction base="xs:anyURI"/>
  </xs:simpleType>
+ <xs:complexType name="tComplianceRule">
+  <xs:complexContent>
+   <xs:extension base="tExtensibleElements">
+    <xs:sequence>
+     <xs:element name="Identifier" type="tTopologyTemplate"/>
+     <xs:element name="RequiredStructure" type="tTopologyTemplate"/>
+     <xs:element name="Tags" type="tTags" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="targetNamespace" type="xs:anyURI"/>
+   </xs:extension>
+  </xs:complexContent>
+ </xs:complexType>
+ <xs:complexType name="tTestRefinementModel">
+  <xs:complexContent>
+   <xs:extension base="tExtensibleElements">
+    <xs:sequence>
+     <xs:element name="Detector" type="tTopologyTemplate"/>
+     <xs:element name="TestFragment" type="tTopologyTemplate"/>
+     <xs:element name="RelationMappings">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="RelationMapping" type="tRelationMapping" maxOccurs="unbounded"/>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="optional"/>
+    <xs:attribute name="targetNamespace" type="xs:anyURI"/>
+   </xs:extension>
+  </xs:complexContent>
+ </xs:complexType>
 </xs:schema>

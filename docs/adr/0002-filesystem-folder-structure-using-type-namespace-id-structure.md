@@ -11,7 +11,7 @@ The contents of the repository should be
 * Folder structure using type-namespace-id
 * Everything in one folder. Hash-based storing similar to git.
 
-## Conclusion
+## Decision Outcome
 
 *Chosen Alternative: Folders subdivided in type-namespace-id*
 
@@ -30,7 +30,7 @@ One has no global control which names are given to Node Types.
 Thus, there might be two different Node Types with the same name.
 The namespaces provide a natural structuring and Winery reuses this idea.
 
-The *third structuring element* are the ids of the respective TOSCA component (type, template, ...):
+The *third structuring element* are the ids of the respective definitions child (type, template, ...):
 Each element has an id contained in the respective namespace.
 This id can be directly used as folder name.
 
@@ -42,12 +42,17 @@ Windows cannot create directories named `http://www.example.com`.
 Therefore, the names have to be [encoded](https://en.wikipedia.org/wiki/Character_encoding) so that an appropriate folder can be generated.
 
 
-
 ## License
 
-Copyright (c) 2017 University of Stuttgart.
+Copyright (c) 2017 Contributors to the Eclipse Foundation
 
-All rights reserved. Made available under the terms of the [Eclipse Public License v1.0] and the [Apache License v2.0] which both accompany this distribution.
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
 
- [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
- [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+

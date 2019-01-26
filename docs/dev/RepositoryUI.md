@@ -22,7 +22,7 @@ The `SectionComponent` is responsible for displaying all instances available for
 components and group them by namespace.
 
 ### Other
-The `OtherComponent` only provides some links to reach all tosca components.
+The `OtherComponent` only provides some links to reach all definitions children.
 
 ### Instance
 The `InstanceComponent` is a container to display all TOSCA specific content, including the admin section, equally.
@@ -34,10 +34,10 @@ Components for the management of the repository are declared here. Internally, t
 (`winery-instance-type-with-short-name`) which gets the backend-urls depending on the current route. 
 
 #### ArtifactTemplates, ..., ServiceTemplates
-Here, all components specific to one TOSCA component are declared.
+Here, all components specific to one definitions children are declared.
 
 #### Shared Components
-All components which are used in more than one TOSCA component are declared here.
+All components which are used in more than one definitions children are declared here.
 
 ### Winery Modules
 There are some modules which are used in almost every component, like the `WineryModalModule` or `WineryNotificationService`.
@@ -51,11 +51,14 @@ can be found in `org.eclipse.winery.repository.ui/dist/doc/index.html`. It is al
 
 ## License
 
-Copyright (c) 2017 University of Stuttgart.
+Copyright (c) 2017 Contributors to the Eclipse Foundation
 
-All rights reserved. This program and the accompanying materials
-are made available under the terms of the [Eclipse Public License v1.0]
-and the [Apache License v2.0] which both accompany this distribution.
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
 
-  [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
-  [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0

@@ -1,14 +1,16 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { NgModule } from '@angular/core';
 import { AdminRouterModule } from './adminRouter.module';
 import { LoggerComponent } from '../../instance/admin/logger/logger.component';
@@ -22,24 +24,54 @@ import { CommonModule } from '@angular/common';
 import { WineryDuplicateValidatorModule } from '../../wineryValidators/wineryDuplicateValidator.module';
 import { WineryNamespaceSelectorModule } from '../../wineryNamespaceSelector/wineryNamespaceSelector.module';
 import { FormsModule } from '@angular/forms';
+import { ConsistencyCheckComponent } from '../../instance/admin/consistencyCheck/consistencyCheck.component';
+import { AccordionModule, AlertModule, CollapseModule, ModalModule, ProgressbarModule } from 'ngx-bootstrap';
+import { ErrorElementToLinkPipe } from '../../instance/admin/consistencyCheck/errorElementToLink.pipe';
+import { AccountabilityComponent } from '../../instance/admin/accountability/accountability.component';
+import { SelectModule } from 'ng2-select';
+import { AuthorizationComponent } from '../../instance/admin/accountability/authorization/authorization.component';
+import { AuthenticationComponent } from '../../instance/admin/accountability/authentication/authentication.component';
+import { ConfigurationComponent } from '../../instance/admin/accountability/configuration/configuration.component';
+import { WineryUploaderModule } from '../../wineryUploader/wineryUploader.module';
+import { ConfigurationService } from '../../instance/admin/accountability/configuration/configuration.service';
+import { AccountabilityService } from '../../instance/admin/accountability/accountability.service';
+import { WineryFileComparisonModule } from '../../wineryFileComparisonModule/wineryFileComparison.module';
+import { ProvenanceComponent } from '../../instance/admin/accountability/provenance/provenance.component';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
         RepositoryModule,
+        SelectModule,
         WineryDuplicateValidatorModule,
         WineryLoaderModule,
         WineryModalModule,
         WineryTableModule,
+        WineryUploaderModule,
         WineryNamespaceSelectorModule,
-        AdminRouterModule,
+        WineryFileComparisonModule,
+        ProgressbarModule.forRoot(),
+        AlertModule.forRoot(),
+        AccordionModule.forRoot(),
+        CollapseModule.forRoot(),
+        ModalModule.forRoot(),
+        AdminRouterModule
     ],
     declarations: [
         NamespacesComponent,
         LoggerComponent,
-        TypeWithShortNameComponent
-    ]
+        TypeWithShortNameComponent,
+        ConsistencyCheckComponent,
+        ErrorElementToLinkPipe,
+        AccountabilityComponent,
+        AuthorizationComponent,
+        AuthenticationComponent,
+        ConfigurationComponent,
+        ProvenanceComponent
+    ],
+    providers: [ConfigurationService, AccountabilityService]
+
 })
 export class AdminModule {
 }

@@ -1,24 +1,20 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Philipp Meyer - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, forwardRef, Input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 const noop = () => {
-};
-
-const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => SpinnerWithInfinityComponent),
-    multi: true
 };
 
 /**
@@ -44,7 +40,13 @@ const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'winery-spinner-with-infinity',
     templateUrl: 'winerySpinnerWithInfinity.component.html',
-    providers: [CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR]
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => SpinnerWithInfinityComponent),
+            multi: true
+        }
+    ]
 })
 
 export class SpinnerWithInfinityComponent implements ControlValueAccessor {
@@ -68,7 +70,7 @@ export class SpinnerWithInfinityComponent implements ControlValueAccessor {
     // get accessor
     get value(): any {
         return this.innerValue;
-    };
+    }
 
     // set accessor including call the onchange callback
     set value(v: any) {

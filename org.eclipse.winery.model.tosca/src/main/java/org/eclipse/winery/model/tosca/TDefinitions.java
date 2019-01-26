@@ -1,22 +1,25 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2019 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,79 +32,22 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.github.adr.embedded.ADR;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.w3c.dom.Element;
 
-
-/**
- * <p>Java class for tDefinitions complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tDefinitions">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;sequence>
- *         &lt;element name="Extensions" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="Extension" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtension"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="Import" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tImport" maxOccurs="unbounded"
- * minOccurs="0"/>
- *         &lt;element name="Types" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;choice maxOccurs="unbounded">
- *           &lt;element name="ServiceTemplate" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tServiceTemplate"/>
- *           &lt;element name="NodeType" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tNodeType"/>
- *           &lt;element name="NodeTypeImplementation" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tNodeTypeImplementation"/>
- *           &lt;element name="RelationshipType" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tRelationshipType"/>
- *           &lt;element name="RelationshipTypeImplementation" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tRelationshipTypeImplementation"/>
- *           &lt;element name="RequirementType" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tRequirementType"/>
- *           &lt;element name="CapabilityType" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tCapabilityType"/>
- *           &lt;element name="ArtifactType" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tArtifactType"/>
- *           &lt;element name="ArtifactTemplate" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tArtifactTemplate"/>
- *           &lt;element name="PolicyType" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tPolicyType"/>
- *           &lt;element name="PolicyTemplate" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tPolicyTemplate"/>
- *         &lt;/choice>
- *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="targetNamespace" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tDefinitions", propOrder = {
-        "extensions",
-        "_import",
-        "types",
-        "serviceTemplateOrNodeTypeOrNodeTypeImplementation"
+    "extensions",
+    "_import",
+    "types",
+    "serviceTemplateOrNodeTypeOrNodeTypeImplementation"
 })
-@XmlSeeAlso({
-        Definitions.class
+@XmlSeeAlso( {
+    Definitions.class
 })
 public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
     @XmlElement(name = "Extensions")
@@ -110,18 +56,21 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
     protected List<TImport> _import;
     @XmlElement(name = "Types")
     protected TDefinitions.Types types;
-    @XmlElements({
-            @XmlElement(name = "RelationshipType", type = TRelationshipType.class),
-            @XmlElement(name = "RelationshipTypeImplementation", type = TRelationshipTypeImplementation.class),
-            @XmlElement(name = "ArtifactTemplate", type = TArtifactTemplate.class),
-            @XmlElement(name = "PolicyTemplate", type = TPolicyTemplate.class),
-            @XmlElement(name = "ServiceTemplate", type = TServiceTemplate.class),
-            @XmlElement(name = "ArtifactType", type = TArtifactType.class),
-            @XmlElement(name = "CapabilityType", type = TCapabilityType.class),
-            @XmlElement(name = "NodeType", type = TNodeType.class),
-            @XmlElement(name = "NodeTypeImplementation", type = TNodeTypeImplementation.class),
-            @XmlElement(name = "RequirementType", type = TRequirementType.class),
-            @XmlElement(name = "PolicyType", type = TPolicyType.class)
+    @XmlElements( {
+        @XmlElement(name = "RelationshipType", type = TRelationshipType.class),
+        @XmlElement(name = "RelationshipTypeImplementation", type = TRelationshipTypeImplementation.class),
+        @XmlElement(name = "ArtifactTemplate", type = TArtifactTemplate.class),
+        @XmlElement(name = "PolicyTemplate", type = TPolicyTemplate.class),
+        @XmlElement(name = "ServiceTemplate", type = TServiceTemplate.class),
+        @XmlElement(name = "ArtifactType", type = TArtifactType.class),
+        @XmlElement(name = "CapabilityType", type = TCapabilityType.class),
+        @XmlElement(name = "NodeType", type = TNodeType.class),
+        @XmlElement(name = "NodeTypeImplementation", type = TNodeTypeImplementation.class),
+        @XmlElement(name = "RequirementType", type = TRequirementType.class),
+        @XmlElement(name = "PolicyType", type = TPolicyType.class),
+        @XmlElement(name = "ComplianceRule", type = TComplianceRule.class),
+        @XmlElement(name = "PatternRefinementModel", type = TPatternRefinementModel.class),
+        @XmlElement(name = "TestRefinementModel", type = TTestRefinementModel.class)
     })
     protected List<TExtensibleElements> serviceTemplateOrNodeTypeOrNodeTypeImplementation;
 
@@ -137,7 +86,7 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
     public TDefinitions(Builder builder) {
         super(builder);
         this.extensions = builder.extensions;
-        this._import = builder._import;
+        this._import = builder.imports;
         this.types = builder.types;
         this.serviceTemplateOrNodeTypeOrNodeTypeImplementation = builder.getServiceTemplateOrNodeTypeOrNodeTypeImplementation();
         this.name = builder.name;
@@ -151,16 +100,21 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         if (!super.equals(o)) return false;
         TDefinitions that = (TDefinitions) o;
         return Objects.equals(extensions, that.extensions) &&
-                Objects.equals(_import, that._import) &&
-                Objects.equals(types, that.types) &&
-                Objects.equals(serviceTemplateOrNodeTypeOrNodeTypeImplementation, that.serviceTemplateOrNodeTypeOrNodeTypeImplementation) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(targetNamespace, that.targetNamespace);
+            Objects.equals(_import, that._import) &&
+            Objects.equals(types, that.types) &&
+            Objects.equals(serviceTemplateOrNodeTypeOrNodeTypeImplementation, that.serviceTemplateOrNodeTypeOrNodeTypeImplementation) &&
+            Objects.equals(name, that.name) &&
+            Objects.equals(targetNamespace, that.targetNamespace);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), extensions, _import, types, serviceTemplateOrNodeTypeOrNodeTypeImplementation, name, targetNamespace);
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 
     /**
@@ -180,45 +134,14 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         this.getServiceTemplateOrNodeTypeOrNodeTypeImplementation().add(element);
     }
 
-    /**
-     * Gets the value of the extensions property.
-     *
-     * @return possible object is {@link TDefinitions.Extensions }
-     */
-    /*@Nullable*/
-    public TDefinitions.Extensions getExtensions() {
+    public TDefinitions.@Nullable Extensions getExtensions() {
         return extensions;
     }
 
-    /**
-     * Sets the value of the extensions property.
-     *
-     * @param value allowed object is {@link TDefinitions.Extensions }
-     */
     public void setExtensions(TDefinitions.Extensions value) {
         this.extensions = value;
     }
 
-    /**
-     * Gets the value of the import property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the import property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getImport().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link TImport }
-     */
     @NonNull
     public List<TImport> getImport() {
         if (_import == null) {
@@ -227,38 +150,15 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         return this._import;
     }
 
-    /**
-     * Gets the value of the types property.
-     *
-     * @return possible object is {@link TDefinitions.Types }
-     */
-    /*@Nullable*/
-    public TDefinitions.Types getTypes() {
+    public TDefinitions.@Nullable Types getTypes() {
         return types;
     }
 
-    /**
-     * Sets the value of the types property.
-     *
-     * @param value allowed object is {@link TDefinitions.Types }
-     */
     public void setTypes(TDefinitions.Types value) {
         this.types = value;
     }
 
     /**
-     * Gets the value of the serviceTemplateOrNodeTypeOrNodeTypeImplementation property.
-     *
-     * <p> This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you
-     * make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE>
-     * method for the serviceTemplateOrNodeTypeOrNodeTypeImplementation property.
-     *
-     * <p> For example, to add a new item, do as follows:
-     * <pre>
-     *    getServiceTemplateOrNodeTypeOrNodeTypeImplementation().add(newItem);
-     * </pre>
-     *
-     *
      * <p> Objects of the following type(s) are allowed in the list {@link TRelationshipType } {@link
      * TRelationshipTypeImplementation } {@link TArtifactTemplate } {@link TPolicyTemplate } {@link TServiceTemplate }
      * {@link TArtifactType } {@link TCapabilityType } {@link TNodeType } {@link TNodeTypeImplementation } {@link
@@ -272,91 +172,149 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         return this.serviceTemplateOrNodeTypeOrNodeTypeImplementation;
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
+    @JsonIgnore
+    @NonNull
+    public List<TRelationshipType> getRelationshipTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TRelationshipType)
+            .map(TRelationshipType.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TRelationshipTypeImplementation> getRelationshipTypeImplementations() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TRelationshipTypeImplementation)
+            .map(TRelationshipTypeImplementation.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TArtifactTemplate> getArtifactTemplates() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TArtifactTemplate)
+            .map(TArtifactTemplate.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TPolicyTemplate> getPolicyTemplates() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TPolicyTemplate)
+            .map(TPolicyTemplate.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TServiceTemplate> getServiceTemplates() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TServiceTemplate)
+            .map(TServiceTemplate.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TArtifactType> getArtifactTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TArtifactType)
+            .map(TArtifactType.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TCapabilityType> getCapabilityTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TCapabilityType)
+            .map(TCapabilityType.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TNodeType> getNodeTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TNodeType)
+            .map(TNodeType.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TNodeTypeImplementation> getNodeTypeImplementations() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TNodeTypeImplementation)
+            .map(TNodeTypeImplementation.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TRequirementType> getRequirementTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TRequirementType)
+            .map(TRequirementType.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
+    public List<TPolicyType> getPolicyTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TPolicyType)
+            .map(TPolicyType.class::cast)
+            .collect(Collectors.toList());
+    }
+
     @Nullable
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
     public void setName(String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the value of the targetNamespace property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getTargetNamespace() {
         return targetNamespace;
     }
 
-    /**
-     * Sets the value of the targetNamespace property.
-     *
-     * @param value allowed object is {@link String }
-     */
     public void setTargetNamespace(String value) {
         this.targetNamespace = value;
     }
 
-
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="Extension" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtension"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "extension"
+        "extension"
     })
-    public static class Extensions {
+    public static class Extensions implements Serializable {
 
         @XmlElement(name = "Extension", required = true)
         protected List<TExtension> extension;
 
         /**
          * Gets the value of the extension property.
-         *
          * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the extension property.
-         *
+         * <p>
+         * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you
+         * make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE>
+         * method for the extension property.
+         * <p>
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
          *    getExtension().add(newItem);
          * </pre>
-         *
-         *
          * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TExtension }
+         * <p>
+         * <p>
+         * Objects of the following type(s) are allowed in the list {@link TExtension }
          */
         @NonNull
         public List<TExtension> getExtension() {
@@ -365,56 +323,30 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             }
             return this.extension;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Extensions that = (Extensions) o;
+            return Objects.equals(extension, that.extension);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(extension);
+        }
     }
 
-
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "any"
+        "any"
     })
-    public static class Types {
+    public static class Types implements Serializable {
 
         @XmlAnyElement(lax = true)
         protected List<Object> any;
 
-        /**
-         * Gets the value of the any property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the any property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getAny().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link Element }
-         * {@link Object }
-         */
         @NonNull
         public List<Object> getAny() {
             if (any == null) {
@@ -422,13 +354,26 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             }
             return this.any;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Types types = (Types) o;
+            return Objects.equals(any, types.any);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(any);
+        }
     }
 
-    public static class Builder extends HasId.Builder {
+    public static class Builder<T extends Builder<T>> extends HasId.Builder<T> {
         private final String target_namespace;
 
         private TDefinitions.Extensions extensions;
-        private List<TImport> _import;
+        private List<TImport> imports;
         private TDefinitions.Types types;
         private List<TServiceTemplate> serviceTemplates;
         private List<TNodeType> nodeTypes;
@@ -450,82 +395,82 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
 
         public Builder setExtensions(TDefinitions.Extensions extensions) {
             this.extensions = extensions;
-            return this;
+            return self();
         }
 
-        public Builder setImport(List<TImport> _import) {
-            this._import = _import;
-            return this;
+        public T setImport(List<TImport> imports) {
+            this.imports = imports;
+            return self();
         }
 
-        public Builder setTypes(TDefinitions.Types types) {
+        public T setTypes(TDefinitions.Types types) {
             this.types = types;
-            return this;
+            return self();
         }
 
-        public Builder setServiceTemplates(List<TServiceTemplate> serviceTemplates) {
+        public T setServiceTemplates(List<TServiceTemplate> serviceTemplates) {
             this.serviceTemplates = serviceTemplates;
-            return this;
+            return self();
         }
 
-        public Builder setNodeTypes(List<TNodeType> nodeTypes) {
+        public T setNodeTypes(List<TNodeType> nodeTypes) {
             this.nodeTypes = nodeTypes;
-            return this;
+            return self();
         }
 
-        public Builder setNodeTypeImplementations(List<TNodeTypeImplementation> nodeTypeImplementations) {
+        public T setNodeTypeImplementations(List<TNodeTypeImplementation> nodeTypeImplementations) {
             this.nodeTypeImplementations = nodeTypeImplementations;
-            return this;
+            return self();
         }
 
-        public Builder setRelationshipTypes(List<TRelationshipType> relationshipTypes) {
+        public T setRelationshipTypes(List<TRelationshipType> relationshipTypes) {
             this.relationshipTypes = relationshipTypes;
-            return this;
+            return self();
         }
 
-        public Builder setRelationshipTypeImplementations(List<TRelationshipTypeImplementation> relationshipTypeImplementations) {
+        public T setRelationshipTypeImplementations(List<TRelationshipTypeImplementation> relationshipTypeImplementations) {
             this.relationshipTypeImplementations = relationshipTypeImplementations;
-            return this;
+            return self();
         }
 
-        public Builder setRequirementTypes(List<TRequirementType> requirementTypes) {
+        public T setRequirementTypes(List<TRequirementType> requirementTypes) {
             this.requirementTypes = requirementTypes;
-            return this;
+            return self();
         }
 
-        public Builder setCapabilityTypes(List<TCapabilityType> capabilityTypes) {
+        public T setCapabilityTypes(List<TCapabilityType> capabilityTypes) {
             this.capabilityTypes = capabilityTypes;
-            return this;
+            return self();
         }
 
-        public Builder setArtifactTypes(List<TArtifactType> artifactTypes) {
+        public T setArtifactTypes(List<TArtifactType> artifactTypes) {
             this.artifactTypes = artifactTypes;
-            return this;
+            return self();
         }
 
-        public Builder setArtifactTemplates(List<TArtifactTemplate> artifactTemplates) {
+        public T setArtifactTemplates(List<TArtifactTemplate> artifactTemplates) {
             this.artifactTemplates = artifactTemplates;
-            return this;
+            return self();
         }
 
-        public Builder setPolicyTypes(List<TPolicyType> policyTypes) {
+        public T setPolicyTypes(List<TPolicyType> policyTypes) {
             this.policyTypes = policyTypes;
-            return this;
+            return self();
         }
 
-        public Builder setPolicyTemplate(List<TPolicyTemplate> policyTemplate) {
+        public T setPolicyTemplate(List<TPolicyTemplate> policyTemplate) {
             this.policyTemplate = policyTemplate;
-            return this;
+            return self();
         }
 
-        public Builder setName(String name) {
+        public T setName(String name) {
             this.name = name;
-            return this;
+            return self();
         }
 
-        public Builder addExtensions(TDefinitions.Extensions extensions) {
+        public T addExtensions(TDefinitions.Extensions extensions) {
             if (extensions == null || extensions.getExtension().isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.extensions == null) {
@@ -533,12 +478,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.extensions.getExtension().addAll(extensions.getExtension());
             }
-            return this;
+            return self();
         }
 
-        public Builder addExtensions(List<TExtension> extensions) {
+        public T addExtensions(List<TExtension> extensions) {
             if (extensions == null) {
-                return this;
+                return self();
             }
 
             List<TExtension> tmp = new ArrayList<>();
@@ -546,9 +491,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addExtensions(tmp);
         }
 
-        public Builder addExtensions(TExtension extensions) {
+        public T addExtensions(TExtension extensions) {
             if (extensions == null) {
-                return this;
+                return self();
             }
 
             List<TExtension> tmp = new ArrayList<>();
@@ -556,22 +501,22 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addExtensions(tmp);
         }
 
-        public Builder addImports(List<TImport> _import) {
+        public T addImports(List<TImport> _import) {
             if (_import == null || _import.isEmpty()) {
-                return this;
+                return self();
             }
 
-            if (this._import == null) {
-                this._import = _import;
+            if (this.imports == null) {
+                this.imports = _import;
             } else {
-                this._import.addAll(_import);
+                this.imports.addAll(_import);
             }
-            return this;
+            return self();
         }
 
-        public Builder addImports(TImport _import) {
+        public T addImports(TImport _import) {
             if (_import == null) {
-                return this;
+                return self();
             }
 
             List<TImport> tmp = new ArrayList<>();
@@ -579,9 +524,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addImports(tmp);
         }
 
-        public Builder addTypes(TDefinitions.Types types) {
+        public T addTypes(TDefinitions.Types types) {
             if (types == null || types.getAny().isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.types == null) {
@@ -589,12 +534,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.types.getAny().addAll(types.getAny());
             }
-            return this;
+            return self();
         }
 
-        public Builder addTypes(List<Object> types) {
+        public T addTypes(List<Object> types) {
             if (types == null) {
-                return this;
+                return self();
             }
 
             TDefinitions.Types tmp = new TDefinitions.Types();
@@ -602,9 +547,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addTypes(tmp);
         }
 
-        public Builder addServiceTemplates(List<TServiceTemplate> serviceTemplates) {
+        public T addServiceTemplates(List<TServiceTemplate> serviceTemplates) {
             if (serviceTemplates == null || serviceTemplates.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.serviceTemplates == null) {
@@ -612,12 +557,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.serviceTemplates.addAll(serviceTemplates);
             }
-            return this;
+            return self();
         }
 
-        public Builder addServiceTemplates(TServiceTemplate serviceTemplate) {
+        public T addServiceTemplates(TServiceTemplate serviceTemplate) {
             if (serviceTemplate == null) {
-                return this;
+                return self();
             }
 
             List<TServiceTemplate> tmp = new ArrayList<>();
@@ -625,9 +570,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addServiceTemplates(tmp);
         }
 
-        public Builder addNodeTypes(List<TNodeType> nodeTypes) {
+        public T addNodeTypes(List<TNodeType> nodeTypes) {
             if (nodeTypes == null || nodeTypes.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.nodeTypes == null) {
@@ -635,12 +580,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.nodeTypes.addAll(nodeTypes);
             }
-            return this;
+            return self();
         }
 
-        public Builder addNodeTypes(TNodeType nodeTypes) {
+        public T addNodeTypes(TNodeType nodeTypes) {
             if (nodeTypes == null) {
-                return this;
+                return self();
             }
 
             List<TNodeType> tmp = new ArrayList<>();
@@ -648,9 +593,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addNodeTypes(tmp);
         }
 
-        public Builder addNodeTypeImplementations(List<TNodeTypeImplementation> nodeTypeImplementations) {
+        public T addNodeTypeImplementations(List<TNodeTypeImplementation> nodeTypeImplementations) {
             if (nodeTypeImplementations == null || nodeTypeImplementations.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.nodeTypeImplementations == null) {
@@ -658,12 +603,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.nodeTypeImplementations.addAll(nodeTypeImplementations);
             }
-            return this;
+            return self();
         }
 
-        public Builder addNodeTypeImplementations(TNodeTypeImplementation relationshipTypes) {
+        public T addNodeTypeImplementations(TNodeTypeImplementation relationshipTypes) {
             if (relationshipTypes == null) {
-                return this;
+                return self();
             }
 
             List<TNodeTypeImplementation> tmp = new ArrayList<>();
@@ -671,9 +616,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addNodeTypeImplementations(tmp);
         }
 
-        public Builder addRelationshipTypes(List<TRelationshipType> relationshipTypes) {
+        public T addRelationshipTypes(List<TRelationshipType> relationshipTypes) {
             if (relationshipTypes == null || relationshipTypes.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.relationshipTypes == null) {
@@ -681,12 +626,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.relationshipTypes.addAll(relationshipTypes);
             }
-            return this;
+            return self();
         }
 
-        public Builder addRelationshipTypes(TRelationshipType relationshipTypes) {
+        public T addRelationshipTypes(TRelationshipType relationshipTypes) {
             if (relationshipTypes == null) {
-                return this;
+                return self();
             }
 
             List<TRelationshipType> tmp = new ArrayList<>();
@@ -694,9 +639,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addRelationshipTypes(tmp);
         }
 
-        public Builder addRelationshipTypeImplementations(List<TRelationshipTypeImplementation> relationshipTypeImplementations) {
+        public T addRelationshipTypeImplementations(List<TRelationshipTypeImplementation> relationshipTypeImplementations) {
             if (relationshipTypeImplementations == null || relationshipTypeImplementations.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.relationshipTypeImplementations == null) {
@@ -704,12 +649,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.relationshipTypeImplementations.addAll(relationshipTypeImplementations);
             }
-            return this;
+            return self();
         }
 
-        public Builder addRelationshipTypeImplementations(TRelationshipTypeImplementation relationshipTypeImplementations) {
+        public T addRelationshipTypeImplementations(TRelationshipTypeImplementation relationshipTypeImplementations) {
             if (relationshipTypeImplementations == null) {
-                return this;
+                return self();
             }
 
             List<TRelationshipTypeImplementation> tmp = new ArrayList<>();
@@ -717,9 +662,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addRelationshipTypeImplementations(tmp);
         }
 
-        public Builder addRequirementTypes(List<TRequirementType> requirementTypes) {
+        public T addRequirementTypes(List<TRequirementType> requirementTypes) {
             if (requirementTypes == null || requirementTypes.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.requirementTypes == null) {
@@ -727,12 +672,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.requirementTypes.addAll(requirementTypes);
             }
-            return this;
+            return self();
         }
 
-        public Builder addRequirementTypes(TRequirementType requirementTypes) {
+        public T addRequirementTypes(TRequirementType requirementTypes) {
             if (requirementTypes == null) {
-                return this;
+                return self();
             }
 
             List<TRequirementType> tmp = new ArrayList<>();
@@ -740,9 +685,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addRequirementTypes(tmp);
         }
 
-        public Builder addCapabilityTypes(List<TCapabilityType> capabilityTypes) {
+        public T addCapabilityTypes(List<TCapabilityType> capabilityTypes) {
             if (capabilityTypes == null || capabilityTypes.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.capabilityTypes == null) {
@@ -750,12 +695,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.capabilityTypes.addAll(capabilityTypes);
             }
-            return this;
+            return self();
         }
 
-        public Builder addCapabilityTypes(TCapabilityType capabilityTypes) {
+        public T addCapabilityTypes(TCapabilityType capabilityTypes) {
             if (capabilityTypes == null) {
-                return this;
+                return self();
             }
 
             List<TCapabilityType> tmp = new ArrayList<>();
@@ -763,9 +708,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addCapabilityTypes(tmp);
         }
 
-        public Builder addArtifactTypes(List<TArtifactType> artifactTypes) {
+        public T addArtifactTypes(List<TArtifactType> artifactTypes) {
             if (artifactTypes == null || artifactTypes.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.artifactTypes == null) {
@@ -773,12 +718,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.artifactTypes.addAll(artifactTypes);
             }
-            return this;
+            return self();
         }
 
-        public Builder addArtifactTypes(TArtifactType artifactTypes) {
+        public T addArtifactTypes(TArtifactType artifactTypes) {
             if (artifactTypes == null) {
-                return this;
+                return self();
             }
 
             List<TArtifactType> tmp = new ArrayList<>();
@@ -786,9 +731,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addArtifactTypes(tmp);
         }
 
-        public Builder addArtifactTemplates(List<TArtifactTemplate> artifactTemplates) {
+        public T addArtifactTemplates(List<TArtifactTemplate> artifactTemplates) {
             if (artifactTemplates == null || artifactTemplates.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.artifactTemplates == null) {
@@ -796,12 +741,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.artifactTemplates.addAll(artifactTemplates);
             }
-            return this;
+            return self();
         }
 
-        public Builder addArtifactTemplates(TArtifactTemplate artifactTemplates) {
+        public T addArtifactTemplates(TArtifactTemplate artifactTemplates) {
             if (artifactTemplates == null) {
-                return this;
+                return self();
             }
 
             List<TArtifactTemplate> tmp = new ArrayList<>();
@@ -809,9 +754,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addArtifactTemplates(tmp);
         }
 
-        public Builder addPolicyTypes(List<TPolicyType> policyTypes) {
+        public T addPolicyTypes(List<TPolicyType> policyTypes) {
             if (policyTypes == null || policyTypes.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.policyTypes == null) {
@@ -819,12 +764,12 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.policyTypes.addAll(policyTypes);
             }
-            return this;
+            return self();
         }
 
-        public Builder addPolicyTypes(TPolicyType policyTypes) {
+        public T addPolicyTypes(TPolicyType policyTypes) {
             if (policyTypes == null) {
-                return this;
+                return self();
             }
 
             List<TPolicyType> tmp = new ArrayList<>();
@@ -832,9 +777,9 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return addPolicyTypes(tmp);
         }
 
-        public Builder addPolicyTemplates(List<TPolicyTemplate> policyTemplate) {
+        public T addPolicyTemplates(List<TPolicyTemplate> policyTemplate) {
             if (policyTemplate == null || policyTemplate.isEmpty()) {
-                return this;
+                return self();
             }
 
             if (this.policyTemplate == null) {
@@ -842,17 +787,23 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             } else {
                 this.policyTemplate.addAll(policyTemplate);
             }
-            return this;
+            return self();
         }
 
-        public Builder addPolicyTemplates(TPolicyTemplate policyTemplate) {
+        public T addPolicyTemplates(TPolicyTemplate policyTemplate) {
             if (policyTemplate == null) {
-                return this;
+                return self();
             }
 
             List<TPolicyTemplate> tmp = new ArrayList<>();
             tmp.add(policyTemplate);
             return addPolicyTemplates(tmp);
+        }
+
+        @ADR(11)
+        @Override
+        public T self() {
+            return (T) this;
         }
 
         public TDefinitions build() {

@@ -1,26 +1,28 @@
 @echo off
-GOTO EndOfLicense
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
- *
- * Contributors:
- *     Philipp Meyer - initial API and implementation
- */
-:EndOfLicense
-
-echo Statistics generator for Winery EnPro 2016/2017
-echo ================================================
+rem Copyright (c) 2017 Contributors to the Eclipse Foundation
+rem .
+rem See the NOTICE file(s) distributed with this work for additional
+rem information regarding copyright ownership.
+rem .
+rem This program and the accompanying materials are made available under the
+rem terms of the Eclipse Public License 2.0 which is available at
+rem http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+rem which is available at https://www.apache.org/licenses/LICENSE-2.0.
+rem .
+rem SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+rem .
+echo Statistics generator for Pratical Course Winery:  SS 2017
+echo ==========================================================
 echo .
-echo Python 3.6 needs to be installed
-echo This script needs to be run in the current git checkout of Winery.
-echo The checkout has to be complete, i.e., no checkout with --depth 10
-echo gitinspector has to reside in ..\..\gitinspector
-echo You can clone it from https://github.com/ejwa/gitinspector
+echo Python needs to be installed.
+echo This script needs to be run in the current git checkout of Winery -
+echo the checkout has to be complete, i.e., no checkout with --depth 10.
+echo .
+echo Install gitinspector by using npm install -g gitinspector
+echo .
+echo It might help to execute "git config diff.renameLimit 999999" on the
+echo command line
 echo .
 pause
-py -3.6 ../../gitinspector/gitinspector.py -f java,html,ts,css --grading -x "author:^(?!((Lukas Harzenetter)|(Lukas Balzer)|(Nicole Keppler)|(Niko Stadelmaier)|(Tino Stadelmaier)|(Philipp Meyer)|(Huixin Liu)))" --format=htmlembedded> statistics/output.html
+mkdir statistics
+gitinspector -f java,html,ts,css,json,xml,md --since=2017-07-30 --grading -x "author:^(?!((Lukas Harzenetter)|(Lukas Balzer)|(Niko Stadelmaier)|(Tino Stadelmaier)|(Philipp Meyer)))" --format=htmlembedded ./ > ./statistics/output.html

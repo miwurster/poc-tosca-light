@@ -1,16 +1,16 @@
-<!--
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
- *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
--->
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2017 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 <div id="header" class="header">
     <div id="showabout">
         <!--Include this when oauth becomes necessary.-->
@@ -41,7 +41,7 @@
         </a>
         <a class="styledTabMenuButton"
            [routerLink]="['/other']"
-           [routerLinkActive]="['selected']">
+           [class.selected]="otherActive">
             <div class="left"></div>
             <div class="center">Other Elements{{ selectedOtherComponent }}</div>
             <div class="right"></div>
@@ -72,8 +72,8 @@
         <h3>License</h3>
         <p>The Eclipse Foundation makes available all content of this software (&ldquo;Content&rdquo;).
             Unless otherwise indicated below, the Content is provided to you under the terms and conditions of the
-            Eclipse Public License Version 1.0 (&ldquo;EPL&rdquo;) and the and the Apache License 2.0.
-            A copy of the EPL is available at <a href="http://www.eclipse.org/legal/epl-v10.html">http://www.eclipse.org/legal/epl-v10.html</a>.
+            Eclipse Public License Version 2.0 (&ldquo;EPL&rdquo;) and the and the Apache License 2.0.
+            A copy of the EPL is available at <a href="http://www.eclipse.org/legal/epl-v20.html">http://www.eclipse.org/legal/epl-v20.html</a>.
             A copy of the ASL is available at <a href="http://www.apache.org/licenses/LICENSE-2.0.html">http://www.apache.org/licenses/LICENSE-2.0.html</a>.
             For purposes of the EPL, &ldquo;Program&rdquo; will mean the Content.</p>
         <p>If you did not receive this Content directly from the Eclipse Foundation, the Content is being redistributed
@@ -86,6 +86,6 @@
         </p>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
-        <button type="button" class="btn btn-default" (click)="aboutModal.hide()">Ok</button>
+        <button type="button" class="btn btn-default" (click)="aboutModal.hide()">OK</button>
     </winery-modal-footer>
 </winery-modal>

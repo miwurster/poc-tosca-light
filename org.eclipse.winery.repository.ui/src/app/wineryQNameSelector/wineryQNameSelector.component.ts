@@ -1,17 +1,20 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { isNullOrUndefined } from 'util';
 import { NameAndQNameApiDataList } from './wineryNameAndQNameApiData';
+import { ToscaTypes } from '../model/enums';
 
 /**
  * This component provides a selector for QNames in addition with a link to the currently
@@ -54,7 +57,7 @@ export class WineryQNameSelectorComponent implements OnInit {
 
     @Input() title: string;
     @Input() displayList: NameAndQNameApiDataList;
-    @Input() selectedResource: string;
+    @Input() toscaType: ToscaTypes;
     @Input() selectedValue: string;
     @Input() width = 600;
     @Input() showOpenButton = true;
@@ -74,7 +77,7 @@ export class WineryQNameSelectorComponent implements OnInit {
     onChange(value: string): void {
         this.selectedValue = value;
         this.setButtonLink();
-        this.selectedValueChanged.emit({value: this.selectedValue});
+        this.selectedValueChanged.emit({ value: this.selectedValue });
     }
 
     private handleData(availableSuperClasses: NameAndQNameApiDataList): void {
@@ -94,7 +97,7 @@ export class WineryQNameSelectorComponent implements OnInit {
         if (parts.length > 1) {
             const namespace = parts[0].slice(1);
             const name = parts[1];
-            this.openSuperClassLink = '/' + this.selectedResource + '/' + encodeURIComponent(encodeURIComponent(namespace)) + '/' + name;
+            this.openSuperClassLink = '/' + this.toscaType + '/' + encodeURIComponent(namespace) + '/' + name;
         }
     }
 }

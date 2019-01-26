@@ -38,7 +38,7 @@ More information on encoding is given at [Encoding](Encoding).
 
 ## Typical layout
 
-Typically, all TOSCA components have the path `componenttype/ns/id`.
+Typically, all definitions children have the path `componenttype/ns/id`.
 
 The `component type` is nodetypes, relationshiptypes, servicetemplates, ...
 `ns` is the namespace.
@@ -81,7 +81,7 @@ Currently, ii is not implemented and the storage is used as mirror only to be ab
 a) offer choice of known XML Schema definitions
 b) generate a UI for known XML Schemas (current idea: use http://sourceforge.net/projects/xsd2gui/)
 
-Typically, all TOSCA components have the path `componenttype/ns/id`.
+Typically, all definitions children have the path `type/ns/id`.
 We add `imports` before to group the imports.
 The chosen ordering allows to present all available imports for a given import type
 by just querying the contents of `<encoded importtype>`.
@@ -108,11 +108,14 @@ The local name is sufficient as the namespace is given by the parent directory.
 
 ## License
 
-Copyright (c) 2013-2017 University of Stuttgart.
+Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
 
-All rights reserved. This program and the accompanying materials
-are made available under the terms of the [Eclipse Public License v1.0]
-and the [Apache License v2.0] which both accompany this distribution.
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
 
-  [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
-  [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0

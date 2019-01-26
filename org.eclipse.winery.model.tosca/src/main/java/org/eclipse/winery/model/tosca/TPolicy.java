@@ -1,14 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
@@ -21,36 +22,25 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-
-/**
- * <p>Java class for tPolicy complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tPolicy">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="policyType" use="required" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *       &lt;attribute name="policyRef" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tPolicy")
-public class TPolicy extends TExtensibleElements {
+public class TPolicy extends TExtensibleElements implements HasName {
+
     @XmlAttribute(name = "name")
+    @Nullable
     protected String name;
+
     @XmlAttribute(name = "policyType", required = true)
+    @NonNull
     protected QName policyType;
+
     @XmlAttribute(name = "policyRef")
+    @Nullable
     protected QName policyRef;
 
     public TPolicy() {
@@ -70,8 +60,8 @@ public class TPolicy extends TExtensibleElements {
         if (!super.equals(o)) return false;
         TPolicy tPolicy = (TPolicy) o;
         return Objects.equals(name, tPolicy.name) &&
-                Objects.equals(policyType, tPolicy.policyType) &&
-                Objects.equals(policyRef, tPolicy.policyRef);
+            Objects.equals(policyType, tPolicy.policyType) &&
+            Objects.equals(policyRef, tPolicy.policyRef);
     }
 
     @Override
@@ -79,64 +69,40 @@ public class TPolicy extends TExtensibleElements {
         return Objects.hash(super.hashCode(), name, policyType, policyRef);
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @Nullable
+    @Override
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    @Override
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the value of the policyType property.
-     *
-     * @return possible object is {@link QName }
-     */
     @NonNull
     public QName getPolicyType() {
         return policyType;
     }
 
-    /**
-     * Sets the value of the policyType property.
-     *
-     * @param value allowed object is {@link QName }
-     */
-    public void setPolicyType(QName value) {
-        this.policyType = value;
+    public void setPolicyType(@NonNull QName value) {
+        this.policyType = Objects.requireNonNull(value);
     }
 
-    /**
-     * Gets the value of the policyRef property.
-     *
-     * @return possible object is {@link QName }
-     */
     @Nullable
     public QName getPolicyRef() {
         return policyRef;
     }
 
-    /**
-     * Sets the value of the policyRef property.
-     *
-     * @param value allowed object is {@link QName }
-     */
-    public void setPolicyRef(QName value) {
+    public void setPolicyRef(@Nullable QName value) {
         this.policyRef = value;
     }
 
-    public static class Builder extends TExtensibleElements.Builder {
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
+    public static class Builder extends TExtensibleElements.Builder<Builder> {
         private final QName policyType;
         private String name;
         private QName policyRef;
@@ -152,6 +118,11 @@ public class TPolicy extends TExtensibleElements {
 
         public Builder setPolicyRef(QName policyRef) {
             this.policyRef = policyRef;
+            return this;
+        }
+
+        @Override
+        public Builder self() {
             return this;
         }
 

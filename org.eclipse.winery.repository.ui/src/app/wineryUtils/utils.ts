@@ -1,15 +1,18 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/********************************************************************************
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
-import { ToscaTypes } from '../wineryInterfaces/enums';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ ********************************************************************************/
+import { ServiceTemplateTemplateTypes, ToscaTypes } from '../model/enums';
+import { isNullOrUndefined } from 'util';
 
 export class Utils {
 
@@ -31,68 +34,115 @@ export class Utils {
     }
 
     public static getToscaTypeFromString(value: string): ToscaTypes {
-        switch (value) {
+        switch (value.toLowerCase()) {
             case ToscaTypes.ServiceTemplate:
+            case ToscaTypes.ServiceTemplate.toString().slice(0, -1):
                 return ToscaTypes.ServiceTemplate;
             case ToscaTypes.NodeType:
+            case ToscaTypes.NodeType.toString().slice(0, -1):
                 return ToscaTypes.NodeType;
             case ToscaTypes.RelationshipType:
+            case ToscaTypes.RelationshipType.toString().slice(0, -1):
                 return ToscaTypes.RelationshipType;
             case ToscaTypes.ArtifactType:
+            case ToscaTypes.ArtifactType.toString().slice(0, -1):
                 return ToscaTypes.ArtifactType;
             case ToscaTypes.ArtifactTemplate:
+            case ToscaTypes.ArtifactTemplate.toString().slice(0, -1):
                 return ToscaTypes.ArtifactTemplate;
             case ToscaTypes.RequirementType:
+            case ToscaTypes.RequirementType.toString().slice(0, -1):
                 return ToscaTypes.RequirementType;
             case ToscaTypes.CapabilityType:
+            case ToscaTypes.CapabilityType.toString().slice(0, -1):
                 return ToscaTypes.CapabilityType;
             case ToscaTypes.NodeTypeImplementation:
+            case ToscaTypes.NodeTypeImplementation.toString().slice(0, -1):
                 return ToscaTypes.NodeTypeImplementation;
             case ToscaTypes.RelationshipTypeImplementation:
+            case ToscaTypes.RelationshipTypeImplementation.toString().slice(0, -1):
                 return ToscaTypes.RelationshipTypeImplementation;
             case ToscaTypes.PolicyType:
+            case ToscaTypes.PolicyType.toString().slice(0, -1):
                 return ToscaTypes.PolicyType;
             case ToscaTypes.PolicyTemplate:
+            case ToscaTypes.PolicyTemplate.toString().slice(0, -1):
                 return ToscaTypes.PolicyTemplate;
             case ToscaTypes.Imports:
+            case ToscaTypes.Imports.toString().slice(0, -1):
                 return ToscaTypes.Imports;
+            case ToscaTypes.ComplianceRule:
+                return ToscaTypes.ComplianceRule;
+            case ToscaTypes.PatternRefinementModel:
+                return ToscaTypes.PatternRefinementModel;
+            case ToscaTypes.TestRefinementModel:
+                return ToscaTypes.TestRefinementModel;
             default:
                 return ToscaTypes.Admin;
         }
     }
 
-    public static getToscaTypeNameFromToscaType(value: ToscaTypes): string {
+    public static getToscaTypeNameFromToscaType(value: ToscaTypes, plural = false): string {
+        let type: string;
+
         switch (value) {
             case ToscaTypes.ServiceTemplate:
-                return 'Service Template';
+                type = 'Service Template';
+                break;
             case ToscaTypes.NodeType:
-                return 'Node Type';
+                type = 'Node Type';
+                break;
             case ToscaTypes.RelationshipType:
-                return 'Relationship Type';
+                type = 'Relationship Type';
+                break;
             case ToscaTypes.ArtifactType:
-                return 'Artifact Type';
+                type = 'Artifact Type';
+                break;
             case ToscaTypes.ArtifactTemplate:
-                return 'Artifact Template';
+                type = 'Artifact Template';
+                break;
             case ToscaTypes.RequirementType:
-                return 'Requirement Type';
+                type = 'Requirement Type';
+                break;
             case ToscaTypes.CapabilityType:
-                return 'Capability Type';
+                type = 'Capability Type';
+                break;
             case ToscaTypes.NodeTypeImplementation:
-                return 'Node Type Implementation';
+                type = 'Node Type Implementation';
+                break;
             case ToscaTypes.RelationshipTypeImplementation:
-                return 'Relationship Type Implementation';
+                type = 'Relationship Type Implementation';
+                break;
             case ToscaTypes.PolicyType:
-                return 'Policy Type';
+                type = 'Policy Type';
+                break;
             case ToscaTypes.PolicyTemplate:
-                return 'Policy Template';
+                type = 'Policy Template';
+                break;
             case ToscaTypes.Imports:
-                return 'XSD Imports';
+                type = 'XSD Import';
+                break;
+            case ToscaTypes.ComplianceRule:
+                type = 'Compliance Rule';
+                break;
+            case ToscaTypes.PatternRefinementModel:
+                type = 'Pattern Refinement Model';
+                break;
+            case ToscaTypes.TestRefinementModel:
+                type = 'Test Refinement Model';
+                break;
             default:
-                return 'Admin';
+                type = 'Admin';
         }
+
+        if (value !== ToscaTypes.Admin && plural) {
+            type += 's';
+        }
+
+        return type;
     }
 
-    public static getTypeOrImplementationOf(value: ToscaTypes): ToscaTypes {
+    public static getTypeOfTemplateOrImplementation(value: ToscaTypes): ToscaTypes {
         switch (value) {
             case ToscaTypes.ArtifactTemplate:
                 return ToscaTypes.ArtifactType;
@@ -102,10 +152,12 @@ export class Utils {
                 return ToscaTypes.RelationshipType;
             case ToscaTypes.PolicyTemplate:
                 return ToscaTypes.PolicyType;
+            default:
+                return null;
         }
     }
 
-    public static getToscaOfTypeOrImplementation(value: ToscaTypes): ToscaTypes {
+    public static getImplementationOrTemplateOfType(value: ToscaTypes): ToscaTypes {
         switch (value) {
             case ToscaTypes.NodeType:
                 return ToscaTypes.NodeTypeImplementation;
@@ -115,6 +167,79 @@ export class Utils {
                 return ToscaTypes.PolicyTemplate;
             case ToscaTypes.ArtifactType:
                 return ToscaTypes.ArtifactTemplate;
+            default:
+                return null;
         }
     }
+
+    public static getTypeOfServiceTemplateTemplate(value: ServiceTemplateTemplateTypes): ToscaTypes {
+        switch (value) {
+            case ServiceTemplateTemplateTypes.CapabilityTemplate:
+                return ToscaTypes.CapabilityType;
+            case ServiceTemplateTemplateTypes.NodeTemplate:
+                return ToscaTypes.NodeType;
+            case ServiceTemplateTemplateTypes.RelationshipTemplate:
+                return ToscaTypes.RelationshipType;
+            case ServiceTemplateTemplateTypes.RequirementTemplate:
+                return ToscaTypes.RequirementType;
+            default:
+                return null;
+        }
+    }
+
+    public static getServiceTemplateTemplateType(value: ToscaTypes): ServiceTemplateTemplateTypes {
+        switch (value) {
+            case ToscaTypes.CapabilityType:
+                return ServiceTemplateTemplateTypes.CapabilityTemplate;
+            case ToscaTypes.NodeType:
+                return ServiceTemplateTemplateTypes.NodeTemplate;
+            case ToscaTypes.RelationshipType:
+                return ServiceTemplateTemplateTypes.RelationshipTemplate;
+            case ToscaTypes.RequirementType:
+                return ServiceTemplateTemplateTypes.RequirementTemplate;
+            default:
+                return null;
+        }
+    }
+
+    public static getServiceTemplateTemplateFromString(value: string): ServiceTemplateTemplateTypes {
+        switch (value) {
+            case ServiceTemplateTemplateTypes.CapabilityTemplate:
+                return ServiceTemplateTemplateTypes.CapabilityTemplate;
+            case ServiceTemplateTemplateTypes.NodeTemplate:
+                return ServiceTemplateTemplateTypes.NodeTemplate;
+            case ServiceTemplateTemplateTypes.RelationshipTemplate:
+                return ServiceTemplateTemplateTypes.RelationshipTemplate;
+            case ServiceTemplateTemplateTypes.RequirementTemplate:
+                return ServiceTemplateTemplateTypes.RequirementTemplate;
+            default:
+                return null;
+        }
+    }
+
+    public static getNameFromQName(qName: string) {
+        return qName.split('}').pop();
+    }
+
+    public static getNamespaceAndLocalNameFromQName(qname: string): WineryComponentNameAndNamespace {
+        const i = qname.indexOf('}');
+        return {
+            namespace: qname.substr(1, i - 1),
+            localName: qname.substr(i + 1)
+        };
+    }
+
+    public static getNameWithoutVersion(name: string): string {
+        const res = name.match(/_(([^_]*)-)?w([0-9]+)(-wip([0-9]+))?$/);
+        if (isNullOrUndefined(res)) {
+            return name;
+        } else {
+            return name.substr(0, res.index);
+        }
+    }
+}
+
+export interface WineryComponentNameAndNamespace {
+    namespace: string;
+    localName: string;
 }

@@ -1,31 +1,34 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Niko Stadelmaier, Tino Stadelmaier - initial API and implementation
- */
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
-import { WineryArtifactService } from './artifact.service';
+import { SelectableInterface, WineryArtifactService } from './artifact.service';
 import { isNullOrUndefined } from 'util';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { NameAndQNameApiData, NameAndQNameApiDataList } from '../../../wineryQNameSelector/wineryNameAndQNameApiData';
 import { InstanceService } from '../../instance.service';
-import { InterfacesApiData } from '../interfaces/interfacesApiData';
 import { GenerateArtifactApiData } from '../interfaces/generateArtifactApiData';
 import { ModalDirective } from 'ngx-bootstrap';
-import { ArtifactApiData } from '../../../wineryInterfaces/wineryComponent';
+import { ArtifactApiData } from '../../../model/wineryComponent';
 import { backendBaseURL, hostURL } from '../../../configuration';
 import { WineryArtifactFilesService } from './artifact.files.service.';
 import { Router } from '@angular/router';
 import { FilesApiData } from '../../artifactTemplates/filesTag/files.service.';
 import { GenerateData } from '../../../wineryComponentExists/wineryComponentExists.component';
-import { ToscaTypes } from '../../../wineryInterfaces/enums';
+import { ToscaTypes } from '../../../model/enums';
+import { WineryVersion } from '../../../model/wineryVersion';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'winery-artifact',
@@ -41,13 +44,13 @@ export class WineryArtifactComponent implements OnInit {
     loading = true;
     elementToRemove: ArtifactApiData;
     artifactsData: ArtifactApiData[];
-    interfacesList: InterfacesApiData[];
+    interfacesList: SelectableInterface[];
     newArtifact: GenerateArtifactApiData = new GenerateArtifactApiData();
     artifact: GenerateData = new GenerateData();
     artifactUrl: string;
     artifactTypesList: NameAndQNameApiDataList = { 'classes': null };
     artifactTemplatesList: NameAndQNameApiDataList = { 'classes': null };
-    selectedInterface: InterfacesApiData;
+    selectedInterface: SelectableInterface;
     selectedOperation: string;
     selectedRadioButton = 'createArtifactTemplate';
     selectedArtifactType: string;
@@ -56,9 +59,9 @@ export class WineryArtifactComponent implements OnInit {
     baseUrl = hostURL;
     fileToRemove: FilesApiData;
     noneSelected = true;
-    isDeploymentArtifact = false;
+    isImplementationArtifact = false;
 
-    commonColumns = [
+    commonColumns: WineryTableColumn[] = [
         { title: 'Name', name: 'name' },
         { title: 'Artifact Template', name: 'artifactRefLocalName' },
         { title: 'Artifact Type', name: 'artifactTypeLocalName' },
@@ -76,7 +79,7 @@ export class WineryArtifactComponent implements OnInit {
     ];
 
     constructor(private service: WineryArtifactService,
-                private sharedData: InstanceService,
+                public sharedData: InstanceService,
                 private notify: WineryNotificationService,
                 private fileService: WineryArtifactFilesService,
                 private router: Router) {
@@ -90,14 +93,14 @@ export class WineryArtifactComponent implements OnInit {
         this.getArtifactTypes();
         this.newArtifact.artifactType = '';
 
-        if (this.router.url.includes('deploymentartifacts')) {
-            this.isDeploymentArtifact = true;
+        if (this.router.url.includes('implementationartifacts')) {
+            this.isImplementationArtifact = true;
             this.columns.splice(1, 0, this.implementationArtifactColumns[0]);
             this.columns.splice(2, 0, this.implementationArtifactColumns[1]);
-        } else {
             this.getInterfacesOfAssociatedType();
         }
 
+        this.name = this.isImplementationArtifact ? 'Implementation' : 'Deployment';
     }
 
     onAddClick() {
@@ -108,8 +111,8 @@ export class WineryArtifactComponent implements OnInit {
         } else {
             this.artifact.namespace = this.sharedData.toscaComponent.namespace;
         }
-        const deployment = this.isDeploymentArtifact ? 'Deployment' : '';
-        this.artifact.name = this.sharedData.toscaComponent.localName + deployment + 'Artifact';
+        const implementation = this.isImplementationArtifact ? 'Implementation' : 'Deployment';
+        this.artifact.name = this.sharedData.toscaComponent.localName.replace('_', '-') + '-' + implementation + 'Artifact';
         this.artifact.toscaType = ToscaTypes.ArtifactTemplate;
         this.addArtifactModal.show();
     }
@@ -160,14 +163,15 @@ export class WineryArtifactComponent implements OnInit {
             this.selectedOperation = '';
         }
         if (isNullOrUndefined(this.selectedInterface)) {
-            this.selectedInterface = new InterfacesApiData();
+            this.selectedInterface = new SelectableInterface();
             this.selectedInterface.text = '';
         }
 
         if (this.selectedRadioButton === 'createArtifactTemplate') {
+            const version = new WineryVersion('', 1, 1);
             this.newArtifact.autoCreateArtifactTemplate = 'true';
-            this.newArtifact.artifactTemplateName = this.artifact.name ? this.artifact.name : '';
-            this.newArtifact.artifactTemplateNamespace = this.artifact.namespace ? this.artifact.namespace : '';
+            this.newArtifact.artifactTemplateName = this.artifact.name + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + version.toString();
+            this.newArtifact.artifactTemplateNamespace = this.artifact.namespace;
             this.makeArtifactUrl();
         } else if (this.selectedRadioButton === 'linkArtifactTemplate') {
             this.newArtifact.autoCreateArtifactTemplate = '';
@@ -256,7 +260,7 @@ export class WineryArtifactComponent implements OnInit {
                 this.notify.success('Artifact deleted');
                 this.getArtifacts();
             },
-            error => this.notify.error(error.toString())
+            error => this.notify.error(error.message)
         );
     }
 
@@ -264,7 +268,7 @@ export class WineryArtifactComponent implements OnInit {
         this.fileService.getFiles(templateUrl)
             .subscribe(
                 data => this.filesList = data.files,
-                error => this.notify.error(error.toString() + 'error while loading files!')
+                error => this.notify.error(error.message) + 'error while loading files!'
             );
     }
 
@@ -290,7 +294,7 @@ export class WineryArtifactComponent implements OnInit {
         }
     }
 
-    private handleInterfaceData(data: InterfacesApiData[]) {
+    private handleInterfaceData(data: SelectableInterface[]) {
         this.interfacesList = data;
     }
 
@@ -333,8 +337,8 @@ export class WineryArtifactComponent implements OnInit {
         this.loading = false;
     }
 
-    private showError(error: any) {
-        this.notify.error(error);
+    private showError(error: HttpErrorResponse) {
+        this.notify.error(error.message);
         this.loading = false;
     }
 

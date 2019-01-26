@@ -1,14 +1,16 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Balzer - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { isNullOrUndefined } from 'util';
 import { PropertyConstraintsService } from './propertyConstraints.service';
@@ -17,6 +19,8 @@ import { ConstraintTypeApiData } from './constraintTypesApiData';
 import { WineryValidatorObject } from '../../../../wineryValidators/wineryDuplicateValidator.directive';
 import { WineryNotificationService } from '../../../../wineryNotificationModule/wineryNotification.service';
 import { ModalDirective } from 'ngx-bootstrap';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { WineryEditorComponent } from '../../../../wineryEditorModule/wineryEditor.component';
 
 @Component({
     selector: 'winery-instance-boundary-properties',
@@ -26,6 +30,7 @@ import { ModalDirective } from 'ngx-bootstrap';
     ]
 })
 export class PropertyConstraintsComponent implements OnInit {
+
     loading = true;
     loadCount = 0;
     propertyConstraints: PropertyConstraintApiData[] = [];
@@ -39,6 +44,7 @@ export class PropertyConstraintsComponent implements OnInit {
     ];
     @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
     @ViewChild('addModal') addModal: ModalDirective;
+    @ViewChild('propertyConstraintEditor') propertyConstraintEditor: WineryEditorComponent;
     validatorObject: WineryValidatorObject;
 
     constructor(private service: PropertyConstraintsService,
@@ -65,6 +71,8 @@ export class PropertyConstraintsComponent implements OnInit {
 
     addNewConstraint() {
         this.addLoad();
+        this.newConstraint.fragments = this.propertyConstraintEditor.getData();
+        console.log(this.newConstraint);
         this.service.postConstraint(this.newConstraint).subscribe(
             data => this.handlePostResponse(data),
             error => this.handleError(error)
@@ -104,7 +112,7 @@ export class PropertyConstraintsComponent implements OnInit {
         );
     }
 
-    handlePostResponse(data: any) {
+    handlePostResponse(data: HttpResponse<string>) {
         this.decreaseLoad();
         if (data.ok) {
             this.getConstraints();
@@ -114,7 +122,7 @@ export class PropertyConstraintsComponent implements OnInit {
         }
     }
 
-    handleDeleteResponse(data: any) {
+    handleDeleteResponse(data: HttpResponse<string>) {
         this.decreaseLoad();
         if (data.ok) {
             this.getConstraints();
@@ -126,10 +134,6 @@ export class PropertyConstraintsComponent implements OnInit {
 
     private handleData(data: PropertyConstraintApiData[]) {
         this.propertyConstraints = data;
-        for (let i = 0; i < data.length; i++) {
-            this.propertyConstraints[i].fragments = '[Not implemented yet]';
-        }
-
         this.decreaseLoad();
     }
 
@@ -138,9 +142,9 @@ export class PropertyConstraintsComponent implements OnInit {
         this.decreaseLoad();
     }
 
-    private handleError(error: any): void {
+    private handleError(error: HttpErrorResponse): void {
         this.decreaseLoad();
-        this.notify.error('Action caused an error:\n', error);
+        this.notify.error(error.message);
     }
 
     private addLoad() {

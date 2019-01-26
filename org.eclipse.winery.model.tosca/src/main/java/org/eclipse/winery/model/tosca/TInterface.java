@@ -1,37 +1,34 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import org.eclipse.jdt.annotation.NonNull;
+
+import javax.xml.bind.annotation.*;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-
-import org.eclipse.jdt.annotation.NonNull;
-
 
 /**
  * <p>Java class for tInterface complex type.
- *
+ * <p>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p>
  * <pre>
  * &lt;complexType name="tInterface">
  *   &lt;complexContent>
@@ -48,9 +45,9 @@ import org.eclipse.jdt.annotation.NonNull;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tInterface", propOrder = {
-        "operation"
+    "operation"
 })
-public class TInterface {
+public class TInterface implements HasName, Serializable {
     @XmlElement(name = "Operation", required = true)
     protected List<TOperation> operation;
     @XmlAttribute(name = "name", required = true)
@@ -67,12 +64,11 @@ public class TInterface {
 
     @Override
     public boolean equals(Object o) {
-
         if (this == o) return true;
         if (!(o instanceof TInterface)) return false;
         TInterface that = (TInterface) o;
         return Objects.equals(operation, that.operation) &&
-                Objects.equals(name, that.name);
+            Objects.equals(name, that.name);
     }
 
     @Override
@@ -82,20 +78,20 @@ public class TInterface {
 
     /**
      * Gets the value of the operation property.
-     *
+     * <p>
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
      * This is why there is not a <CODE>set</CODE> method for the operation property.
-     *
+     * <p>
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getOperation().add(newItem);
      * </pre>
-     *
-     *
+     * <p>
+     * <p>
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link TOperation }
@@ -114,6 +110,7 @@ public class TInterface {
      * @return possible object is {@link String }
      */
     @NonNull
+    @Override
     public String getName() {
         return name;
     }
@@ -123,6 +120,7 @@ public class TInterface {
      *
      * @param value allowed object is {@link String }
      */
+    @Override
     public void setName(String value) {
         this.name = value;
     }

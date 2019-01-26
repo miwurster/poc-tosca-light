@@ -1,28 +1,36 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Philipp Meyer, Tino Stadelmaier - initial API and implementation
- */
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { isNullOrUndefined } from 'util';
-import { CapabilityOrRequirementDefinitionsService } from './capOrReqDef.service';
-import { CapabilityOrRequirementDefinition, CapOrRegDefinitionsResourceApiData,
-        CapOrReqDefinition, Constraint } from './capOrReqDefResourceApiData';
-import { CapOrRegDefinitionsTableData } from './CapOrReqDefTableData';
-import { NameAndQNameApiData, NameAndQNameApiDataList } from '../../../wineryQNameSelector/wineryNameAndQNameApiData';
-import { Router } from '@angular/router';
-import { WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
-import { TypeWithShortName } from '../../admin/typesWithShortName/typeWithShortName.service';
-import { SelectData } from '../../../wineryInterfaces/selectData';
-import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
-import { ModalDirective } from 'ngx-bootstrap';
-import { SpinnerWithInfinityComponent } from '../../../winerySpinnerWithInfinityModule/winerySpinnerWithInfinity.component';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {isNullOrUndefined} from 'util';
+import {CapabilityOrRequirementDefinitionsService} from './capOrReqDef.service';
+import {
+    CapabilityOrRequirementDefinition,
+    CapOrRegDefinitionsResourceApiData,
+    CapOrReqDefinition,
+    Constraint
+} from './capOrReqDefResourceApiData';
+import {CapOrRegDefinitionsTableData} from './CapOrReqDefTableData';
+import {NameAndQNameApiData, NameAndQNameApiDataList} from '../../../wineryQNameSelector/wineryNameAndQNameApiData';
+import {Router} from '@angular/router';
+import {WineryTableColumn} from '../../../wineryTableModule/wineryTable.component';
+import {TypeWithShortName} from '../../admin/typesWithShortName/typeWithShortName.service';
+import {SelectData} from '../../../model/selectData';
+import {WineryNotificationService} from '../../../wineryNotificationModule/wineryNotification.service';
+import {ModalDirective} from 'ngx-bootstrap';
+import {SpinnerWithInfinityComponent} from '../../../winerySpinnerWithInfinityModule/winerySpinnerWithInfinity.component';
+import {InstanceService} from '../../instance.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'winery-instance-cap-or-req-definitions',
@@ -46,11 +54,11 @@ export class CapOrReqDefComponent implements OnInit {
     loading = true;
     resourceApiData: CapOrRegDefinitionsResourceApiData = null;
     tableData: Array<CapOrRegDefinitionsTableData> = [];
-    capabilityTypesList: NameAndQNameApiDataList = {'classes': null};
+    capabilityTypesList: NameAndQNameApiDataList = {classes: null};
     capOrReqDefToBeAdded: CapOrReqDefinition = null;
     noneSelected = true;
 
-    editorHeight = '200';
+    editorHeight = 200;
 
     defaultConstraintDataModel = `<tosca:Constraint xmlns:tosca="http://docs.oasis-open.org/tosca/ns/2011/12">
 ##
@@ -82,7 +90,8 @@ export class CapOrReqDefComponent implements OnInit {
     @ViewChild('upperBoundSpinner') upperBoundSpinner: SpinnerWithInfinityComponent;
     @ViewChild('editor') editor: any;
 
-    constructor(private service: CapabilityOrRequirementDefinitionsService,
+    constructor(public sharedData: InstanceService,
+                private service: CapabilityOrRequirementDefinitionsService,
                 private notify: WineryNotificationService,
                 private router: Router) {
         this.capOrReqDefToBeAdded = new CapOrReqDefinition();
@@ -114,11 +123,7 @@ export class CapOrReqDefComponent implements OnInit {
 
     onSelectedValueChanged(value: string) {
         this.capOrReqDefToBeAdded.type = value;
-        if (this.capOrReqDefToBeAdded.type === '(none)') {
-            this.noneSelected = true;
-        } else {
-            this.noneSelected = false;
-        }
+        this.noneSelected = this.capOrReqDefToBeAdded.type === '(none)';
     }
 
     /**
@@ -157,15 +162,15 @@ export class CapOrReqDefComponent implements OnInit {
         const namespaceEncoded: string = encodeURIComponent(encodeURIComponent(
             type.substring(type.lastIndexOf('{') + 1, type.lastIndexOf('}'))
         ));
-        const absoluteURL = '/' + this.types + '/' + namespaceEncoded + '/' + name;
-        return '<a' + ' [routerLink]="[\'' + absoluteURL + '\']">' + name + '</a>';
+        const absoluteURL = '/#/' + this.types + '/' + namespaceEncoded + '/' + name;
+        return '<a href="' + absoluteURL + '">' + name + '</a>';
     }
 
     private getTypeURI(type: string): string {
         const name = type.split('}').pop();
-        const namespaceEncoded: string = encodeURIComponent(encodeURIComponent(
+        const namespaceEncoded: string = encodeURIComponent(
             type.substring(type.lastIndexOf('{') + 1, type.lastIndexOf('}'))
-        ));
+        );
         return '/' + this.types + '/' + namespaceEncoded + '/' + name;
     }
 
@@ -437,7 +442,7 @@ export class CapOrReqDefComponent implements OnInit {
         this.resourceApiData.capOrRegDefinitionsList = data;
         this.prepareTableData(this.resourceApiData);
 
-    };
+    }
 
     private getAllCapOrReqTypes(types: string): void {
         this.service.getAllCapOrReqTypes(types).subscribe(
@@ -506,9 +511,9 @@ export class CapOrReqDefComponent implements OnInit {
      *
      * @param error notification to be shown
      */
-    private handleError(error: any): void {
+    private handleError(error: HttpErrorResponse): void {
         this.loading = false;
-        this.notify.error(error);
+        this.notify.error(error.message);
     }
 
     // endregion

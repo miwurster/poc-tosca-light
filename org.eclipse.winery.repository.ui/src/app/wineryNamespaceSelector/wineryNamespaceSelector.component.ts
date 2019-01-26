@@ -1,28 +1,26 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- *     Niko Stadelmaier - add types and documentation
- */
-import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
-import { WineryNamespaceSelectorService } from './wineryNamespaceSelector.service';
-import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { NamespaceWithPrefix } from '../wineryInterfaces/namespaceWithPrefix';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import {Component, ElementRef, forwardRef, Input, OnInit, ViewChild} from '@angular/core';
+import {WineryNamespaceSelectorService} from './wineryNamespaceSelector.service';
+import {WineryNotificationService} from '../wineryNotificationModule/wineryNotification.service';
+import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
+import {NamespaceProperties} from '../model/namespaceProperties';
+import {StartNamespaces, ToscaTypes} from '../model/enums';
+import {isNullOrUndefined} from 'util';
+import { HttpErrorResponse } from '@angular/common/http';
 
 const noop = () => {
-};
-
-const customInputControl: any = {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => WineryNamespaceSelectorComponent),
-    multi: true,
 };
 
 /**
@@ -66,59 +64,109 @@ const customInputControl: any = {
     templateUrl: './wineryNamespaceSelector.component.html',
     providers: [
         WineryNamespaceSelectorService,
-        customInputControl
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => WineryNamespaceSelectorComponent),
+            multi: true,
+        }
     ]
 })
 export class WineryNamespaceSelectorComponent implements OnInit, ControlValueAccessor {
 
     @Input() isRequired = false;
     @Input() typeAheadListLimit = 50;
-    @Output() onChange = new EventEmitter<any>();
+    @Input() toscaType: ToscaTypes;
+    @Input() useStartNamespace = true;
 
     loading = true;
-    allNamespaces: NamespaceWithPrefix[] = [];
+    isCollapsed = true;
+    allNamespaces: NamespaceProperties[] = [];
 
-    private innerValue = '';
+    @ViewChild('namespaceInput') namespaceInput: ElementRef;
+    public initNamespaceString = '';
+
+    private innerNamespaceValue = '';
+
     private onTouchedCallback: () => void = noop;
-    private onChangeCallback: (_: any) => void = noop;
+    private propagateChange: (_: any) => void = noop;
 
     constructor(private service: WineryNamespaceSelectorService, private notify: WineryNotificationService) {
     }
 
     ngOnInit() {
-        this.service.getAllNamespaces()
+        this.getDefaultNamespace();
+        this.service.getNamespaces()
             .subscribe(
                 data => {
                     this.allNamespaces = data;
                     this.loading = false;
                 },
-                error => this.notify.error(error.toString())
+                (error: HttpErrorResponse) => {
+                    this.notify.error(error.message);
+                    this.loading = false;
+                }
             );
     }
 
-    get selectedNamespace(): string {
-        return this.innerValue;
+    get namespaceValue(): string {
+        return this.innerNamespaceValue;
     }
 
-    set selectedNamespace(v: string) {
-        if (v !== this.innerValue) {
-            this.innerValue = v;
-            this.onChangeCallback(v);
-            this.onChange.emit();
+    set namespaceValue(value: string) {
+        this.innerNamespaceValue = value;
+        this.propagateChange(this.innerNamespaceValue);
+        if (this.namespaceInput) {
+            this.namespaceInput.nativeElement.focus();
         }
     }
 
+    applyNamespace() {
+        localStorage.setItem(StartNamespaces.LocalStorageEntry.toString(), this.initNamespaceString);
+        this.namespaceValue = this.initNamespaceString !== '' ? this.applyToscaTypeToNamespace(this.initNamespaceString) : '';
+    }
+
+    // region ########## ControlValueAccessor Interface ##########
     writeValue(value: string) {
-        if (value !== this.innerValue) {
-            this.innerValue = value;
+        if (value !== this.innerNamespaceValue) {
+            if ((isNullOrUndefined(value) || value.length === 0) && this.useStartNamespace) {
+                // In the case that the namespace is set from outside this component via ngModel, don't overwrite the value set by the parent component.
+                // Otherwise, use the default namespace.
+                if (this.innerNamespaceValue.length === 0) {
+                    this.getDefaultNamespace();
+                    this.namespaceValue = this.applyToscaTypeToNamespace(this.initNamespaceString);
+                } else {
+                    this.namespaceValue = this.innerNamespaceValue;
+                }
+            } else {
+                this.namespaceValue = value;
+            }
         }
     }
 
     registerOnChange(fn: any) {
-        this.onChangeCallback = fn;
+        this.propagateChange = fn;
     }
 
     registerOnTouched(fn: any) {
         this.onTouchedCallback = fn;
+    }
+
+    collapsed(event: any): void {
+    }
+
+    expanded(event: any): void {
+    }
+
+    // endregion
+
+    private applyToscaTypeToNamespace(namespaceStart: string) {
+        return namespaceStart.endsWith('/') ? namespaceStart + this.toscaType :
+            namespaceStart + '/' + this.toscaType;
+    }
+
+    private getDefaultNamespace() {
+        const storageValue = localStorage.getItem(StartNamespaces.LocalStorageEntry.toString());
+        this.initNamespaceString = isNullOrUndefined(storageValue) || storageValue.length === 0 ?
+            StartNamespaces.DefaultStartNamespace.toString() : storageValue;
     }
 }

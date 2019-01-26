@@ -1,9 +1,5 @@
-<!--
-Contributors:
-    Lukas Harzenetter - API and implementation
--->
-
 # OAuth with GitHub
+
 **UserStory:**
 
 In order to use (private) repositories instead of uploading all files into a Artifact Template, it is necessary to log in into GitHub.
@@ -17,18 +13,19 @@ In order to use (private) repositories instead of uploading all files into a Art
 
 ![OAuth flow diagram](graphics/oauth-flow.png)  
 
-## Considered Alternatives:
+## Considered Alternatives
 * *[ALTERNATIVE 1]* Perform the whole login process in the browser
 * *[ALTERNATIVE 2]* Perform the whole login process in the backend
 * *[ALTERNATIVE 3]* Mix both, frontend and backend to get the access token
 
-## Conclusion
+## Decision Outcome
 * *Chosen Alternative: [ALTERNATIVE 3]*
    because we can easily protect our client secret on the server, store the token safely in the clients local storage and 
    do not need to keep the state at the server. Further, it is possible to save additional user information in the local
    storage without the need for getting it every time from the server.
 
-## Comparison
+## Pros and Cons of the Alternatives
+
 ### [ALTERNATIVE 1]
 * *+ good separation of concerns*
 * *+ fast and direct communication between client and OAuth provider*
@@ -44,16 +41,14 @@ In order to use (private) repositories instead of uploading all files into a Art
 
 ## License
 
-Copyright (c) 2017 University of Stuttgart.
+Copyright (c) 2017 Contributors to the Eclipse Foundation
 
-All rights reserved. This program and the accompanying materials
-are made available under the terms of the [Eclipse Public License v1.0]
-and the [Apache License v2.0] which both accompany this distribution,
-and are available at http://www.eclipse.org/legal/epl-v10.html
-and http://www.apache.org/licenses/LICENSE-2.0
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
 
-Contributors:
-* Lukas Harzenetter - initial API and implementation
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+which is available at https://www.apache.org/licenses/LICENSE-2.0.
 
- [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
- [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0

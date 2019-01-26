@@ -1,13 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2012-2013 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Oliver Kopp - initial API and implementation
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources.entitytypes;
 
@@ -35,96 +37,95 @@ import org.eclipse.winery.repository.rest.resources.apiData.InstanceStateApiData
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Resource for instance states <br />
+ * Resource for instance states.
  * Used by relationship types and node types
  */
 public class InstanceStatesResource {
 
-	private TopologyGraphElementEntityTypeResource typeResource;
-	private TTopologyElementInstanceStates instanceStates;
+    private TopologyGraphElementEntityTypeResource typeResource;
+    private TTopologyElementInstanceStates instanceStates;
 
 
-	/**
-	 *
-	 * @param instanceStates the instanceStates to manage
-	 * @param typeResource the type resource, where the instance states are
-	 *            managed. This reference is required to fire "persist()" in
-	 *            case of updates
-	 */
-	public InstanceStatesResource(TTopologyElementInstanceStates instanceStates, TopologyGraphElementEntityTypeResource typeResource) {
-		this.instanceStates = instanceStates;
-		this.typeResource = typeResource;
-	}
+    /**
+     * @param instanceStates the instanceStates to manage
+     * @param typeResource   the type resource, where the instance states are
+     *                       managed. This reference is required to fire "persist()" in
+     *                       case of updates
+     */
+    public InstanceStatesResource(TTopologyElementInstanceStates instanceStates, TopologyGraphElementEntityTypeResource typeResource) {
+        this.instanceStates = instanceStates;
+        this.typeResource = typeResource;
+    }
 
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-		public List<InstanceStateApiData> getInstanceStates() {
-		List<InstanceState> instanceStates = this.instanceStates.getInstanceState();
-		ArrayList<InstanceStateApiData> states = new ArrayList<>(instanceStates.size());
-		for (InstanceState instanceState : instanceStates) {
-			states.add(new InstanceStateApiData(instanceState.getState()));
-		}
-		return states;
-	}
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<InstanceStateApiData> getInstanceStates() {
+        List<InstanceState> instanceStates = this.instanceStates.getInstanceState();
+        ArrayList<InstanceStateApiData> states = new ArrayList<>(instanceStates.size());
+        for (InstanceState instanceState : instanceStates) {
+            states.add(new InstanceStateApiData(instanceState.getState()));
+        }
+        return states;
+    }
 
-	@DELETE
-	@Path("{instanceState}")
-	public Response deleteInstanceState(@PathParam("instanceState") String instanceStateToRemove) {
-		if (StringUtils.isEmpty(instanceStateToRemove)) {
-			return Response.status(Status.BAD_REQUEST).entity("null instance to remove").build();
-		}
-		instanceStateToRemove = Util.URLdecode(instanceStateToRemove);
+    @DELETE
+    @Path("{instanceState}")
+    public Response deleteInstanceState(@PathParam("instanceState") String instanceStateToRemove) {
+        if (StringUtils.isEmpty(instanceStateToRemove)) {
+            return Response.status(Status.BAD_REQUEST).entity("null instance to remove").build();
+        }
+        instanceStateToRemove = Util.URLdecode(instanceStateToRemove);
 
-		// InstanceState does not override "equals()", therefore we have to manually remove it
+        // InstanceState does not override "equals()", therefore we have to manually remove it
 
-		List<InstanceState> instanceStates = this.instanceStates.getInstanceState();
-		Iterator<InstanceState> iterator = instanceStates.iterator();
-		boolean found = false;
-		while (iterator.hasNext() && !found) {
-			if (iterator.next().getState().equals(instanceStateToRemove)) {
-				found = true;
-			}
-		}
+        List<InstanceState> instanceStates = this.instanceStates.getInstanceState();
+        Iterator<InstanceState> iterator = instanceStates.iterator();
+        boolean found = false;
+        while (iterator.hasNext() && !found) {
+            if (iterator.next().getState().equals(instanceStateToRemove)) {
+                found = true;
+            }
+        }
 
-		if (!found) {
-			return Response.status(Status.NOT_FOUND).build();
-		}
+        if (!found) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
 
-		iterator.remove();
+        iterator.remove();
 
-		return RestUtils.persist(this.typeResource);
-	}
+        return RestUtils.persist(this.typeResource);
+    }
 
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response addInstanceState(InstanceStateApiData json) {
-		String state = json.state;
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addInstanceState(InstanceStateApiData json) {
+        String state = json.state;
 
-		if (StringUtils.isEmpty(state)) {
-			return Response.notAcceptable(null).build();
-		}
+        if (StringUtils.isEmpty(state)) {
+            return Response.notAcceptable(null).build();
+        }
 
-		// InstanceState does not override "equals()", therefore we have to manually check for existance
+        // InstanceState does not override "equals()", therefore we have to manually check for existance
 
-		List<InstanceState> instanceStates = this.instanceStates.getInstanceState();
-		Iterator<InstanceState> iterator = instanceStates.iterator();
-		boolean found = false;
-		while (iterator.hasNext() && !found) {
-			if (iterator.next().getState().equals(state)) {
-				found = true;
-			}
-		}
+        List<InstanceState> instanceStates = this.instanceStates.getInstanceState();
+        Iterator<InstanceState> iterator = instanceStates.iterator();
+        boolean found = false;
+        while (iterator.hasNext() && !found) {
+            if (iterator.next().getState().equals(state)) {
+                found = true;
+            }
+        }
 
-		if (found) {
-			// no error, just return
-			return Response.noContent().build();
-		}
+        if (found) {
+            // no error, just return
+            return Response.noContent().build();
+        }
 
-		InstanceState instanceState = new InstanceState();
-		instanceState.setState(state);
-		instanceStates.add(instanceState);
+        InstanceState instanceState = new InstanceState();
+        instanceState.setState(state);
+        instanceStates.add(instanceState);
 
-		return RestUtils.persist(this.typeResource);
-	}
+        return RestUtils.persist(this.typeResource);
+    }
 
 }

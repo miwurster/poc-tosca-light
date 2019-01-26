@@ -2,39 +2,60 @@
 
 This file explains how to create and maintain copyright headers in source files.
 
-# Initial header
+## Initial header
 
 ```
-/***********************************************************************
- * Copyright (c) {DATE} {INITIAL COPYRIGHT OWNER} {OTHER COPYRIGHT OWNERS}.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and Apache License v2.0 which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Apache License v2.0 is available at
- * http://www.opensource.org/licenses/apache2.0.php.
- * You may elect to redistribute this code under either of these licenses.
- * Contributors:
- *    {INITIAL AUTHOR} - initial API and implementation
- *************************************************************************
+/********************************************************************************
+ * Copyright (c) ${YEAR} Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ ********************************************************************************/
 ```
 
-## Templates
-* Company: John Smith (University of Stuttgart)
-* Student: John Smith
-* Copyright (c) 2013 John Smith (University of Stuttgart).
+See also <https://www.eclipse.org/projects/handbook/#ip-copyright-headers>.
+
+## Header for IntelliJ configuratoin
+
+```
+Copyright (c) $today.year Contributors to the Eclipse Foundation
+
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+```
+
+## Regex
+
+Just `Copyright` is enough to match existing headers.
 
 ## Full information
 
-Full information is available at: http://www.eclipse.org/legal/copyrightandlicensenotice.php
+Full information is available at: <http://www.eclipse.org/legal/copyrightandlicensenotice.php>
 
 ## License
 
-Copyright (c) 2013-2017 University of Stuttgart.
+Copyright (c) 2013-2017 Contributors to the Eclipse Foundation
 
-All rights reserved. This program and the accompanying materials
-are made available under the terms of the [Eclipse Public License v1.0]
-and the [Apache License v2.0] which both accompany this distribution.
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
 
-  [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
-  [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+<http://www.eclipse.org/legal/epl-2.0>, or the Apache Software License 2.0
+which is available at <https://www.apache.org/licenses/LICENSE-2.0>.
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0

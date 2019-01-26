@@ -1,14 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
@@ -25,36 +26,19 @@ import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
+import io.github.adr.embedded.ADR;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-
-/**
- * <p>Java class for tImplementationArtifact complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tImplementationArtifact">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="interfaceName" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *       &lt;attribute name="operationName" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *       &lt;attribute name="artifactType" use="required" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *       &lt;attribute name="artifactRef" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tImplementationArtifact")
-@XmlSeeAlso({
-        org.eclipse.winery.model.tosca.TImplementationArtifacts.ImplementationArtifact.class
+@XmlSeeAlso( {
+    org.eclipse.winery.model.tosca.TImplementationArtifacts.ImplementationArtifact.class
 })
-public class TImplementationArtifact extends TExtensibleElements {
+public class TImplementationArtifact extends TExtensibleElements implements HasName {
+
     @XmlAttribute(name = "name")
     protected String name;
     @XmlAttribute(name = "interfaceName")
@@ -89,10 +73,10 @@ public class TImplementationArtifact extends TExtensibleElements {
         if (!super.equals(o)) return false;
         TImplementationArtifact that = (TImplementationArtifact) o;
         return Objects.equals(name, that.name) &&
-                Objects.equals(interfaceName, that.interfaceName) &&
-                Objects.equals(operationName, that.operationName) &&
-                Objects.equals(artifactType, that.artifactType) &&
-                Objects.equals(artifactRef, that.artifactRef);
+            Objects.equals(interfaceName, that.interfaceName) &&
+            Objects.equals(operationName, that.operationName) &&
+            Objects.equals(artifactType, that.artifactType) &&
+            Objects.equals(artifactRef, that.artifactRef);
     }
 
     @Override
@@ -100,102 +84,60 @@ public class TImplementationArtifact extends TExtensibleElements {
         return Objects.hash(super.hashCode(), name, interfaceName, operationName, artifactType, artifactRef);
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
     @Nullable
+    @Override
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    @Override
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the value of the interfaceName property.
-     *
-     * @return possible object is {@link String }
-     */
     @Nullable
     public String getInterfaceName() {
         return interfaceName;
     }
 
-    /**
-     * Sets the value of the interfaceName property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setInterfaceName(String value) {
+    public void setInterfaceName(@Nullable String value) {
         this.interfaceName = value;
     }
 
-    /**
-     * Gets the value of the operationName property.
-     *
-     * @return possible object is {@link String }
-     */
     @Nullable
     public String getOperationName() {
         return operationName;
     }
 
-    /**
-     * Sets the value of the operationName property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setOperationName(String value) {
+    public void setOperationName(@Nullable String value) {
         this.operationName = value;
     }
 
-    /**
-     * Gets the value of the artifactType property.
-     *
-     * @return possible object is {@link QName }
-     */
     @NonNull
     public QName getArtifactType() {
         return artifactType;
     }
 
-    /**
-     * Sets the value of the artifactType property.
-     *
-     * @param value allowed object is {@link QName }
-     */
-    public void setArtifactType(QName value) {
+    public void setArtifactType(@NonNull QName value) {
+        Objects.requireNonNull(value);
         this.artifactType = value;
     }
 
-    /**
-     * Gets the value of the artifactRef property.
-     *
-     * @return possible object is {@link QName }
-     */
     @Nullable
     public QName getArtifactRef() {
         return artifactRef;
     }
 
-    /**
-     * Sets the value of the artifactRef property.
-     *
-     * @param value allowed object is {@link QName }
-     */
-    public void setArtifactRef(QName value) {
+    public void setArtifactRef(@Nullable QName value) {
         this.artifactRef = value;
     }
 
-    public static class Builder extends TExtensibleElements.Builder {
+    public static class Builder<T extends Builder<T>> extends TExtensibleElements.Builder<Builder<T>> {
         private final QName artifactType;
 
         private String name;
@@ -207,24 +149,30 @@ public class TImplementationArtifact extends TExtensibleElements {
             this.artifactType = artifactType;
         }
 
-        public Builder setName(String name) {
+        public T setName(String name) {
             this.name = name;
-            return this;
+            return self();
         }
 
-        public Builder setInterfaceName(String interfaceName) {
+        public T setInterfaceName(String interfaceName) {
             this.interfaceName = interfaceName;
-            return this;
+            return self();
         }
 
-        public Builder setOperationName(String operationName) {
+        public T setOperationName(String operationName) {
             this.operationName = operationName;
-            return this;
+            return self();
         }
 
-        public Builder setArtifactRef(QName artifactRef) {
+        public T setArtifactRef(QName artifactRef) {
             this.artifactRef = artifactRef;
-            return this;
+            return self();
+        }
+
+        @ADR(11)
+        @Override
+        public T self() {
+            return (T) this;
         }
 
         public TImplementationArtifact build() {

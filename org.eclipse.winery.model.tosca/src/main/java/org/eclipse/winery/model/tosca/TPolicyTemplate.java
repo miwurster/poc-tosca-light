@@ -1,14 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
@@ -21,25 +22,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
 import org.eclipse.jdt.annotation.Nullable;
 
-
-/**
- * <p>Java class for tPolicyTemplate complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tPolicyTemplate">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tEntityTemplate">
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tPolicyTemplate")
 public class TPolicyTemplate extends TEntityTemplate {
@@ -69,26 +55,21 @@ public class TPolicyTemplate extends TEntityTemplate {
         return Objects.hash(super.hashCode(), name);
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @Nullable
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
-    public static class Builder extends TEntityTemplate.Builder {
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
+    public static class Builder extends TEntityTemplate.Builder<Builder> {
         private String name;
 
         public Builder(String id, QName type) {
@@ -97,6 +78,11 @@ public class TPolicyTemplate extends TEntityTemplate {
 
         public Builder setName(String name) {
             this.name = name;
+            return this;
+        }
+
+        @Override
+        public Builder self() {
             return this;
         }
 

@@ -1,18 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2014-2015 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Oliver Kopp - initial API and implementation
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
+
 package org.eclipse.winery.repository.rest.resources.servicetemplates.plans;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -21,12 +23,10 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.ids.elements.PlanId;
 import org.eclipse.winery.model.tosca.TPlan;
-import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
@@ -35,82 +35,71 @@ import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataParam;
 import io.swagger.annotations.ApiOperation;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class PlanFileResource {
 
-	private final PlanId planId;
-	private TPlan plan;
-	private ServiceTemplateResource res;
+    private final PlanId planId;
+    private TPlan plan;
+    private ServiceTemplateResource res;
 
+    public PlanFileResource(ServiceTemplateResource res, PlanId planId, TPlan plan) {
+        this.res = res;
+        this.planId = planId;
+        this.plan = plan;
+    }
 
-	public PlanFileResource(ServiceTemplateResource res, PlanId planId, TPlan plan) {
-		this.res = res;
-		this.planId = planId;
-		this.plan = plan;
-	}
+    /**
+     * Extracts the file reference from plan's planModelReference
+     */
+    private @Nullable RepositoryFileReference getFileRef() {
+        if (this.plan.getPlanModelReference() == null) {
+            return null;
+        }
+        String reference = this.plan.getPlanModelReference().getReference();
+        if (reference == null) {
+            return null;
+        }
+        File f = new File(reference);
+        return new RepositoryFileReference(this.planId, f.getName());
+    }
 
-	/**
-	 * Extracts the file reference from plan's planModelReference
-	 */
-	private RepositoryFileReference getFileRef() {
-		String reference = this.plan.getPlanModelReference().getReference();
-		File f = new File(reference);
-		return new RepositoryFileReference(this.planId, f.getName());
-	}
+    @PUT
+    @Consumes( {MediaType.MULTIPART_FORM_DATA})
+    @ApiOperation(value = "Resource currently works for BPMN4TOSCA plans only")
+    public Response onPutFile(
+        @FormDataParam("file") InputStream uploadedInputStream,
+        @FormDataParam("file") FormDataContentDisposition fileDetail,
+        @FormDataParam("file") FormDataBodyPart body
+    ) {
+        String fileName = fileDetail.getFileName();
+        RepositoryFileReference ref = new RepositoryFileReference(this.planId, fileName);
 
-	@PUT
-	@Consumes({MediaType.MULTIPART_FORM_DATA})
-	@ApiOperation(value = "Resource currently works for BPMN4TOSCA plans only")
-	// @formatter:off
-	public Response onPutFile(
-		@FormDataParam("file") InputStream uploadedInputStream,
-		@FormDataParam("file") FormDataContentDisposition fileDetail,
-		@FormDataParam("file") FormDataBodyPart body
-	) {
-	// @formatter:on
+        RepositoryFileReference oldRef = this.getFileRef();
+        // if oldRef exists -> check for equality and afterwards overwrite the old content
+        if (oldRef != null && !ref.equals(oldRef)) {
+            // new filename sent
+            RestUtils.delete(oldRef);
+            PlansResource.setPlanModelReference(this.plan, this.planId, fileName);
+            RestUtils.persist(this.res);
+        }
 
-		String fileName = fileDetail.getFileName();
-		RepositoryFileReference ref = new RepositoryFileReference(this.planId, fileName);
-		RepositoryFileReference oldRef = this.getFileRef();
-		boolean persistanceNecessary;
-		if (ref.equals(oldRef)) {
-			// nothing todo, file will be replaced
-			persistanceNecessary = false;
-		} else {
-			// new filename sent
-			RestUtils.delete(oldRef);
-			PlansResource.setPlanModelReference(this.plan, this.planId, fileName);
-			persistanceNecessary = true;
-		}
+        return RestUtils.putContentToFile(ref, uploadedInputStream, org.apache.tika.mime.MediaType.parse(body.getMediaType().toString()));
+    }
 
-		// Really store it
-		try {
-			RepositoryFactory.getRepository().putContentToFile(ref, uploadedInputStream, org.apache.tika.mime.MediaType.parse(body.getMediaType().toString()));
-		} catch (IOException e1) {
-			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Could not store plan. " + e1.getMessage()).build();
-		}
+    @PUT
+    @Consumes( {MediaType.APPLICATION_JSON})
+    public Response onPutJSON(InputStream is) {
+        RepositoryFileReference ref = this.getFileRef();
+        return RestUtils.putContentToFile(ref, is, MediaTypes.MEDIATYPE_APPLICATION_JSON);
+    }
 
-		if (persistanceNecessary) {
-			return RestUtils.persist(this.res);
-		} else {
-			return Response.noContent().build();
-		}
-	}
-
-	@PUT
-	@Consumes({MediaType.APPLICATION_JSON})
-	// @formatter:off
-	public Response onPutJSON(InputStream is) {
-		RepositoryFileReference ref = this.getFileRef();
-		return RestUtils.putContentToFile(ref, is, MediaTypes.MEDIATYPE_APPLICATION_JSON);
-	}
-
-	/**
-	 * Returns the stored file.
-	 */
-	@GET
-	public Response getFile(@HeaderParam("If-Modified-Since") String modified) {
-		RepositoryFileReference ref = this.getFileRef();
-		return RestUtils.returnRepoPath(ref, modified);
-	}
+    /**
+     * Returns the stored file.
+     */
+    @GET
+    public Response getFile(@HeaderParam("If-Modified-Since") String modified) {
+        RepositoryFileReference ref = this.getFileRef();
+        return RestUtils.returnRepoPath(ref, modified);
+    }
 }

@@ -1,30 +1,35 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Niko Stadelmaier - initial API and implementation
- */
-import { Directive, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { AbstractControl, NG_VALIDATORS, Validator, ValidatorFn, Validators } from '@angular/forms';
-import { isNullOrUndefined } from 'util';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import {Directive, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {AbstractControl, NG_VALIDATORS, Validator, ValidatorFn, Validators} from '@angular/forms';
+import {isNullOrUndefined} from 'util';
 
 export class WineryValidatorObject {
-    list: Array<any>;
-    property?: string;
 
-    constructor(list: Array<any>, property?: string) {
-        this.list = list;
-        this.property = property;
+    regEx?: RegExp;
+    private active = true;
+
+    constructor(private list: Array<any>, private property?: string) {
+    }
+
+    public setRegExp(regExp: RegExp) {
+        this.regEx = regExp;
     }
 
     validate(compareObject: WineryValidatorObject): ValidatorFn {
         return (control: AbstractControl): { [key: string]: any } => {
-            if (isNullOrUndefined(compareObject) || isNullOrUndefined(compareObject.list)) {
+            if (isNullOrUndefined(compareObject) || isNullOrUndefined(compareObject.list) || !this.active) {
                 return null;
             }
             const name = control.value;
@@ -34,8 +39,19 @@ export class WineryValidatorObject {
             } else {
                 no = compareObject.list.find(item => item[compareObject.property] === name);
             }
-            return no ? {'wineryDuplicateValidator': {name}} : null;
+            if (!isNullOrUndefined(compareObject.regEx)) {
+                no = !compareObject.regEx.test(name);
+            }
+            return no ? {wineryDuplicateValidator: {name}} : null;
         };
+    }
+
+    set isActive(value: boolean) {
+        this.active = value;
+    }
+
+    get isActive(): boolean {
+        return this.active;
     }
 }
 

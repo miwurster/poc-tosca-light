@@ -1,19 +1,23 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Nicole Keppler - initial API and implementation
- */
-import { SelectData } from '../../../wineryInterfaces/selectData';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import {SelectData} from '../../../model/selectData';
 
-export class ValidEndingsData {
-    validSource: ValidEndingsApiDataSet = new ValidEndingsApiDataSet();
-    validTarget: ValidEndingsApiDataSet = new ValidEndingsApiDataSet();
+export enum ValidEndingsSelectionEnum {
+    EVERYTHING = 'EVERYTHING',
+    NODETYPE = 'NODETYPE',
+    REQTYPE = 'REQUIREMENTTYPE',
+    CAPTYPE = 'CAPABILITYTYPE'
 }
 
 export class ValidEndingsApiDataSet {
@@ -21,9 +25,7 @@ export class ValidEndingsApiDataSet {
     validDataSet: SelectData = new SelectData();
 }
 
-export enum ValidEndingsSelectionEnum {
-    EVERYTHING = 'EVERYTHING',
-    NODETYPE = 'NODETYPE',
-    REQTYPE = 'REQUIREMENTTYPE',
-    CAPTYPE = 'CAPABILITYTYPE'
+export class ValidEndingsData {
+    validSource: ValidEndingsApiDataSet = new ValidEndingsApiDataSet();
+    validTarget: ValidEndingsApiDataSet = new ValidEndingsApiDataSet();
 }

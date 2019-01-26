@@ -1,23 +1,27 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { PoliciesService, WineryPolicy } from './policies.service';
-import { WineryNotificationService } from '../../../../wineryNotificationModule/wineryNotification.service';
-import { WineryTableColumn } from '../../../../wineryTableModule/wineryTable.component';
-import { ModalDirective } from 'ngx-bootstrap';
-import { isNullOrUndefined } from 'util';
-import { WineryValidatorObject } from '../../../../wineryValidators/wineryDuplicateValidator.directive';
-import { SelectItem } from 'ng2-select';
-import { EditXMLComponent } from '../../../sharedComponents/editXML/editXML.component';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {PoliciesService, WineryPolicy} from './policies.service';
+import {WineryNotificationService} from '../../../../wineryNotificationModule/wineryNotification.service';
+import {WineryTableColumn} from '../../../../wineryTableModule/wineryTable.component';
+import {ModalDirective} from 'ngx-bootstrap';
+import {isNullOrUndefined} from 'util';
+import {WineryValidatorObject} from '../../../../wineryValidators/wineryDuplicateValidator.directive';
+import {SelectItem} from 'ng2-select';
+import {EditXMLComponent} from '../../../sharedComponents/editXML/editXML.component';
+import {Response} from '@angular/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     templateUrl: 'policies.component.html',
@@ -64,7 +68,7 @@ export class PoliciesComponent implements OnInit {
         this.service.getPolicyTypes()
             .subscribe(
                 data => this.policyTypes = data,
-                error => this.handleError(error)
+                error => this.handlePolicyTypesError(error)
             );
     }
 
@@ -131,9 +135,9 @@ export class PoliciesComponent implements OnInit {
     removeConfirmed() {
         this.service.deletePolicy(this.selectedCell.id)
             .subscribe(
-            data => this.handleSaveDelete('deleted'),
-            error => this.handleError(error)
-        );
+                data => this.handleSaveDelete('deleted'),
+                error => this.handleError(error)
+            );
     }
 
     policyTypeSelected(data: SelectItem) {
@@ -171,9 +175,17 @@ export class PoliciesComponent implements OnInit {
         this.ngOnInit();
     }
 
-    private handleError(error: any) {
+    private handleError(error: HttpErrorResponse) {
         this.loading = false;
-        this.notify.error(error);
+        this.notify.error(error.message);
     }
 
+    private handlePolicyTypesError(error: HttpErrorResponse) {
+        if (error.status === 404) {
+            // warns the user if there are nor policy types available -> send warning now
+            this.add();
+        } else {
+            this.handleError(error);
+        }
+    }
 }

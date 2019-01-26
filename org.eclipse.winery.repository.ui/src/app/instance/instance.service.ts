@@ -1,38 +1,41 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/********************************************************************************
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- *     Niko Stadelmaier - add admin component
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ ********************************************************************************/
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs';
-import { isNullOrUndefined } from 'util';
 import { backendBaseURL } from '../configuration';
-import { WineryInstance, WineryTopologyTemplate } from '../wineryInterfaces/wineryComponent';
-import { ToscaComponent } from '../wineryInterfaces/toscaComponent';
-import { ToscaTypes } from '../wineryInterfaces/enums';
+import { WineryInstance, WineryTopologyTemplate } from '../model/wineryComponent';
+import { ToscaComponent } from '../model/toscaComponent';
+import { ToscaTypes } from '../model/enums';
+import { WineryVersion } from '../model/wineryVersion';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 
 @Injectable()
 export class InstanceService {
 
     toscaComponent: ToscaComponent;
     topologyTemplate: WineryTopologyTemplate = null;
+    versions: WineryVersion[];
+    currentVersion: WineryVersion;
     path: string;
 
-    constructor(private http: Http) {
+    constructor(private http: HttpClient) {
     }
 
     /**
      * Get the submenu for the given resource type for displaying a component instance.
+     * TODO: instead of string[], use objects which contain displayName and url fragment
      *
-     * @param type specifies the resource type for this particular instance.
      * @returns string[] containing all menus for each resource type.
      */
     public getSubMenuByResource(): string[] {
@@ -40,48 +43,58 @@ export class InstanceService {
 
         switch (this.toscaComponent.toscaType) {
             case ToscaTypes.NodeType:
-                subMenu = ['Visual Appearance', 'Instance States', 'Interfaces', 'Implementations',
+                subMenu = ['README', 'LICENSE', 'Appearance', 'Instance States', 'Interfaces', 'Implementations', 'Tags',
                     'Requirement Definitions', 'Capability Definitions', 'Properties Definition',
                     'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.ServiceTemplate:
-                subMenu = ['Topology Template', 'Plans', 'Selfservice Portal',
-                    'Boundary Definitions', 'Tags', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Topology Template', 'Plans', 'Selfservice Portal',
+                    'Boundary Definitions', 'Tags', 'Constraint Checking', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.RelationshipType:
-                subMenu = ['Visual Appearance', 'Instance States', 'Source Interfaces', 'Target Interfaces',
-                    'Valid Sources and Targets', 'Implementations', 'Properties Definition',
+                subMenu = ['README', 'LICENSE', 'Appearance', 'Instance States', 'Source Interfaces', 'Interfaces',
+                    'Target Interfaces', 'Valid Sources and Targets', 'Implementations', 'Properties Definition',
                     'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.ArtifactType:
-                subMenu = ['Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Templates', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.ArtifactTemplate:
-                subMenu = ['Files', 'Properties', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Files', 'Source', 'Properties', 'Property Constraints', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.RequirementType:
-                subMenu = ['Required Capability Type', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Required Capability Type', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.CapabilityType:
-                subMenu = ['Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.NodeTypeImplementation:
-                subMenu = ['Implementation Artifacts', 'Deployment Artifacts', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Implementation Artifacts', 'Deployment Artifacts', 'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.RelationshipTypeImplementation:
-                subMenu = ['Implementation Artifacts', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Implementation Artifacts', 'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.PolicyType:
-                subMenu = ['Language', 'Applies To', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Language', 'Applies To', 'Properties Definition', 'Inheritance',
+                    'Templates', 'Appearance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.PolicyTemplate:
-                subMenu = ['Properties', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Properties', 'Property Constraints', 'Appearance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.Imports:
-                subMenu = [''];
+                subMenu = ['All Declared Elements Local Names', 'All Defined Types Local Names'];
+                break;
+            case ToscaTypes.ComplianceRule:
+                subMenu = ['README', 'LICENSE', 'Identifier', 'Required Structure', 'Tags', 'Documentation', 'XML'];
+                break;
+            case ToscaTypes.PatternRefinementModel:
+                subMenu = ['README', 'LICENSE', 'Detector', 'Refinement Structure', 'Relation Mappings', 'Property Mappings', 'XML'];
+                break;
+            case ToscaTypes.TestRefinementModel:
+                subMenu = ['README', 'LICENSE', 'Detector', 'Test Fragment', 'Relation Mappings', 'XML'];
                 break;
             default: // assume Admin
-                subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Constraint Types', 'Log'];
+                subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Constraint Types', 'Consistency Check', 'Accountability', 'Log'];
         }
 
         return subMenu;
@@ -102,26 +115,27 @@ export class InstanceService {
             this.getTopologyTemplate()
                 .subscribe(
                     data => this.topologyTemplate = data,
-                    error => this.topologyTemplate = null
+                    () => this.topologyTemplate = null
                 );
         }
     }
 
-    public deleteComponent(): Observable<any> {
-        return this.http.delete(backendBaseURL + this.path + '/');
+    public deleteComponent(): Observable<HttpResponse<string>> {
+        return this.http.delete(
+            backendBaseURL + this.path + '/',
+            { observe: 'response', responseType: 'text' }
+        );
     }
 
     public getComponentData(): Observable<WineryInstance> {
-        const headers = new Headers({'Content-Type': 'application/xml'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.get(backendBaseURL + this.path + '/', options)
-            .map(res => res.json());
+        return this.http.get<WineryInstance>(backendBaseURL + this.path + '/');
     }
 
-    private getTopologyTemplate(): Observable<WineryTopologyTemplate> {
-        const headers = new Headers({'Content-Type': 'application/json'});
-        const options = new RequestOptions({headers: headers});
-        return this.http.get(backendBaseURL + this.path + '/topologytemplate/', options)
-            .map(res => res.json());
+    public getTopologyTemplate(): Observable<WineryTopologyTemplate> {
+        return this.http.get<WineryTopologyTemplate>(backendBaseURL + this.path + '/topologytemplate/');
+    }
+
+    public getVersions(): Observable<WineryVersion[]> {
+        return this.http.get<WineryVersion[]>(backendBaseURL + this.path + '/?versions');
     }
 }

@@ -1,23 +1,25 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Niko Stadelmaier - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { WineryNamespaceSelectorService } from '../../../wineryNamespaceSelector/wineryNamespaceSelector.service';
 import { NamespacesService } from './namespaces.service';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { WineryValidatorObject } from '../../../wineryValidators/wineryDuplicateValidator.directive';
 import { isNullOrUndefined } from 'util';
-import { NamespaceWithPrefix } from '../../../wineryInterfaces/namespaceWithPrefix';
-import { Response } from '@angular/http';
+import { NamespaceProperties } from '../../../model/namespaceProperties';
 import { ModalDirective } from 'ngx-bootstrap';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'winery-instance-namespaces',
@@ -27,14 +29,19 @@ import { ModalDirective } from 'ngx-bootstrap';
 export class NamespacesComponent implements OnInit {
 
     loading = true;
-    adminNamespaces: Array<any> = [];
-    newNamespace: any = { namespace: '', prefix: '' };
+    modalTitle: string;
+    addButtonTitle: string;
+    adminNamespaces: Array<NamespaceProperties> = [];
+    newNamespace: NamespaceProperties;
     validatorObjectPrefix: WineryValidatorObject;
     validatorObjectNamespace: WineryValidatorObject;
 
     columns = [
         { title: 'Prefix', name: 'prefix' },
-        { title: 'Namespace', name: 'namespace' }
+        { title: 'Namespace', name: 'namespace' },
+        { title: 'Description', name: 'readableName' },
+        { title: 'Repository URL', name: 'upstreamRepository'},
+        { title: 'Pattern NS', name: 'patternCollection' }
     ];
     elementToRemove: any;
 
@@ -61,11 +68,8 @@ export class NamespacesComponent implements OnInit {
         this.getNamespaces();
     }
 
-    addNamespace(namespace: string, prefix: string) {
-        this.adminNamespaces.push({
-            namespace: namespace,
-            prefix: prefix
-        });
+    addNamespace() {
+        this.adminNamespaces.push(this.newNamespace);
         this.save();
     }
 
@@ -86,6 +90,25 @@ export class NamespacesComponent implements OnInit {
      * handler for clicks on the add button
      */
     onAddClick() {
+        this.newNamespace = new NamespaceProperties(null, null, '', '', false);
+        this.validatorObjectPrefix.isActive = true;
+        this.modalTitle = 'Add new Namespace';
+        this.addButtonTitle = 'Add';
+        this.addModal.show();
+    }
+
+    onEdit(data: NamespaceProperties) {
+        this.modalTitle = 'Edit Namespace';
+        this.addButtonTitle = 'Update';
+        // create a copy to enable "undo" by clicking cancel
+        this.newNamespace = new NamespaceProperties(
+            data.namespace,
+            data.prefix,
+            data.readableName,
+            data.upstreamRepository,
+            data.patternCollection
+        );
+        this.validatorObjectPrefix.isActive = false;
         this.addModal.show();
     }
 
@@ -98,7 +121,7 @@ export class NamespacesComponent implements OnInit {
 
     save() {
         this.service.postNamespaces(this.adminNamespaces).subscribe(
-            data => this.handleSave(data),
+            () => this.handleSave(),
             error => this.handleError(error)
         );
     }
@@ -107,7 +130,7 @@ export class NamespacesComponent implements OnInit {
      * Deletes a property from the table and model.
      * @param itemToDelete
      */
-    private deleteItemFromPropertyDefinitionKvList(itemToDelete: NamespaceWithPrefix): void {
+    private deleteItemFromPropertyDefinitionKvList(itemToDelete: NamespaceProperties): void {
         const list = this.adminNamespaces;
         for (let i = 0; i < list.length; i++) {
             if (list[i].namespace === itemToDelete.namespace) {
@@ -116,7 +139,7 @@ export class NamespacesComponent implements OnInit {
         }
     }
 
-    private handleSave(data: Response) {
+    private handleSave() {
         this.handleSuccess();
         this.getNamespaces();
     }
@@ -126,8 +149,8 @@ export class NamespacesComponent implements OnInit {
      *
      * @param error
      */
-    private handleError(error: any): void {
-        this.notify.error(error.toString(), 'Error');
+    private handleError(error: HttpErrorResponse): void {
+        this.notify.error(error.message, 'Error');
     }
 
     /**

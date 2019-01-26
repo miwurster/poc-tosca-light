@@ -1,37 +1,36 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
-import java.util.List;
-import java.util.Objects;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import javax.xml.bind.annotation.*;
+import javax.xml.namespace.QName;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+
+import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 /**
  * <p>Java class for tNodeTypeImplementation complex type.
- *
+ * <p>
  * <p>The following schema fragment specifies the expected content contained within this class.
- *
+ * <p>
  * <pre>
  * &lt;complexType name="tNodeTypeImplementation">
  *   &lt;complexContent>
@@ -114,6 +113,11 @@ public class TNodeTypeImplementation extends TEntityTypeImplementation {
         return Objects.hash(super.hashCode(), tags, derivedFrom, requiredContainerFeatures, implementationArtifacts, deploymentArtifacts, _abstract, _final);
     }
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
     @Nullable
     public TDeploymentArtifacts getDeploymentArtifacts() {
         return deploymentArtifacts;
@@ -127,8 +131,8 @@ public class TNodeTypeImplementation extends TEntityTypeImplementation {
         return derivedFrom;
     }
 
-    public void setDerivedFrom(TNodeTypeImplementation.DerivedFrom value) {
-        this.derivedFrom = value;
+    public void setDerivedFrom(HasType value) {
+        this.derivedFrom = (TNodeTypeImplementation.DerivedFrom) value;
     }
 
     /**
@@ -147,9 +151,9 @@ public class TNodeTypeImplementation extends TEntityTypeImplementation {
 
     /**
      * <p>Java class for anonymous complex type.
-     *
+     * <p>
      * <p>The following schema fragment specifies the expected content contained within this class.
-     *
+     * <p>
      * <pre>
      * &lt;complexType>
      *   &lt;complexContent>
@@ -163,7 +167,7 @@ public class TNodeTypeImplementation extends TEntityTypeImplementation {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class DerivedFrom implements HasType {
+    public static class DerivedFrom implements HasType, Serializable {
 
         @XmlAttribute(name = "nodeTypeImplementationRef", required = true)
         protected QName nodeTypeImplementationRef;
@@ -192,17 +196,30 @@ public class TNodeTypeImplementation extends TEntityTypeImplementation {
         }
 
         @Override
+        public void setType(QName type) {
+            this.setNodeTypeImplementationRef(type);
+        }
+
+        @Override
         public QName getTypeAsQName() {
             return this.getType();
         }
 
         @Override
-        public void setType(QName type) {
-            this.setNodeTypeImplementationRef(type);
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DerivedFrom that = (DerivedFrom) o;
+            return Objects.equals(nodeTypeImplementationRef, that.nodeTypeImplementationRef);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(nodeTypeImplementationRef);
         }
     }
 
-    public static class Builder extends TEntityTypeImplementation.Builder {
+    public static class Builder extends TEntityTypeImplementation.Builder<Builder> {
         private TTags tags;
         private DerivedFrom derivedFrom;
         private TRequiredContainerFeatures requiredContainerFeatures;
@@ -351,6 +368,11 @@ public class TNodeTypeImplementation extends TEntityTypeImplementation {
             TDeploymentArtifacts tmp = new TDeploymentArtifacts();
             tmp.getDeploymentArtifact().add(deploymentArtifacts);
             return addDeploymentArtifacts(tmp);
+        }
+
+        @Override
+        public Builder self() {
+            return this;
         }
 
         public TNodeTypeImplementation build() {

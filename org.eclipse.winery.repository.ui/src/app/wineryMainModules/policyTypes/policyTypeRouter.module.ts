@@ -1,14 +1,16 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SectionComponent } from '../../section/section.component';
@@ -17,11 +19,15 @@ import { InstanceComponent } from '../../instance/instance.component';
 import { InstanceResolver } from '../../instance/instance.resolver';
 import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXML.component';
 import { DocumentationComponent } from '../../instance/sharedComponents/documentation/documentation.component';
-import { ToscaTypes } from '../../wineryInterfaces/enums';
+import { ToscaTypes } from '../../model/enums';
 import { InheritanceComponent } from '../../instance/sharedComponents/inheritance/inheritance.component';
 import { PropertiesDefinitionComponent } from '../../instance/sharedComponents/propertiesDefinition/propertiesDefinition.component';
 import { LanguageComponent } from '../../instance/policyTypes/language/language.component';
 import { AppliesToComponent } from '../../instance/policyTypes/appliesTo/appliesTo.component';
+import { WineryReadmeComponent } from '../../wineryReadmeModule/wineryReadme.component';
+import { WineryLicenseComponent } from '../../wineryLicenseModule/wineryLicense.component';
+import { ImplementationsComponent } from '../../instance/sharedComponents/implementations/implementations.component';
+import { VisualAppearanceComponent } from '../../instance/sharedComponents/visualAppearance/visualAppearance.component';
 
 const toscaType = ToscaTypes.PolicyType;
 
@@ -33,12 +39,18 @@ const policyTypeRoutes: Routes = [
         component: InstanceComponent,
         resolve: { resolveData: InstanceResolver },
         children: [
+            { path: 'readme', component: WineryReadmeComponent },
+            { path: 'license', component: WineryLicenseComponent },
             { path: 'language', component: LanguageComponent },
             { path: 'appliesto', component: AppliesToComponent },
             { path: 'propertiesdefinition', component: PropertiesDefinitionComponent },
             { path: 'inheritance', component: InheritanceComponent },
+            { path: 'appearance', component: VisualAppearanceComponent },
             { path: 'documentation', component: DocumentationComponent },
-            { path: 'xml', component: EditXMLComponent }
+            { path: 'xml', component: EditXMLComponent },
+            { path: 'templates', component: ImplementationsComponent },
+            { path: '', redirectTo: 'readme', pathMatch: 'full' }
+
         ]
     }
 ];

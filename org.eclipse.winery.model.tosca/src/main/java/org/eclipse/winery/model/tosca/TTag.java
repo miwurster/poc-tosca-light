@@ -1,18 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -20,33 +22,29 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
 import org.eclipse.jdt.annotation.NonNull;
 
-
-/**
- * <p>Java class for tTag complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tTag">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tTag")
-public class TTag {
+public class TTag implements Serializable {
 
     @XmlAttribute(name = "name", required = true)
+    @NonNull
     protected String name;
+
     @XmlAttribute(name = "value", required = true)
     protected String value;
+
+    public TTag() {
+
+    }
+
+    public TTag(Builder builder) {
+        this.name = Objects.requireNonNull(builder.name);
+        this.value = Objects.requireNonNull(builder.value);
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -54,7 +52,7 @@ public class TTag {
         if (!(o instanceof TTag)) return false;
         TTag tTag = (TTag) o;
         return Objects.equals(name, tTag.name) &&
-                Objects.equals(value, tTag.value);
+            Objects.equals(value, tTag.value);
     }
 
     @Override
@@ -62,41 +60,46 @@ public class TTag {
         return Objects.hash(name, value);
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    public void setName(@NonNull String value) {
+        Objects.requireNonNull(value);
         this.name = value;
     }
 
-    /**
-     * Gets the value of the value property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getValue() {
         return value;
     }
 
-    /**
-     * Sets the value of the value property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setValue(String value) {
+    public void setValue(@NonNull String value) {
+        Objects.requireNonNull(value);
         this.value = value;
+    }
+
+    public void accept(Visitor visitor) {
+        visitor.accept(this);
+    }
+
+    public static class Builder {
+        private String name;
+        private String value;
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setValue(String value) {
+            this.value = value;
+            return this;
+        }
+
+        public TTag build() {
+            return new TTag(this);
+        }
     }
 }

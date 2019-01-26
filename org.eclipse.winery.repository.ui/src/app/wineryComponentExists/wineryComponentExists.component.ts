@@ -1,20 +1,23 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, Input, OnInit } from '@angular/core';
 import { ExistService } from '../wineryUtils/existService';
 import { isNullOrUndefined } from 'util';
 import { ModalDirective } from 'ngx-bootstrap';
 import { backendBaseURL } from '../configuration';
-import { ToscaTypes } from '../wineryInterfaces/enums';
+import { ToscaTypes } from '../model/enums';
+import { WineryVersion } from '../model/wineryVersion';
 
 /**
  * This component is for checking whether a given component already exists in the repository and displays it
@@ -39,7 +42,7 @@ export class WineryComponentExistsComponent implements OnInit {
     @Input() generateData: GenerateData;
     @Input() modalRef: ModalDirective;
 
-    tosca: ToscaTypes;
+    private version = new WineryVersion('', 1, 1);
 
     constructor(private existService: ExistService) {
     }
@@ -56,18 +59,22 @@ export class WineryComponentExistsComponent implements OnInit {
             this.generateData.url = backendBaseURL + '/'
                 + this.generateData.toscaType + '/'
                 + encodeURIComponent(encodeURIComponent(this.generateData.namespace)) + '/'
-                + this.generateData.name + '/';
+                + this.generateData.name;
+
+            this.generateData.url += WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + this.version.toString();
+            this.generateData.version = this.version;
+
+            this.generateData.url += '/';
         }
 
         if (!this.generateData.namespace.endsWith('/')) {
             this.existService.check(this.generateData.url)
                 .subscribe(
-                    data => this.generateData.createComponent = false,
-                    error => this.generateData.createComponent = true
+                    () => this.generateData.createComponent = false,
+                    () => this.generateData.createComponent = true
                 );
         }
     }
-
 }
 
 export class GenerateData {
@@ -76,4 +83,5 @@ export class GenerateData {
     namespace: string;
     name: string;
     url: string;
+    version: WineryVersion;
 }

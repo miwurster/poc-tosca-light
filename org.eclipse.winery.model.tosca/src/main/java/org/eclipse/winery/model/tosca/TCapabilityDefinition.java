@@ -1,18 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - Builder implementation
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,61 +26,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-
-/**
- * <p>Java class for tCapabilityDefinition complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tCapabilityDefinition">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;sequence>
- *         &lt;element name="Constraints" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="Constraint" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tConstraint"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="capabilityType" use="required" type="{http://www.w3.org/2001/XMLSchema}QName" />
- *       &lt;attribute name="lowerBound" type="{http://www.w3.org/2001/XMLSchema}int" default="1" />
- *       &lt;attribute name="upperBound" default="1">
- *         &lt;simpleType>
- *           &lt;union>
- *             &lt;simpleType>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}nonNegativeInteger">
- *                 &lt;pattern value="([1-9]+[0-9]*)"/>
- *               &lt;/restriction>
- *             &lt;/simpleType>
- *             &lt;simpleType>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                 &lt;enumeration value="unbounded"/>
- *               &lt;/restriction>
- *             &lt;/simpleType>
- *           &lt;/union>
- *         &lt;/simpleType>
- *       &lt;/attribute>
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tCapabilityDefinition", propOrder = {
-        "constraints"
+    "constraints"
 })
 public class TCapabilityDefinition extends TExtensibleElements {
     @XmlElement(name = "Constraints")
@@ -110,10 +65,10 @@ public class TCapabilityDefinition extends TExtensibleElements {
         if (!(o instanceof TCapabilityDefinition)) return false;
         TCapabilityDefinition that = (TCapabilityDefinition) o;
         return Objects.equals(constraints, that.constraints) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(capabilityType, that.capabilityType) &&
-                Objects.equals(lowerBound, that.lowerBound) &&
-                Objects.equals(upperBound, that.upperBound);
+            Objects.equals(name, that.name) &&
+            Objects.equals(capabilityType, that.capabilityType) &&
+            Objects.equals(lowerBound, that.lowerBound) &&
+            Objects.equals(upperBound, that.upperBound);
     }
 
     @Override
@@ -121,68 +76,33 @@ public class TCapabilityDefinition extends TExtensibleElements {
         return Objects.hash(constraints, name, capabilityType, lowerBound, upperBound);
     }
 
-    /**
-     * Gets the value of the constraints property.
-     *
-     * @return possible object is {@link TCapabilityDefinition.Constraints }
-     */
-    /*@Nullable*/
-    public TCapabilityDefinition.Constraints getConstraints() {
+    public TCapabilityDefinition.@Nullable Constraints getConstraints() {
         return constraints;
     }
 
-    /**
-     * Sets the value of the constraints property.
-     *
-     * @param value allowed object is {@link TCapabilityDefinition.Constraints }
-     */
-    public void setConstraints(TCapabilityDefinition.Constraints value) {
+    public void setConstraints(TCapabilityDefinition.@Nullable Constraints value) {
         this.constraints = value;
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    public void setName(@NonNull String value) {
+        Objects.requireNonNull(value);
         this.name = value;
     }
 
-    /**
-     * Gets the value of the capabilityType property.
-     *
-     * @return possible object is {@link QName }
-     */
     @Nullable
     public QName getCapabilityType() {
         return capabilityType;
     }
 
-    /**
-     * Sets the value of the capabilityType property.
-     *
-     * @param value allowed object is {@link QName }
-     */
-    public void setCapabilityType(QName value) {
+    public void setCapabilityType(@Nullable QName value) {
         this.capabilityType = value;
     }
 
-    /**
-     * Gets the value of the lowerBound property.
-     *
-     * @return possible object is {@link Integer }
-     */
     @NonNull
     public int getLowerBound() {
         if (lowerBound == null) {
@@ -192,20 +112,10 @@ public class TCapabilityDefinition extends TExtensibleElements {
         }
     }
 
-    /**
-     * Sets the value of the lowerBound property.
-     *
-     * @param value allowed object is {@link Integer }
-     */
-    public void setLowerBound(Integer value) {
+    public void setLowerBound(@Nullable Integer value) {
         this.lowerBound = value;
     }
 
-    /**
-     * Gets the value of the upperBound property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getUpperBound() {
         if (upperBound == null) {
@@ -215,63 +125,24 @@ public class TCapabilityDefinition extends TExtensibleElements {
         }
     }
 
-    /**
-     * Sets the value of the upperBound property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setUpperBound(String value) {
+    public void setUpperBound(@Nullable String value) {
         this.upperBound = value;
     }
 
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
 
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="Constraint" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tConstraint"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "constraint"
+        "constraint"
     })
-    public static class Constraints {
+    public static class Constraints implements Serializable {
 
         @XmlElement(name = "Constraint", required = true)
         protected List<TConstraint> constraint;
 
-        /**
-         * Gets the value of the constraint property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the constraint property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getConstraint().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TConstraint }
-         */
         @NonNull
         public List<TConstraint> getConstraint() {
             if (constraint == null) {
@@ -279,9 +150,22 @@ public class TCapabilityDefinition extends TExtensibleElements {
             }
             return this.constraint;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Constraints that = (Constraints) o;
+            return Objects.equals(constraint, that.constraint);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(constraint);
+        }
     }
 
-    public static class Builder extends TExtensibleElements.Builder {
+    public static class Builder extends TExtensibleElements.Builder<Builder> {
         private final String name;
         private final QName capabilityType;
 
@@ -340,6 +224,11 @@ public class TCapabilityDefinition extends TExtensibleElements {
             TCapabilityDefinition.Constraints tmp = new TCapabilityDefinition.Constraints();
             tmp.getConstraint().add(constraints);
             return addConstraints(tmp);
+        }
+
+        @Override
+        public Builder self() {
+            return this;
         }
 
         public TCapabilityDefinition build() {

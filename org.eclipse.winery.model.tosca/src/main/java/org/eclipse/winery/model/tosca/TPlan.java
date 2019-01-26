@@ -1,18 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,89 +30,21 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.eclipse.winery.model.tosca.visitor.Visitor;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.w3c.dom.Element;
 
-
-/**
- * <p>Java class for tPlan complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tPlan">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tExtensibleElements">
- *       &lt;sequence>
- *         &lt;element name="Precondition" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tCondition"
- * minOccurs="0"/>
- *         &lt;element name="InputParameters" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="InputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="OutputParameters" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="OutputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;choice>
- *           &lt;element name="PlanModel">
- *             &lt;complexType>
- *               &lt;complexContent>
- *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                   &lt;sequence>
- *                     &lt;any processContents='lax' namespace='##other'/>
- *                   &lt;/sequence>
- *                 &lt;/restriction>
- *               &lt;/complexContent>
- *             &lt;/complexType>
- *           &lt;/element>
- *           &lt;element name="PlanModelReference">
- *             &lt;complexType>
- *               &lt;complexContent>
- *                 &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                   &lt;attribute name="reference" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *                 &lt;/restriction>
- *               &lt;/complexContent>
- *             &lt;/complexType>
- *           &lt;/element>
- *         &lt;/choice>
- *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="planType" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *       &lt;attribute name="planLanguage" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tPlan", propOrder = {
-        "precondition",
-        "inputParameters",
-        "outputParameters",
-        "planModel",
-        "planModelReference"
+    "precondition",
+    "inputParameters",
+    "outputParameters",
+    "planModel",
+    "planModelReference"
 })
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class TPlan extends TExtensibleElements {
@@ -162,14 +96,14 @@ public class TPlan extends TExtensibleElements {
         if (!super.equals(o)) return false;
         TPlan tPlan = (TPlan) o;
         return Objects.equals(precondition, tPlan.precondition) &&
-                Objects.equals(inputParameters, tPlan.inputParameters) &&
-                Objects.equals(outputParameters, tPlan.outputParameters) &&
-                Objects.equals(planModel, tPlan.planModel) &&
-                Objects.equals(planModelReference, tPlan.planModelReference) &&
-                Objects.equals(id, tPlan.id) &&
-                Objects.equals(name, tPlan.name) &&
-                Objects.equals(planType, tPlan.planType) &&
-                Objects.equals(planLanguage, tPlan.planLanguage);
+            Objects.equals(inputParameters, tPlan.inputParameters) &&
+            Objects.equals(outputParameters, tPlan.outputParameters) &&
+            Objects.equals(planModel, tPlan.planModel) &&
+            Objects.equals(planModelReference, tPlan.planModelReference) &&
+            Objects.equals(id, tPlan.id) &&
+            Objects.equals(name, tPlan.name) &&
+            Objects.equals(planType, tPlan.planType) &&
+            Objects.equals(planLanguage, tPlan.planLanguage);
     }
 
     @Override
@@ -177,221 +111,112 @@ public class TPlan extends TExtensibleElements {
         return Objects.hash(super.hashCode(), precondition, inputParameters, outputParameters, planModel, planModelReference, id, name, planType, planLanguage);
     }
 
-    /**
-     * Gets the value of the precondition property.
-     *
-     * @return possible object is {@link TCondition }
-     */
     @Nullable
     public TCondition getPrecondition() {
         return precondition;
     }
 
-    /**
-     * Sets the value of the precondition property.
-     *
-     * @param value allowed object is {@link TCondition }
-     */
-    public void setPrecondition(TCondition value) {
+    public void setPrecondition(@Nullable TCondition value) {
         this.precondition = value;
     }
 
-    /**
-     * Gets the value of the inputParameters property.
-     *
-     * @return possible object is {@link TPlan.InputParameters }
-     */
-    /*@Nullable*/
-    public TPlan.InputParameters getInputParameters() {
+    public TPlan.@Nullable InputParameters getInputParameters() {
         return inputParameters;
     }
 
-    /**
-     * Sets the value of the inputParameters property.
-     *
-     * @param value allowed object is {@link TPlan.InputParameters }
-     */
-    public void setInputParameters(TPlan.InputParameters value) {
+    public void setInputParameters(TPlan.@Nullable InputParameters value) {
         this.inputParameters = value;
     }
 
-    /**
-     * Gets the value of the outputParameters property.
-     *
-     * @return possible object is {@link TPlan.OutputParameters }
-     */
-    /*@Nullable*/
-    public TPlan.OutputParameters getOutputParameters() {
+    public TPlan.@Nullable OutputParameters getOutputParameters() {
         return outputParameters;
     }
 
-    /**
-     * Sets the value of the outputParameters property.
-     *
-     * @param value allowed object is {@link TPlan.OutputParameters }
-     */
-    public void setOutputParameters(TPlan.OutputParameters value) {
+    public void setOutputParameters(TPlan.@Nullable OutputParameters value) {
         this.outputParameters = value;
     }
 
-    /**
-     * Gets the value of the planModel property.
-     *
-     * @return possible object is {@link TPlan.PlanModel }
-     */
-    /*@Nullable*/
-    public TPlan.PlanModel getPlanModel() {
+    public TPlan.@Nullable PlanModel getPlanModel() {
         return planModel;
     }
 
-    /**
-     * Sets the value of the planModel property.
-     *
-     * @param value allowed object is {@link TPlan.PlanModel }
-     */
-    public void setPlanModel(TPlan.PlanModel value) {
+    public void setPlanModel(TPlan.@Nullable PlanModel value) {
         this.planModel = value;
     }
 
-    /**
-     * Gets the value of the planModelReference property.
-     *
-     * @return possible object is {@link TPlan.PlanModelReference }
-     */
-    /*@Nullable*/
-    public TPlan.PlanModelReference getPlanModelReference() {
+    public TPlan.@Nullable PlanModelReference getPlanModelReference() {
         return planModelReference;
     }
 
-    /**
-     * Sets the value of the planModelReference property.
-     *
-     * @param value allowed object is {@link TPlan.PlanModelReference }
-     */
-    public void setPlanModelReference(TPlan.PlanModelReference value) {
+    public void setPlanModelReference(TPlan.@Nullable PlanModelReference value) {
         this.planModelReference = value;
     }
 
-    /**
-     * Gets the value of the id property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getId() {
         return id;
     }
 
-    /**
-     * Sets the value of the id property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setId(String value) {
+    public void setId(@NonNull String value) {
         this.id = value;
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @Nullable
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the value of the planType property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getPlanType() {
         return planType;
     }
 
-    /**
-     * Sets the value of the planType property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setPlanType(String value) {
-        this.planType = value;
+    public void setPlanType(@NonNull String value) {
+        this.planType = Objects.requireNonNull(value);
     }
 
-    /**
-     * Gets the value of the planLanguage property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getPlanLanguage() {
         return planLanguage;
     }
 
-    /**
-     * Sets the value of the planLanguage property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setPlanLanguage(String value) {
-        this.planLanguage = value;
+    public void setPlanLanguage(@NonNull String value) {
+        this.planLanguage = Objects.requireNonNull(value);
     }
 
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+   }
 
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="InputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "inputParameter"
+        "inputParameter"
     })
-    public static class InputParameters {
+    public static class InputParameters implements Serializable {
 
         @XmlElement(name = "InputParameter", required = true)
         protected List<TParameter> inputParameter;
 
         /**
          * Gets the value of the inputParameter property.
-         *
+         * <p>
          * <p>
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
          * This is why there is not a <CODE>set</CODE> method for the inputParameter property.
-         *
+         * <p>
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
          *    getInputParameter().add(newItem);
          * </pre>
-         *
-         *
+         * <p>
+         * <p>
          * <p>
          * Objects of the following type(s) are allowed in the list
          * {@link TParameter }
@@ -403,52 +228,46 @@ public class TPlan extends TExtensibleElements {
             }
             return this.inputParameter;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            InputParameters that = (InputParameters) o;
+            return Objects.equals(inputParameter, that.inputParameter);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(inputParameter);
+        }
     }
 
-
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="OutputParameter" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tParameter"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "outputParameter"
+        "outputParameter"
     })
-    public static class OutputParameters {
+    public static class OutputParameters implements Serializable {
 
         @XmlElement(name = "OutputParameter", required = true)
         protected List<TParameter> outputParameter;
 
         /**
          * Gets the value of the outputParameter property.
-         *
+         * <p>
          * <p>
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
          * This is why there is not a <CODE>set</CODE> method for the outputParameter property.
-         *
+         * <p>
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
          *    getOutputParameter().add(newItem);
          * </pre>
-         *
-         *
+         * <p>
+         * <p>
          * <p>
          * Objects of the following type(s) are allowed in the list
          * {@link TParameter }
@@ -460,31 +279,26 @@ public class TPlan extends TExtensibleElements {
             }
             return this.outputParameter;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            OutputParameters that = (OutputParameters) o;
+            return Objects.equals(outputParameter, that.outputParameter);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(outputParameter);
+        }
     }
 
-
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;any processContents='lax' namespace='##other'/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "any"
+        "any"
     })
-    public static class PlanModel {
+    public static class PlanModel implements Serializable {
 
         @XmlAnyElement(lax = true)
         protected Object any;
@@ -507,27 +321,25 @@ public class TPlan extends TExtensibleElements {
         public void setAny(Object value) {
             this.any = value;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PlanModel planModel = (PlanModel) o;
+            return Objects.equals(any, planModel.any);
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(any);
+        }
     }
 
-
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="reference" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class PlanModelReference {
+    public static class PlanModelReference implements Serializable {
 
         @XmlAttribute(name = "reference", required = true)
         @XmlSchemaType(name = "anyURI")
@@ -551,9 +363,22 @@ public class TPlan extends TExtensibleElements {
         public void setReference(String value) {
             this.reference = value;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PlanModelReference that = (PlanModelReference) o;
+            return Objects.equals(reference, that.reference);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(reference);
+        }
     }
 
-    public static class Builder extends TExtensibleElements.Builder {
+    public static class Builder extends TExtensibleElements.Builder<Builder> {
         private final String id;
         private final String planType;
         private final String planLanguage;
@@ -598,6 +423,11 @@ public class TPlan extends TExtensibleElements {
 
         public Builder setName(String name) {
             this.name = name;
+            return this;
+        }
+
+        @Override
+        public Builder self() {
             return this;
         }
 

@@ -1,18 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -28,57 +30,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
-
-/**
- * <p>Java class for tExportedOperation complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tExportedOperation">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="NodeOperation">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="nodeRef" use="required" type="{http://www.w3.org/2001/XMLSchema}IDREF" />
- *                 &lt;attribute name="interfaceName" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *                 &lt;attribute name="operationName" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="RelationshipOperation">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="relationshipRef" use="required" type="{http://www.w3.org/2001/XMLSchema}IDREF"
- * />
- *                 &lt;attribute name="interfaceName" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
- *                 &lt;attribute name="operationName" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="Plan">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="planRef" use="required" type="{http://www.w3.org/2001/XMLSchema}IDREF" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/choice>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tExportedOperation", propOrder = {
     "nodeOperation",
@@ -86,7 +39,7 @@ import org.eclipse.jdt.annotation.NonNull;
     "plan"
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TExportedOperation {
+public class TExportedOperation implements HasName, Serializable {
 
     @XmlElement(name = "NodeOperation")
     protected TExportedOperation.NodeOperation nodeOperation;
@@ -120,8 +73,7 @@ public class TExportedOperation {
      *
      * @return possible object is {@link TExportedOperation.NodeOperation }
      */
-    /*@Nullable*/
-    public TExportedOperation.NodeOperation getNodeOperation() {
+    public TExportedOperation.@Nullable NodeOperation getNodeOperation() {
         return nodeOperation;
     }
 
@@ -139,8 +91,7 @@ public class TExportedOperation {
      *
      * @return possible object is {@link TExportedOperation.RelationshipOperation }
      */
-    /*@Nullable*/
-    public TExportedOperation.RelationshipOperation getRelationshipOperation() {
+    public TExportedOperation.@Nullable RelationshipOperation getRelationshipOperation() {
         return relationshipOperation;
     }
 
@@ -158,8 +109,7 @@ public class TExportedOperation {
      *
      * @return possible object is {@link TExportedOperation.Plan }
      */
-    /*@Nullable*/
-    public TExportedOperation.Plan getPlan() {
+    public TExportedOperation.@Nullable Plan getPlan() {
         return plan;
     }
 
@@ -178,6 +128,7 @@ public class TExportedOperation {
      * @return possible object is {@link String }
      */
     @NonNull
+    @Override
     public String getName() {
         return name;
     }
@@ -187,16 +138,16 @@ public class TExportedOperation {
      *
      * @param value allowed object is {@link String }
      */
+    @Override
     public void setName(String value) {
         this.name = value;
     }
 
-
     /**
      * <p>Java class for anonymous complex type.
-     *
+     * <p>
      * <p>The following schema fragment specifies the expected content contained within this class.
-     *
+     * <p>
      * <pre>
      * &lt;complexType>
      *   &lt;complexContent>
@@ -212,7 +163,7 @@ public class TExportedOperation {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class NodeOperation {
+    public static class NodeOperation implements Serializable {
 
         @XmlAttribute(name = "nodeRef", required = true)
         @XmlIDREF
@@ -287,12 +238,11 @@ public class TExportedOperation {
         }
     }
 
-
     /**
      * <p>Java class for anonymous complex type.
-     *
+     * <p>
      * <p>The following schema fragment specifies the expected content contained within this class.
-     *
+     * <p>
      * <pre>
      * &lt;complexType>
      *   &lt;complexContent>
@@ -306,7 +256,7 @@ public class TExportedOperation {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Plan {
+    public static class Plan implements Serializable {
 
         @XmlAttribute(name = "planRef", required = true)
         @XmlIDREF
@@ -334,12 +284,11 @@ public class TExportedOperation {
         }
     }
 
-
     /**
      * <p>Java class for anonymous complex type.
-     *
+     * <p>
      * <p>The following schema fragment specifies the expected content contained within this class.
-     *
+     * <p>
      * <pre>
      * &lt;complexType>
      *   &lt;complexContent>
@@ -355,7 +304,7 @@ public class TExportedOperation {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class RelationshipOperation {
+    public static class RelationshipOperation implements Serializable {
 
         @XmlAttribute(name = "relationshipRef", required = true)
         @XmlIDREF

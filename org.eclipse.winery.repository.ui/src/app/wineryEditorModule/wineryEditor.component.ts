@@ -1,28 +1,23 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Philipp Meyer - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { isNullOrUndefined } from 'util';
+import { EditorBuilderService } from './editor-builder.service';
 
 const noop = () => {
 };
-
-export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => WineryEditorComponent),
-    multi: true
-};
-
-declare var requirejs: any;
 
 /**
  * This component provides an editor for editing and showing code with syntax highlight for different
@@ -51,15 +46,21 @@ declare var requirejs: any;
 @Component({
     selector: 'winery-editor',
     templateUrl: 'wineryEditor.component.html',
-    providers: [CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR]
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => WineryEditorComponent),
+            multi: true
+        }
+    ]
 })
 export class WineryEditorComponent implements ControlValueAccessor, OnInit {
 
-    @Input() dataEditorLang = 'application/xml';
     @Input() height = 500;
 
+    dataEditorLang = 'application/xml';
     loading = true;
-    orionEditor: any = undefined;
+    editorViewer: any;
 
     // The internal data model
     private innerValue: any = '';
@@ -69,20 +70,27 @@ export class WineryEditorComponent implements ControlValueAccessor, OnInit {
     private onTouchedCallback: () => void = noop;
     private onChangeCallback: (_: any) => void = noop;
 
-    constructor() {
+    constructor(private editorBuilder: EditorBuilderService) {
     }
 
     ngOnInit() {
-        requirejs(['orion/editor/edit'], function (edit: any) {
-            this.orionEditor = edit({ className: 'editor', parent: 'xml', contentType: this.dataEditorLang })[0];
-            this.orionEditor.setText(this.innerValue);
-        }.bind(this));
+
+        const codeEdit = this.editorBuilder.createEditor('embeddedEditor');
+
+        codeEdit.then((editorViewer: any) => {
+            this.editorViewer = editorViewer;
+            if (this.editorViewer.settings) {
+                this.editorViewer.settings.contentAssistAutoTrigger = true;
+                this.editorViewer.settings.showOccurrences = true;
+            }
+            this.editorViewer.setContents(this.innerValue, this.dataEditorLang);
+        });
     }
 
     // get accessor
     get value(): any {
         return this.innerValue;
-    };
+    }
 
     // set accessor including call the onchange callback
     set value(v: any) {
@@ -101,8 +109,8 @@ export class WineryEditorComponent implements ControlValueAccessor, OnInit {
     writeValue(value: any) {
         if (value !== this.innerValue && !isNullOrUndefined(value)) {
             this.innerValue = value;
-            if (!isNullOrUndefined(this.orionEditor)) {
-                this.orionEditor.setText(this.innerValue);
+            if (!isNullOrUndefined(this.editorViewer)) {
+                this.editorViewer.setContents(this.innerValue, this.dataEditorLang);
             }
         }
     }
@@ -118,14 +126,21 @@ export class WineryEditorComponent implements ControlValueAccessor, OnInit {
     }
 
     getData() {
-        if (!isNullOrUndefined(this.orionEditor)) {
-            return this.orionEditor.getText();
+        if (!isNullOrUndefined(this.editorViewer)) {
+            const textModel = this.editorViewer.editor.getModel();
+            return textModel.getText();
         }
     }
 
-    setData(value: string) {
-        if (!isNullOrUndefined(this.orionEditor)) {
-            return this.orionEditor.setText(value);
+    setData(value: string, language?: string) {
+        if (!isNullOrUndefined(this.editorViewer)) {
+            this.value = value;
+
+            if (language) {
+                this.dataEditorLang = language;
+            }
+
+            this.editorViewer.setContents(this.value, this.dataEditorLang);
         }
     }
 

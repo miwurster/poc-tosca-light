@@ -1,52 +1,86 @@
-# *[short title of solved problem and solution]*
+# [short title of solved problem and solution]
 
-**User Story:** *[ticket/issue-number]* <!-- optional -->
+* Status: [accepted | superseeded by [ADR-0005](0005-example.md) | deprecated | …] <!-- optional -->
+* Deciders: [list everyone involved in the decision] <!-- optional -->
+* Date: [YYYY-MM-DD when the decision was last updated] <!-- optional -->
 
-*[context and problem statement]*
-*[decision drivers | forces]* <!-- optional -->
+Technical Story: [description | ticket/issue URL] <!-- optional -->
 
-## Considered Alternatives
+## Context and Problem Statement
 
-* *[alternative 1]*
-* *[alternative 2]*
-* *[alternative 3]*
-* *[...]* <!-- numbers of alternatives can vary -->
+[Describe the context and problem statement, e.g., in free form using two to three sentences. You may want to articulate the problem in form of a question.]
+
+## Decision Drivers <!-- optional -->
+
+* [driver 1, e.g., a force, facing concern, …]
+* [driver 2, e.g., a force, facing concern, …]
+* … <!-- numbers of drivers can vary -->
+
+## Considered Options
+
+* [option 1]
+* [option 2]
+* [option 3]
+* … <!-- numbers of options can vary -->
 
 ## Decision Outcome
 
-* Chosen Alternative: *[alternative 1]*
-* *[justification. e.g., only alternative, which meets k.o. criterion decision driver | which resolves force force | ... | comes out best (see below)]*
-* *[consequences. e.g., negative impact on quality attribute, follow-up decisions required, ...]* <!-- optional -->
+Chosen option: "[option 1]", because [justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force force | … | comes out best (see below)].
 
-## Pros and Cons of the Alternatives <!-- optional -->
+### Positive Consequences <!-- optional -->
 
-### *[alternative 1]*
+* [e.g., improvement of quality attribute satisfaction, follow-up decisions required, …]
+* …
 
-* `+` *[argument 1 pro]*
-* `+` *[argument 2 pro]*
-* `-` *[argument 1 con]*
-* *[...]* <!-- numbers of pros and cons can vary -->
+### Negative consequences <!-- optional -->
 
-### *[alternative 2]*
+* [e.g., compromising quality attribute, follow-up decisions required, …]
+* …
 
-* `+` *[argument 1 pro]*
-* `+` *[argument 2 pro]*
-* `-` *[argument 1 con]*
-* *[...]* <!-- numbers of pros and cons can vary -->
+## Pros and Cons of the Options <!-- optional -->
 
-### *[alternative 3]*
+### [option 1]
 
-* `+` *[argument 1 pro]*
-* `+` *[argument 2 pro]*
-* `-` *[argument 1 con]*
-* *[...]* <!-- numbers of pros and cons can vary -->
+[example | description | pointer to more information | …] <!-- optional -->
 
+* Good, because [argument a]
+* Good, because [argument b]
+* Bad, because [argument c]
+* … <!-- numbers of pros and cons can vary -->
+
+### [option 2]
+
+[example | description | pointer to more information | …] <!-- optional -->
+
+* Good, because [argument a]
+* Good, because [argument b]
+* Bad, because [argument c]
+* … <!-- numbers of pros and cons can vary -->
+
+### [option 3]
+
+[example | description | pointer to more information | …] <!-- optional -->
+
+* Good, because [argument a]
+* Good, because [argument b]
+* Bad, because [argument c]
+* … <!-- numbers of pros and cons can vary -->
+
+## Links <!-- optional -->
+
+* [Link type] [Link to ADR] <!-- example: Refined by [ADR-0005](0005-example.md) -->
+* … <!-- numbers of links can vary -->
 
 ## License
 
-Copyright (c) 2017 University of Stuttgart.
+Copyright (c) 2018 Contributors to the Eclipse Foundation
 
-All rights reserved. Made available under the terms of the [Eclipse Public License v1.0] and the [Apache License v2.0] which both accompany this distribution.
+See the NOTICE file(s) distributed with this work for additional
+information regarding copyright ownership.
 
- [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
- [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0

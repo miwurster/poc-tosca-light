@@ -1,20 +1,25 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Balzer - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, OnInit } from '@angular/core';
 import { VisualAppearanceService } from './visualAppearance.service';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { isNullOrUndefined } from 'util';
 import { RelationshipTypesVisualsApiData } from './relationshipTypesVisualsApiData';
 import { NodeTypesVisualsApiData } from './nodeTypesVisualsApiData';
+import { InstanceService } from '../../instance.service';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { ToscaTypes } from '../../../model/enums';
 
 @Component({
     templateUrl: 'visualAppearance.component.html',
@@ -30,9 +35,11 @@ export class VisualAppearanceComponent implements OnInit {
     loading = true;
     img16Path: string;
     img50Path: string;
-    isNodeType = true;
+    isRelationshipType = false;
+    isNodeType = false;
 
-    constructor(private service: VisualAppearanceService,
+    constructor(public sharedData: InstanceService,
+                private service: VisualAppearanceService,
                 private notify: WineryNotificationService) {
     }
 
@@ -41,14 +48,13 @@ export class VisualAppearanceComponent implements OnInit {
         this.img16Path = this.service.getImg16x16Path();
         this.img50Path = this.service.getImg50x50Path();
 
-        if (this.service.path.includes('relationshiptypes')) {
-            this.isNodeType = false;
-        }
+        this.isRelationshipType = this.sharedData.toscaComponent.toscaType === ToscaTypes.RelationshipType;
+        this.isNodeType = this.sharedData.toscaComponent.toscaType === ToscaTypes.NodeType;
 
-        if (this.isNodeType) {
-            this.getNodeTypeData();
-        } else {
+        if (this.isRelationshipType) {
             this.getRelationshipData();
+        } else {
+            this.getNodeTypeData();
         }
     }
 
@@ -95,13 +101,13 @@ export class VisualAppearanceComponent implements OnInit {
     }
 
     saveToServer() {
-        if (this.isNodeType) {
-            this.service.saveVisuals(new NodeTypesVisualsApiData(this.nodeTypeData)).subscribe(
+        if (this.isRelationshipType) {
+            this.service.saveVisuals(new RelationshipTypesVisualsApiData(this.relationshipData, false)).subscribe(
                 data => this.handleResponse(data),
                 error => this.handleError(error)
             );
         } else {
-            this.service.saveVisuals(new RelationshipTypesVisualsApiData(this.relationshipData, false)).subscribe(
+            this.service.saveVisuals(new NodeTypesVisualsApiData(this.nodeTypeData)).subscribe(
                 data => this.handleResponse(data),
                 error => this.handleError(error)
             );
@@ -134,10 +140,10 @@ export class VisualAppearanceComponent implements OnInit {
 
     onUploadSuccess() {
         this.loading = true;
-        if (this.isNodeType) {
-            this.getNodeTypeData();
-        } else {
+        if (this.isRelationshipType) {
             this.getRelationshipData();
+        } else {
+            this.getNodeTypeData();
         }
     }
 
@@ -147,6 +153,7 @@ export class VisualAppearanceComponent implements OnInit {
 
     public set colorLocal(color: string) {
         this.relationshipData.color = color;
+        this.saveToServer();
     }
 
     public get borderColorLocal() {
@@ -155,6 +162,7 @@ export class VisualAppearanceComponent implements OnInit {
 
     public set borderColorLocal(color: string) {
         this.nodeTypeData.color = color;
+        this.saveToServer();
     }
 
     public get hoverColorLocal() {
@@ -163,16 +171,17 @@ export class VisualAppearanceComponent implements OnInit {
 
     public set hoverColorLocal(color: string) {
         this.relationshipData.hoverColor = color;
+        this.saveToServer();
     }
 
-    private handleResponse(response: any) {
+    private handleResponse(response: HttpResponse<string>) {
         this.loading = false;
         this.notify.success('Successfully saved visual data!');
     }
 
-    private handleError(error: any): void {
+    private handleError(error: HttpErrorResponse): void {
         this.loading = false;
-        this.notify.error(error);
+        this.notify.error(error.message);
     }
 
 }

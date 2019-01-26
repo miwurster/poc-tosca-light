@@ -1,25 +1,26 @@
-# Use Architectural Decision Records
+# Use Markdown Architectural Decision Records
 
-We need to record the architectural decisions made on this project.
+## Context and Problem Statement
 
-## Considered Alternatives
+We want to record architectural decisions made in this project.
+Which format and structure should these records follow?
 
-* No record
-* [DecisionRecord](https://github.com/schubmat/DecisionCapture)
-* [Michael Nygard's template](http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions), maintainable by [adr-tools](https://github.com/npryce/adr-tools)
-* [Sustainable Architectural Decisions](https://www.infoq.com/articles/sustainable-architectural-design-decisions)
-* [Other templates](https://github.com/joelparkerhenderson/architecture_decision_record)
+## Considered Options
 
-## Conclusion
+* [MADR](https://adr.github.io/madr/) 2.1.0 - The Markdown Architectural Decision Records
+* [Michael Nygard's template](http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions) - The first incarnation of the term "ADR"
+* [Sustainable Architectural Decisions](https://www.infoq.com/articles/sustainable-architectural-design-decisions) - The Y-Statements
+* Other templates listed at <https://github.com/joelparkerhenderson/architecture_decision_record>
+* Formless - No conventions for file format and structure
 
-* *Chosen Alternative: Decision Record*
-* That template is lean and fits most the development style
+## Decision Outcome
 
-## License
+Chosen option: "MADR 2.1.0", because
 
-Copyright (c) 2017 University of Stuttgart.
-
-All rights reserved. Made available under the terms of the [Eclipse Public License v1.0] and the [Apache License v2.0] which both accompany this distribution.
-
- [Apache License v2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
- [Eclipse Public License v1.0]: http://www.eclipse.org/legal/epl-v10.html
+* Implicit assumptions should be made explicit.
+  Design documentation is important to enable people understanding the decisions later on.
+  See also [A rational design process: How and why to fake it](https://doi.org/10.1109/TSE.1986.6312940).
+* The MADR format is lean and fits our development style.
+* The MADR structure is comprehensible and facilitates usage & maintenance.
+* The MADR project is vivid.
+* Version 2.1.0 is the latest one available when starting to document ADRs.

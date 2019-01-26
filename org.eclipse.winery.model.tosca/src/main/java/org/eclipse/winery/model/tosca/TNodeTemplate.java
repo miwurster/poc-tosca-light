@@ -1,18 +1,20 @@
 /*******************************************************************************
- * Copyright (c) 2013-2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code generation using vhudson-jaxb-ri-2.1-2
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,106 +29,34 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-
-/**
- * <p>Java class for tNodeTemplate complex type.
- *
- * <p>The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="tNodeTemplate">
- *   &lt;complexContent>
- *     &lt;extension base="{http://docs.oasis-open.org/tosca/ns/2011/12}tEntityTemplate">
- *       &lt;sequence>
- *         &lt;element name="Requirements" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="Requirement" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tRequirement"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="Capabilities" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="Capability" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tCapability"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="Policies" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="Policy" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tPolicy"
- * maxOccurs="unbounded"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="DeploymentArtifacts" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tDeploymentArtifacts"
- * minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="minInstances" type="{http://www.w3.org/2001/XMLSchema}int" default="1" />
- *       &lt;attribute name="maxInstances" default="1">
- *         &lt;simpleType>
- *           &lt;union>
- *             &lt;simpleType>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}nonNegativeInteger">
- *                 &lt;pattern value="([1-9]+[0-9]*)"/>
- *               &lt;/restriction>
- *             &lt;/simpleType>
- *             &lt;simpleType>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                 &lt;enumeration value="unbounded"/>
- *               &lt;/restriction>
- *             &lt;/simpleType>
- *           &lt;/union>
- *         &lt;/simpleType>
- *       &lt;/attribute>
- *       &lt;anyAttribute processContents='lax' namespace='##other'/>
- *     &lt;/extension>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tNodeTemplate", propOrder = {
-        "requirements",
-        "capabilities",
-        "policies",
-        "deploymentArtifacts"
+    "requirements",
+    "capabilities",
+    "policies",
+    "deploymentArtifacts"
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeInfo(
-        defaultImpl = TNodeTemplate.class,
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "fakeJacksonType")
-public class TNodeTemplate extends RelationshipSourceOrTarget {
+    defaultImpl = TNodeTemplate.class,
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "fakeJacksonType")
+public class TNodeTemplate extends RelationshipSourceOrTarget implements HasPolicies {
+
     @XmlElement(name = "Requirements")
     protected TNodeTemplate.Requirements requirements;
     @XmlElement(name = "Capabilities")
     protected TNodeTemplate.Capabilities capabilities;
     @XmlElement(name = "Policies")
-    protected TNodeTemplate.Policies policies;
+    protected TPolicies policies;
     @XmlElement(name = "DeploymentArtifacts")
     protected TDeploymentArtifacts deploymentArtifacts;
     @XmlAttribute(name = "name")
@@ -162,12 +92,12 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         if (!super.equals(o)) return false;
         TNodeTemplate that = (TNodeTemplate) o;
         return Objects.equals(requirements, that.requirements) &&
-                Objects.equals(capabilities, that.capabilities) &&
-                Objects.equals(policies, that.policies) &&
-                Objects.equals(deploymentArtifacts, that.deploymentArtifacts) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(minInstances, that.minInstances) &&
-                Objects.equals(maxInstances, that.maxInstances);
+            Objects.equals(capabilities, that.capabilities) &&
+            Objects.equals(policies, that.policies) &&
+            Objects.equals(deploymentArtifacts, that.deploymentArtifacts) &&
+            Objects.equals(name, that.name) &&
+            Objects.equals(minInstances, that.minInstances) &&
+            Objects.equals(maxInstances, that.maxInstances);
     }
 
     @Override
@@ -181,105 +111,48 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         return "nodetemplate";
     }
 
-    /**
-     * Gets the value of the requirements property.
-     *
-     * @return possible object is {@link TNodeTemplate.Requirements }
-     */
-    public TNodeTemplate.Requirements getRequirements() {
+    public TNodeTemplate.@Nullable Requirements getRequirements() {
         return requirements;
     }
 
-    /**
-     * Sets the value of the requirements property.
-     *
-     * @param value allowed object is {@link TNodeTemplate.Requirements }
-     */
-    public void setRequirements(TNodeTemplate.Requirements value) {
+    public void setRequirements(TNodeTemplate.@Nullable Requirements value) {
         this.requirements = value;
     }
 
-    /**
-     * Gets the value of the capabilities property.
-     *
-     * @return possible object is {@link TNodeTemplate.Capabilities }
-     */
-    /*@Nullable*/
-    public TNodeTemplate.Capabilities getCapabilities() {
+    public TNodeTemplate.@Nullable Capabilities getCapabilities() {
         return capabilities;
     }
 
-    /**
-     * Sets the value of the capabilities property.
-     *
-     * @param value allowed object is {@link TNodeTemplate.Capabilities }
-     */
-    public void setCapabilities(TNodeTemplate.Capabilities value) {
+    public void setCapabilities(TNodeTemplate.@Nullable Capabilities value) {
         this.capabilities = value;
     }
 
-    /**
-     * Gets the value of the policies property.
-     *
-     * @return possible object is {@link TNodeTemplate.Policies }
-     */
-    /*@Nullable*/
-    public TNodeTemplate.Policies getPolicies() {
+    public @Nullable TPolicies getPolicies() {
         return policies;
     }
 
-    /**
-     * Sets the value of the policies property.
-     *
-     * @param value allowed object is {@link TNodeTemplate.Policies }
-     */
-    public void setPolicies(TNodeTemplate.Policies value) {
+    public void setPolicies(@Nullable TPolicies value) {
         this.policies = value;
     }
 
-    /**
-     * Gets the value of the deploymentArtifacts property.
-     *
-     * @return possible object is {@link TDeploymentArtifacts }
-     */
     @Nullable
     public TDeploymentArtifacts getDeploymentArtifacts() {
         return deploymentArtifacts;
     }
 
-    /**
-     * Sets the value of the deploymentArtifacts property.
-     *
-     * @param value allowed object is {@link TDeploymentArtifacts }
-     */
-    public void setDeploymentArtifacts(TDeploymentArtifacts value) {
+    public void setDeploymentArtifacts(@Nullable TDeploymentArtifacts value) {
         this.deploymentArtifacts = value;
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is {@link String }
-     */
     @Nullable
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setName(String value) {
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the value of the minInstances property.
-     *
-     * @return possible object is {@link Integer }
-     */
     @NonNull
     public int getMinInstances() {
         if (minInstances == null) {
@@ -289,20 +162,10 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         }
     }
 
-    /**
-     * Sets the value of the minInstances property.
-     *
-     * @param value allowed object is {@link Integer }
-     */
     public void setMinInstances(Integer value) {
         this.minInstances = value;
     }
 
-    /**
-     * Gets the value of the maxInstances property.
-     *
-     * @return possible object is {@link String }
-     */
     @NonNull
     public String getMaxInstances() {
         if (maxInstances == null) {
@@ -312,94 +175,83 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
         }
     }
 
-    /**
-     * Sets the value of the maxInstances property.
-     *
-     * @param value allowed object is {@link String }
-     */
     public void setMaxInstances(String value) {
         this.maxInstances = value;
     }
 
     /**
-     * Sets the left coordinate of a {@link TNodeTemplate}.
-     *
-     * @param x   the value of the x-coordinate to be set
+     * In the JSON, also output this direct child of the node template object. Therefore, no JsonIgnore annotation.
      */
-    public void setX(String x) {
-        Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
-        otherNodeTemplateAttributes.put(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x"), x);
-    }
-    
     @XmlTransient
+    @Nullable
     public String getX() {
         Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
         return otherNodeTemplateAttributes.get(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x"));
     }
 
     /**
-     * Sets the top coordinate of a {@link TNodeTemplate}.
+     * Sets the top coordinate of a {@link TNodeTemplate}. When receiving the JSON, this method ensures that (i) the "y"
+     * property can be handled and (ii) the Y coordinate is written correctly in the extension namespace.
      *
-     * @param y   the value of the coordinate to be set
+     * @param x the value of the x-coordinate to be set
      */
-    public void setY(String y) {
+    public void setX(@NonNull String x) {
+        Objects.requireNonNull(x);
         Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
-        otherNodeTemplateAttributes.put(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "y"), y);
+        otherNodeTemplateAttributes.put(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "x"), x);
     }
-    
+
+    /**
+     * In the JSON, also output this direct child of the node template object. Therefore, no JsonIgnore annotation.
+     */
     @XmlTransient
+    @Nullable
     public String getY() {
         Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
         return otherNodeTemplateAttributes.get(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "y"));
     }
 
-
     /**
-     * <p>Java class for anonymous complex type.
+     * Sets the top coordinate of a {@link TNodeTemplate}. When receiving the JSON, this method ensures that (i) the "y"
+     * property can be handled and (ii) the Y coordinate is written correctly in the extension namespace.
      *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="Capability" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tCapability"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
+     * @param y the value of the coordinate to be set
      */
+    public void setY(@NonNull String y) {
+        Map<QName, String> otherNodeTemplateAttributes = this.getOtherAttributes();
+        otherNodeTemplateAttributes.put(new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "y"), y);
+    }
+
+    public void accept(@NonNull Visitor visitor) {
+        visitor.visit(this);
+    }
+
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "capability"
+        "capability"
     })
-    public static class Capabilities {
+    public static class Capabilities implements Serializable {
 
         @XmlElement(name = "Capability", required = true)
         protected List<TCapability> capability;
 
         /**
          * Gets the value of the capability property.
-         *
          * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the capability property.
-         *
+         * <p>
+         * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you
+         * make to the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE>
+         * method for the capability property.
+         * <p>
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
          *    getCapability().add(newItem);
          * </pre>
-         *
-         *
          * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TCapability }
+         * <p>
+         * <p>
+         * Objects of the following type(s) are allowed in the list {@link TCapability }
          */
         @NonNull
         public List<TCapability> getCapability() {
@@ -408,113 +260,34 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
             }
             return this.capability;
         }
-    }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Capabilities that = (Capabilities) o;
+            return Objects.equals(capability, that.capability);
+        }
 
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="Policy" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tPolicy"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-            "policy"
-    })
-    public static class Policies {
+        @Override
+        public int hashCode() {
+            return Objects.hash(capability);
+        }
 
-        @XmlElement(name = "Policy", required = true)
-        protected List<TPolicy> policy;
-
-        /**
-         * Gets the value of the policy property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the policy property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getPolicy().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TPolicy }
-         */
-        @NonNull
-        public List<TPolicy> getPolicy() {
-            if (policy == null) {
-                policy = new ArrayList<TPolicy>();
-            }
-            return this.policy;
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
         }
     }
 
-
-    /**
-     * <p>Java class for anonymous complex type.
-     *
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     *
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="Requirement" type="{http://docs.oasis-open.org/tosca/ns/2011/12}tRequirement"
-     * maxOccurs="unbounded"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "requirement"
+        "requirement"
     })
-    public static class Requirements {
+    public static class Requirements implements Serializable {
 
         @XmlElement(name = "Requirement", required = true)
         protected List<TRequirement> requirement;
 
-        /**
-         * Gets the value of the requirement property.
-         *
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the requirement property.
-         *
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getRequirement().add(newItem);
-         * </pre>
-         *
-         *
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link TRequirement }
-         */
         @NonNull
         public List<TRequirement> getRequirement() {
             if (requirement == null) {
@@ -522,12 +295,29 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
             }
             return this.requirement;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Requirements that = (Requirements) o;
+            return Objects.equals(requirement, that.requirement);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(requirement);
+        }
+
+        public void accept(Visitor visitor) {
+            visitor.visit(this);
+        }
     }
 
-    public static class Builder extends RelationshipSourceOrTarget.Builder {
+    public static class Builder extends RelationshipSourceOrTarget.Builder<Builder> {
         private Requirements requirements;
         private Capabilities capabilities;
-        private Policies policies;
+        private TPolicies policies;
         private TDeploymentArtifacts deploymentArtifacts;
         private String name;
         private Integer minInstances;
@@ -551,7 +341,7 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
             return this;
         }
 
-        public Builder setPolicies(TNodeTemplate.Policies policies) {
+        public Builder setPolicies(TPolicies policies) {
             this.policies = policies;
             return this;
         }
@@ -642,7 +432,7 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
             return addCapabilities(tmp);
         }
 
-        public Builder addPolicies(TNodeTemplate.Policies policies) {
+        public Builder addPolicies(TPolicies policies) {
             if (policies == null) {
                 return this;
             }
@@ -660,7 +450,7 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
                 return this;
             }
 
-            TNodeTemplate.Policies tmp = new TNodeTemplate.Policies();
+            TPolicies tmp = new TPolicies();
             tmp.getPolicy().addAll(policies);
             return addPolicies(tmp);
         }
@@ -670,9 +460,14 @@ public class TNodeTemplate extends RelationshipSourceOrTarget {
                 return this;
             }
 
-            TNodeTemplate.Policies tmp = new TNodeTemplate.Policies();
+            TPolicies tmp = new TPolicies();
             tmp.getPolicy().add(policies);
             return addPolicies(tmp);
+        }
+
+        @Override
+        public Builder self() {
+            return this;
         }
 
         public TNodeTemplate build() {

@@ -1,16 +1,16 @@
-<!--
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
- *
- * Contributors:
- *     Lukas Harzenetter, Niko Stadelmaier - initial API and implementation
- */
--->
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 <div class="localLoader" [class.hidden]="!loading">
     <winery-loader></winery-loader>
 </div>
@@ -18,29 +18,34 @@
     <div class="radioWrapper">
         <div class="left">
             <input id="nopropdef" type="radio" name="kind" (click)="onNoneSelected()"
+                   [disabled]="!sharedData?.currentVersion?.editable"
                    [checked]="resourceApiData.selectedValue === propertiesEnum.None">
             <label for="nopropdef" class="cursorpointer" name="nopropdef">(none)</label>
             <br>
             <input id="xsdelementradio" type="radio" name="kind" (click)="onXmlElementSelected()"
+                   [disabled]="!sharedData?.currentVersion?.editable"
                    [checked]="resourceApiData.selectedValue === propertiesEnum.Element">
             <label for="xsdelementradio" class="cursorpointer">XML element</label>
             <br>
             <input id="xsdtyperadio" type="radio" name="kind" (click)="onXmlTypeSelected()"
+                   [disabled]="!sharedData?.currentVersion?.editable"
                    [checked]="resourceApiData.selectedValue === propertiesEnum.Type">
             <label for="xsdtyperadio" class="cursorpointer">XML type</label>
             <br>
             <input id="customkv" type="radio" name="kind" (click)="onCustomKeyValuePairSelected()"
+                   [disabled]="!sharedData?.currentVersion?.editable"
                    [checked]="resourceApiData.selectedValue === propertiesEnum.Custom">
             <label for="customkv" class="cursorpointer">Custom key/value pairs</label>
         </div>
         <div class="right">
-            <button class="btn btn-primary" name="save" (click)="save()">Save</button>
+            <button class="btn btn-primary" name="save" [disabled]="!sharedData?.currentVersion?.editable" (click)="save()">Save</button>
         </div>
     </div>
     <div>
         <div *ngIf="(resourceApiData.selectedValue === propertiesEnum.Element
             || resourceApiData.selectedValue === propertiesEnum.Type)">
-            <ng-select [items]="selectItems" (selected)="xmlValueSelected($event)" [active]="[activeElement]"></ng-select>
+            <ng-select [items]="selectItems" (selected)="xmlValueSelected($event)"
+                       [active]="[activeElement]"></ng-select>
         </div>
 
         <div *ngIf="resourceApiData.selectedValue === propertiesEnum.Custom">
@@ -63,7 +68,11 @@
                                [(ngModel)]="resourceApiData.winerysPropertiesDefinition.elementName">
                     </div>
                     <div class="wrapperTabButtom">
-                        <winery-namespace-selector [(ngModel)]="resourceApiData.winerysPropertiesDefinition.namespace"></winery-namespace-selector>
+                        <!-- pattern parameter is required to enable form validation -->
+                        <winery-namespace-selector
+                            [(ngModel)]="resourceApiData.winerysPropertiesDefinition.namespace" pattern="^\S*$"
+                            [useStartNamespace]="false">
+                        </winery-namespace-selector>
                     </div>
                 </tab>
             </tabset>
@@ -71,14 +80,16 @@
     </div>
 </div>
 
-<winery-modal bsModal #addModal="bs-modal" [modalRef]="addModal">
+<winery-modal bsModal #addModal="bs-modal" [modalRef]="addModal"
+              (onShown)="onAddModalShown();" (onHide)="addPropertyFrom.reset();">
     <winery-modal-header [title]="'Add Property'">
     </winery-modal-header>
     <winery-modal-body>
         <form #addPropertyFrom="ngForm" id="addPropertyForm">
             <div class="form-group">
                 <label class="control-label" for="key">Name</label>
-                <input #propName="ngModel"
+                <input #nameInputForm
+                       #propName="ngModel"
                        id="key"
                        class="form-control"
                        type="text"

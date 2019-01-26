@@ -1,14 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2017 University of Stuttgart
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *    Oliver Kopp - initial code contribution
- *    Christoph Kleine - hashcode, equals, builder pattern, Nullable and NonNull annotations
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 package org.eclipse.winery.model.tosca;
 
@@ -20,6 +21,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import io.github.adr.embedded.ADR;
 import org.eclipse.jdt.annotation.NonNull;
 
 public abstract class HasId extends TExtensibleElements implements HasIdInIdOrNameField {
@@ -64,7 +66,8 @@ public abstract class HasId extends TExtensibleElements implements HasIdInIdOrNa
         this.id = value;
     }
 
-    public static class Builder extends TExtensibleElements.Builder {
+    @ADR(11)
+    public abstract static class Builder<T extends Builder<T>> extends TExtensibleElements.Builder<T> {
         private final String id;
 
         public Builder(String id) {

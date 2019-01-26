@@ -1,31 +1,30 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter, Niko Stadelmaier - initial API and implementation
- */
-import { Component, OnInit, ViewChild } from '@angular/core';
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { InstanceService } from '../../instance.service';
 import { PropertiesDefinitionService } from './propertiesDefinition.service';
 import {
-    PropertiesDefinition,
-    PropertiesDefinitionEnum,
-    PropertiesDefinitionKVList,
-    PropertiesDefinitionsResourceApiData,
+    PropertiesDefinition, PropertiesDefinitionEnum, PropertiesDefinitionKVElement, PropertiesDefinitionsResourceApiData,
     WinerysPropertiesDefinition
 } from './propertiesDefinitionsResourceApiData';
-import { SelectData } from '../../../wineryInterfaces/selectData';
+import { SelectData } from '../../../model/selectData';
 import { isNullOrUndefined } from 'util';
-import { Response } from '@angular/http';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { WineryValidatorObject } from '../../../wineryValidators/wineryDuplicateValidator.directive';
-import { WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
+import { WineryRowData, WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
 import { ModalDirective } from 'ngx-bootstrap';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 
 @Component({
     templateUrl: 'propertiesDefinition.component.html',
@@ -43,20 +42,21 @@ export class PropertiesDefinitionComponent implements OnInit {
 
     resourceApiData: PropertiesDefinitionsResourceApiData;
     selectItems: SelectData[];
-    activeElement: SelectData;
-    selectedCell: any;
+    activeElement = new SelectData();
+    selectedCell: WineryRowData;
     elementToRemove: any = null;
     columns: Array<WineryTableColumn> = [
-        {title: 'Name', name: 'key', sort: true},
-        {title: 'Type', name: 'type', sort: true},
+        { title: 'Name', name: 'key', sort: true },
+        { title: 'Type', name: 'type', sort: true },
     ];
-    newProperty: PropertiesDefinitionKVList = new PropertiesDefinitionKVList();
+    newProperty: PropertiesDefinitionKVElement = new PropertiesDefinitionKVElement();
 
     validatorObject: WineryValidatorObject;
     @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
     @ViewChild('addModal') addModal: ModalDirective;
+    @ViewChild('nameInputForm') nameInputForm: ElementRef;
 
-    constructor(private sharedData: InstanceService, private service: PropertiesDefinitionService,
+    constructor(public sharedData: InstanceService, private service: PropertiesDefinitionService,
                 private notify: WineryNotificationService) {
     }
 
@@ -82,11 +82,6 @@ export class PropertiesDefinitionComponent implements OnInit {
      */
     onXmlElementSelected(): void {
         this.resourceApiData.selectedValue = PropertiesDefinitionEnum.Element;
-        this.service.getXsdElementDefinitions()
-            .subscribe(
-                data => this.selectItems = data,
-                error => this.handleError(error)
-            );
 
         if (isNullOrUndefined(this.resourceApiData.propertiesDefinition)) {
             this.resourceApiData.propertiesDefinition = new PropertiesDefinition();
@@ -95,8 +90,11 @@ export class PropertiesDefinitionComponent implements OnInit {
         this.resourceApiData.propertiesDefinition.type = null;
         this.resourceApiData.winerysPropertiesDefinition = null;
 
-        this.activeElement = new SelectData();
-        this.activeElement.text = this.resourceApiData.propertiesDefinition.element;
+        this.service.getXsdElementDefinitions()
+            .subscribe(
+                data => this.handleSelectData(data, false),
+                error => this.handleError(error)
+            );
     }
 
     /**
@@ -105,11 +103,6 @@ export class PropertiesDefinitionComponent implements OnInit {
      */
     onXmlTypeSelected(): void {
         this.resourceApiData.selectedValue = PropertiesDefinitionEnum.Type;
-        this.service.getXsdTypeDefinitions()
-            .subscribe(
-                data => this.selectItems = data,
-                error => this.handleError(error)
-            );
 
         if (isNullOrUndefined(this.resourceApiData.propertiesDefinition)) {
             this.resourceApiData.propertiesDefinition = new PropertiesDefinition();
@@ -118,8 +111,11 @@ export class PropertiesDefinitionComponent implements OnInit {
         this.resourceApiData.propertiesDefinition.element = null;
         this.resourceApiData.winerysPropertiesDefinition = null;
 
-        this.activeElement = new SelectData();
-        this.activeElement.text = this.resourceApiData.propertiesDefinition.type;
+        this.service.getXsdTypeDefinitions()
+            .subscribe(
+                data => this.handleSelectData(data, true),
+                error => this.handleError(error)
+            );
     }
 
     /**
@@ -150,7 +146,7 @@ export class PropertiesDefinitionComponent implements OnInit {
         }
 
         if (isNullOrUndefined(this.resourceApiData.winerysPropertiesDefinition.namespace)) {
-            this.resourceApiData.winerysPropertiesDefinition.namespace = this.sharedData.toscaComponent.namespace + '/properties';
+            this.resourceApiData.winerysPropertiesDefinition.namespace = this.sharedData.toscaComponent.namespace + '/propertiesdefinition/winery';
         }
         if (isNullOrUndefined(this.resourceApiData.winerysPropertiesDefinition.elementName)) {
             this.resourceApiData.winerysPropertiesDefinition.elementName = 'properties';
@@ -184,7 +180,7 @@ export class PropertiesDefinitionComponent implements OnInit {
      * handler for clicks on remove button
      * @param data
      */
-    onRemoveClick(data: any) {
+    onRemoveClick(data: PropertiesDefinitionKVElement) {
         if (isNullOrUndefined(data)) {
             return;
         } else {
@@ -197,7 +193,7 @@ export class PropertiesDefinitionComponent implements OnInit {
      * handler for clicks on the add button
      */
     onAddClick() {
-        this.newProperty = new PropertiesDefinitionKVList();
+        this.newProperty = new PropertiesDefinitionKVElement();
         this.validatorObject = new WineryValidatorObject(this.resourceApiData.winerysPropertiesDefinition.propertyDefinitionKVList, 'key');
         this.addModal.show();
     }
@@ -210,13 +206,13 @@ export class PropertiesDefinitionComponent implements OnInit {
      */
     xmlValueSelected(event: SelectData): void {
         if (this.resourceApiData.selectedValue === PropertiesDefinitionEnum.Element) {
-            this.resourceApiData.propertiesDefinition.element = event.text;
+            this.resourceApiData.propertiesDefinition.element = event.id;
         } else if (this.resourceApiData.selectedValue === PropertiesDefinitionEnum.Type) {
-            this.resourceApiData.propertiesDefinition.type = event.text;
+            this.resourceApiData.propertiesDefinition.type = event.id;
         }
     }
 
-    onCellSelected(data: any) {
+    onCellSelected(data: WineryRowData) {
         if (isNullOrUndefined(data)) {
             this.selectedCell = data;
         }
@@ -244,6 +240,10 @@ export class PropertiesDefinitionComponent implements OnInit {
         this.elementToRemove = null;
     }
 
+    onAddModalShown() {
+        this.nameInputForm.nativeElement.focus();
+    }
+
     // endregion
 
     // region ########## Private Methods ##########
@@ -254,6 +254,24 @@ export class PropertiesDefinitionComponent implements OnInit {
                 data => this.handlePropertiesDefinitionData(data),
                 error => this.handleError(error)
             );
+    }
+
+    private handleSelectData(data: SelectData[], isType: boolean) {
+        this.selectItems = data;
+
+        this.selectItems.some(nsList => {
+            this.activeElement = nsList.children.find(item => {
+                if (isType) {
+                    return item.id === this.resourceApiData.propertiesDefinition.type;
+                }
+                return item.id === this.resourceApiData.propertiesDefinition.element;
+            });
+            return !isNullOrUndefined(this.activeElement);
+        });
+
+        if (isNullOrUndefined(this.activeElement)) {
+            this.activeElement = new SelectData();
+        }
     }
 
     /**
@@ -291,13 +309,13 @@ export class PropertiesDefinitionComponent implements OnInit {
 
         // because the selectedValue doesn't get set correctly do it here
         switch (isNullOrUndefined(this.resourceApiData.selectedValue) ? '' : this.resourceApiData.selectedValue.toString()) {
-            case 'Element':
+            case PropertiesDefinitionEnum.Element:
                 this.onXmlElementSelected();
                 break;
-            case 'Type':
+            case PropertiesDefinitionEnum.Type:
                 this.onXmlTypeSelected();
                 break;
-            case 'Custom':
+            case PropertiesDefinitionEnum.Custom:
                 this.onCustomKeyValuePairSelected();
                 break;
             default:
@@ -305,9 +323,9 @@ export class PropertiesDefinitionComponent implements OnInit {
         }
 
         this.handleSuccess(data);
-    };
+    }
 
-    private handleSave(data: Response) {
+    private handleSave(data: HttpResponse<string>) {
         this.handleSuccess(data, 'change');
         this.getPropertiesDefinitionsResourceApiData();
     }
@@ -330,8 +348,9 @@ export class PropertiesDefinitionComponent implements OnInit {
      *
      * @param error
      */
-    private handleError(error: any): void {
-        this.notify.error(error.toString(), 'Error');
+    private handleError(error: HttpErrorResponse): void {
+        this.loading = false;
+        this.notify.error(error.message, 'Error');
     }
 
     // endregion

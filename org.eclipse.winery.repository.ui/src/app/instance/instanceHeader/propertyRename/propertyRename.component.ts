@@ -1,21 +1,27 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Balzer - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 
 import { Component, Input, OnChanges, OnInit, ViewChild } from '@angular/core';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { PropertyRenameService } from './propertyRename.service';
-import { ToscaComponent } from '../../../wineryInterfaces/toscaComponent';
+import { ToscaComponent } from '../../../model/toscaComponent';
 import { NgForm } from '@angular/forms';
+import { ToscaTypes } from '../../../model/enums';
+import { ModalDirective } from 'ngx-bootstrap';
 import { Router } from '@angular/router';
+import { InstanceService } from '../../instance.service';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 
 /**
  * This adds a an editable field to the html that manipulates either the namespace or the id/name of a ToscaComponent
@@ -32,14 +38,18 @@ import { Router } from '@angular/router';
     ]
 })
 export class PropertyRenameComponent implements OnInit, OnChanges {
+
     @Input() propertyName: string;
     @Input() toscaComponent: ToscaComponent;
+    @Input() multipleVersionsAvailable: boolean;
     @ViewChild('renameComponentForm') renameComponentForm: NgForm;
+    @ViewChild('confirmRenameModal') confirmRenameModal: ModalDirective;
     editMode = false;
-    canEdit = true;
+    disableEditing = true;
     propertyValue = '';
 
-    constructor(private service: PropertyRenameService,
+    constructor(public sharedData: InstanceService,
+                private service: PropertyRenameService,
                 private notify: WineryNotificationService,
                 private router: Router) {
     }
@@ -47,45 +57,67 @@ export class PropertyRenameComponent implements OnInit, OnChanges {
     ngOnInit(): void {
         this.service.setToscaComponent(this.toscaComponent);
         this.service.setPropertyName(this.propertyName);
-        this.canEdit = this.router.url.includes('admin');
+        this.disableEditing = this.toscaComponent.toscaType === ToscaTypes.Imports
+            || this.toscaComponent.toscaType === ToscaTypes.Admin;
     }
 
     ngOnChanges() {
         this.service.setToscaComponent(this.toscaComponent);
-    }
-
-    updateValue() {
-        this.service.setPropertyValue(this.propertyValue).subscribe(
-            data => this.handleUpdateValue(),
-            error => this.handleError(error)
-        )
+        this.setPropertyValue();
     }
 
     onClickEdit() {
-        if (this.propertyName === 'localName') {
-            this.propertyValue = this.toscaComponent.localName;
-        } else {
-            this.propertyValue = this.toscaComponent.namespace;
-        }
         this.editMode = true;
-    }
-
-    onSaveValue() {
-        this.editMode = false;
-        this.updateValue();
     }
 
     onCancel() {
         this.editMode = false;
+        this.setPropertyValue();
+        this.confirmRenameModal.hide();
     }
 
-    private handleUpdateValue() {
+    renameAllVersions() {
+        this.confirmRenameModal.hide();
+        this.updateValue(true);
+    }
+
+    renameThisVersionOnly() {
+        this.confirmRenameModal.hide();
+        this.updateValue(false);
+    }
+
+    onSaveClicked() {
+        if (this.multipleVersionsAvailable) {
+            this.confirmRenameModal.show();
+        } else {
+            this.renameThisVersionOnly();
+        }
+    }
+
+    private updateValue(renameAllComponents: boolean) {
+        this.editMode = false;
+        this.service.setPropertyValue(this.propertyValue, renameAllComponents).subscribe(
+            data => this.handleUpdateValue(data),
+            error => this.handleError(error)
+        );
+    }
+
+    private setPropertyValue() {
+        if (this.propertyName === 'localName') {
+            this.propertyValue = this.toscaComponent.localNameWithoutVersion;
+        } else {
+            this.propertyValue = this.toscaComponent.namespace;
+        }
+    }
+
+    private handleUpdateValue(data: HttpResponse<string>) {
         this.notify.success('Renamed ' + this.propertyName + ' to ' + this.propertyValue);
-        this.service.reload(this.propertyValue);
+        const sliceFrom = data.body.indexOf(this.toscaComponent.toscaType);
+        this.router.navigate([decodeURIComponent(data.body.slice(sliceFrom))]);
     }
 
-    private handleError(error: any): void {
-        this.notify.error('id/name ' + this.propertyValue
-            + ' already exists in the current namespace, please enter a different ' + this.propertyName);
+    private handleError(error: HttpErrorResponse): void {
+        this.notify.error(error.message);
     }
+
 }

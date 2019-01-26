@@ -1,26 +1,30 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { WineryRowData, WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
 import { PlansApiData } from './plansApiData';
 import { PlansService } from './plans.service';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { isNullOrUndefined } from 'util';
-import { SelectData } from '../../../wineryInterfaces/selectData';
+import { SelectData } from '../../../model/selectData';
 import { WineryUploaderComponent } from '../../../wineryUploader/wineryUploader.component';
 import { SelectItem } from 'ng2-select';
-import { InputParameters, OutputParameters } from '../../../wineryInterfaces/parameters';
+import { InputParameters, OutputParameters } from '../../../model/parameters';
 import { backendBaseURL, workflowModelerURL } from '../../../configuration';
 import { InstanceService } from '../../instance.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap';
 
 const bpmn4tosca = 'http://www.opentosca.org/bpmn4tosca';
 
@@ -64,21 +68,47 @@ export class PlansComponent implements OnInit {
     fileToUpload: any;
     uploaderUrl: string;
 
+    ioModalRef: BsModalRef;
+
     @ViewChild('addPlanModal') addPlanModal: any;
     @ViewChild('uploader') uploader: WineryUploaderComponent;
 
     @ViewChild('ioModal') ioModal: any;
     @ViewChild('confirmDeleteModal') confirmDeleteModal: any;
 
+    @ViewChild('confirmPlanGeneration') confirmPlanGeneration: any;
+
     constructor(private notify: WineryNotificationService,
-                private sharedData: InstanceService,
-                private service: PlansService) {
+                public sharedData: InstanceService,
+                private service: PlansService,
+                private modalService: BsModalService) {
     }
 
     ngOnInit() {
         this.getPlanTypesData();
         this.uploaderUrl = this.service.path + 'addarchive/';
     }
+
+    // region ########## Plan Generation ##########
+    onGeneratePlans() {
+        this.confirmPlanGeneration.show();
+    }
+
+    generatePlans() {
+        this.loading = true;
+        this.service.generatePlans().subscribe(
+            () => this.handlePlanSaved(),
+            error => {
+                this.loading = false;
+                this.notify.warning(
+                    'Plan Builder service is not available or raised an error:\n' + error.message,
+                    'Warning: No Plans Generated'
+                );
+            }
+        );
+    }
+
+    // endregion
 
     // region ########## Callbacks ##########
     // region ########## Table ##########
@@ -113,7 +143,7 @@ export class PlansComponent implements OnInit {
         if (isNullOrUndefined(this.newPlan.outputParameters)) {
             this.newPlan.outputParameters = new OutputParameters();
         }
-        this.ioModal.show();
+        this.ioModalRef = this.modalService.show(this.ioModal);
     }
 
     onCellSelected(plan: WineryRowData) {
@@ -210,7 +240,6 @@ export class PlansComponent implements OnInit {
     }
 
     // endregion
-    // endregion
 
     // region ########## Private Methods ##########
     private handleData(data: PlansApiData[]) {
@@ -254,8 +283,8 @@ export class PlansComponent implements OnInit {
         this.getPlanTypesData();
     }
 
-    handleError(error: any) {
-        this.notify.error(error);
+    handleError(error: HttpErrorResponse) {
+        this.notify.error(error.message);
         this.loading = false;
     }
 

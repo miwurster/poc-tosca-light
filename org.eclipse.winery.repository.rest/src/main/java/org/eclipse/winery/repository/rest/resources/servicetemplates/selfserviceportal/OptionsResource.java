@@ -1,13 +1,15 @@
 /*******************************************************************************
- * Copyright (c) 2012-2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Oliver Kopp - initial API and implementation
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources.servicetemplates.selfserviceportal;
 
@@ -16,6 +18,8 @@ import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -37,78 +41,85 @@ import org.slf4j.LoggerFactory;
 
 public class OptionsResource extends EntityWithIdCollectionResource<OptionResource, ApplicationOption> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(OptionsResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OptionsResource.class);
 
-	/**
-	 * @param res is the parent of the SelfServicePortalResource, which is a parent of this resource
-	 */
-	public OptionsResource(List<ApplicationOption> list, ServiceTemplateResource res) {
-		super(OptionResource.class, ApplicationOption.class, list, res);
-	}
+    private SelfServiceMetaDataId selfServiceMetaId;
 
-	@Override
-	public String getId(ApplicationOption entity) {
-		return entity.getId();
-	}
+    /**
+     * @param res is the parent of the SelfServicePortalResource, which is a parent of this resource
+     */
+    public OptionsResource(List<ApplicationOption> list, ServiceTemplateResource res, SelfServiceMetaDataId selfServiceMetaId) {
+        super(OptionResource.class, ApplicationOption.class, list, res);
+        this.selfServiceMetaId = selfServiceMetaId;
+    }
 
-	@POST
-	@ApiOperation(value = "Adds a new option<p>TODO: @return JSON with .tableData: Array with row data for dataTable</p>")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	// @formatter:off
-	public Response onPost(
-			@FormDataParam("name") String name,
-			@FormDataParam("description") String description,
-			@FormDataParam("planServiceName") String planServiceName,
-			@FormDataParam("planInputMessage") String planInputMessage,
-			@FormDataParam("file") InputStream uploadedInputStream,
-			@FormDataParam("file") FormDataContentDisposition fileDetail,
-			@FormDataParam("file") FormDataBodyPart body
-	) {
-		// @formatter:on
-		if (StringUtils.isEmpty(name)) {
-			return Response.status(Status.BAD_REQUEST).entity("planName must be given").build();
-		}
-		if (StringUtils.isEmpty(description)) {
-			return Response.status(Status.BAD_REQUEST).entity("description must be given").build();
-		}
-		if (StringUtils.isEmpty(planServiceName)) {
-			return Response.status(Status.BAD_REQUEST).entity("planServiceName must be given").build();
-		}
-		if (StringUtils.isEmpty(planInputMessage)) {
-			return Response.status(Status.BAD_REQUEST).entity("planInputMessage must be given").build();
-		}
-		if (uploadedInputStream == null) {
-			return Response.status(Status.BAD_REQUEST).entity("file has to be provided").build();
-		}
-		ApplicationOption option = new ApplicationOption();
+    @Override
+    public String getId(ApplicationOption entity) {
+        return entity.getId();
+    }
 
-		String id = RestUtils.createXMLidAsString(name);
+    @POST
+    @ApiOperation(value = "Adds a new option<p>TODO: @return JSON with .tableData: Array with row data for dataTable</p>")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    // @formatter:off
+    public Response onPost(
+        @FormDataParam("name") String name,
+        @FormDataParam("description") String description,
+        @FormDataParam("planServiceName") String planServiceName,
+        @FormDataParam("planInputMessage") String planInputMessage,
+        @FormDataParam("file") InputStream uploadedInputStream,
+        @FormDataParam("file") FormDataContentDisposition fileDetail,
+        @FormDataParam("file") FormDataBodyPart body
+    ) {
+        // @formatter:on
+        if (StringUtils.isEmpty(name)) {
+            return Response.status(Status.BAD_REQUEST).entity("planName must be given").build();
+        }
+        if (StringUtils.isEmpty(description)) {
+            return Response.status(Status.BAD_REQUEST).entity("description must be given").build();
+        }
+        if (StringUtils.isEmpty(planServiceName)) {
+            return Response.status(Status.BAD_REQUEST).entity("planServiceName must be given").build();
+        }
+        if (StringUtils.isEmpty(planInputMessage)) {
+            return Response.status(Status.BAD_REQUEST).entity("planInputMessage must be given").build();
+        }
+        if (uploadedInputStream == null) {
+            return Response.status(Status.BAD_REQUEST).entity("file has to be provided").build();
+        }
+        ApplicationOption option = new ApplicationOption();
 
-		String fileNamePrefix = OptionResource.getFileNamePrefix(id);
-		String iconFileName = fileNamePrefix + OptionResource.ICON_JPG;
-		String planInputMessageFileName = fileNamePrefix + OptionResource.PLAN_INPUT_XML;
+        String id = RestUtils.createXmlIdAsString(name);
 
-		// create option data
-		option.setId(id);
-		option.setName(name);
-		option.setDescription(description);
-		option.setIconUrl(iconFileName);
-		option.setPlanInputMessageUrl(planInputMessageFileName);
-		option.setPlanServiceName(planServiceName);
+        String fileNamePrefix = OptionResource.getFileNamePrefix(id);
+        String iconFileName = fileNamePrefix + OptionResource.ICON_JPG;
+        String planInputMessageFileName = fileNamePrefix + OptionResource.PLAN_INPUT_XML;
 
-		// BEGIN: store icon and planInputMessage
+        // create option data
+        option.setId(id);
+        option.setName(name);
+        option.setDescription(description);
+        option.setIconUrl(iconFileName);
+        option.setPlanInputMessageUrl(planInputMessageFileName);
+        option.setPlanServiceName(planServiceName);
 
-		SelfServiceMetaDataId ssmdId = ((SelfServicePortalResource) this.res).getId();
+        // BEGIN: store icon and planInputMessage
 
-		RepositoryFileReference iconRef = new RepositoryFileReference(ssmdId, iconFileName);
-		RestUtils.putContentToFile(iconRef, uploadedInputStream, body.getMediaType());
+        RepositoryFileReference iconRef = new RepositoryFileReference(this.selfServiceMetaId, iconFileName);
+        RestUtils.putContentToFile(iconRef, uploadedInputStream, body.getMediaType());
 
-		RepositoryFileReference planInputMessageRef = new RepositoryFileReference(ssmdId, planInputMessageFileName);
-		RestUtils.putContentToFile(planInputMessageRef, planInputMessage, MediaType.TEXT_XML_TYPE);
+        RepositoryFileReference planInputMessageRef = new RepositoryFileReference(this.selfServiceMetaId, planInputMessageFileName);
+        RestUtils.putContentToFile(planInputMessageRef, planInputMessage, MediaType.TEXT_XML_TYPE);
 
-		// END: store icon and planInputMessage
+        // END: store icon and planInputMessage
 
-		this.list.add(option);
-		return RestUtils.persist(this.res);
-	}
+        this.list.add(option);
+        return RestUtils.persist(this.res);
+    }
+
+    @Override
+    @Path("{id}/")
+    public OptionResource getEntityResource(@PathParam("id") String id) {
+        return this.getEntityResourceFromEncodedId(id);
+    }
 }

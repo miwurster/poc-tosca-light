@@ -1,18 +1,22 @@
-/**
- * Copyright (c) 2017 University of Stuttgart.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and the Apache License 2.0 which both accompany this distribution,
- * and are available at http://www.eclipse.org/legal/epl-v10.html
- * and http://www.apache.org/licenses/LICENSE-2.0
+/*******************************************************************************
+ * Copyright (c) 2017 Contributors to the Eclipse Foundation
  *
- * Contributors:
- *     Lukas Harzenetter - initial API and implementation
- */
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FilesApiData, FilesService } from './files.service.';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
-import { hostURL } from '../../../configuration';
+import { backendBaseURL, hostURL } from '../../../configuration';
+import { InstanceService } from '../../instance.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     templateUrl: 'files.component.html',
@@ -29,11 +33,13 @@ export class FilesComponent implements OnInit {
     uploadUrl: string;
     filesList: FilesApiData[];
     baseUrl = hostURL;
+    filesPath: string;
 
     @ViewChild('removeElementModal') removeElementModal: any;
     fileToRemove: FilesApiData;
 
-    constructor(private service: FilesService, private notify: WineryNotificationService) {
+    constructor(private service: FilesService, public sharedData: InstanceService, private notify: WineryNotificationService) {
+        this.filesPath = backendBaseURL + this.sharedData.path + '/files/zip';
     }
 
     ngOnInit() {
@@ -44,7 +50,7 @@ export class FilesComponent implements OnInit {
     loadFiles() {
         this.service.getFiles()
             .subscribe(
-                data => this.filesList = data,
+                data => this.handleLoadFiles(data.files, data.paths),
                 error => this.handleError(error)
             );
     }
@@ -63,14 +69,22 @@ export class FilesComponent implements OnInit {
             );
     }
 
+    private handleLoadFiles(files: FilesApiData[], paths: string[]) {
+        for (let i = 0; i < paths.length; i++) {
+            files[i].subDirectory = paths[i];
+        }
+        this.filesList = files;
+        this.loading = false;
+    }
+
     private handleDelete() {
         this.notify.success('Successfully deleted ' + this.fileToRemove.name);
         this.fileToRemove = null;
         this.loadFiles();
     }
 
-    private handleError(error: any) {
+    private handleError(error: HttpErrorResponse) {
         this.loading = false;
-        this.notify.error(error);
+        this.notify.error(error.message);
     }
 }

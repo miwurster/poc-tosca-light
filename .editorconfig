@@ -2,29 +2,26 @@ root = true
 
 [*]
 charset = utf-8
-indent_size = 4
-indent_style = tab
+indent_style = space
 indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = false
+end_of_line = lf
 
 [*.md]
-end_of_line = lf
-indent_style = space
 indent_size = 2
 
 [*.sh]
-end_of_line = lf
-indent_style = space
 indent_size = 2
 
-[*.ts]
-indent_style = space
-indent_size = 4
+[*.yaml]
+indent_size = 2
+
+[*.yml]
+indent_size = 2
 
 [bower.json]
-indent_style = space
 indent_size = 2
 
-[checkstyle.xml]
-indent_style = space
+[TOSCA-v1.0.xsd]
+indent_size = 1
