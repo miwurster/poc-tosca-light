@@ -86,6 +86,11 @@ export class KeystoreEntityService {
         return this.http.post(keysPath, formData);
     }
 
+    setAsMaster(currentAlias: string) {
+        const keysPath = this.path + '/keypairs/' + currentAlias + '/setmaster';
+        return this.http.put(keysPath, null);
+    }
+
     addKeypair(data: AddKeypairData) {
         const formData: FormData = new FormData();
         const keysPath = this.path + '/keypairs';

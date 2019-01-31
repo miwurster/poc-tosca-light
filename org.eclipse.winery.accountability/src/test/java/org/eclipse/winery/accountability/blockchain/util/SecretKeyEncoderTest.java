@@ -36,7 +36,7 @@ class SecretKeyEncoderTest {
     private static final SymmetricEncryptionAlgorithmEnum KEY_3_ALGO = SymmetricEncryptionAlgorithmEnum.AES512;
 
     @Test
-    public void testEncodeDecode() throws IOException, NoSuchAlgorithmException {
+    void testEncodeDecode() throws IOException, NoSuchAlgorithmException {
         SecretKey[] keys = {
             convertStringToSecretKey(KEY_1_PHREASE, KEY_1_ALGO),
             convertStringToSecretKey(KEY_2_PHREASE, KEY_2_ALGO),

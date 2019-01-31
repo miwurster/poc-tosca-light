@@ -30,12 +30,12 @@ import org.junit.jupiter.api.Test;
 public abstract class AbstractEncryptionTestingClass extends AbstractSecurityTestClass {
     private static final String MESSAGE = "This is an arbitrary message used for testing purposes!";
     protected EncryptionAlgorithm algorithm;
-    
+
     @Test
     void encryptDecryptStream() throws IOException, InvalidKeyException {
-        try(InputStream originalPlainTextStream = IOUtils.toInputStream(MESSAGE)) {
-            try(InputStream cipherTextStream = this.algorithm.encryptStream(this.getEncryptionKey(), originalPlainTextStream)) {
-                try(InputStream decryptedPlainTextStream = this.algorithm.decryptStream(this.getDecryptionKey(), cipherTextStream)) {
+        try (InputStream originalPlainTextStream = IOUtils.toInputStream(MESSAGE)) {
+            try (InputStream cipherTextStream = this.algorithm.encryptStream(this.getEncryptionKey(), originalPlainTextStream)) {
+                try (InputStream decryptedPlainTextStream = this.algorithm.decryptStream(this.getDecryptionKey(), cipherTextStream)) {
                     final String resultingMessage = IOUtils.toString(decryptedPlainTextStream);
                     Assertions.assertEquals(MESSAGE, resultingMessage);
                 }
@@ -51,8 +51,8 @@ public abstract class AbstractEncryptionTestingClass extends AbstractSecurityTes
         String result = IOUtils.toString(decryptedBytes, Charsets.UTF_8.name());
         Assertions.assertEquals(MESSAGE, result);
     }
-    
-    protected abstract Key getEncryptionKey(); 
-    
+
+    protected abstract Key getEncryptionKey();
+
     protected abstract Key getDecryptionKey();
 }

@@ -51,15 +51,15 @@ class SignatureAlgorithmImplTest extends AbstractSecurityTestClass {
     public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         super.setUp();
         this.algorithm = new SignatureAlgorithmImpl(ALGORITHM);
-        
+
         final KeyPairGenerator generator = KeyPairGenerator.getInstance(ALGORITHM.getFamily(), BouncyCastleProvider.PROVIDER_NAME);
         generator.initialize(KEY_SIZE_BITS, new SecureRandom());
         this.keyPair = generator.generateKeyPair();
     }
-    
+
     @Test
     void testStreamSigning() throws IOException, SignatureException, InvalidKeyException {
-        try(InputStream plainText = IOUtils.toInputStream(MESSAGE)) {
+        try (InputStream plainText = IOUtils.toInputStream(MESSAGE)) {
             byte[] signature = this.algorithm.signStream(plainText, keyPair.getPrivate());
             LOGGER.info("Signature size in bytes: {}", signature.length);
             plainText.reset();
@@ -67,7 +67,7 @@ class SignatureAlgorithmImplTest extends AbstractSecurityTestClass {
             Assertions.assertTrue(result);
         }
     }
-    
+
     @Test
     void testLargeFileSigning() throws SignatureException, IOException, InvalidKeyException {
         final String filePath = Objects.requireNonNull(getClass().getClassLoader().getResource(LARGE_FILE_NAME)).getPath();

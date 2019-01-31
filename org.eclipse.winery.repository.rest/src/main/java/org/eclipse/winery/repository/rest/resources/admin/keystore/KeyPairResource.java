@@ -14,6 +14,8 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
+import java.util.Objects;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -38,10 +40,30 @@ import org.eclipse.winery.security.datatypes.KeyType;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class KeyPairResource extends AbstractKeystoreEntityResource {
+import static org.eclipse.winery.repository.security.csar.SecureCSARConstants.MASTER_SIGNING_KEYNAME;
+
+public class KeyPairResource extends AbstractKeyPairResource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KeyPairResource.class);
+    
     public KeyPairResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
         super(keystoreManager, securityProcessor);
+    }
+
+    @ApiOperation(value = "Sets the keypair as the master signing keypair")
+    @PUT
+    @Path("setmaster")
+    public Response setAsMaster(@PathParam("alias") String alias) {
+        String newName = this.renameOldMaster();
+
+        if(!Objects.isNull(newName))
+            LOGGER.info("The old master signing keypair was renamed to: " + newName);
+
+        this.renameKeyPair(alias, MASTER_SIGNING_KEYNAME);
+
+        return Response.ok().build();
     }
 
     @ApiOperation(value = "Gets the keypair by its alias")

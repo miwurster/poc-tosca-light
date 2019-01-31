@@ -83,7 +83,6 @@ public interface KeystoreManager {
     void deleteAllSecretKeys() throws GenericKeystoreManagerException;
 
     void deleteAllKeyPairs() throws GenericKeystoreManagerException;
-    
     //CertificateInformation loadCertificateInformation(String alias) throws GenericKeystoreManagerException;
     
 }

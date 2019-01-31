@@ -30,7 +30,6 @@ class AESAlgorithmTest extends AbstractEncryptionTestingClass {
     private static final int KEY_SIZE_BITS = 256;
     private static final String ALGORITHM_NAME = "AES";
     private SecretKey key;
-
     
     @BeforeEach
     @Override

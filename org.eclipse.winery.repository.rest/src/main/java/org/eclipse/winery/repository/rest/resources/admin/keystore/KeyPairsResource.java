@@ -48,8 +48,12 @@ import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEn
 
 import com.sun.jersey.multipart.FormDataParam;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class KeyPairsResource extends AbstractKeystoreEntityResource {
+public class KeyPairsResource extends AbstractKeyPairResource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KeyPairsResource.class);
+    
     public KeyPairsResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
         super(keystoreManager, securityProcessor);
     }
@@ -149,18 +153,13 @@ public class KeyPairsResource extends AbstractKeystoreEntityResource {
     }
 
     private KeyPairInformation storeKeyPair(String alias, PrivateKey privateKey, Certificate certificate) throws
-        IOException, NoSuchAlgorithmException, GenericKeystoreManagerException, WebApplicationException {
+        GenericKeystoreManagerException, WebApplicationException {
         // we want to change the master key pair
         if (alias.equalsIgnoreCase(SecureCSARConstants.MASTER_SIGNING_KEYNAME)) {
-            try {
-                // check if the master alias is used before
-                KeyPair keyPair = this.keystoreManager.loadKeyPair(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
-                Certificate oldMasterCertificate = this.keystoreManager.loadCertificate(SecureCSARConstants.MASTER_SIGNING_KEYNAME);
-                String newAliasForOldMaster = this.generateUniqueAlias(keyPair.getPublic());
-                this.keystoreManager.storeKeyPair(newAliasForOldMaster, keyPair.getPrivate(), oldMasterCertificate);
-            } catch (GenericKeystoreManagerException e) {
-                // we go here if the alias used for master key pair is not used before
-            }
+            String newName = this.renameOldMaster();
+            
+            if(!Objects.isNull(newName))
+                LOGGER.info("The old master signing keypair was renamed to: " + newName);
         }
 
         return this.keystoreManager.storeKeyPair(SecureCSARConstants.MASTER_SIGNING_KEYNAME, privateKey, certificate);

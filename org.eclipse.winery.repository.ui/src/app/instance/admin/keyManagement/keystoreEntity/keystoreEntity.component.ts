@@ -445,4 +445,24 @@ export class KeystoreEntityComponent implements OnInit {
             error => this.handleError(error)
         );
     }
+
+    setAsMaster(keyPairAlias: string) {
+        this.closeInfoModal();
+        this.loading = true;
+        this.service
+            .setAsMaster(keyPairAlias)
+            .subscribe(() => {
+                    this.service
+                        .getKeyPairs()
+                        .subscribe(data => {
+                            this.handleKeystoreData(data);
+                        }, error => {
+                            this.handleError(error);
+                        });
+                },
+                e => {
+                    this.handleError(e);
+                });
+
+    }
 }
