@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 
 public class KeyPairsResource extends AbstractKeyPairResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyPairsResource.class);
-    
+
     public KeyPairsResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
         super(keystoreManager, securityProcessor);
     }
@@ -157,8 +157,8 @@ public class KeyPairsResource extends AbstractKeyPairResource {
         // we want to change the master key pair
         if (alias.equalsIgnoreCase(SecureCSARConstants.MASTER_SIGNING_KEYNAME)) {
             String newName = this.renameOldMaster();
-            
-            if(!Objects.isNull(newName))
+
+            if (!Objects.isNull(newName))
                 LOGGER.info("The old master signing keypair was renamed to: " + newName);
         }
 

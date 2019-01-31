@@ -47,7 +47,7 @@ import static org.eclipse.winery.repository.security.csar.SecureCSARConstants.MA
 
 public class KeyPairResource extends AbstractKeyPairResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyPairResource.class);
-    
+
     public KeyPairResource(KeystoreManager keystoreManager, SecurityProcessor securityProcessor) {
         super(keystoreManager, securityProcessor);
     }
@@ -58,7 +58,7 @@ public class KeyPairResource extends AbstractKeyPairResource {
     public Response setAsMaster(@PathParam("alias") String alias) {
         String newName = this.renameOldMaster();
 
-        if(!Objects.isNull(newName))
+        if (!Objects.isNull(newName))
             LOGGER.info("The old master signing keypair was renamed to: " + newName);
 
         this.renameKeyPair(alias, MASTER_SIGNING_KEYNAME);
