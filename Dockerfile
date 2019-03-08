@@ -17,11 +17,11 @@ RUN unzip /tmp/winery/org.eclipse.winery.repository.rest/target/winery.war -d /o
 
 
 FROM tomcat:8.5.31
-LABEL maintainer "Oliver Kopp <kopp.dev@gmail.com>, Michael Wurster <miwurster@gmail.com>"
+LABEL maintainer = "Oliver Kopp <kopp.dev@gmail.com>, Michael Wurster <miwurster@gmail.com>, Lukas Harzenetter <lharzenetter@gmx.de>"
 
-ENV WINERY_REPOSITORY_URL=
+ENV WINERY_REPOSITORY_URL=""
 ENV WINERY_HEAP_MAX=2048m
-ENV WINERY_JMX_ENABLED=
+ENV WINERY_JMX_ENABLED=""
 
 RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
@@ -39,9 +39,9 @@ RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && git lfs install
 
 COPY --from=builder /opt/winery ${CATALINA_HOME}/webapps/winery
-COPY --from=builder /tmp/winery/org.eclipse.winery.repository.ui/target/winery-ui.war ${CATALINA_HOME}/webapps/ROOT.war
-COPY --from=builder /tmp/winery/org.eclipse.winery.topologymodeler.ui/target/topologymodeler-ui.war ${CATALINA_HOME}/webapps/winery-topologymodeler-ui.war
-COPY --from=builder /tmp/winery/org.eclipse.winery.workflowmodeler/target/winery-workflowmodeler.war ${CATALINA_HOME}/webapps
+COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/tosca-manamgement.war ${CATALINA_HOME}/webapps/ROOT.war
+COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/topologymodeler.war ${CATALINA_HOME}/webapps/winery-topologymodeler-ui.war
+COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/workflowmodeler.war ${CATALINA_HOME}/webapps/winery-workflowmodeler.war
 
 EXPOSE 8080
 
