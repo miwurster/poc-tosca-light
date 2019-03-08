@@ -14,8 +14,6 @@
 **/dist/
 **/dependency-reduced-pom.xml
 **/winery-debug.log
-org.eclipse.winery.bpmn4tosca.converter.tobpel/src/test/resources/bpmn4tosca/managementplan*
-org.eclipse.winery.repository.ui/orion
-org.eclipse.winery.topologymodeler/src/main/webapp/components
-!org.eclipse.winery.workflowmodeler/src/app/components/node
-!org.eclipse.winery.topologymodeler.ui/src/app/node
+org.eclipse.winery.frontends/app/tosca-management/src/assets/built-codeEdit15_1/
+!org.eclipse.winery.frontends/app/workflowmodeler/src/app/components/node
+!org.eclipse.winery.frontends/topologymodeler/src/app/node
