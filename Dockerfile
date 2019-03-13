@@ -39,7 +39,7 @@ RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && git lfs install
 
 COPY --from=builder /opt/winery ${CATALINA_HOME}/webapps/winery
-COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/tosca-manamgement.war ${CATALINA_HOME}/webapps/ROOT.war
+COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/tosca-management.war ${CATALINA_HOME}/webapps/ROOT.war
 COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/topologymodeler.war ${CATALINA_HOME}/webapps/winery-topologymodeler-ui.war
 COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/workflowmodeler.war ${CATALINA_HOME}/webapps/winery-workflowmodeler.war
 
