@@ -40,8 +40,10 @@ import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnu
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 class EthereumAccessLayerTest {
     private static final String KEYSTORE_PASSWORD = "987654321";
     private static final String CONFIGURATION_FILE_NAME = "defaultaccountabilityconfig.properties";
