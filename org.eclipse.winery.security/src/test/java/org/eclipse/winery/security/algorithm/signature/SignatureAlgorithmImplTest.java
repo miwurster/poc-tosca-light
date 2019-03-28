@@ -48,7 +48,7 @@ class SignatureAlgorithmImplTest extends AbstractSecurityTestClass {
 
     @BeforeEach
     @Override
-    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
         super.setUp();
         this.algorithm = new SignatureAlgorithmImpl(ALGORITHM);
 

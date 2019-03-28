@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.eclipse.winery.security.algorithm;
 
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -23,7 +24,7 @@ import org.junit.jupiter.api.Disabled;
 
 @Disabled
 public abstract class AbstractSecurityTestClass {
-    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
         Security.addProvider(new BouncyCastleProvider());
         // Available since Java8u151, allows 256bit key usage
         Security.setProperty("crypto.policy", "unlimited");

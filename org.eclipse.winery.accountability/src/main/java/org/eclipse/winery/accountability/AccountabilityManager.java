@@ -16,7 +16,6 @@ package org.eclipse.winery.accountability;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.List;
@@ -145,12 +144,10 @@ public interface AccountabilityManager {
      * Sets the permissions given from the active user to a certain address.
      *
      * @param takerAddress   the address to set the permissions for.
-     * @param takerPublicKey the public key of the receiver (used to encrypt the set of the given permissions).
      * @param permissions    the set of secret keys (permissions) to give.
-     * @return a completable future the finishes when the transaction to set the permissions succeeds.
-     * @throws InvalidKeyException if encrypting the permissions fails due to invalid public key format.
+     * @return a completable future that finishes when the transaction to set the permissions succeeds.
      */
-    CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, BlockchainException;
+    CompletableFuture<Void> setPermissions(String takerAddress, SecretKey[] permissions) throws BlockchainException;
 
     /**
      * Gets the set of permissions given to the active user.
@@ -162,7 +159,34 @@ public interface AccountabilityManager {
     CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) throws BlockchainException;
 
     /**
+     * Gets the currently active blockchain identity
+     * 
+     * @return the identity of the currently active blockchain account
+     */
+    String getMyIdentity();
+
+    /**
+     * Sets the public key associated with the active blockchain user.
+     * This key is used for encrypting taken permissions (as part of the key exchange process)
+     * @param publicKey the EC public key to set.
+     * @return a completable future that finishes when the transaction to set the public key succeeds. 
+     * @throws BlockchainException if an error occurs while setting the public key
+     */
+    CompletableFuture<Void> setMyPublicKey(PublicKey publicKey) throws BlockchainException;
+
+    /**
+     * Gets the public key associated with a given blockchain user
+     * @param address the address of the blockchain user for which we want to retrieve the public key. 
+     * @return a completable future that returns the EC public key associated with the given blockchain when the operation
+     * is done
+     * @throws BlockchainException if an error occurs while retrieving the public key.
+     */
+    CompletableFuture<PublicKey> getParticipantPublicKey(String address) throws BlockchainException;
+    
+    /**
      * Releases resources attached to this instance.
      */
     void close();
+
+
 }

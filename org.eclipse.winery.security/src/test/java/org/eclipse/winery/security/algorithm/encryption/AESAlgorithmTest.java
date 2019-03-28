@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.security.algorithm.encryption;
 
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -33,7 +34,7 @@ class AESAlgorithmTest extends AbstractEncryptionTestingClass {
     
     @BeforeEach
     @Override
-    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
         super.setUp();
         algorithm = new AESAlgorithm();
 

@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.security.algorithm.encryption;
 
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Key;
 import java.security.KeyPair;
@@ -33,7 +34,7 @@ class ECIESAlgorithmTest extends AbstractEncryptionTestingClass {
     
     @BeforeEach
     @Override
-    public void setUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+    public void setUp() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, IOException {
         super.setUp();
         algorithm = new ECIESAlgorithm();
 

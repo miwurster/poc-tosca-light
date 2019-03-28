@@ -55,20 +55,21 @@ public class AccountabilityConfigurationManager {
             if (!DEFAULT_KEYSTORE_FILE.exists()) {
                 if (DEFAULT_KEYSTORE_FILE.getParentFile().mkdirs() || DEFAULT_KEYSTORE_FILE.createNewFile()) {
                     LOGGER.info("Successfully created default Ethereum keystore file at {}", DEFAULT_KEYSTORE_FILE);
+                    
+                    try (InputStream defaultKeystoreStream = getClass().getClassLoader().getResourceAsStream(DEFAULT_KEYSTORE_FILE_NAME)) {
+                        Objects.requireNonNull(defaultKeystoreStream);
+                        try (FileOutputStream output = new FileOutputStream(DEFAULT_KEYSTORE_FILE)) {
+                            IOUtils.copy(defaultKeystoreStream, output);
+                            LOGGER.info("Copied default Ethereum keystore file to {}", DEFAULT_KEYSTORE_FILE);
+                        }
+                    }
                 } else {
                     LOGGER.error("Could not create default Ethereum keystore file at {}", DEFAULT_KEYSTORE_FILE);
                 }
             }
 
-            try (InputStream defaultKeystoreStream = getClass().getClassLoader().getResourceAsStream(DEFAULT_KEYSTORE_FILE_NAME)) {
-                Objects.requireNonNull(defaultKeystoreStream);
-                try (FileOutputStream output = new FileOutputStream(DEFAULT_KEYSTORE_FILE)) {
-                    IOUtils.copy(defaultKeystoreStream, output);
-                    myProps.setProperty("ethereum-credentials-file-name", DEFAULT_KEYSTORE_FILE_NAME);
-                    myProps.setProperty("ethereum-credentials-file-path", DEFAULT_KEYSTORE_FILE.getAbsolutePath());
-                    LOGGER.info("Copied default Ethereum keystore file to {}", DEFAULT_KEYSTORE_FILE);
-                }
-            }
+            myProps.setProperty("ethereum-credentials-file-name", DEFAULT_KEYSTORE_FILE_NAME);
+            myProps.setProperty("ethereum-credentials-file-path", DEFAULT_KEYSTORE_FILE.getAbsolutePath());
         } catch (IOException e) {
             LOGGER.error("Cannot open stream for default Ethereum keystore file. Reason: {}", e.getMessage());
         }
@@ -185,6 +186,8 @@ public class AccountabilityConfigurationManager {
             try (FileOutputStream output = new FileOutputStream(APPLICATION_KEYSTORE_FILE)) {
                 IOUtils.copy(keystoreFile, output);
             }
+            
+            this.saveProperties();
         } catch (IOException e) {
             LOGGER.error("Cannot open stream for Ethereum keystore application file. Reason: {}", e.getMessage());
             throw e;

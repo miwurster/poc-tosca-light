@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import javax.crypto.SecretKey;
 
@@ -164,26 +165,34 @@ public class EthereumAccessLayer implements BlockchainAccess {
                 Files.createDirectory(path);
                 log.debug("Created new temp directory for storing newly created Ethereum keystore (wallet) files {}", path);
             }
-            
+
             final String fileName = WalletUtils.generateFullNewWalletFile(password, path.toFile());
-            
+
             return path.resolve(fileName);
-        }
-        catch (IOException | CipherException | NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
+        } catch (IOException | CipherException | NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException e) {
             String msg = String.format("An error occurred while creating a new keystore file. Reason: %s", e.getMessage());
             log.error(msg, e);
             throw new EthereumException(msg, e);
-        } 
+        }
     }
 
     @Override
-    public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions)
-        throws InvalidKeyException, BlockchainException {
+    public CompletableFuture<Void> setPermissions(String takerAddress, SecretKey[] permissions)
+        throws BlockchainException {
         if (Objects.isNull(this.permissionsContract)) {
             throw new EthereumException("The permissions smart contract is not instantiated (is the address set?)");
         }
-
-        return this.permissionsContract.setPermissions(takerAddress, takerPublicKey, permissions);
+        
+        return this.getParticipantPublicKey(takerAddress)
+            .thenCompose(publicKey -> {
+                try {
+                    return this.permissionsContract
+                        .setPermissions(takerAddress, publicKey, permissions);
+                } catch (InvalidKeyException e) {
+                    log.error("Cannot set permissions for the specified participant. Reason: {}", e);
+                    throw new CompletionException(e);
+                }
+            });
     }
 
     @Override
@@ -193,6 +202,27 @@ public class EthereumAccessLayer implements BlockchainAccess {
         }
 
         return this.permissionsContract.getMyPermissions(myPrivateKey);
+    }
+
+    @Override
+    public String getMyIdentity() {
+        return this.credentials.getAddress();
+    }
+
+    @Override
+    public CompletableFuture<Void> setMyPublicKey(PublicKey publicKey) throws EthereumException {
+        if (Objects.isNull(this.permissionsContract)) {
+            throw new EthereumException("The permissions smart contract is not instantiated (is the address set?)");
+        }
+        return this.permissionsContract.setMyPublicKey(publicKey);
+    }
+
+    @Override
+    public CompletableFuture<PublicKey> getParticipantPublicKey(String address) throws EthereumException {
+        if (Objects.isNull(this.permissionsContract)) {
+            throw new EthereumException("The permissions smart contract is not instantiated (is the address set?)");
+        }
+        return this.permissionsContract.getParticipantPublicKey(address);
     }
 
     @Override

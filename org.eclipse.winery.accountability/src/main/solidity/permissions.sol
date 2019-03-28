@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,6 +23,14 @@ contract Permissions {
      * taker => map(giver, permissions)
      **/
     mapping(address => mapping(address => bytes)) private permissions;
+    /**
+    /* ethereum address => official public key
+    **/
+    mapping(address => bytes) private publicKeys;
+    
+    function setPublicKey(bytes memory publicKey) public {
+        publicKeys[msg.sender] = publicKey;
+    }
 
     function setPermission(address taker, bytes memory permissionPayload) public {
         permissions[taker][msg.sender] = permissionPayload;
@@ -30,6 +38,10 @@ contract Permissions {
         givers[taker].push(msg.sender);
     }
 
+    function getPublicKey(address ethereumAddress) public view returns (bytes memory) {
+        return publicKeys[ethereumAddress];    
+    }
+    
     /**
      * Gets the permission payload that is given from a specific participant to the message sender.
      * 

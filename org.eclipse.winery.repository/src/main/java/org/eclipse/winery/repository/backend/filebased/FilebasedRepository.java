@@ -69,6 +69,7 @@ import org.eclipse.winery.repository.backend.xsd.RepositoryBasedXsdImportManager
 import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
 import org.eclipse.winery.repository.configuration.FileBasedRepositoryConfiguration;
 import org.eclipse.winery.repository.exceptions.WineryRepositoryException;
+import org.eclipse.winery.repository.security.csar.PermissionsManager;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -584,8 +585,16 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         RepositoryFileReference keystoreRef = new RepositoryFileReference(new AccountabilityId(), "CustomKeystore.json");
         RepositoryFileReference defaultKeystoreRef = new RepositoryFileReference(new AccountabilityId(), "DefaultKeystore.json");
 
-        return AccountabilityConfigurationManager.getInstance(ref2AbsolutePath(repoRef).toFile(), 
+        return AccountabilityConfigurationManager.getInstance(ref2AbsolutePath(repoRef).toFile(),
             ref2AbsolutePath(keystoreRef).toFile(), ref2AbsolutePath(defaultKeystoreRef).toFile());
+    }
+
+    @Override
+    public PermissionsManager getPermissionsManager() {
+        RepositoryFileReference preferencesRef = new RepositoryFileReference(new AccountabilityId(), "PermissionsPreferences.properties");
+        RepositoryFileReference keyAssignments = new RepositoryFileReference(new AccountabilityId(), "KeyAssignments.json");
+        
+        return PermissionsManager.getInstance(ref2AbsolutePath(preferencesRef).toFile(), ref2AbsolutePath(keyAssignments).toFile());
     }
 
     @Override

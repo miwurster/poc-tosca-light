@@ -36,16 +36,16 @@ public abstract class AbstractKeyPairResource extends AbstractKeystoreEntityReso
 
     protected String renameKeyPair(String oldName, String newName) {
         try {
-            // check if the master alias is used before
+            // check if the alias is used before
             KeyPair keyPair = this.keystoreManager.loadKeyPair(oldName);
-            Certificate oldMasterCertificate = this.keystoreManager.loadCertificate(oldName);
+            Certificate oldCertificate = this.keystoreManager.loadCertificate(oldName);
             String newAlias = newName;
 
             if (Objects.isNull(newName)) {
                 newAlias = this.generateUniqueAlias(keyPair.getPublic());
             }
 
-            this.keystoreManager.storeKeyPair(newAlias, keyPair.getPrivate(), oldMasterCertificate);
+            this.keystoreManager.storeKeyPair(newAlias, keyPair.getPrivate(), oldCertificate);
             this.keystoreManager.deleteKeystoreEntry(oldName);
 
             return newAlias;

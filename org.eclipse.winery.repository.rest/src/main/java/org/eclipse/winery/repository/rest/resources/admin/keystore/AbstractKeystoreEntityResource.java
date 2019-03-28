@@ -14,7 +14,6 @@
 
 package org.eclipse.winery.repository.rest.resources.admin.keystore;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +27,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.eclipse.winery.security.KeystoreManager;
 import org.eclipse.winery.security.SecurityProcessor;
-import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 
 abstract class AbstractKeystoreEntityResource {
     protected final KeystoreManager keystoreManager;
@@ -42,24 +40,10 @@ abstract class AbstractKeystoreEntityResource {
     protected String prepareAlias(String alias) {
         return alias.trim().toLowerCase();
     }
-
-    protected void checkAliasInsertEligibility(String alias) throws WebApplicationException {
-        if (alias == null || this.keystoreManager.entityExists(alias.trim().toLowerCase())) {
-            throw new WebApplicationException(
-                Response.status(Response.Status.CONFLICT)
-                    .entity("Key already exists in the keystore")
-                    .type(MediaType.TEXT_PLAIN)
-                    .build()
-            );
-        }
-    }
+    
 
     protected String generateUniqueAlias(Key key) throws IOException, NoSuchAlgorithmException {
-        String alias = securityProcessor.getChecksum(new ByteArrayInputStream(key.getEncoded()),
-            DigestAlgorithmEnum.SHA256);
-        this.checkAliasInsertEligibility(alias);
-
-        return alias;
+        return this.keystoreManager.generateAlias(key);
     }
 
     protected boolean parametersAreNonNull(Object... params) {

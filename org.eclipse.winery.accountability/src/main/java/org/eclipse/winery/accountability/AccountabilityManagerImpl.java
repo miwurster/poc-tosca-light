@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -218,8 +217,8 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
-    public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, BlockchainException {
-        return this.blockchain.setPermissions(takerAddress, takerPublicKey, permissions);
+    public CompletableFuture<Void> setPermissions(String takerAddress, SecretKey[] permissions) throws BlockchainException {
+        return this.blockchain.setPermissions(takerAddress, permissions);
     }
 
     @Override
@@ -228,9 +227,24 @@ public class AccountabilityManagerImpl implements AccountabilityManager {
     }
 
     @Override
+    public String getMyIdentity() {
+        return this.blockchain.getMyIdentity();
+    }
+
+    @Override
     public void close() {
         this.blockchain.close();
         this.storageProvider.close();
+    }
+
+    @Override
+    public CompletableFuture<Void> setMyPublicKey(PublicKey publicKey) throws BlockchainException {
+        return this.blockchain.setMyPublicKey(publicKey);
+    }
+
+    @Override
+    public CompletableFuture<PublicKey> getParticipantPublicKey(String address) throws BlockchainException {
+       return this.blockchain.getParticipantPublicKey(address);
     }
 
     private List<ModelProvenanceElement> enhanceHistoryElements(List<ModelProvenanceElement> historyElements, AuthorizationInfo authorizationInfo) {

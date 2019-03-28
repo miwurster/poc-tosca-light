@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.eclipse.winery.accountability.blockchain.ethereum;
 
+import java.io.ByteArrayInputStream;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -22,13 +23,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Permissions;
 import org.eclipse.winery.accountability.blockchain.util.SecretKeyEncoder;
+import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
+import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -48,12 +53,13 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
 
     /**
      * Gives a set of SecretKeys (permissions) to a specific taker.
-     * @param takerAddress the unique Ethereum address for the taker.
+     *
+     * @param takerAddress   the unique Ethereum address for the taker.
      * @param takerPublicKey the public key of the taker (used to encrypt the collection of secret keys so only the taker
      *                       can access them)
-     * @param permissions an array of SecretKeys (permissions) to give to the taker
+     * @param permissions    an array of SecretKeys (permissions) to give to the taker
      * @return a completable future that, when successfully executes, indicates that the permissions were successfully
-     *          given to the designated taker.
+     * given to the designated taker.
      * @throws InvalidKeyException If the public key of the taker is invalid.
      */
     public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException {
@@ -69,15 +75,45 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
 
     /**
      * Retrieves all the keys given to me by all givers.
+     *
      * @param myPrivateKey used to decrypt the collection of keys I have been given
      * @return a completable future that, when successfully executes, returns a map of givers and given SecretKeys (permissions).
-     * Here, givers are identified via their blockchain unique id. 
+     * Here, givers are identified via their blockchain unique id.
      */
     public CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) {
         return ((Permissions) contract)
             .getGivers()
             .sendAsync()
+            .thenApply(givers -> ((List<String>) givers)
+                .stream()
+                .distinct()
+                .collect(Collectors.toList()))
             .thenCompose(givers -> queryAllPermissions(givers, myPrivateKey));
+    }
+
+    public CompletableFuture<Void> setMyPublicKey(PublicKey publicKey) {
+        return ((Permissions) contract)
+            .setPublicKey(publicKey.getEncoded())
+            .sendAsync()
+            .thenAccept(
+                receipt -> LOGGER.debug("transaction id for setPublicKey operation: {}", receipt.getTransactionHash())
+            );
+    }
+
+    public CompletableFuture<PublicKey> getParticipantPublicKey(String address) {
+        return ((Permissions) contract)
+            .getPublicKey(address)
+            .sendAsync()
+            .thenApply(keyBytes -> {
+                try {
+                    SecurityProcessor processor = SecurityProcessorFactory.getDefaultSecurityProcessor();
+                    return processor.getX509EncodedPublicKeyFromInputStream(AsymmetricEncryptionAlgorithmEnum.ECIES_secp256k1,
+                        new ByteArrayInputStream(keyBytes));
+                } catch (GenericSecurityProcessorException e) {
+                    LOGGER.error("Failed to recover public key. Reason: {}", e);
+                    throw new CompletionException(e);
+                }
+            });
     }
 
     private CompletableFuture<Map<String, SecretKey[]>> queryAllPermissions(List givers, PrivateKey myPrivateKey) {

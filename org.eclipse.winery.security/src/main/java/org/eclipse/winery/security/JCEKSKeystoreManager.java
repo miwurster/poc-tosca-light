@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -45,19 +45,19 @@ import java.util.Objects;
 import javax.crypto.SecretKey;
 
 import org.eclipse.winery.security.datatypes.CertificateInformation;
+import org.eclipse.winery.security.datatypes.DistinguishedName;
 import org.eclipse.winery.security.datatypes.KeyEntityInformation;
 import org.eclipse.winery.security.datatypes.KeyPairInformation;
 import org.eclipse.winery.security.datatypes.KeyType;
 import org.eclipse.winery.security.datatypes.KeystoreContentsInformation;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
+import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
 import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.enums.DigestAlgorithmEnum;
 import org.eclipse.winery.security.support.enums.SymmetricEncryptionAlgorithmEnum;
 
-import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-//import org.apache.commons.configuration.Configuration;
 
 public class JCEKSKeystoreManager implements KeystoreManager {
 
@@ -67,21 +67,17 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     private static final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
     private static final String END_CERT = "-----END CERTIFICATE-----";
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
     private static final Logger LOGGER = LoggerFactory.getLogger(JCEKSKeystoreManager.class);
 
-    private Configuration configuration;
     private KeyStore keystore;
     private String keystorePath;
 
-    public JCEKSKeystoreManager(Configuration c, String absoluteKeystorePath) {
-        // in case keystore's properties configuration is needed
-        this.configuration = c;
+    public JCEKSKeystoreManager(String absoluteKeystorePath) {
         loadKeystore(absoluteKeystorePath);
     }
 
-    public JCEKSKeystoreManager(String absoluteKeystorePath) {
-        this(null, absoluteKeystorePath);
+    private static int getKeyLength(final Key pk) {
+        return pk.getEncoded().length * 8;
     }
 
     private void loadKeystore(String absoluteKeystorePath) {
@@ -99,71 +95,6 @@ public class JCEKSKeystoreManager implements KeystoreManager {
             this.keystore = keystore;
         } catch (Exception e) {
             LOGGER.error("Could not generate JCEKS keystore", e);
-        }
-    }
-
-    @Override
-    public KeyEntityInformation storeKey(String alias, Key key) throws GenericKeystoreManagerException {
-        try {
-            keystore.setKeyEntry(alias, key, KEYSTORE_PASSWORD.toCharArray(), null);
-            keystore.store(new FileOutputStream(this.keystorePath), KEYSTORE_PASSWORD.toCharArray());
-            return new KeyEntityInformation
-                .Builder(alias, key.getAlgorithm(), key.getFormat())
-                .keySizeInBits(key.getEncoded().length)
-                .base64Key(key.getEncoded())
-                .build();
-        } catch (CertificateException | NoSuchAlgorithmException | IOException | KeyStoreException e) {
-            LOGGER.error("Error while storing a secret key", e);
-            throw new GenericKeystoreManagerException("Could not store the provided secret key");
-        }
-    }
-
-    @Override
-    public KeyPairInformation storeKeyPair(String alias, PrivateKey privateKey, Certificate certificate) throws GenericKeystoreManagerException {
-        try {
-            if (Objects.nonNull(certificate)) {
-                // TODO: validate certificate against private key            
-                keystore.setKeyEntry(alias, privateKey, KEYSTORE_PASSWORD.toCharArray(), new Certificate[] {certificate});
-                keystore.store(new FileOutputStream(this.keystorePath), KEYSTORE_PASSWORD.toCharArray());
-
-                KeyEntityInformation privateKeyInfo = new KeyEntityInformation.Builder(alias, privateKey.getAlgorithm(), privateKey.getFormat())
-                    .base64Key(privateKey.getEncoded())
-                    .build();
-
-                PublicKey publicKey = certificate.getPublicKey();
-                KeyEntityInformation publicKeyInfo = new KeyEntityInformation.Builder(alias, publicKey.getAlgorithm(), publicKey.getFormat())
-                    .keySizeInBits(getPublicKeyLength(publicKey))
-                    .base64Key(publicKey.getEncoded())
-                    .build();
-
-                X509Certificate cert = (X509Certificate) certificate;
-                CertificateInformation certificateInformation = new CertificateInformation.Builder(alias)
-                    .serialNumber(cert.getSerialNumber().toString())
-                    .sigAlgName(cert.getSigAlgName())
-                    .subjectDN(cert.getSubjectDN().toString())
-                    .issuerDN(cert.getIssuerDN().toString())
-                    .notBefore(cert.getNotBefore())
-                    .notAfter(cert.getNotAfter())
-                    .pemEncodedCertificate(constructPEMCertificate(cert))
-                    .build();
-
-                return new KeyPairInformation(privateKeyInfo, publicKeyInfo, certificateInformation);
-            } else {
-                throw new GenericKeystoreManagerException("No certificates were provided with the private key");
-            }
-        } catch (KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException e) {
-            LOGGER.error("Could not store the provided keypair", e);
-            throw new GenericKeystoreManagerException("Could not store the provided keypair");
-        }
-    }
-
-    @Override
-    public Key loadKey(String alias) throws GenericKeystoreManagerException {
-        try {
-            return this.keystore.getKey(alias, KEYSTORE_PASSWORD.toCharArray());
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-            LOGGER.error("Error loading a key using the provided alias", e.getMessage());
-            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
         }
     }
 
@@ -186,45 +117,41 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         }
     }
 
-    @Override
-    public KeyPair loadKeyPair(String alias) throws GenericKeystoreManagerException {
-        try {
-            Key key = keystore.getKey(alias, KEYSTORE_PASSWORD.toCharArray());
-            if (key instanceof PrivateKey) {
-                Certificate cert = keystore.getCertificate(alias);
-                PublicKey publicKey = cert.getPublicKey();
-                return new KeyPair(publicKey, (PrivateKey) key);
-            } else {
-                throw new UnrecoverableKeyException("Keypair with given alias does not exist");
+    private KeyEntityInformation generateKeyEntityInformation(String alias, Key key) {
+        return new KeyEntityInformation
+            .Builder(alias, key.getAlgorithm(), key.getFormat())
+            .keySizeInBits(key.getEncoded().length)
+            .base64Key(key.getEncoded())
+            .build();
+    }
+
+    private KeyPairInformation generateKeyPairInformation(KeyEntityInformation privateKey, Certificate certificate) throws GenericKeystoreManagerException {
+        PublicKey publicKey = certificate.getPublicKey();
+        KeyEntityInformation publicKeyInfo = this.generateKeyEntityInformation(privateKey.getAlias(), publicKey);
+        CertificateInformation certificateInformation = this.buildCertificateInformation(privateKey.getAlias(), certificate);
+
+        return new KeyPairInformation(privateKey, publicKeyInfo, certificateInformation);
+    }
+
+    private CertificateInformation buildCertificateInformation(String alias, Certificate cert) throws GenericKeystoreManagerException {
+        if (Objects.nonNull(cert)) {
+            try {
+                X509Certificate x = (X509Certificate) cert;
+                return new CertificateInformation.Builder(alias)
+                    .serialNumber(x.getSerialNumber().toString())
+                    .sigAlgName(x.getSigAlgName())
+                    .subjectDN(x.getSubjectX500Principal().getName())
+                    .issuerDN(x.getIssuerX500Principal().getName())
+                    .notBefore(x.getNotBefore())
+                    .notAfter(x.getNotAfter())
+                    .pemEncodedCertificate(constructPEMCertificate(x))
+                    .build();
+            } catch (GenericKeystoreManagerException e) {
+                e.printStackTrace();
             }
-        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-            LOGGER.error("Error loading a key using the provided alias", e.getMessage());
-            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
         }
-    }
 
-    @Override
-    public KeyEntityInformation getKey(String alias, KeyType type) throws GenericKeystoreManagerException {
-        try {
-            Key key = loadKey(alias, type);
-            byte[] encodedKey = key.getEncoded();
-            return new KeyEntityInformation.Builder(alias, key.getAlgorithm(), key.getFormat())
-                .base64Key(encodedKey)
-                .keySizeInBits(encodedKey.length)
-                .build();
-        } catch (GenericKeystoreManagerException e) {
-            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
-        }
-    }
-
-    @Override
-    public byte[] getKeyEncoded(String alias, KeyType type) throws GenericKeystoreManagerException {
-        try {
-            Key key = loadKey(alias, type);
-            return key.getEncoded();
-        } catch (GenericKeystoreManagerException e) {
-            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
-        }
+        throw new GenericKeystoreManagerException("Error retrieving certificate with alias, " + alias);
     }
 
     private String constructPEMCertificate(Certificate x509) throws GenericKeystoreManagerException {
@@ -254,6 +181,97 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     }
 
     @Override
+    public KeyEntityInformation storeKey(String alias, Key key) throws GenericKeystoreManagerException {
+        try {
+            keystore.setKeyEntry(alias, key, KEYSTORE_PASSWORD.toCharArray(), null);
+            keystore.store(new FileOutputStream(this.keystorePath), KEYSTORE_PASSWORD.toCharArray());
+            return generateKeyEntityInformation(alias, key);
+        } catch (CertificateException | NoSuchAlgorithmException | IOException | KeyStoreException e) {
+            LOGGER.error("Error while storing a secret key", e);
+            throw new GenericKeystoreManagerException("Could not store the provided secret key");
+        }
+    }
+
+    @Override
+    public KeyPairInformation storeKeyPair(String alias, PrivateKey privateKey, Certificate certificate) throws GenericKeystoreManagerException {
+        try {
+            if (Objects.nonNull(certificate)) {
+                // TODO: validate certificate against private key            
+                keystore.setKeyEntry(alias, privateKey, KEYSTORE_PASSWORD.toCharArray(), new Certificate[] {certificate});
+                keystore.store(new FileOutputStream(this.keystorePath), KEYSTORE_PASSWORD.toCharArray());
+                KeyEntityInformation privateKeyInfo = this.generateKeyEntityInformation(alias, privateKey);
+
+                return this.generateKeyPairInformation(privateKeyInfo, certificate);
+            } else {
+                throw new GenericKeystoreManagerException("No certificates were provided with the private key");
+            }
+        } catch (KeyStoreException | IOException | CertificateException | NoSuchAlgorithmException e) {
+            LOGGER.error("Could not store the provided keypair", e);
+            throw new GenericKeystoreManagerException("Could not store the provided keypair");
+        }
+    }
+
+    @Override
+    public KeyPairInformation storeKeyPair(String alias, KeyPair keyPair, DistinguishedName dn) throws GenericKeystoreManagerException, GenericSecurityProcessorException {
+        if (Objects.nonNull(dn)) {
+            Certificate certificate = SecurityProcessorFactory.getDefaultSecurityProcessor()
+                .generateSelfSignedX509Certificate(keyPair, dn);
+            return this.storeKeyPair(alias, keyPair.getPrivate(), certificate);
+        } else {
+            final GenericKeystoreManagerException e = new GenericKeystoreManagerException("No distinguished name for the certificate is supplied");
+            LOGGER.error("Could not store the provided keypair. Reason: {}", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Key loadKey(String alias) throws GenericKeystoreManagerException {
+        try {
+            return this.keystore.getKey(alias, KEYSTORE_PASSWORD.toCharArray());
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+            LOGGER.error("Error loading a key using the provided alias", e.getMessage());
+            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
+        }
+    }
+
+    @Override
+    public KeyPair loadKeyPair(String alias) throws GenericKeystoreManagerException {
+        try {
+            Key key = keystore.getKey(alias, KEYSTORE_PASSWORD.toCharArray());
+            if (key instanceof PrivateKey) {
+                Certificate cert = keystore.getCertificate(alias);
+                PublicKey publicKey = cert.getPublicKey();
+                return new KeyPair(publicKey, (PrivateKey) key);
+            } else {
+                throw new UnrecoverableKeyException("Keypair with given alias does not exist");
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+            LOGGER.error("Error loading a key using the provided alias", e.getMessage());
+            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
+        }
+    }
+
+    @Override
+    public KeyEntityInformation getKey(String alias, KeyType type) throws GenericKeystoreManagerException {
+        try {
+            Key key = loadKey(alias, type);
+            return this.generateKeyEntityInformation(alias, key);
+        } catch (GenericKeystoreManagerException e) {
+            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
+        }
+    }
+
+    @Override
+    public byte[] getKeyEncoded(String alias, KeyType type) throws GenericKeystoreManagerException {
+        try {
+            Key key = loadKey(alias, type);
+            return key.getEncoded();
+        } catch (GenericKeystoreManagerException e) {
+            throw new GenericKeystoreManagerException("Error loading a key using the provided alias");
+        }
+    }
+
+    @Override
     public String getPEMCertificateChain(String alias) throws GenericKeystoreManagerException {
         try {
             final Certificate[] certs = this.keystore.getCertificateChain(alias);
@@ -277,24 +295,7 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         KeyEntityInformation privateKeyInfo = getKey(alias, KeyType.PRIVATE);
         Certificate certificate = loadCertificate(alias);
 
-        PublicKey publicKey = certificate.getPublicKey();
-        KeyEntityInformation publicKeyInfo = new KeyEntityInformation.Builder(alias, publicKey.getAlgorithm(), publicKey.getFormat())
-            .keySizeInBits(getPublicKeyLength(publicKey))
-            .base64Key(publicKey.getEncoded())
-            .build();
-
-        X509Certificate cert = (X509Certificate) certificate;
-        CertificateInformation certificateInformation = new CertificateInformation.Builder(alias)
-            .serialNumber(cert.getSerialNumber().toString())
-            .sigAlgName(cert.getSigAlgName())
-            .subjectDN(cert.getSubjectDN().toString())
-            .issuerDN(cert.getIssuerDN().toString())
-            .notBefore(cert.getNotBefore())
-            .notAfter(cert.getNotAfter())
-            .pemEncodedCertificate(constructPEMCertificate(cert))
-            .build();
-
-        return new KeyPairInformation(privateKeyInfo, publicKeyInfo, certificateInformation);
+        return this.generateKeyPairInformation(privateKeyInfo, certificate);
     }
 
     @Override
@@ -411,29 +412,8 @@ public class JCEKSKeystoreManager implements KeystoreManager {
                         key = this.keystore.getKey(alias, KEYSTORE_PASSWORD.toCharArray());
                         if ((key instanceof PrivateKey)) {
                             Certificate certificate = loadCertificate(alias);
-                            KeyEntityInformation privateKeyInfo = new KeyEntityInformation.Builder(alias, key.getAlgorithm(), key.getFormat())
-                                .keySizeInBits(key.getEncoded().length)
-                                .base64Key(key.getEncoded())
-                                .build();
-
-                            PublicKey publicKey = certificate.getPublicKey();
-                            KeyEntityInformation publicKeyInfo = new KeyEntityInformation.Builder(alias, publicKey.getAlgorithm(), publicKey.getFormat())
-                                .keySizeInBits(getPublicKeyLength(publicKey))
-                                .base64Key(publicKey.getEncoded())
-                                .build();
-
-                            X509Certificate cert = (X509Certificate) certificate;
-                            CertificateInformation certificateInformation = new CertificateInformation.Builder(alias)
-                                .serialNumber(cert.getSerialNumber().toString())
-                                .sigAlgName(cert.getSigAlgName())
-                                .subjectDN(cert.getSubjectDN().toString())
-                                .issuerDN(cert.getIssuerDN().toString())
-                                .notBefore(cert.getNotBefore())
-                                .notAfter(cert.getNotAfter())
-                                .pemEncodedCertificate(constructPEMCertificate(cert))
-                                .build();
-
-                            KeyPairInformation kp = new KeyPairInformation(privateKeyInfo, publicKeyInfo, certificateInformation);
+                            KeyEntityInformation privateKeyInfo = this.generateKeyEntityInformation(alias, key);
+                            KeyPairInformation kp = this.generateKeyPairInformation(privateKeyInfo, certificate);
                             keypairs.add(kp);
                         }
                     } catch (NoSuchAlgorithmException | UnrecoverableKeyException e) {
@@ -481,27 +461,6 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         } catch (KeyStoreException e) {
             throw new GenericKeystoreManagerException("Error retrieving certificate with alias, " + alias);
         }
-    }
-
-    private CertificateInformation buildCertificateInformation(String alias, Certificate cert) throws GenericKeystoreManagerException {
-        if (Objects.nonNull(cert)) {
-            try {
-                X509Certificate x = (X509Certificate) cert;
-                return new CertificateInformation.Builder(alias)
-                    .serialNumber(x.getSerialNumber().toString())
-                    .sigAlgName(x.getSigAlgName())
-                    .subjectDN(x.getSubjectX500Principal().getName())
-                    .issuerDN(x.getIssuerX500Principal().getName())
-                    .notBefore(x.getNotBefore())
-                    .notAfter(x.getNotAfter())
-                    .pemEncodedCertificate(constructPEMCertificate(x))
-                    .build();
-            } catch (GenericKeystoreManagerException e) {
-                e.printStackTrace();
-            }
-        }
-
-        throw new GenericKeystoreManagerException("Error retrieving certificate with alias, " + alias);
     }
 
     @Override
@@ -554,19 +513,15 @@ public class JCEKSKeystoreManager implements KeystoreManager {
                     try {
                         key = this.keystore.getKey(alias, KEYSTORE_PASSWORD.toCharArray());
                         if ((key instanceof SecretKey)) {
-                            if (!withKeyEncoded)
+                            if (!withKeyEncoded) {
                                 keys.add(new KeyEntityInformation
                                     .Builder(alias, key.getAlgorithm(), key.getFormat())
                                     .keySizeInBits(key.getEncoded().length)
                                     .build()
                                 );
-                            else
-                                keys.add(new KeyEntityInformation
-                                    .Builder(alias, key.getAlgorithm(), key.getFormat())
-                                    .keySizeInBits(key.getEncoded().length)
-                                    .base64Key(key.getEncoded())
-                                    .build()
-                                );
+                            } else {
+                                keys.add(this.generateKeyEntityInformation(alias, key));
+                            }
                         }
                     } catch (NoSuchAlgorithmException | UnrecoverableKeyException e) {
                         e.printStackTrace();
@@ -579,7 +534,11 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         return keys;
     }
 
-    private static int getPublicKeyLength(final PublicKey pk) {
-        return pk.getEncoded().length * 8;
+    @Override
+    public String generateAlias(Key key) throws IOException, NoSuchAlgorithmException {
+        return SecurityProcessorFactory
+            .getDefaultSecurityProcessor()
+            .getChecksum(new ByteArrayInputStream(key.getEncoded()),
+                DigestAlgorithmEnum.SHA256);
     }
 }

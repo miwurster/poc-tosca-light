@@ -90,6 +90,7 @@ import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
 import org.eclipse.winery.repository.exceptions.WineryRepositoryException;
+import org.eclipse.winery.repository.security.csar.PermissionsManager;
 
 import org.apache.tika.mime.MediaType;
 
@@ -1004,6 +1005,8 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
     NamespaceManager getNamespaceManager();
 
     AccountabilityConfigurationManager getAccountabilityConfigurationManager();
+    
+    PermissionsManager getPermissionsManager();
 
     XsdImportManager getXsdImportManager();
 

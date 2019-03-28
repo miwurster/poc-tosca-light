@@ -15,7 +15,6 @@
 package org.eclipse.winery.accountability.blockchain;
 
 import java.nio.file.Path;
-import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.crypto.SecretKey;
 
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
+import org.eclipse.winery.accountability.exceptions.EthereumException;
 import org.eclipse.winery.accountability.model.ModelProvenanceElement;
 import org.eclipse.winery.accountability.model.authorization.AuthorizationInfo;
 
@@ -102,12 +102,10 @@ public interface BlockchainAccess {
      * Sets the permissions given from the active user to a certain address.
      *
      * @param takerAddress   the address to set the permissions for.
-     * @param takerPublicKey the public key of the receiver (used to encrypt the set of the given permissions).
      * @param permissions    the set secret keys (permissions) to give.
      * @return a completable future the finishes when the transaction to set the permissions succeeds.
-     * @throws InvalidKeyException if encrypting the permissions fails due to invalid public key format.
      */
-    CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, BlockchainException;
+    CompletableFuture<Void> setPermissions(String takerAddress, SecretKey[] permissions) throws BlockchainException;
 
     /**
      * Gets the set of permissions given to the active user.
@@ -117,7 +115,17 @@ public interface BlockchainAccess {
      * to the set of permissions they have given to the active user.
      */
     CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) throws BlockchainException;
-    
+
+    /**
+     * Gets the currently active blockchain identity
+     *
+     * @return the identity of the currently active blockchain account
+     */
+    String getMyIdentity();
+
+    CompletableFuture<Void> setMyPublicKey(PublicKey publicKey) throws EthereumException;
+
+    CompletableFuture<PublicKey> getParticipantPublicKey(String address) throws EthereumException;
 
     /**
      * Releases resources relevant to this instance
