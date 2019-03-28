@@ -18,8 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.Key;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Collection;
 
@@ -65,7 +67,7 @@ public interface KeystoreManager {
     KeyEntityInformation storeKey(String alias, Key key) throws GenericKeystoreManagerException;
 
     KeyPairInformation storeKeyPair(String alias, PrivateKey privateKey, Certificate certificate) throws GenericKeystoreManagerException;
-    
+
     KeyPairInformation storeKeyPair(String alias, KeyPair keyPair, DistinguishedName dn) throws GenericKeystoreManagerException, GenericSecurityProcessorException;
 
     Certificate storeCertificate(String alias, InputStream is) throws GenericKeystoreManagerException;
@@ -90,6 +92,8 @@ public interface KeystoreManager {
 
     void deleteAllKeyPairs() throws GenericKeystoreManagerException;
     //CertificateInformation loadCertificateInformation(String alias) throws GenericKeystoreManagerException;
-    
+
     String generateAlias(Key key) throws IOException, NoSuchAlgorithmException;
+
+    String findAliasOfPublicKey(PublicKey key) throws KeyStoreException, GenericKeystoreManagerException;
 }

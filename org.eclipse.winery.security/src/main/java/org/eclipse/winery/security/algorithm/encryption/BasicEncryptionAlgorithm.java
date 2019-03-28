@@ -27,7 +27,7 @@ public abstract class BasicEncryptionAlgorithm implements EncryptionAlgorithm {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicEncryptionAlgorithm.class);
     
     @Override
-    public byte[] encryptBytes(Key key, byte[] plainText) throws InvalidKeyException {
+    public byte[] encryptBytes(Key key, byte[] plainText) throws InvalidKeyException, IOException {
         byte[] result = null;
 
         try (ByteArrayInputStream plainTextStream = new ByteArrayInputStream(plainText)) {
@@ -36,13 +36,15 @@ public abstract class BasicEncryptionAlgorithm implements EncryptionAlgorithm {
             }
         } catch (IOException e) {
             LOGGER.error("Unexpected IO exception occurred: {}", e.getMessage());
+            throw e;
+            
         }
 
         return result;
     }
 
     @Override
-    public byte[] decryptBytes(Key key, byte[] cipherText) throws InvalidKeyException {
+    public byte[] decryptBytes(Key key, byte[] cipherText) throws InvalidKeyException, IOException {
         byte[] result = null;
 
         try (ByteArrayInputStream cipherTextStream = new ByteArrayInputStream(cipherText)) {
@@ -51,6 +53,7 @@ public abstract class BasicEncryptionAlgorithm implements EncryptionAlgorithm {
             }
         } catch (IOException e) {
             LOGGER.error("Unexpected IO exception occurred: {}", e.getMessage());
+            throw e;
         }
 
         return result;

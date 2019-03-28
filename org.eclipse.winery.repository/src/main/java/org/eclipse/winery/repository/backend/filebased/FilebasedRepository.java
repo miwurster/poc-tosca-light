@@ -591,10 +591,9 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
 
     @Override
     public PermissionsManager getPermissionsManager() {
-        RepositoryFileReference preferencesRef = new RepositoryFileReference(new AccountabilityId(), "PermissionsPreferences.properties");
         RepositoryFileReference keyAssignments = new RepositoryFileReference(new AccountabilityId(), "KeyAssignments.json");
         
-        return PermissionsManager.getInstance(ref2AbsolutePath(preferencesRef).toFile(), ref2AbsolutePath(keyAssignments).toFile());
+        return PermissionsManager.getInstance(ref2AbsolutePath(keyAssignments).toFile());
     }
 
     @Override

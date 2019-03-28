@@ -40,7 +40,6 @@ abstract class AbstractKeystoreEntityResource {
     protected String prepareAlias(String alias) {
         return alias.trim().toLowerCase();
     }
-    
 
     protected String generateUniqueAlias(Key key) throws IOException, NoSuchAlgorithmException {
         return this.keystoreManager.generateAlias(key);

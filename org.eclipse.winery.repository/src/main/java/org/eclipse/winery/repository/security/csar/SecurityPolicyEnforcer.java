@@ -289,7 +289,7 @@ public class SecurityPolicyEnforcer {
                         encTypeLevelPolicy.setIsApplied(true);
                         addPolicyToNodeTemplate(nodeTemplate, encTypeLevelPolicy);
                     }
-                } catch (GenericKeystoreManagerException | InvalidKeyException e) {
+                } catch (GenericKeystoreManagerException | InvalidKeyException | IOException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
             } else {

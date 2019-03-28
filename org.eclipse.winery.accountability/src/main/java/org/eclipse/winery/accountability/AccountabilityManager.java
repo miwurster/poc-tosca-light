@@ -187,6 +187,4 @@ public interface AccountabilityManager {
      * Releases resources attached to this instance.
      */
     void close();
-
-
 }

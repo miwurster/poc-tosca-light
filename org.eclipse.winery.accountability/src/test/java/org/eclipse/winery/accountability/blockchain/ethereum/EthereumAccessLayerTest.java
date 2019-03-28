@@ -83,11 +83,19 @@ class EthereumAccessLayerTest {
     @Test
     void testGivingPermissions() throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, BlockchainException, InvalidKeyException, ExecutionException, InterruptedException {
         // test giving a single permission
-        SecretKey permission = KeyHelper.convertStringToSecretKey(SECRET_KEY_PHRASE, SymmetricEncryptionAlgorithmEnum.AES512);
+        // first set the official public key of the taker
+        BlockchainFactory.reset();
+        this.blockchainAccess = this.loadAccessLayer(SECONDARY_KEYSTORE_FILE_NAME);
         KeyPair takerKeyPair = KeyHelper.generateECIESKeyPair();
+        this.blockchainAccess.setMyPublicKey(takerKeyPair.getPublic()).get();
+        // now give the premission
+        BlockchainFactory.reset();
+        this.blockchainAccess = this.loadAccessLayer(PRIMARY_KEYSTORE_FILE_NAME);
+        SecretKey permission = KeyHelper.convertStringToSecretKey(SECRET_KEY_PHRASE, SymmetricEncryptionAlgorithmEnum.AES512);
         this.blockchainAccess
-            .setPermissions(SECONDARY_ADDRESS, takerKeyPair.getPublic(), new SecretKey[] {permission})
+            .setPermissions(SECONDARY_ADDRESS, new SecretKey[] {permission})
             .get();
+        // now check that permission is taken
         BlockchainFactory.reset();
         this.blockchainAccess = this.loadAccessLayer(SECONDARY_KEYSTORE_FILE_NAME);
         Map<String, SecretKey[]> permissions = this.blockchainAccess.getMyPermissions(takerKeyPair.getPrivate()).get();
@@ -101,7 +109,7 @@ class EthereumAccessLayerTest {
         BlockchainFactory.reset();
         this.blockchainAccess = this.loadAccessLayer(PRIMARY_KEYSTORE_FILE_NAME);
         this.blockchainAccess
-            .setPermissions(SECONDARY_ADDRESS, takerKeyPair.getPublic(), new SecretKey[] {permission1, permission2})
+            .setPermissions(SECONDARY_ADDRESS, new SecretKey[] {permission1, permission2})
             .get();
         BlockchainFactory.reset();
         this.blockchainAccess = this.loadAccessLayer(SECONDARY_KEYSTORE_FILE_NAME);

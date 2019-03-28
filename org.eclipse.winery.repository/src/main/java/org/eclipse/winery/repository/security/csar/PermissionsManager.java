@@ -14,20 +14,17 @@
 package org.eclipse.winery.repository.security.csar;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -50,48 +47,26 @@ import org.slf4j.LoggerFactory;
 
 public class PermissionsManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionsManager.class);
-    // we declare a constant for each property we store in the preferences file.
-    private static final String OFFICIAL_KEY_PAIR_ALIAS_PROP = "OfficialKeyPairAlias";
     private static PermissionsManager instance;
-    private final File PREFERENCES_FILE;
     private final File KEY_ASSIGNMENTS_FILE;
 
-    private Properties properties = null;
     private Map<String, KeyAssignments> keyAssignmentsMap;
     private ObjectMapper objectMapper;
 
-    private PermissionsManager(File preferencesFile, File keyAssignmentsFile) {
-        this.PREFERENCES_FILE = preferencesFile;
+    private PermissionsManager(File keyAssignmentsFile) {
         this.KEY_ASSIGNMENTS_FILE = keyAssignmentsFile;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-    public static PermissionsManager getInstance(File preferencesFile, File keyPermissionsFile) {
+    public static PermissionsManager getInstance(File keyPermissionsFile) {
         if (instance == null) {
-            instance = new PermissionsManager(preferencesFile, keyPermissionsFile);
+            instance = new PermissionsManager(keyPermissionsFile);
         }
 
-        instance.loadPreferences();
         instance.loadKeyAssignments();
 
         return instance;
-    }
-
-    private void loadPreferences() {
-        this.properties = new Properties();
-
-        if (PREFERENCES_FILE.exists()) {
-            try (InputStream inputStream = new FileInputStream(PREFERENCES_FILE)) {
-                properties.load(inputStream);
-            } catch (IOException e) {
-                LOGGER.error("Error while loading permissions preferences file. Reason: {}", e);
-                throw new RuntimeException(e);
-            }
-        } else {
-            this.properties.put(OFFICIAL_KEY_PAIR_ALIAS_PROP, "");
-            this.savePreferenceFile();
-        }
     }
 
     private void loadKeyAssignments() {
@@ -108,18 +83,6 @@ public class PermissionsManager {
         } else {
             this.keyAssignmentsMap = new HashMap<>();
             this.saveKeyAssignmentsFile();
-        }
-    }
-
-    private void savePreferenceFile() {
-        try {
-            ensureFileExists(PREFERENCES_FILE);
-
-            try (OutputStream stream = new FileOutputStream(PREFERENCES_FILE)) {
-                this.properties.store(stream, null);
-            }
-        } catch (Exception e) {
-            LOGGER.error("Could not save preferences file!", e);
         }
     }
 
@@ -163,8 +126,9 @@ public class PermissionsManager {
         return AccountabilityManagerFactory.getAccountabilityManager(props);
     }
 
-    private PrivateKey getMyPrivateKey() throws GenericKeystoreManagerException {
-        return getMyOfficialKeyPair().getPrivate();
+    private CompletableFuture<PrivateKey> getMyPrivateKey() throws BlockchainException, AccountabilityException {
+        return getMyOfficialKeyPair()
+            .thenApply(KeyPair::getPrivate);
     }
 
     private SecretKey extractSecretKey(KeystoreManager manager, KeyAssignments value) throws GenericKeystoreManagerException {
@@ -211,29 +175,55 @@ public class PermissionsManager {
         return this.loadAccountabilityManager().getMyIdentity();
     }
 
-    public KeyPair getMyOfficialKeyPair() throws GenericKeystoreManagerException {
-        String keyPairAlias = this.properties.getProperty(OFFICIAL_KEY_PAIR_ALIAS_PROP);
-        return KeystoreManagerFactory.getInstance().loadKeyPair(keyPairAlias);
+    public CompletableFuture<KeyPair> getMyOfficialKeyPair() throws AccountabilityException, BlockchainException {
+        AccountabilityManager accManager = this.loadAccountabilityManager();
+        KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
+        final String myIdentity = accManager.getMyIdentity();
+
+        return accManager
+            .getParticipantPublicKey(myIdentity)
+            .thenApply(publicKey -> {
+                try {
+                    return keystoreManager.findAliasOfPublicKey(publicKey);
+                } catch (KeyStoreException | GenericKeystoreManagerException e) {
+                    throw new CompletionException(e);
+                }
+            })
+            .thenApply(alias -> {
+                try {
+                    Objects.requireNonNull(alias);
+                    return keystoreManager.loadKeyPair(alias);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to load the official key pair. Reason:{}", e);
+                    throw new CompletionException(e);
+                }
+            });
     }
 
-    public void setMyOfficialKeyPair(String alias) throws GenericKeystoreManagerException {
+    public CompletableFuture<Void> setMyOfficialKeyPair(String alias) throws GenericKeystoreManagerException, AccountabilityException, BlockchainException {
         try {
-            KeystoreManagerFactory.getInstance().loadKeyPair(alias);
-            this.properties.put(OFFICIAL_KEY_PAIR_ALIAS_PROP, alias);
-            this.savePreferenceFile();
-        } catch (GenericKeystoreManagerException e) {
+            AccountabilityManager accManager = this.loadAccountabilityManager();
+            KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
+            PublicKey key = keystoreManager.loadKeyPair(alias).getPublic();
+            return accManager.setMyPublicKey(key);
+        } catch (GenericKeystoreManagerException | AccountabilityException | BlockchainException e) {
             LOGGER.error("Cannot set the official key pair with the specified alias. Reason: {}", e);
             throw e;
         }
     }
 
-    public CompletableFuture<Void> updateListOfPermissionsGivenToMe() throws AccountabilityException, GenericKeystoreManagerException, BlockchainException {
+    public CompletableFuture<Void> updateListOfPermissionsGivenToMe() throws AccountabilityException, BlockchainException {
         AccountabilityManager accManager = this.loadAccountabilityManager();
         KeystoreManager keyManager = KeystoreManagerFactory.getInstance();
-        PrivateKey myPrivateKey = this.getMyPrivateKey();
 
-        return accManager
-            .getMyPermissions(myPrivateKey)
+        return this.getMyPrivateKey()
+            .thenCompose(myPrivateKey -> {
+                try {
+                    return accManager.getMyPermissions(myPrivateKey);
+                } catch (BlockchainException e) {
+                    throw new CompletionException(e);
+                }
+            })
             .thenAccept(map -> {
                 try {
                     for (String giver : map.keySet()) {
@@ -253,7 +243,7 @@ public class PermissionsManager {
             });
     }
 
-    public CompletableFuture<Void> givePermissions(String takerAddress, PublicKey takerPublicKey, String permissionAlias) throws AccountabilityException, GenericKeystoreManagerException, BlockchainException, InvalidKeyException {
+    public CompletableFuture<Void> givePermissions(String takerAddress, String permissionAlias) throws AccountabilityException, GenericKeystoreManagerException, BlockchainException {
         ArrayList<SecretKey> alreadyGiven = this.getGivenPermissions(takerAddress);
         KeystoreManager keyManager = KeystoreManagerFactory.getInstance();
         Key key = keyManager.loadKey(permissionAlias);
@@ -273,7 +263,7 @@ public class PermissionsManager {
         AccountabilityManager accManager = this.loadAccountabilityManager();
 
         return accManager
-            .setPermissions(takerAddress, takerPublicKey, alreadyGiven.toArray(new SecretKey[0]))
+            .setPermissions(takerAddress, alreadyGiven.toArray(new SecretKey[0]))
             .thenAccept(nothing -> {
                 this.addKeyAssignment(permissionAlias, myIdentity, takerAddress);
                 this.saveKeyAssignmentsFile();

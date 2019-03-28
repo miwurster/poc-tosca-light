@@ -20,15 +20,15 @@ public class KeyAssignments implements Serializable {
     private String keyAlias;
     private ArrayList<String> keyGivers;
     private ArrayList<String> keyTakers;
-    
-    public KeyAssignments(){
+
+    public KeyAssignments() {
     }
-    
+
     public void addGiver(String address) {
         if (this.keyGivers == null) {
             this.keyGivers = new ArrayList<>();
         }
-        
+
         if (!this.keyGivers.contains(address)) {
             this.keyGivers.add(address);
         }
@@ -67,21 +67,18 @@ public class KeyAssignments implements Serializable {
     public void setKeyTakers(ArrayList<String> keyTakers) {
         this.keyTakers = keyTakers;
     }
-    
-    
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof KeyAssignments) {
-            return ((KeyAssignments)other).keyAlias.equals(this.keyAlias);
+            return ((KeyAssignments) other).keyAlias.equals(this.keyAlias);
         }
-        
+
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         return this.keyAlias.hashCode();
     }
-    
-    
 }

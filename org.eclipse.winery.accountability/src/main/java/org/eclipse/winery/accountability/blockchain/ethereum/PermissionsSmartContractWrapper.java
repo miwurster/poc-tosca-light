@@ -14,6 +14,7 @@
 package org.eclipse.winery.accountability.blockchain.ethereum;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -33,7 +34,7 @@ import org.eclipse.winery.security.SecurityProcessor;
 import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
-import org.eclipse.winery.security.support.enums.AsymmetricEncryptionAlgorithmEnum;
+import org.eclipse.winery.security.support.KeyGenerationHelper;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -62,7 +63,7 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
      * given to the designated taker.
      * @throws InvalidKeyException If the public key of the taker is invalid.
      */
-    public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException {
+    public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, IOException {
         EncryptionAlgorithm algorithm = SecurityProcessorFactory.getDefaultSecurityProcessor().getAsymmetricEncryptionAlgorithm();
         byte[] encryptedKeys = algorithm.encryptBytes(takerPublicKey, SecretKeyEncoder.encode(permissions));
         return ((Permissions) contract)
@@ -107,7 +108,7 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
             .thenApply(keyBytes -> {
                 try {
                     SecurityProcessor processor = SecurityProcessorFactory.getDefaultSecurityProcessor();
-                    return processor.getX509EncodedPublicKeyFromInputStream(AsymmetricEncryptionAlgorithmEnum.ECIES_secp256k1,
+                    return KeyGenerationHelper.getX509EncodedPublicKeyFromInputStream("ECDSA",
                         new ByteArrayInputStream(keyBytes));
                 } catch (GenericSecurityProcessorException e) {
                     LOGGER.error("Failed to recover public key. Reason: {}", e);

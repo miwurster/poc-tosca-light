@@ -80,17 +80,33 @@ class PermissionsManagerTest extends TestWithGitBackedRepository {
     }
 
     @Test
-    void testGivingPermissions() throws IOException, GenericSecurityProcessorException, NoSuchAlgorithmException, GenericKeystoreManagerException, GitAPIException, AccountabilityException, BlockchainException, InvalidKeyException, ExecutionException, InterruptedException {
+    void testSettingOfficialPublicKey() throws IOException, GitAPIException, GenericSecurityProcessorException, NoSuchAlgorithmException, AccountabilityException, BlockchainException, GenericKeystoreManagerException, ExecutionException, InterruptedException {
         this.changeActiveUser(PRIMARY_KEYSTORE_FILE_NAME);
+        KeyPair keyPair = securityProcessor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.ECIES_secp256k1);
+        KeyPairInformation info = keystoreManager.storeKeyPair(keystoreManager.generateAlias(keyPair.getPublic()),
+            keyPair, new DistinguishedName(SAMPLE_DISTINGUISHED_NAME));
+        this.manager.setMyOfficialKeyPair(info.getPublicKey().getAlias()).get();
+        KeyPair retrieved = this.manager.getMyOfficialKeyPair().get();
+        Assertions.assertArrayEquals(keyPair.getPublic().getEncoded(), retrieved.getPublic().getEncoded());
+    }
+    
+    @Test
+    void testGivingPermissions() throws IOException, GenericSecurityProcessorException, NoSuchAlgorithmException, GenericKeystoreManagerException, GitAPIException, AccountabilityException, BlockchainException, InvalidKeyException, ExecutionException, InterruptedException {
+        // set official key pair for second participant
+        this.changeActiveUser(SECONDARY_KEYSTORE_FILE_NAME);
+        KeyPair participant2KP = securityProcessor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.ECIES_secp256k1);
+        KeyPairInformation info = keystoreManager.storeKeyPair(keystoreManager.generateAlias(participant2KP.getPublic()),
+            participant2KP, new DistinguishedName(SAMPLE_DISTINGUISHED_NAME));
+        manager.setMyOfficialKeyPair(info.getPublicKey().getAlias());
 
         // This tests giving permissions
-        KeyPair participant2KP = securityProcessor.generateKeyPair(AsymmetricEncryptionAlgorithmEnum.ECIES_secp256k1);
+        this.changeActiveUser(PRIMARY_KEYSTORE_FILE_NAME);
         SecretKey permission1 = securityProcessor.generateSecretKey(SymmetricEncryptionAlgorithmEnum.AES512);
         SecretKey permission2 = securityProcessor.generateSecretKey(SymmetricEncryptionAlgorithmEnum.AES512);
         KeyEntityInformation permission1Info = keystoreManager.storeKey(keystoreManager.generateAlias(permission1), permission1);
         KeyEntityInformation permission2Info = keystoreManager.storeKey(keystoreManager.generateAlias(permission2), permission2);
-        manager.givePermissions(SECONDARY_ADDRESS, participant2KP.getPublic(), permission1Info.getAlias()).get();
-        manager.givePermissions(SECONDARY_ADDRESS, participant2KP.getPublic(), permission2Info.getAlias()).get();
+        manager.givePermissions(SECONDARY_ADDRESS, permission1Info.getAlias()).get();
+        manager.givePermissions(SECONDARY_ADDRESS, permission2Info.getAlias()).get();
         ArrayList<SecretKey> givenPermissions = manager.getGivenPermissions(SECONDARY_ADDRESS);
         Assertions.assertEquals(2, givenPermissions.size());
         Assertions.assertTrue(givenPermissions.contains(permission1));
@@ -98,10 +114,11 @@ class PermissionsManagerTest extends TestWithGitBackedRepository {
 
         // This tests taking permissions
         this.changeActiveUser(SECONDARY_KEYSTORE_FILE_NAME);
-        KeyPairInformation info = keystoreManager.storeKeyPair(keystoreManager.generateAlias(participant2KP.getPublic()),
+        // we store the official key pair again in the key store since changing the active user wipes it out.
+        keystoreManager.storeKeyPair(info.getPublicKey().getAlias(),
             participant2KP, new DistinguishedName(SAMPLE_DISTINGUISHED_NAME));
-        manager.setMyOfficialKeyPair(info.getPublicKey().getAlias());
         manager.updateListOfPermissionsGivenToMe().get();
+
         ArrayList<SecretKey> takenPermissions = manager.getTakenPermissions(PRIMARY_ADDRESS);
         Assertions.assertEquals(2, takenPermissions.size());
         Assertions.assertTrue(takenPermissions.contains(permission1));

@@ -188,7 +188,7 @@ public class EthereumAccessLayer implements BlockchainAccess {
                 try {
                     return this.permissionsContract
                         .setPermissions(takerAddress, publicKey, permissions);
-                } catch (InvalidKeyException e) {
+                } catch (InvalidKeyException | IOException e) {
                     log.error("Cannot set permissions for the specified participant. Reason: {}", e);
                     throw new CompletionException(e);
                 }

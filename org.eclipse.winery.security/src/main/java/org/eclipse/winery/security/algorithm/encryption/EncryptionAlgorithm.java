@@ -21,9 +21,9 @@ import java.security.Key;
 public interface EncryptionAlgorithm {
     InputStream encryptStream(Key key, InputStream plainText) throws InvalidKeyException;
 
-    byte[] encryptBytes(Key key, byte[] plainText) throws InvalidKeyException;
+    byte[] encryptBytes(Key key, byte[] plainText) throws InvalidKeyException, IOException;
 
     InputStream decryptStream(Key key, InputStream cipherText) throws IOException, InvalidKeyException;
 
-    byte[] decryptBytes(Key key, byte[] cipherText) throws InvalidKeyException;
+    byte[] decryptBytes(Key key, byte[] cipherText) throws InvalidKeyException, IOException;
 }

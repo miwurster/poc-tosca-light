@@ -541,4 +541,23 @@ public class JCEKSKeystoreManager implements KeystoreManager {
             .getChecksum(new ByteArrayInputStream(key.getEncoded()),
                 DigestAlgorithmEnum.SHA256);
     }
-}
+
+    @Override
+    public String findAliasOfPublicKey(PublicKey key) throws KeyStoreException, GenericKeystoreManagerException {
+        KeyPair current;
+        Collection<KeyPairInformation> allKeyPairs = this.getKeyPairs();
+        
+        for (KeyPairInformation keyPairInformation : allKeyPairs) {
+            current = this.loadKeyPair(keyPairInformation.getPublicKey().getAlias());
+            if (publicKeyEquals(current.getPublic(), key))
+                return keyPairInformation.getPublicKey().getAlias();
+        }
+
+        return null;
+    }
+
+    private boolean publicKeyEquals(PublicKey key1, PublicKey key2) {
+        return Arrays.equals(key1.getEncoded(), key2.getEncoded());
+    }
+} 
+    
