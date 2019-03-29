@@ -21,6 +21,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -34,6 +35,7 @@ import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyChecker
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyErrorCollector;
 import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.configuration.GitHubConfiguration;
+import org.eclipse.winery.repository.rest.resources.API.AccountabilityResource;
 import org.eclipse.winery.repository.rest.resources.admin.keypermissions.AccessControlListAdminResource;
 import org.eclipse.winery.repository.rest.resources.admin.keystore.KeyStoreAdminResource;
 import org.eclipse.winery.repository.rest.resources.admin.types.ConstraintTypesManager;
@@ -86,6 +88,16 @@ public class AdminTopResource {
     @Path("keypermissions/")
     public AccessControlListAdminResource getACLAdminResource() {
         return new AccessControlListAdminResource();
+    }
+
+    @Path("accountability/{accountabilityId}")
+    public AccountabilityResource getAccountabilityResource(@PathParam("accountabilityId") String accountabilityId) {
+        return new AccountabilityResource(accountabilityId);
+    }
+
+    @Path("accountability/configuration")
+    public AccountabilityConfigurationResource getConfiguration() {
+        return new AccountabilityConfigurationResource();
     }
 
     @GET

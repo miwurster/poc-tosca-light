@@ -22,10 +22,10 @@ import { AuthorizationElement, FileProvenanceElement, ModelProvenanceElement } f
 
 @Injectable()
 export class AccountabilityService {
-    private accountabilityUrl = backendBaseURL + '/API/accountability/';
+    public static accountabilityUrl = backendBaseURL + '/admin/accountability/';
 
     static getDownloadURLForFile(fileAddress: string, fileName: string, accountabilityId: string) {
-        return `${backendBaseURL}/API/accountability/${encodeURIComponent(encodeURIComponent(accountabilityId))}` +
+        return `${AccountabilityService.accountabilityUrl}/${encodeURIComponent(encodeURIComponent(accountabilityId))}` +
             `/downloadFile?address=${fileAddress}&filename=${fileName}`;
     }
 
@@ -34,13 +34,13 @@ export class AccountabilityService {
 
     authorize(accountabilityProcessId: string, participant: AuthorizationElement): Observable<HttpResponse<string>> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-        const url = this.accountabilityUrl + encodeURIComponent(encodeURIComponent(accountabilityProcessId)) + '/authorize';
+        const url = AccountabilityService.accountabilityUrl + encodeURIComponent(encodeURIComponent(accountabilityProcessId)) + '/authorize';
 
         return this.http.post(url, participant, { headers: headers, observe: 'response', responseType: 'text' });
     }
 
     authenticate(accountabilityProcessId: string, participantAddress: string): Observable<AuthorizationElement[]> {
-        const url = this.accountabilityUrl + encodeURIComponent(encodeURIComponent(accountabilityProcessId))
+        const url = AccountabilityService.accountabilityUrl + encodeURIComponent(encodeURIComponent(accountabilityProcessId))
             + '/authenticate?participantAddress=' + participantAddress;
 
         return this.http.get<AuthorizationElement[]>(url);
@@ -53,7 +53,7 @@ export class AccountabilityService {
     }
 
     getFileProvenance(accountabilityId: string, fileId: string): Observable<FileProvenanceElement[]> {
-        const url = backendBaseURL + '/API/accountability/'
+        const url = AccountabilityService.accountabilityUrl
             + encodeURIComponent(encodeURIComponent(accountabilityId))
             + '/fileHistory?fileId=' + encodeURIComponent(encodeURIComponent(fileId));
 
@@ -61,7 +61,7 @@ export class AccountabilityService {
     }
 
     getModelProvenance(modelId: string): Observable<ModelProvenanceElement[]> {
-        const url = backendBaseURL + '/API/accountability/'
+        const url = AccountabilityService.accountabilityUrl
             + encodeURIComponent(encodeURIComponent(modelId))
             + '/modelHistory';
 
@@ -69,7 +69,7 @@ export class AccountabilityService {
     }
 
     retrieveFileContent(fileAddressInImmutableStorage: string, accountabilityId: string): Observable<string> {
-        const url = `${backendBaseURL}/API/accountability/${encodeURIComponent(encodeURIComponent(accountabilityId))}` +
+        const url = `${AccountabilityService.accountabilityUrl}/${encodeURIComponent(encodeURIComponent(accountabilityId))}` +
             `/retrieveFile?address=${fileAddressInImmutableStorage}`;
 
         return this.http.get(url, { responseType: 'text' });

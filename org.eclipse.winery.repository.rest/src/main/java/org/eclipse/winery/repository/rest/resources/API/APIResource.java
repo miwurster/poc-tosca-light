@@ -19,7 +19,6 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -32,7 +31,6 @@ import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.rest.datatypes.select2.Select2DataWithOptGroups;
-import org.eclipse.winery.repository.rest.resources.admin.AccountabilityConfigurationResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplateResource;
 
 import io.swagger.annotations.Api;
@@ -110,15 +108,5 @@ public class APIResource {
             res.add(qName.getNamespaceURI(), qName.toString(), qName.getLocalPart());
         }
         return Response.ok().entity(res.asSortedSet()).build();
-    }
-
-    @Path("accountability/{accountabilityId}")
-    public AccountabilityResource getProvenance(@PathParam("accountabilityId") String accountabilityId) {
-        return new AccountabilityResource(accountabilityId);
-    }
-    
-    @Path("accountability/configuration")
-    public AccountabilityConfigurationResource getConfiguration() {
-        return new AccountabilityConfigurationResource();
     }
 }

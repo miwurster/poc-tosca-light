@@ -58,7 +58,7 @@ public class AccountabilityResource {
 
     private final String provenanceId;
 
-    AccountabilityResource(String provenanceId) {
+    public AccountabilityResource(String provenanceId) {
         this.provenanceId = Util.URLdecode(provenanceId);
         LOGGER.info("AccountabilityManager process identifier: " + provenanceId);
     }

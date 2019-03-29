@@ -180,6 +180,10 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         return sb.toString();
     }
 
+    private boolean publicKeyEquals(PublicKey key1, PublicKey key2) {
+        return Arrays.equals(key1.getEncoded(), key2.getEncoded());
+    }
+
     @Override
     public KeyEntityInformation storeKey(String alias, Key key) throws GenericKeystoreManagerException {
         try {
@@ -555,9 +559,6 @@ public class JCEKSKeystoreManager implements KeystoreManager {
 
         return null;
     }
-
-    private boolean publicKeyEquals(PublicKey key1, PublicKey key2) {
-        return Arrays.equals(key1.getEncoded(), key2.getEncoded());
-    }
+    
 } 
     

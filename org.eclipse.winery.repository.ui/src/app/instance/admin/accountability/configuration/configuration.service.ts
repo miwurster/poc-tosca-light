@@ -19,6 +19,7 @@ import { map, mergeMap } from 'rxjs/internal/operators';
 import { Injectable } from '@angular/core';
 import { ConfigurationDTO } from './ConfigurationDTO';
 import { parseSelectorToR3Selector } from '@angular/compiler/src/core';
+import { AccountabilityService } from '../accountability.service';
 
 /**
  * Manages accountability configurations. Configuration entries are divided into two groups: (i) a group that is managed
@@ -27,11 +28,11 @@ import { parseSelectorToR3Selector } from '@angular/compiler/src/core';
  */
 @Injectable()
 export class ConfigurationService {
-    private accountabilityUrl = backendBaseURL + '/API/accountability/configuration';
-    private deployProvenanceSCUrl = this.accountabilityUrl + '/provenanceSC';
-    private deployAuthorizationSCUrl = this.accountabilityUrl + '/authorizationSC';
-    private deployPermissionsSCUrl = this.accountabilityUrl + '/permissionsSC';
-    private createKeystoreUrl = this.accountabilityUrl + '/createKeystore';
+    private configurationUrl = AccountabilityService.accountabilityUrl + '/configuration';
+    private deployProvenanceSCUrl = this.configurationUrl + '/provenanceSC';
+    private deployAuthorizationSCUrl = this.configurationUrl + '/authorizationSC';
+    private deployPermissionsSCUrl = this.configurationUrl + '/permissionsSC';
+    private createKeystoreUrl = this.configurationUrl + '/createKeystore';
     private readonly enableAccountabilityCheckDefaultValue = false;
     private readonly enableAccountabilityCheckKey = 'AccountabilityCheck';
 
@@ -54,7 +55,7 @@ export class ConfigurationService {
 
     loadConfiguration(): Observable<Configuration> {
 
-        return this.http.get<ConfigurationDTO>(this.accountabilityUrl).pipe(
+        return this.http.get<ConfigurationDTO>(this.configurationUrl).pipe(
             map(configuration => {
                 // create configuration object from received dto
                 const result: Configuration = new Configuration(configuration);
@@ -101,13 +102,13 @@ export class ConfigurationService {
 
         formData.append('swarmGatewayUrl', config.swarmGatewayUrl);
 
-        return this.http.put(this.accountabilityUrl, formData);
+        return this.http.put(this.configurationUrl, formData);
     }
 
     restoreDefaults(): Observable<Configuration> {
         // this.setAccountabilityCheckEnabled(this.enableAccountabilityCheckDefaultValue); do not change this option
         // when "Restore Defaults" is pressed.
-        return this.http.delete<void>(this.accountabilityUrl)
+        return this.http.delete<void>(this.configurationUrl)
             .pipe(
                 mergeMap(() => this.loadConfiguration())
             );
