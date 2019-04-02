@@ -10,6 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>org.eclipse.winery.model.adaptation</artifactId>
+    <properties>
+        <main.basedir>${project.parent.basedir}</main.basedir>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.eclipse.winery</groupId>

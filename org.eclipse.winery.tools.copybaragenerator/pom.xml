@@ -23,7 +23,7 @@
     <artifactId>org.eclipse.winery.tools.copybaragenerator</artifactId>
     <properties>
         <checkstyle.config.location>../checkstyle.xml</checkstyle.config.location>
-        <main.basedir>${project.parent.basedir}</main.basedir>
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
     <dependencies>
         <dependency>
