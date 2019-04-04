@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,6 +38,7 @@ export class WineryNotificationService {
      *
      * @param message
      * @param title
+     * @param options
      */
     success(message: string, title = 'Success', options = {}) {
         this.toastr.success(message, title, options);
@@ -48,9 +49,10 @@ export class WineryNotificationService {
      *
      * @param message
      * @param title
+     * @param options
      */
-    error(message: string, title = 'Error') {
-        this.toastr.error(message, title);
+    error(message: string, title = 'Error', options = {}) {
+        this.toastr.error(message, title, options);
         this.notifications.push({ title: title, message: message, type: 'error', createdOn: this.getCurrentDate() });
     }
 

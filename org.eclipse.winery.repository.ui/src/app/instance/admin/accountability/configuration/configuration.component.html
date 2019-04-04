@@ -38,7 +38,7 @@
                     <label for="keystorePathOnServer">Active Keystore</label>
                     <input type="text" id="keystorePathOnServer" class="form-control" name="keystorePathOnServer"
                            [(ngModel)]="configuration.activeKeystore" readonly="readonly">
-                    <button type="button" class="buttonAsLink"
+                    <button type="button" class="btn-link"
                             (click)="onCreateNewKeystore(createKeystoreModal)"
                             [disabled]="loading">
                         Create New Keystore File

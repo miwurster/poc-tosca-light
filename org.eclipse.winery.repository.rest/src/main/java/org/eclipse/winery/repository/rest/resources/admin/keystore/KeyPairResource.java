@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -55,6 +55,7 @@ public class KeyPairResource extends AbstractKeyPairResource {
     @ApiOperation(value = "Sets the keypair as the master signing keypair")
     @PUT
     @Path("setmaster")
+    @Produces(MediaType.TEXT_PLAIN)
     public Response setAsMaster(@PathParam("alias") String alias) {
         String newName = this.renameOldMaster();
 
@@ -63,7 +64,7 @@ public class KeyPairResource extends AbstractKeyPairResource {
 
         this.renameKeyPair(alias, MASTER_SIGNING_KEYNAME);
 
-        return Response.ok().build();
+        return Response.ok(newName).build();
     }
 
     @ApiOperation(value = "Gets the keypair by its alias")

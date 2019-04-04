@@ -28,15 +28,19 @@ public class SecurityProcessorFactory {
 
     private static BCSecurityProcessor getDefaultBcSecurityProcessorInstance() {
         if (bcSecurityProcessor == null) {
-            Security.addProvider(new BouncyCastleProvider());
-            // Available since Java8u151, allows 256bit key usage
-            Security.setProperty("crypto.policy", "unlimited");
+            allowUnlimitedEncryption();
             bcSecurityProcessor = new BCSecurityProcessor(new AESAlgorithm(), new ECIESAlgorithm());
         }
 
         return bcSecurityProcessor;
     }
-
+    
+    public static void allowUnlimitedEncryption() {
+        Security.addProvider(new BouncyCastleProvider());
+        // Available since Java8u151, allows 256bit key usage
+        Security.setProperty("crypto.policy", "unlimited");
+    }
+    
     public static SecurityProcessor getDefaultSecurityProcessor() {
         return getDefaultBcSecurityProcessorInstance();
     }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,12 +12,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 import { Component } from '@angular/core';
+import { ConfigurationService } from '../accountability/configuration/configuration.service';
 
 @Component({
     selector: 'winery-instance-keymanagement',
     templateUrl: 'keyManagement.component.html',
 })
 export class KeyManagementComponent {
-    constructor() {
+    constructor(private service: ConfigurationService) {
+    }
+
+    isAccountabilityEnabled(): boolean {
+        return this.service.isAccountablilityCheckEnabled();
     }
 }

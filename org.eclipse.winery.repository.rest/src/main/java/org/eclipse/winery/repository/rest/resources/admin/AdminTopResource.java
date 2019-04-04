@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -35,7 +35,6 @@ import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyChecker
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyErrorCollector;
 import org.eclipse.winery.repository.configuration.Environment;
 import org.eclipse.winery.repository.configuration.GitHubConfiguration;
-import org.eclipse.winery.repository.rest.resources.API.AccountabilityResource;
 import org.eclipse.winery.repository.rest.resources.admin.keypermissions.AccessControlListAdminResource;
 import org.eclipse.winery.repository.rest.resources.admin.keystore.KeyStoreAdminResource;
 import org.eclipse.winery.repository.rest.resources.admin.types.ConstraintTypesManager;
@@ -96,8 +95,13 @@ public class AdminTopResource {
     }
 
     @Path("accountability/configuration")
-    public AccountabilityConfigurationResource getConfiguration() {
+    public AccountabilityConfigurationResource getAccountabilityConfigurationResource() {
         return new AccountabilityConfigurationResource();
+    }
+    
+    @Path("keyexchange/")
+    public KeyExchangeResource getKeyExchangeResource() {
+        return new KeyExchangeResource();
     }
 
     @GET

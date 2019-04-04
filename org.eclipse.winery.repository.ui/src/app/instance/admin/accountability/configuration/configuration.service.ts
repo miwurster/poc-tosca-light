@@ -33,6 +33,7 @@ export class ConfigurationService {
     private deployAuthorizationSCUrl = this.configurationUrl + '/authorizationSC';
     private deployPermissionsSCUrl = this.configurationUrl + '/permissionsSC';
     private createKeystoreUrl = this.configurationUrl + '/createKeystore';
+    private identityUrl = this.configurationUrl + '/identity';
     private readonly enableAccountabilityCheckDefaultValue = false;
     private readonly enableAccountabilityCheckKey = 'AccountabilityCheck';
 
@@ -129,5 +130,9 @@ export class ConfigurationService {
     createNewKeystoreFile(password: string): void {
         // handle entries managed by the backend
         window.open(this.createKeystoreUrl + '?keystorePassword=' + password, '_blank');
+    }
+
+    retrieveMyIdentity(): Observable<string> {
+        return this.http.get(this.identityUrl, {responseType: 'text'});
     }
 }

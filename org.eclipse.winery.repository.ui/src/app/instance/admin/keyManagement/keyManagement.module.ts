@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,11 +29,13 @@ import { WineryEditXMLModule } from '../../sharedComponents/editXML/editXML.modu
 import { InstanceService } from '../../instance.service';
 import { KeystoreEntityComponent } from './keystoreEntity/keystoreEntity.component';
 import { TabsModule } from 'ngx-bootstrap/tabs';
+import { PopoverModule } from 'ngx-bootstrap';
 
 export const keyManagementRoutes: Routes = [
     { path: 'secretkeys', component: KeystoreEntityComponent },
     { path: 'keypairs', component: KeystoreEntityComponent },
     { path: 'certificates', component: KeystoreEntityComponent },
+    { path: 'keyexchange', component: KeystoreEntityComponent },
     { path: '', redirectTo: 'secretkeys', pathMatch: 'full' }
 ];
 
@@ -52,6 +54,7 @@ export const keyManagementRoutes: Routes = [
         WineryQNameSelectorModule,
         RouterModule,
         WineryEditorModule,
+        PopoverModule.forRoot(),
         TabsModule.forRoot()
     ],
     exports: [

@@ -37,6 +37,7 @@ import org.eclipse.winery.accountability.exceptions.AccountabilityException;
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.security.KeystoreManager;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.exceptions.GenericKeystoreManagerException;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -61,6 +62,7 @@ public class PermissionsManager {
 
     public static PermissionsManager getInstance(File keyPermissionsFile) {
         if (instance == null) {
+            SecurityProcessorFactory.allowUnlimitedEncryption();
             instance = new PermissionsManager(keyPermissionsFile);
         }
 
@@ -134,10 +136,16 @@ public class PermissionsManager {
     private SecretKey extractSecretKey(KeystoreManager manager, KeyAssignments value) throws GenericKeystoreManagerException {
         Key key = manager.loadKey(value.getKeyAlias());
 
+        if (Objects.isNull(key)) {
+            LOGGER.error("The entry with the alias {} is not found in the key store", value.getKeyAlias());
+            throw new GenericKeystoreManagerException("Key not found in key store");
+        }
+
         if (!(key instanceof SecretKey)) {
             LOGGER.error("The entry with the alias {} is expected to be of type SecretKey but is actually of type {}.", value.getKeyAlias(), key.getClass().getName());
             throw new ClassCastException();
         }
+
         return (SecretKey) key;
     }
 
@@ -145,26 +153,38 @@ public class PermissionsManager {
         return this.keyAssignmentsMap;
     }
 
-    public ArrayList<SecretKey> getGivenPermissions(String taker) throws GenericKeystoreManagerException {
+    public ArrayList<SecretKey> getGivenPermissions(String taker) {
         ArrayList<SecretKey> result = new ArrayList<>();
         KeystoreManager manager = KeystoreManagerFactory.getInstance();
 
         for (KeyAssignments value : this.keyAssignmentsMap.values()) {
             if (value.getKeyTakers().contains(taker)) {
-                result.add(extractSecretKey(manager, value));
+                try {
+                    result.add(extractSecretKey(manager, value));
+                } catch (GenericKeystoreManagerException e) {
+                    // if we are not able to add a specific key because it is deleted from the key store, skip it
+                    // logging already done
+                    e.printStackTrace();
+                }
             }
         }
 
         return result;
     }
 
-    public ArrayList<SecretKey> getTakenPermissions(String giver) throws GenericKeystoreManagerException {
+    public ArrayList<SecretKey> getTakenPermissions(String giver) {
         ArrayList<SecretKey> result = new ArrayList<>();
         KeystoreManager manager = KeystoreManagerFactory.getInstance();
 
         for (KeyAssignments value : this.keyAssignmentsMap.values()) {
             if (value.getKeyGivers().contains(giver)) {
-                result.add(extractSecretKey(manager, value));
+                try {
+                    result.add(extractSecretKey(manager, value));
+                } catch (GenericKeystoreManagerException e) {
+                    // the key could be not retrieved yet, therefore missing from the key store. In this case skip it
+                    // logging already done
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -175,7 +195,7 @@ public class PermissionsManager {
         return this.loadAccountabilityManager().getMyIdentity();
     }
 
-    public CompletableFuture<KeyPair> getMyOfficialKeyPair() throws AccountabilityException, BlockchainException {
+    public CompletableFuture<String> getMyOfficialKeyPairAlias() throws AccountabilityException, BlockchainException {
         AccountabilityManager accManager = this.loadAccountabilityManager();
         KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
         final String myIdentity = accManager.getMyIdentity();
@@ -188,7 +208,13 @@ public class PermissionsManager {
                 } catch (KeyStoreException | GenericKeystoreManagerException e) {
                     throw new CompletionException(e);
                 }
-            })
+            });
+    }
+
+    public CompletableFuture<KeyPair> getMyOfficialKeyPair() throws AccountabilityException, BlockchainException {
+        KeystoreManager keystoreManager = KeystoreManagerFactory.getInstance();
+
+        return this.getMyOfficialKeyPairAlias()
             .thenApply(alias -> {
                 try {
                     Objects.requireNonNull(alias);
@@ -212,11 +238,12 @@ public class PermissionsManager {
         }
     }
 
-    public CompletableFuture<Void> updateListOfPermissionsGivenToMe() throws AccountabilityException, BlockchainException {
+    public CompletableFuture<UpdatePermissionsResult> updateListOfPermissionsGivenToMe() throws AccountabilityException, BlockchainException {
         AccountabilityManager accManager = this.loadAccountabilityManager();
         KeystoreManager keyManager = KeystoreManagerFactory.getInstance();
 
-        return this.getMyPrivateKey()
+        return this
+            .getMyPrivateKey()
             .thenCompose(myPrivateKey -> {
                 try {
                     return accManager.getMyPermissions(myPrivateKey);
@@ -224,18 +251,32 @@ public class PermissionsManager {
                     throw new CompletionException(e);
                 }
             })
-            .thenAccept(map -> {
+            .thenApply(map -> {
                 try {
+                    int addedKeysCounter = 0;
+                    int wrongEncryptionCounter = 0;
+
                     for (String giver : map.keySet()) {
                         SecretKey[] permissions = map.get(giver);
 
-                        for (SecretKey permission : permissions) {
-                            String alias = keyManager.generateAlias(permission);
-                            keyManager.storeKey(alias, permission);
-                            this.addKeyAssignment(alias, giver, this.getMyIdentity());
+                        if (permissions != null) {
+                            for (SecretKey permission : permissions) {
+                                String alias = keyManager.generateAlias(permission);
+                                this.addKeyAssignment(alias, giver, this.getMyIdentity());
+
+                                if (!keyManager.entityExists(alias)) {
+                                    keyManager.storeKey(alias, permission);
+                                    ++addedKeysCounter;
+                                }
+                            }
+                        } else {
+                            ++wrongEncryptionCounter;
                         }
                     }
+
                     this.saveKeyAssignmentsFile();
+
+                    return new UpdatePermissionsResult(addedKeysCounter, wrongEncryptionCounter);
                 } catch (IOException | NoSuchAlgorithmException | GenericKeystoreManagerException | AccountabilityException e) {
                     LOGGER.error("An error occurred while adding permission to keystore. Reason: {}", e);
                     throw new CompletionException(e);
@@ -243,7 +284,7 @@ public class PermissionsManager {
             });
     }
 
-    public CompletableFuture<Void> givePermissions(String takerAddress, String permissionAlias) throws AccountabilityException, GenericKeystoreManagerException, BlockchainException {
+    public CompletableFuture<Void> givePermission(String takerAddress, String permissionAlias) throws AccountabilityException, GenericKeystoreManagerException, BlockchainException, IllegalArgumentException {
         ArrayList<SecretKey> alreadyGiven = this.getGivenPermissions(takerAddress);
         KeystoreManager keyManager = KeystoreManagerFactory.getInstance();
         Key key = keyManager.loadKey(permissionAlias);
@@ -256,6 +297,11 @@ public class PermissionsManager {
 
         SecretKey permission = (SecretKey) key;
 
+        // this check is tricky in the following scenario:
+        // A gives permissions to B
+        // B changes official public key
+        // A recognizes this (magically) and tries to re-give the same permissions but encrypted with the new public key to B
+        // this check will reject it!
         if (alreadyGiven.contains(permission))
             return CompletableFuture.completedFuture(null);
 
@@ -269,4 +315,5 @@ public class PermissionsManager {
                 this.saveKeyAssignmentsFile();
             });
     }
+    
 }

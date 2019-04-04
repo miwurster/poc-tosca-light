@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.eclipse.winery.accountability.AccountabilityManager;
 import org.eclipse.winery.accountability.AccountabilityManagerFactory;
 import org.eclipse.winery.accountability.exceptions.AccountabilityException;
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
@@ -47,6 +48,12 @@ import org.slf4j.LoggerFactory;
 
 public class AccountabilityConfigurationResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountabilityConfigurationResource.class);
+
+    private static AccountabilityManager getAccountabilityManager() throws AccountabilityException {
+        Properties props = RepositoryFactory.getRepository().getAccountabilityConfigurationManager().properties;
+
+        return AccountabilityManagerFactory.getAccountabilityManager(props);
+    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -170,6 +177,19 @@ public class AccountabilityConfigurationResource {
         } catch (BlockchainException | AccountabilityException e) {
             // todo exposing this error message might be unsafe!
             return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("/identity")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getMyIdentity() {
+        try {
+            return Response.ok().entity(getAccountabilityManager().getMyIdentity()).build();
+        } catch (AccountabilityException e) {
+            String msg = String.format("Cannot retrieve identity. Reason: %s", e.getMessage());
+            LOGGER.error(msg);
+            return Response.serverError().entity(msg).build();
         }
     }
 

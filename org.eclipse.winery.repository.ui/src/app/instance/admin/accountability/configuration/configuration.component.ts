@@ -20,8 +20,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap';
 
 @Component({
-    templateUrl: 'configuration.component.html',
-    styleUrls: ['configuration.component.css']
+    templateUrl: 'configuration.component.html'
 })
 export class ConfigurationComponent implements OnInit {
     configuration: Configuration;

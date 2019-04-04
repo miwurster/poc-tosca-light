@@ -1,5 +1,5 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  ~ Copyright (c) 2018 Contributors to the Eclipse Foundation
+  ~ Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
   ~
   ~ See the NOTICE file(s) distributed with this work for additional
   ~ information regarding copyright ownership.
@@ -20,6 +20,9 @@
     </li>
     <li class="nav-item" [routerLink]="['./certificates']" [routerLinkActive]="'active'">
         <a>Certificates</a>
+    </li>
+    <li *ngIf="isAccountabilityEnabled()" class="nav-item" [routerLink]="['./keyexchange']" [routerLinkActive]="'active'">
+        <a>Key Exchange</a>
     </li>
 </ul>
 <router-outlet></router-outlet>

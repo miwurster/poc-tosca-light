@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,7 +14,6 @@
 
 package org.eclipse.winery.accountability;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -29,30 +28,28 @@ import org.eclipse.winery.accountability.storage.ImmutableStorageProviderFactory
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@EnabledIf("(new java.io.File(\"C:/Ethereum/keystore/UTC--2018-03-05T15-33-22.456000000Z--e4b51a3d4e77d2ce2a9d9ce107ec8ec7cff5571d.json\").exists())")
+@Disabled
 class AccountabilityManagerImplIntegrationTest {
-    private static final String CONFIGURATION_FILE_NAME = "defaultaccountabilityconfig.properties";
     private AccountabilityManagerImpl provenance;
 
     @BeforeEach
     public void setUp() throws Exception {
-        try (InputStream propsStream = getClass().getClassLoader().getResourceAsStream(CONFIGURATION_FILE_NAME)) {
-            Properties props = new Properties();
-            props.load(propsStream);
-            BlockchainAccess blockchainAccess = BlockchainFactory
-                .getBlockchainAccess(BlockchainFactory.AvailableBlockchains.ETHEREUM, props);
-            ImmutableStorageProvider storageProvider = ImmutableStorageProviderFactory
-                .getStorageProvider(ImmutableStorageProviderFactory.AvailableImmutableStorages.SWARM, props);
-            this.provenance = new AccountabilityManagerImpl(blockchainAccess, storageProvider);
-        }
+        EthereumPropertiesHelper helper = new EthereumPropertiesHelper();
+        helper.initializeAccessLayer();
+        Properties props = helper.getProperties();
+        BlockchainAccess blockchainAccess = BlockchainFactory
+            .getBlockchainAccess(BlockchainFactory.AvailableBlockchains.ETHEREUM, props);
+        ImmutableStorageProvider storageProvider = ImmutableStorageProviderFactory
+            .getStorageProvider(ImmutableStorageProviderFactory.AvailableImmutableStorages.SWARM, props);
+        this.provenance = new AccountabilityManagerImpl(blockchainAccess, storageProvider);
     }
 
     @Test
@@ -73,7 +70,6 @@ class AccountabilityManagerImplIntegrationTest {
     @Test
     void getHistory() throws Exception {
         String processId = "{http://plain.winery.opentosca.org/servicetemplates}ServiceTemplateWithAllReqCapVariants";
-
         CompletableFuture<List<ModelProvenanceElement>> history = this.provenance.getHistory(processId);
         List<ModelProvenanceElement> historyElements = history.get();
 

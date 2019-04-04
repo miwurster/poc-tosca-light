@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.EthereumAccessLayer;
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
+import org.eclipse.winery.security.SecurityProcessorFactory;
 
 public class BlockchainFactory {
 
@@ -30,6 +31,7 @@ public class BlockchainFactory {
         if (Objects.isNull(blockchain)) {
             switch (desiredBlockchain) {
                 case ETHEREUM:
+                    SecurityProcessorFactory.allowUnlimitedEncryption();
                     blockchain = new EthereumAccessLayer(configuration);
                     break;
                 case TEST:

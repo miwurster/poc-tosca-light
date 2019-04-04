@@ -30,7 +30,7 @@ import javax.crypto.SecretKey;
 
 import org.eclipse.winery.accountability.blockchain.ethereum.generated.Permissions;
 import org.eclipse.winery.accountability.blockchain.util.SecretKeyEncoder;
-import org.eclipse.winery.security.SecurityProcessor;
+import org.eclipse.winery.accountability.exceptions.ParticipantPublicKeyNotSetException;
 import org.eclipse.winery.security.SecurityProcessorFactory;
 import org.eclipse.winery.security.algorithm.encryption.EncryptionAlgorithm;
 import org.eclipse.winery.security.exceptions.GenericSecurityProcessorException;
@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.web3j.protocol.Web3j;
 import org.web3j.tx.Contract;
 
-public class PermissionsSmartContractWrapper extends SmartContractWrapper {
+class PermissionsSmartContractWrapper extends SmartContractWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionsSmartContractWrapper.class);
     private EncryptionAlgorithm algorithm;
 
@@ -63,7 +63,7 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
      * given to the designated taker.
      * @throws InvalidKeyException If the public key of the taker is invalid.
      */
-    public CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, IOException {
+    CompletableFuture<Void> setPermissions(String takerAddress, PublicKey takerPublicKey, SecretKey[] permissions) throws InvalidKeyException, IOException {
         EncryptionAlgorithm algorithm = SecurityProcessorFactory.getDefaultSecurityProcessor().getAsymmetricEncryptionAlgorithm();
         byte[] encryptedKeys = algorithm.encryptBytes(takerPublicKey, SecretKeyEncoder.encode(permissions));
         return ((Permissions) contract)
@@ -81,7 +81,7 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
      * @return a completable future that, when successfully executes, returns a map of givers and given SecretKeys (permissions).
      * Here, givers are identified via their blockchain unique id.
      */
-    public CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) {
+    CompletableFuture<Map<String, SecretKey[]>> getMyPermissions(PrivateKey myPrivateKey) {
         return ((Permissions) contract)
             .getGivers()
             .sendAsync()
@@ -92,7 +92,7 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
             .thenCompose(givers -> queryAllPermissions(givers, myPrivateKey));
     }
 
-    public CompletableFuture<Void> setMyPublicKey(PublicKey publicKey) {
+    CompletableFuture<Void> setMyPublicKey(PublicKey publicKey) {
         return ((Permissions) contract)
             .setPublicKey(publicKey.getEncoded())
             .sendAsync()
@@ -101,13 +101,16 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
             );
     }
 
-    public CompletableFuture<PublicKey> getParticipantPublicKey(String address) {
+    CompletableFuture<PublicKey> getParticipantPublicKey(String address) {
         return ((Permissions) contract)
             .getPublicKey(address)
             .sendAsync()
             .thenApply(keyBytes -> {
                 try {
-                    SecurityProcessor processor = SecurityProcessorFactory.getDefaultSecurityProcessor();
+                    if (keyBytes == null || keyBytes.length == 0) {
+                        throw new CompletionException(new ParticipantPublicKeyNotSetException());
+                    }
+
                     return KeyGenerationHelper.getX509EncodedPublicKeyFromInputStream("ECDSA",
                         new ByteArrayInputStream(keyBytes));
                 } catch (GenericSecurityProcessorException e) {
@@ -118,13 +121,15 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
     }
 
     private CompletableFuture<Map<String, SecretKey[]>> queryAllPermissions(List givers, PrivateKey myPrivateKey) {
-        List<CompletableFuture<Pair<String, byte[]>>> futuresToJoin = new ArrayList<>();
+        List<CompletableFuture<ImmutablePair<String, byte[]>>> futuresToJoin = new ArrayList<>();
 
         for (Object giver : givers) {
             futuresToJoin.add(((Permissions) contract)
                 .getPermission((String) giver)
                 .sendAsync()
-                .thenApply(bytes -> new ImmutablePair<>((String) giver, bytes)));
+                .thenApply(bytes -> new ImmutablePair<>((String) giver, bytes))
+
+            );
         }
 
         return CompletableFuture
@@ -133,10 +138,19 @@ public class PermissionsSmartContractWrapper extends SmartContractWrapper {
                 try {
                     Map<String, SecretKey[]> result = new HashMap<>();
 
-                    for (CompletableFuture<Pair<String, byte[]>> future : futuresToJoin) {
+                    for (CompletableFuture<ImmutablePair<String, byte[]>> future : futuresToJoin) {
                         Pair<String, byte[]> currentResult = future.join();
-                        byte[] decryptedKey = algorithm.decryptBytes(myPrivateKey, currentResult.getValue());
-                        SecretKey[] currentKeys = SecretKeyEncoder.decode(decryptedKey);
+                        SecretKey[] currentKeys = null;
+
+                        // check whether this giver correctly encrypted the permissions
+                        try {
+                            byte[] decryptedKey = algorithm.decryptBytes(myPrivateKey, currentResult.getValue());
+                            currentKeys = SecretKeyEncoder.decode(decryptedKey);
+                        } catch (IOException e) {
+                            LOGGER.error("An error occurred while trying to retrieve permissions given by {}. Reason: {}", currentResult.getKey(), e.getMessage());
+                        }
+
+                        // we add an entry for all givers even with permissions encrypted wrongly
                         result.put(currentResult.getKey(), currentKeys);
                     }
 

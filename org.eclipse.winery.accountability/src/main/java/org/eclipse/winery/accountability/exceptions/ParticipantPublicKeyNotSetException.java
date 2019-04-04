@@ -11,16 +11,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-.buttonAsLink {
-    background:none!important;
-    border:none;
-    padding:0!important;
+package org.eclipse.winery.accountability.exceptions;
 
-    /*optional*/
-    font-family:arial,sans-serif; /*input has OS specific font-family*/
-    color:#069;
-    text-decoration:underline;
-    cursor:pointer;
-    margin-bottom: 15px;
+public class ParticipantPublicKeyNotSetException extends EthereumException {
+    public ParticipantPublicKeyNotSetException() {
+        super("The official public key of the participant is not set");
+    }
+
+    public ParticipantPublicKeyNotSetException(String message) {
+        super(message);
+    }
+
+    public ParticipantPublicKeyNotSetException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ParticipantPublicKeyNotSetException(Throwable cause) {
+        super(cause);
+    }
 }
-

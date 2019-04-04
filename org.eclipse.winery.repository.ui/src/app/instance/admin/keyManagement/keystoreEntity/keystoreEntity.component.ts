@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -22,6 +22,22 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ModalDirective } from 'ngx-bootstrap';
 import { WineryRowData } from '../../../../wineryTableModule/wineryTable.component';
 import { SelectItem } from 'ng2-select';
+import { KeyExchangeService } from '../keyExchange/keyExchange.service';
+import { ConfigurationService } from '../../accountability/configuration/configuration.service';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+export class KeyAssignmentData {
+    keyAlias: string;
+    keyGivers: string[];
+    keyTakers: string[];
+
+    constructor(ka: KeyAssignmentData) {
+        this.keyAlias = ka.keyAlias;
+        this.keyGivers = ka.keyGivers;
+        this.keyTakers = ka.keyTakers;
+    }
+}
 
 export class KeyPairTableData {
     alias: string;
@@ -76,7 +92,7 @@ export class KeystoreTableData {
     selector: 'winery-instance-keystoreentity',
     templateUrl: 'keystoreEntity.component.html',
     styleUrls: ['keystoreEntity.component.css'],
-    providers: [KeystoreEntityService]
+    providers: [KeystoreEntityService, KeyExchangeService]
 })
 export class KeystoreEntityComponent implements OnInit {
 
@@ -100,7 +116,7 @@ export class KeystoreEntityComponent implements OnInit {
             { title: 'Signature Algorithm', name: 'sigAlgName' },
             { title: 'Valid From', name: 'notBefore' },
             { title: 'Valid Until', name: 'notAfter' }
-        ]
+        ],
     };
     data: KeystoreTableData = {
         'secretkeys': [],
@@ -111,6 +127,15 @@ export class KeystoreEntityComponent implements OnInit {
         row: '',
         column: ''
     };
+    keyAssignmentData: KeyAssignmentData[] = [];
+    givenPermissionsCount = 0;
+    takenPermissionsTotalCount = 0;
+    takenPermissionsNotAddedCount = 0;
+    myIdentity: string = undefined;
+    myPublicKeyAlias = '';
+    selectedPublicKeyAlias: SelectItem = undefined;
+    selectedSecretKeyAlias: SelectItem = undefined;
+    selectedParticipant: string = undefined;
     selectedEntitySecPolicyTemplate: any = undefined;
     supportedAlgorithms: string[] = [];
     secPolicyTemplateNameSpace: string;
@@ -126,10 +151,14 @@ export class KeystoreEntityComponent implements OnInit {
     @ViewChild('keyInfoModal') keyInfoModal: ModalDirective;
     @ViewChild('keypairInfoModal') keypairInfoModal: ModalDirective;
     @ViewChild('certificateInfoModal') certificateInfoModal: ModalDirective;
+    @ViewChild('setOfficialKeypairModal') setOfficialKeypairModal: ModalDirective;
+    @ViewChild('givePermissionsModal') givePermissionsModal: ModalDirective;
 
     constructor(private service: KeystoreEntityService,
                 private notify: WineryNotificationService,
-                public route: ActivatedRoute) {
+                public route: ActivatedRoute,
+                private accountabilityConfigService: ConfigurationService,
+                private keyExchangeService: KeyExchangeService) {
         this.route.url.subscribe(params => {
             this.keystoreEntityType = params[0].path;
         });
@@ -145,46 +174,91 @@ export class KeystoreEntityComponent implements OnInit {
             data => this.secPolicyTemplateNameSpace = data,
             error => this.handleError(error)
         );
+
         switch (this.keystoreEntityType) {
             case 'secretkeys':
                 this.service.getSecretKeys().subscribe(
-                    data => this.handleKeystoreData(data),
+                    data => this.handleKeystoreData(data, 'secretkeys', false),
+                    error => this.handleError(error)
+                );
+                break;
+            // we want to show certain key pairs when we show the key exchange tab
+            case 'keyexchange':
+                this.getKeyExchangeData().subscribe(
+                    (data: [KeyPairEntity[], KeyEntity[]]) => {
+                        this.handleKeystoreData(data[0], 'keypairs', true);
+                        this.handleKeystoreData(data[1], 'secretkeys', true);
+                        this.refreshCounts();
+                        this.loading = false;
+                    },
                     error => this.handleError(error)
                 );
                 break;
             case 'keypairs':
                 this.service.getKeyPairs().subscribe(
-                    data => this.handleKeystoreData(data),
+                    data => this.handleKeystoreData(data, 'keypairs', false),
                     error => this.handleError(error)
                 );
                 break;
             case 'certificates':
                 this.service.getCertificates().subscribe(
-                    data => this.handleKeystoreData(data),
+                    data => this.handleKeystoreData(data, 'certificates', false),
                     error => this.handleError(error)
                 );
                 break;
         }
     }
 
-    private handleKeystoreData(receivedData: any[]) {
-        this.loading = false;
+    private handleKeystoreData(receivedData: any[], entityType: string, stillLoading: boolean) {
+        if (!stillLoading) {
+            this.loading = false;
+        }
         // console.log(receivedData);
-        if (this.keystoreEntityType === 'keypairs') {
-            this.data[this.keystoreEntityType] = [];
+        if (entityType === 'keypairs') {
+            this.data[entityType] = [];
             for (let i = 0; i < receivedData.length; i++) {
                 const kp = new KeyPairTableData(<KeyPairEntity>receivedData[i]);
-                this.data[this.keystoreEntityType].push(kp);
+                this.data[entityType].push(kp);
             }
         } else {
-            this.data[this.keystoreEntityType] = receivedData;
+            this.data[entityType] = receivedData;
         }
     }
 
-    private handleError(error: HttpErrorResponse) {
+    private getKeyExchangeData(): Observable<[KeyPairEntity[], KeyEntity[]]> {
+        return Observable.forkJoin([
+            this.keyExchangeService.getMyPublicKeyAlias().pipe(
+                map(data => {
+                    this.myPublicKeyAlias = data;
+                })
+            ),
+            this.accountabilityConfigService.retrieveMyIdentity().pipe(
+                map(data => {
+                    this.myIdentity = data;
+                })
+            ),
+            this.keyExchangeService.getKeyAssignments().pipe(
+                map(data => {
+                    this.keyAssignmentData = data;
+                })
+            )])
+            .pipe(catchError(error => of(this.notify.error(error.error))))
+            .flatMap(() => Observable.forkJoin([
+                    this.service.getKeyPairs(),
+                    this.service.getSecretKeys()
+                ]
+            ));
+    }
+
+    private handleError(error: HttpErrorResponse, timeout = -1) {
         this.loading = false;
         this.modalLoading = false;
-        this.notify.error(error.message);
+
+        if (timeout >= 0) {
+            this.notify.error(error.error, 'Error', { 'timeout': timeout });
+        } else {
+            this.notify.error(error.error);
+        }
     }
 
     private handleSuccess(): void {
@@ -206,7 +280,7 @@ export class KeystoreEntityComponent implements OnInit {
         }
     }
 
-    onRemoveClick(event: any) {
+    onRemoveClick() {
         this.confirmDeleteModal.show();
     }
 
@@ -245,7 +319,7 @@ export class KeystoreEntityComponent implements OnInit {
     addKey() {
         this.loading = true;
         this.service.addKey(this.addKeyData).subscribe(
-            data => {
+            () => {
                 this.handleSave();
             },
             error => this.handleError(error)
@@ -255,7 +329,7 @@ export class KeystoreEntityComponent implements OnInit {
     addKeypair() {
         this.loading = true;
         this.service.addKeypair(this.addKeypairData).subscribe(
-            data => {
+            () => {
                 this.handleSave();
             },
             error => this.handleError(error)
@@ -370,7 +444,7 @@ export class KeystoreEntityComponent implements OnInit {
     deleteEntity() {
         this.confirmDeleteModal.hide();
         this.service.removeEntity(this.keystoreEntityType, this.selectedCell.row.alias).subscribe(
-            data => this.handleRemove(),
+            () => this.handleRemove(),
             error => this.handleError(error)
         );
         this.selectedCell = null;
@@ -388,7 +462,7 @@ export class KeystoreEntityComponent implements OnInit {
     generateEncryptionPolicy() {
         this.modalLoading = true;
         this.service.generateEncryptionPolicy(this.selectedCell.row.alias).subscribe(
-            res => {
+            () => {
                 this.modalLoading = false;
                 this.service.getSecurityPolicyTemplate(this.secPolicyTemplateNameSpace, this.selectedCell.row.alias).subscribe(
                     data => this.handlePolicyTemplateData(data),
@@ -421,7 +495,7 @@ export class KeystoreEntityComponent implements OnInit {
     generateSigningPolicy() {
         this.modalLoading = true;
         this.service.generateSigningPolicy(this.selectedCell.row.alias).subscribe(
-            res => {
+            () => {
                 this.modalLoading = false;
                 this.service.getSecurityPolicyTemplate(this.secPolicyTemplateNameSpace, this.selectedCell.row.alias).subscribe(
                     data => this.handlePolicyTemplateData(data),
@@ -439,7 +513,7 @@ export class KeystoreEntityComponent implements OnInit {
     addCertificate() {
         this.loading = true;
         this.service.addCertificate(this.addCertificateData).subscribe(
-            data => {
+            () => {
                 this.handleSave();
             },
             error => this.handleError(error)
@@ -449,20 +523,161 @@ export class KeystoreEntityComponent implements OnInit {
     setAsMaster(keyPairAlias: string) {
         this.closeInfoModal();
         this.loading = true;
-        this.service
-            .setAsMaster(keyPairAlias)
-            .subscribe(() => {
-                    this.service
-                        .getKeyPairs()
-                        .subscribe(data => {
-                            this.handleKeystoreData(data);
-                        }, error => {
-                            this.handleError(error);
-                        });
-                },
-                e => {
-                    this.handleError(e);
-                });
-
+        this.service.setAsMaster(keyPairAlias)
+            .flatMap(() => this.service.getKeyPairs())
+            .subscribe((keyPairs: KeyPairEntity[]) => {
+                this.handleKeystoreData(keyPairs, 'keypairs', false);
+                this.handleSuccess();
+            }, error => {
+                this.handleError(error);
+            });
     }
+
+    getKeyPairAliases(): SelectItem[] {
+        return this.data.keypairs
+            .filter(keyPair =>
+                this.keyExchangeService.getAllowedPublicKeyAlgorithmNames().includes(keyPair.algorithm))
+            .map(keyPair => new SelectItem(keyPair.alias));
+    }
+
+    getSecretKeyAliases(): SelectItem[] {
+        return this.data.secretkeys
+            .map((key) => new SelectItem(key.alias));
+    }
+
+    updateAliasSelection() {
+        if (this.myPublicKeyAlias !== '') {
+            const aliases = this.getKeyPairAliases();
+            this.selectedPublicKeyAlias = aliases.filter(aliasItem => aliasItem.text === this.myPublicKeyAlias)[0];
+        } else {
+            this.selectedPublicKeyAlias = undefined;
+        }
+    }
+
+    setOfficialKeyPair(): void {
+        this.loading = true;
+        this.keyExchangeService.setOfficialKeyPairAlias(this.selectedPublicKeyAlias.text).subscribe(
+            () => {
+                this.handleSuccess();
+                this.myPublicKeyAlias = this.selectedPublicKeyAlias.text;
+            },
+            error => this.handleError(error)
+        );
+    }
+
+    givePermission(): void {
+        this.loading = true;
+        this.keyExchangeService
+            .givePermission(this.selectedParticipant, this.selectedSecretKeyAlias.text)
+            .flatMap(() => this.keyExchangeService.getKeyAssignments())
+            .subscribe(
+                (assignments) => {
+                    this.keyAssignmentData = assignments;
+                    this.refreshCounts();
+                    this.handleSuccess();
+                },
+                error => this.handleError(error)
+            );
+    }
+
+    updateTakenPermissions(): void {
+        this.loading = true;
+        let addedCount: number;
+        let errorCount: number;
+        this.keyExchangeService.updateListOfKeysGivenToMe()
+            .flatMap(updateResult => {
+                addedCount = updateResult.addedKeysCount;
+                errorCount = updateResult.badGiversCount;
+
+                return this.service.getSecretKeys();
+            })
+            .flatMap(secretKeys => {
+                this.handleKeystoreData(secretKeys, 'secretkeys', true);
+
+                return this.keyExchangeService.getKeyAssignments();
+            })
+            .subscribe(data => {
+                    this.keyAssignmentData = data;
+                    this.refreshCounts();
+                    this.loading = false;
+
+                    if (addedCount > 0) {
+                        this.notify.success(`(${addedCount}) new keys were added to the key store!`, 'Success');
+                    }
+
+                    if (errorCount > 0) {
+                        this.notify
+                            .warning(`(${this.getTakenPermissionsNotAddedCount() - addedCount}) ` +
+                                `keys from (${errorCount}) participant failed to decrypt (have you changed your official public key?)`);
+                    }
+
+                    if (addedCount === 0 && errorCount === 0) {
+                        this.notify.success('No new keys were retrieved.');
+                    }
+                },
+                (error: any) => this.handleError(error, 10000)
+            );
+    }
+
+    showSetOfficialKeyPairModal(): void {
+        this.updateAliasSelection();
+        this.setOfficialKeypairModal.show();
+    }
+
+    showGivePermissionsModal(): void {
+        this.selectedSecretKeyAlias = undefined;
+        this.selectedParticipant = undefined;
+        this.givePermissionsModal.show();
+    }
+
+    onAliasSelected(event: SelectItem) {
+        this.selectedPublicKeyAlias = event;
+    }
+
+    onSKAliasSelected(event: SelectItem) {
+        this.selectedSecretKeyAlias = event;
+    }
+
+    private refreshCounts(): void {
+        this.takenPermissionsNotAddedCount = this.getTakenPermissionsNotAddedCount();
+        this.takenPermissionsTotalCount = this.getTakenPermissionsTotalCount();
+        this.givenPermissionsCount = this.getGivenPermissionsCount();
+    }
+
+    private getTakenPermissionsTotalCount(): number {
+        if (this.myIdentity !== undefined && this.keyAssignmentData !== undefined) {
+            return this.keyAssignmentData
+                .filter(assignment => assignment.keyTakers !== undefined &&
+                    assignment.keyTakers.includes(this.myIdentity)).length;
+        } else {
+            return 0;
+        }
+    }
+
+    private getTakenPermissionsNotAddedCount(): number {
+        if (this.myIdentity !== undefined && this.keyAssignmentData !== undefined) {
+            const result = this.keyAssignmentData
+                .filter(assignment =>
+                    assignment.keyTakers !== undefined &&
+                    assignment.keyTakers.includes(this.myIdentity) &&
+                    !this.data.secretkeys.map(key => key.alias).includes(assignment.keyAlias)
+                );
+            return result.length;
+        } else {
+            return 0;
+        }
+    }
+
+    private getGivenPermissionsCount(): number {
+        if (this.myIdentity !== undefined && this.keyAssignmentData !== undefined) {
+            const result = this.keyAssignmentData
+                .filter(assignment => assignment.keyGivers !== undefined &&
+                    assignment.keyGivers.includes(this.myIdentity)
+                );
+            return result.length;
+        } else {
+            return 0;
+        }
+    }
+
 }

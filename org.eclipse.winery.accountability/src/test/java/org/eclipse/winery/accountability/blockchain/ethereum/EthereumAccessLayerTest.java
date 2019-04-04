@@ -15,23 +15,20 @@
 package org.eclipse.winery.accountability.blockchain.ethereum;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import javax.crypto.SecretKey;
 
+import org.eclipse.winery.accountability.EthereumPropertiesHelper;
 import org.eclipse.winery.accountability.KeyHelper;
 import org.eclipse.winery.accountability.blockchain.BlockchainFactory;
 import org.eclipse.winery.accountability.exceptions.BlockchainException;
@@ -52,38 +49,34 @@ class EthereumAccessLayerTest {
     private static final String PRIMARY_ADDRESS = "0xe4b51a3d4e77d2ce2a9d9ce107ec8ec7cff5571d";
     private static final String SECONDARY_ADDRESS = "0x696c7c33ac2aa448880f7c1e5f85eb8c2401cf03";
     private static final String SECRET_KEY_PHRASE = "secret key! do not tell anyone about it!";
+    private EthereumPropertiesHelper helper = new EthereumPropertiesHelper();
     private EthereumAccessLayer blockchainAccess;
 
     EthereumAccessLayer loadAccessLayer(String keystoreFileName) throws IOException, BlockchainException {
-        try (InputStream propsStream = getClass().getClassLoader().getResourceAsStream(CONFIGURATION_FILE_NAME)) {
-            Properties props = new Properties();
-            props.load(propsStream);
-            // we can only tell the keystore file path during runtime.
-            String keystorePath = Objects.requireNonNull(getClass().getClassLoader().getResource(keystoreFileName)).getPath();
-            props.setProperty("ethereum-credentials-file-path", keystorePath);
-            return (EthereumAccessLayer) BlockchainFactory
-                .getBlockchainAccess(BlockchainFactory.AvailableBlockchains.ETHEREUM, props);
-        }
+        Properties props = this.helper.getProperties(keystoreFileName);
+
+        return (EthereumAccessLayer) BlockchainFactory
+            .getBlockchainAccess(BlockchainFactory.AvailableBlockchains.ETHEREUM, props);
     }
 
     @BeforeEach
-    void setUp() throws IOException, BlockchainException {
+    void setUp() throws IOException, BlockchainException, ExecutionException, InterruptedException {
         Security.addProvider(new BouncyCastleProvider());
         // Available since Java8u151, allows 256bit key usage
         Security.setProperty("crypto.policy", "unlimited");
+        this.helper.initializeAccessLayer();
         this.blockchainAccess = loadAccessLayer(PRIMARY_KEYSTORE_FILE_NAME);
     }
 
     @Test
     void testKeystoreGeneration() throws BlockchainException {
-        URL pathK = getClass().getClassLoader().getResource(PRIMARY_KEYSTORE_FILE_NAME);
         final Path path = blockchainAccess.createNewKeystore(KEYSTORE_PASSWORD);
         blockchainAccess.unlockCredentials(KEYSTORE_PASSWORD, path.toString());
         blockchainAccess.close();
     }
 
     @Test
-    void testGivingPermissions() throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, BlockchainException, InvalidKeyException, ExecutionException, InterruptedException {
+    void testGivingPermissions() throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, BlockchainException, ExecutionException, InterruptedException {
         // test giving a single permission
         // first set the official public key of the taker
         BlockchainFactory.reset();
@@ -120,5 +113,16 @@ class EthereumAccessLayerTest {
         Assertions.assertFalse(Arrays.asList(permissions.get(PRIMARY_ADDRESS)).contains(permission));
         Assertions.assertTrue(Arrays.asList(permissions.get(PRIMARY_ADDRESS)).contains(permission1));
         Assertions.assertTrue(Arrays.asList(permissions.get(PRIMARY_ADDRESS)).contains(permission2));
+    }
+
+    @Test
+    void testGivingPermissionsToParticipantWithoutOfficialPublicKey() throws IOException, BlockchainException, NoSuchAlgorithmException {
+        BlockchainFactory.reset();
+        this.blockchainAccess = this.loadAccessLayer(PRIMARY_KEYSTORE_FILE_NAME);
+        SecretKey permission = KeyHelper.convertStringToSecretKey(SECRET_KEY_PHRASE, SymmetricEncryptionAlgorithmEnum.AES512);
+        Assertions.assertThrows(Exception.class, () ->
+            this.blockchainAccess
+                .setPermissions(SECONDARY_ADDRESS, new SecretKey[] {permission})
+                .get());
     }
 }
