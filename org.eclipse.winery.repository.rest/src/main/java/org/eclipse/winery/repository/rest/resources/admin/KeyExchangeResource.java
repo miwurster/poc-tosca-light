@@ -109,7 +109,7 @@ public class KeyExchangeResource {
             PermissionsManager manager = RepositoryFactory.getRepository().getPermissionsManager();
 
             return Response.ok().entity(manager.getMyOfficialKeyPairAlias().get()).build();
-        }catch (ParticipantPublicKeyNotSetException e) {
+        } catch (ParticipantPublicKeyNotSetException e) {
             return createNoPublicKeyWarning();
         } catch (InterruptedException | ExecutionException | AccountabilityException | BlockchainException e) {
             return createException("Could not retrieve the official key pair", e);
