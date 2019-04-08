@@ -233,7 +233,6 @@ export class KeystoreEntityComponent implements OnInit {
     }
 
     private handleKeystoreData(receivedData: any[], entityType: string, stillLoading: boolean) {
-        console.debug(receivedData);
         if (!stillLoading) {
             this.loading = false;
         }
@@ -253,7 +252,7 @@ export class KeystoreEntityComponent implements OnInit {
                 const relatedEntries = this.keyAssignmentData
                     .filter(assignment =>
                         assignment.keyAlias === key.alias &&
-                        (assignment.keyTakers.length > 0 || assignment.keyGivers.length > 0))
+                        (assignment.keyTakers.length > 0 || assignment.keyGivers.length > 0));
                 key.isShared = relatedEntries.length > 0;
                 key.keyGivers = relatedEntries.length > 0 ? relatedEntries[0].keyGivers : [];
                 key.keyTakers = relatedEntries.length > 0 ? relatedEntries[0].keyTakers : [];
@@ -367,7 +366,7 @@ export class KeystoreEntityComponent implements OnInit {
 
     addKeypair() {
         this.loading = true;
-        console.debug(this.addKeypairData.setAsMaster);
+
         this.service.addKeypair(this.addKeypairData).subscribe(
             () => {
                 this.handleSave();
