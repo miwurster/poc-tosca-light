@@ -82,7 +82,7 @@ public class KeyPairsResource extends AbstractKeyPairResource {
                                  @FormDataParam("certificate") InputStream certificatesInputStream,
                                  @FormDataParam("setAsMaster") String setMasterKey,
                                  @Context UriInfo uriInfo) {
-
+        
         if (!this.parametersAreNonNull(algorithm, distinguishedName)
             && !this.parametersAreNonNull(privateKeyInputStream, certificatesInputStream)) {
             throw new WebApplicationException(
@@ -117,7 +117,7 @@ public class KeyPairsResource extends AbstractKeyPairResource {
                     );
                 }
             }
-
+            
             String alias = determineAlias(setMasterKey, certificate.getPublicKey());
             KeyPairInformation entity = this.storeKeyPair(alias, privateKey, certificate);
 
@@ -162,7 +162,7 @@ public class KeyPairsResource extends AbstractKeyPairResource {
                 LOGGER.info("The old master signing keypair was renamed to: " + newName);
         }
 
-        return this.keystoreManager.storeKeyPair(SecureCSARConstants.MASTER_SIGNING_KEYNAME, privateKey, certificate);
+        return this.keystoreManager.storeKeyPair(alias, privateKey, certificate);
     }
 
     private String determineAlias(String setMasterKey, PublicKey publicKey) throws IOException, NoSuchAlgorithmException {

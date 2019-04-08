@@ -68,7 +68,7 @@ public class KeyEntityInformation {
         }
         
         public Builder keySizeInBits(int size) { 
-            keySizeInBits = size * Byte.SIZE; 
+            keySizeInBits = size; 
             return this; 
         }
         

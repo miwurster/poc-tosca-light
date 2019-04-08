@@ -35,6 +35,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECKey;
+import java.security.interfaces.RSAKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -120,9 +122,21 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     private KeyEntityInformation generateKeyEntityInformation(String alias, Key key) {
         return new KeyEntityInformation
             .Builder(alias, key.getAlgorithm(), key.getFormat())
-            .keySizeInBits(key.getEncoded().length)
+            .keySizeInBits(getKeySizeInBits(key))
             .base64Key(key.getEncoded())
             .build();
+    }
+
+    private int getKeySizeInBits(Key key) {
+        if (key instanceof RSAKey) {
+            return ((RSAKey) key).getModulus().bitLength();
+        }
+
+        if (key instanceof ECKey) {
+            return ((ECKey)key).getParams().getCurve().getField().getFieldSize();
+        }
+
+        return key.getEncoded().length * 8;
     }
 
     private KeyPairInformation generateKeyPairInformation(KeyEntityInformation privateKey, Certificate certificate) throws GenericKeystoreManagerException {
@@ -408,12 +422,16 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         Collection<KeyPairInformation> keypairs = new ArrayList<>();
         try {
             aliases = this.keystore.aliases();
+
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
+
                 if (this.keystore.isKeyEntry(alias)) {
                     Key key;
+
                     try {
                         key = this.keystore.getKey(alias, KEYSTORE_PASSWORD.toCharArray());
+
                         if ((key instanceof PrivateKey)) {
                             Certificate certificate = loadCertificate(alias);
                             KeyEntityInformation privateKeyInfo = this.generateKeyEntityInformation(alias, key);
@@ -432,6 +450,7 @@ public class JCEKSKeystoreManager implements KeystoreManager {
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
+
         return keypairs;
     }
 
@@ -520,7 +539,7 @@ public class JCEKSKeystoreManager implements KeystoreManager {
                             if (!withKeyEncoded) {
                                 keys.add(new KeyEntityInformation
                                     .Builder(alias, key.getAlgorithm(), key.getFormat())
-                                    .keySizeInBits(key.getEncoded().length)
+                                    .keySizeInBits(this.getKeySizeInBits(key))
                                     .build()
                                 );
                             } else {
@@ -550,7 +569,7 @@ public class JCEKSKeystoreManager implements KeystoreManager {
     public String findAliasOfPublicKey(PublicKey key) throws KeyStoreException, GenericKeystoreManagerException {
         KeyPair current;
         Collection<KeyPairInformation> allKeyPairs = this.getKeyPairs();
-        
+
         for (KeyPairInformation keyPairInformation : allKeyPairs) {
             current = this.loadKeyPair(keyPairInformation.getPublicKey().getAlias());
             if (publicKeyEquals(current.getPublic(), key))
@@ -559,6 +578,5 @@ public class JCEKSKeystoreManager implements KeystoreManager {
 
         return null;
     }
-    
 } 
     

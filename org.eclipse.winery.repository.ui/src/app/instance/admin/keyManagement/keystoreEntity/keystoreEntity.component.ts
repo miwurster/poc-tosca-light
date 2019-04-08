@@ -55,6 +55,23 @@ export class KeyPairTableData {
     }
 }
 
+export class KeyTableData {
+    alias: string;
+    algorithm: string;
+    sizeInBits: number;
+    isShared: boolean;
+    keyGivers: string[];
+    keyTakers: string[];
+    originalKey: KeyEntity;
+
+    constructor(key: KeyEntity) {
+        this.alias = key.alias;
+        this.algorithm = key.algorithm;
+        this.sizeInBits = key.keySizeInBits;
+        this.originalKey = key;
+    }
+}
+
 export class AddSecretKeyData {
     algorithm: string;
     keySizeInBits: string;
@@ -83,7 +100,7 @@ export class AddKeypairData {
 }
 
 export class KeystoreTableData {
-    secretkeys: KeyEntity[];
+    secretkeys: KeyTableData[];
     keypairs: KeyPairTableData[];
     certificates: CertificateEntity[];
 }
@@ -103,7 +120,8 @@ export class KeystoreEntityComponent implements OnInit {
         'secretkeys': [
             { title: 'Alias', name: 'alias' },
             { title: 'Algorithm', name: 'algorithm' },
-            { title: 'Size In Bits', name: 'keySizeInBits' }
+            { title: 'Size In Bits', name: 'sizeInBits' },
+            { title: 'Shared Key?', name: 'isShared' }
         ],
         'keypairs': [
             { title: 'Alias', name: 'alias' },
@@ -177,7 +195,12 @@ export class KeystoreEntityComponent implements OnInit {
 
         switch (this.keystoreEntityType) {
             case 'secretkeys':
-                this.service.getSecretKeys().subscribe(
+                this.keyExchangeService.getKeyAssignments().pipe(
+                    map(data => {
+                        this.keyAssignmentData = data;
+                    })
+                ).flatMap(() => this.service.getSecretKeys()
+                ).subscribe(
                     data => this.handleKeystoreData(data, 'secretkeys', false),
                     error => this.handleError(error)
                 );
@@ -210,15 +233,31 @@ export class KeystoreEntityComponent implements OnInit {
     }
 
     private handleKeystoreData(receivedData: any[], entityType: string, stillLoading: boolean) {
+        console.debug(receivedData);
         if (!stillLoading) {
             this.loading = false;
         }
         // console.log(receivedData);
         if (entityType === 'keypairs') {
             this.data[entityType] = [];
+
             for (let i = 0; i < receivedData.length; i++) {
                 const kp = new KeyPairTableData(<KeyPairEntity>receivedData[i]);
                 this.data[entityType].push(kp);
+            }
+        } else if (entityType === 'secretkeys') {
+            this.data[entityType] = [];
+
+            for (let i = 0; i < receivedData.length; i++) {
+                const key = new KeyTableData(<KeyEntity>receivedData[i]);
+                const relatedEntries = this.keyAssignmentData
+                    .filter(assignment =>
+                        assignment.keyAlias === key.alias &&
+                        (assignment.keyTakers.length > 0 || assignment.keyGivers.length > 0))
+                key.isShared = relatedEntries.length > 0;
+                key.keyGivers = relatedEntries.length > 0 ? relatedEntries[0].keyGivers : [];
+                key.keyTakers = relatedEntries.length > 0 ? relatedEntries[0].keyTakers : [];
+                this.data[entityType].push(key);
             }
         } else {
             this.data[entityType] = receivedData;
@@ -328,6 +367,7 @@ export class KeystoreEntityComponent implements OnInit {
 
     addKeypair() {
         this.loading = true;
+        console.debug(this.addKeypairData.setAsMaster);
         this.service.addKeypair(this.addKeypairData).subscribe(
             () => {
                 this.handleSave();
