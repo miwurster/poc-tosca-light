@@ -33,6 +33,11 @@ import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.model.adaptation.enhance.EnhancementUtils;
+import org.eclipse.winery.model.adaptation.enhance.TopologyAndErrorList;
+import org.eclipse.winery.model.adaptation.problemsolving.SolutionFactory;
+import org.eclipse.winery.model.adaptation.problemsolving.SolutionInputData;
+import org.eclipse.winery.model.adaptation.problemsolving.SolutionStrategy;
 import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TRelationshipTemplate;
@@ -285,5 +290,41 @@ public class TopologyTemplateResource {
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
+    }
+
+    @POST
+    @Path("applysolution")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public TTopologyTemplate applySolution(SolutionInputData data) {
+        SolutionStrategy strategy = SolutionFactory.getSolution(data);
+        if (strategy.applySolution(this.topologyTemplate, data)) {
+            RestUtils.persist(parent);
+        } else {
+            throw new InternalError("Could not apply the given algorithm to the topology!");
+        }
+
+        return this.topologyTemplate;
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("determinestatefulcomponents")
+    public TTopologyTemplate determineStatefulComponents() {
+        return EnhancementUtils.determineStatefulComponents(this.topologyTemplate);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("determinefreezablecomponents")
+    public TopologyAndErrorList determineFreezableComponents() {
+        return EnhancementUtils.determineFreezableComponents(this.topologyTemplate);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("cleanfreezablecomponents")
+    public TTopologyTemplate cleanFreezableComponents() {
+        return EnhancementUtils.cleanFreezableComponents(this.topologyTemplate);
     }
 }

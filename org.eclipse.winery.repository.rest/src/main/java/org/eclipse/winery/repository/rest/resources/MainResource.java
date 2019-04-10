@@ -39,7 +39,6 @@ import org.eclipse.winery.repository.importing.CsarImportOptions;
 import org.eclipse.winery.repository.importing.CsarImporter;
 import org.eclipse.winery.repository.importing.ImportMetaInformation;
 import org.eclipse.winery.repository.rest.RestUtils;
-import org.eclipse.winery.repository.rest.resources.testrefinementmodels.TestRefinementModelsResource;
 import org.eclipse.winery.repository.rest.resources.API.APIResource;
 import org.eclipse.winery.repository.rest.resources.admin.AdminTopResource;
 import org.eclipse.winery.repository.rest.resources.compliancerules.ComplianceRulesResource;
@@ -56,6 +55,7 @@ import org.eclipse.winery.repository.rest.resources.entitytypes.requirementtypes
 import org.eclipse.winery.repository.rest.resources.imports.ImportsResource;
 import org.eclipse.winery.repository.rest.resources.patternrefinementmodels.PatternRefinementModelsResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplatesResource;
+import org.eclipse.winery.repository.rest.resources.testrefinementmodels.TestRefinementModelsResource;
 import org.eclipse.winery.repository.rest.resources.yaml.YAMLParserResource;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
