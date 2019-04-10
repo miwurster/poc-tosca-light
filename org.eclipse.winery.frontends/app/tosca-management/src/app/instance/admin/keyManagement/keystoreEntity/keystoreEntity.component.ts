@@ -120,8 +120,7 @@ export class KeystoreEntityComponent implements OnInit {
         'secretkeys': [
             { title: 'Alias', name: 'alias' },
             { title: 'Algorithm', name: 'algorithm' },
-            { title: 'Size In Bits', name: 'sizeInBits' },
-            { title: 'Shared Key?', name: 'isShared' }
+            { title: 'Size In Bits', name: 'sizeInBits' }
         ],
         'keypairs': [
             { title: 'Alias', name: 'alias' },
@@ -145,6 +144,7 @@ export class KeystoreEntityComponent implements OnInit {
         row: '',
         column: ''
     };
+    isKeyExchangeEnabled = false;
     keyAssignmentData: KeyAssignmentData[] = [];
     givenPermissionsCount = 0;
     takenPermissionsTotalCount = 0;
@@ -184,6 +184,17 @@ export class KeystoreEntityComponent implements OnInit {
 
     ngOnInit(): void {
         this.loading = true;
+        this.isKeyExchangeEnabled = this.accountabilityConfigService.isAccountablilityCheckEnabled();
+
+        // the isShared column should be shown only of accountability is enabled!
+        if (this.isKeyExchangeEnabled) {
+            if (this.columns.secretkeys.filter(entry => entry.name === 'isShared').length === 0) {
+                this.columns.secretkeys.push({ title: 'Shared Key?', name: 'isShared' });
+            }
+        } else {
+            this.columns.secretkeys = this.columns.secretkeys.filter(entry => entry.name !== 'isShared');
+        }
+
         this.service.getSupportedAlgorithms().subscribe(
             data => this.handleAlgorithmData(data),
             error => this.handleError(error)
@@ -249,13 +260,17 @@ export class KeystoreEntityComponent implements OnInit {
 
             for (let i = 0; i < receivedData.length; i++) {
                 const key = new KeyTableData(<KeyEntity>receivedData[i]);
-                const relatedEntries = this.keyAssignmentData
-                    .filter(assignment =>
-                        assignment.keyAlias === key.alias &&
-                        (assignment.keyTakers.length > 0 || assignment.keyGivers.length > 0));
-                key.isShared = relatedEntries.length > 0;
-                key.keyGivers = relatedEntries.length > 0 ? relatedEntries[0].keyGivers : [];
-                key.keyTakers = relatedEntries.length > 0 ? relatedEntries[0].keyTakers : [];
+
+                if (this.isKeyExchangeEnabled) {
+                    const relatedEntries = this.keyAssignmentData
+                        .filter(assignment =>
+                            assignment.keyAlias === key.alias &&
+                            (assignment.keyTakers.length > 0 || assignment.keyGivers.length > 0));
+                    key.isShared = relatedEntries.length > 0;
+                    key.keyGivers = relatedEntries.length > 0 ? relatedEntries[0].keyGivers : [];
+                    key.keyTakers = relatedEntries.length > 0 ? relatedEntries[0].keyTakers : [];
+                }
+
                 this.data[entityType].push(key);
             }
         } else {
