@@ -37,7 +37,7 @@ public class TInterfaces {
     @NonNull
     public List<TInterface> getInterface() {
         if (_interface == null) {
-            _interface = new ArrayList<TInterface>();
+            _interface = new ArrayList<>();
         }
         return this._interface;
     }

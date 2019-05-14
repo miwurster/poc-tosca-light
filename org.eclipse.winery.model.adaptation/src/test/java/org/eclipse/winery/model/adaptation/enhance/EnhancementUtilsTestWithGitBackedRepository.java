@@ -14,12 +14,15 @@
 
 package org.eclipse.winery.model.adaptation.enhance;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TPolicy;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
@@ -135,7 +138,8 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
                 )
             );
 
-        Map<QName, Map<QName, String>> availableFeaturesForTopology = EnhancementUtils.getAvailableFeaturesForTopology(serviceTemplate.getTopologyTemplate());
+        Map<QName, Map<QName, String>> availableFeaturesForTopology =
+            EnhancementUtils.getAvailableFeaturesForTopology(serviceTemplate.getTopologyTemplate());
 
         assertEquals(2, availableFeaturesForTopology.size());
         assertEquals(1, availableFeaturesForTopology.get(
@@ -144,5 +148,35 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
         assertEquals(2, availableFeaturesForTopology.get(
             QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-w1")).size()
         );
+    }
+
+    @Test
+    void mergeFeatureNodeTypes() throws Exception {
+        this.setRevisionTo("origin/plain");
+
+        Map<QName, TExtensibleElements> previousListOfNodeTypes = this.repository.getQNameToElementMapping(NodeTypeId.class);
+
+        Map<QName, String> mySqlFeatures = new HashMap<>();
+        mySqlFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}MySQL-Database_freezable-w1"), "");
+
+        Map<QName, String> ubuntuFeatures = new HashMap<>();
+        ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-testable-w1"), "");
+        ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-freezable-w1"), "");
+
+        Map<QName, Map<QName, String>> availableFeaturesForTopology = new HashMap<>();
+        availableFeaturesForTopology.put(
+            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}MySQL-Database_w1"),
+            mySqlFeatures
+        );
+        availableFeaturesForTopology.put(
+            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-w1"),
+            ubuntuFeatures
+        );
+
+        EnhancementUtils.createFeatureNodeTypes(availableFeaturesForTopology);
+
+        Map<QName, TExtensibleElements> listOfNodeTypes = this.repository.getQNameToElementMapping(NodeTypeId.class);
+
+//        assertEquals(1, listOfNodeTypes.size() - previousListOfNodeTypes.size());
     }
 }

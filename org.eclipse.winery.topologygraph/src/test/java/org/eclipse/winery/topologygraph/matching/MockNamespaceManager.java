@@ -72,4 +72,9 @@ public class MockNamespaceManager implements NamespaceManager {
     public boolean isSecureCollection(String namespace) {
         return false;
     }
+
+    @Override
+    public boolean isGeneratedNamespace(String namespace) {
+        return false;
+    }
 }

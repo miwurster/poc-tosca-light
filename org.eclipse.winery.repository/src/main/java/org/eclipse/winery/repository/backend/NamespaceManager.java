@@ -79,4 +79,6 @@ public interface NamespaceManager {
     boolean isPatternNamespace(String namespace);
 
     boolean isSecureCollection(String namespace);
+
+    boolean isGeneratedNamespace(String namespace);
 }

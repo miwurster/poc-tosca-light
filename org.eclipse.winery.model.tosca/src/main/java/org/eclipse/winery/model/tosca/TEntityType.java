@@ -143,6 +143,10 @@ public abstract class TEntityType extends TExtensibleElements implements HasName
         this.name = value;
     }
 
+    public QName getQName() {
+        return QName.valueOf("{" + this.targetNamespace + "}" + this.name);
+    }
+
     @NonNull
     public TBoolean getAbstract() {
         if (_abstract == null) {

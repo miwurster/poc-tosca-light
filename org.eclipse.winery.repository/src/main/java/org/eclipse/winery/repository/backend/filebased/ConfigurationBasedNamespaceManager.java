@@ -161,4 +161,9 @@ public class ConfigurationBasedNamespaceManager extends AbstractNamespaceManager
     public boolean isSecureCollection(String namespace) {
         return false;
     }
+
+    @Override
+    public boolean isGeneratedNamespace(String namespace) {
+        return false;
+    }
 }
