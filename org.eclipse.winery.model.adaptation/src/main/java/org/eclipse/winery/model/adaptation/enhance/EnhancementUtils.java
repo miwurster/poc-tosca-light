@@ -15,6 +15,7 @@
 package org.eclipse.winery.model.adaptation.enhance;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,6 +33,7 @@ import org.eclipse.winery.model.tosca.constants.OpenToscaBaseTypes;
 import org.eclipse.winery.model.tosca.constants.OpenToscaInterfaces;
 import org.eclipse.winery.model.tosca.constants.ToscaBaseTypes;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
+import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 
 public class EnhancementUtils {
@@ -132,5 +134,22 @@ public class EnhancementUtils {
             .filter(relation -> ModelUtilities.isOfType(ToscaBaseTypes.hostedOnRelationshipType, relation.getType(), relationshipTypes))
             .findFirst()
             .orElse(null);
+    }
+
+    public static Map<QName, Map<QName, String>> getAvailableFeaturesForTopology(TTopologyTemplate topology) {
+        IRepository repository = RepositoryFactory.getRepository();
+
+        Map<QName, Map<QName, String>> availableFeatures = new HashMap<>();
+        Map<QName, TNodeType> nodeTypes = repository.getQNameToElementMapping(NodeTypeId.class);
+
+        topology.getNodeTemplates().forEach(node -> {
+            Map<QName, String> featureChildren = ModelUtilities.getAvailableFeaturesOfType(node.getType(), nodeTypes);
+
+            if (featureChildren.size() > 0) {
+                availableFeatures.put(node.getType(), featureChildren);
+            }
+        });
+
+        return availableFeatures;
     }
 }
