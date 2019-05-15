@@ -192,6 +192,8 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
         assertEquals(2, oldNodeTypeToMergedNodeTypeMapping.size());
         assertEquals(expectedMergedMySqlQName, generatedMySql.getQName());
         assertEquals(expectedMergedUbuntuQName, generatedUbuntu.getQName());
+        assertNotNull(generatedUbuntu.getWinerysPropertiesDefinition());
+        assertEquals(9, generatedUbuntu.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().size());
 
         TNodeTypeImplementation generatedMySqlImpl = this.repository.getElement(
             new ArrayList<>(this.repository.getAllElementsReferencingGivenType(NodeTypeImplementationId.class, expectedMergedMySqlQName))
@@ -208,5 +210,30 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
         assertNotNull(generatedUbuntuImpl);
         assertNotNull(generatedUbuntuImpl.getImplementationArtifacts());
         assertEquals(3, generatedUbuntuImpl.getImplementationArtifacts().getImplementationArtifact().size());
+    }
+
+    @Test
+    void applyFeaturesToTopology() throws Exception {
+        this.setRevisionTo("origin/plain");
+
+        TTopologyTemplate topology = RepositoryFactory.getRepository()
+            .getElement(
+                new ServiceTemplateId(
+                    QName.valueOf("{http://opentosca.org/add/management/to/instances/servicetemplates}STWithBasicManagementOnly_w1-wip1")
+                )
+            ).getTopologyTemplate();
+
+        EnhancementUtils.applyFeaturesForTopology(topology, EnhancementUtils.getAvailableFeaturesForTopology(topology));
+
+        assertEquals(
+            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}Ubuntu_16.04-w1"),
+            topology.getNodeTemplate("Ubuntu_16.04-w1").getType()
+        );
+        assertEquals(
+            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}MySQL-Database_w1"),
+            topology.getNodeTemplate("MySQL-Database_w1").getType()
+        );
+        assertNotNull(topology.getNodeTemplate("Ubuntu_16.04-w1").getProperties());
+        assertEquals(9, topology.getNodeTemplate("Ubuntu_16.04-w1").getProperties().getKVProperties().size());
     }
 }

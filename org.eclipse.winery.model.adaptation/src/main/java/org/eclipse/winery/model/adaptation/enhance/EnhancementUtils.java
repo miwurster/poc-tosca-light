@@ -28,6 +28,7 @@ import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.model.tosca.TDeploymentArtifacts;
+import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TInterface;
 import org.eclipse.winery.model.tosca.TInterfaces;
@@ -233,9 +234,45 @@ public class EnhancementUtils {
      */
     public static TTopologyTemplate applyFeaturesForTopology(TTopologyTemplate topology, Map<QName, Map<QName, String>> featureList) {
         // first generate the new NodeTypes
-        createFeatureNodeTypes(featureList);
+        Map<QName, TNodeType> basicTypeToMergedTypeMap = createFeatureNodeTypes(featureList);
 
         // second update the topology accordingly
+        basicTypeToMergedTypeMap.forEach((oldTypeQName, generatedNodeType) -> {
+            topology.getNodeTemplates().stream()
+                .filter(nodeTemplate -> nodeTemplate.getType().equals(oldTypeQName))
+                .forEach(nodeTemplate -> {
+                    nodeTemplate.setType(generatedNodeType.getQName());
+                    if (Objects.nonNull(generatedNodeType.getWinerysPropertiesDefinition())) {
+                        PropertyDefinitionKVList definedProperties = generatedNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList();
+
+                        // todo: think about moving this code to a separate ModelUtilities method.
+                        Map<String, String> kvProperties = Objects.nonNull(nodeTemplate.getProperties().getKVProperties())
+                            ? nodeTemplate.getProperties().getKVProperties()
+                            : new HashMap<>();
+                        if (kvProperties.isEmpty()) {
+                            definedProperties.forEach(propertyDefinition -> kvProperties.put(propertyDefinition.getKey(), ""));
+                        } else {
+                            definedProperties.forEach(propertyDefinition -> {
+                                if (Objects.isNull(kvProperties.get(propertyDefinition.getKey()))) {
+                                    kvProperties.put(propertyDefinition.getKey(), "");
+                                }
+                            });
+                        }
+                        // TODO:
+                        // We need to set new Properties because the {@link TEntityTemplate#setProperties} is implemented
+                        // badly and does not add new properties. Due to time constraints we do it that way for now.
+                        TEntityTemplate.Properties p = new TEntityTemplate.Properties();
+                        p.setKVProperties(kvProperties);
+                        nodeTemplate.setProperties(p);
+                    }
+                });
+        });
+
+        // todo: think about a plugin system?
+        // call freeze methods to enable the freeze and defrost functionality for the topology 
+        determineStatefulComponents(topology);
+        determineFreezableComponents(topology);
+        cleanFreezableComponents(topology);
 
         return topology;
     }
