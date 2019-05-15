@@ -104,6 +104,10 @@ public abstract class TEntityTypeImplementation extends TExtensibleElements impl
         this.targetNamespace = value;
     }
 
+    public QName getQName() {
+        return QName.valueOf("{" + this.targetNamespace + "}" + this.name);
+    }
+
     @Nullable
     public TTags getTags() {
         return tags;

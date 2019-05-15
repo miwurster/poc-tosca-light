@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.adaptation.enhance;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,13 +49,17 @@ import org.eclipse.winery.repository.backend.NamespaceManager;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.filebased.NamespaceProperties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class exposes utility functions which enhance a given topology. It also provides some semantic utilities as,
  * e.g., returning the hostedOn relation of a NodeTemplate.
  */
 public class EnhancementUtils {
 
-    private static final String GENERATED_NS_SUFFIX = "/generated";
+    static final String GENERATED_NS_SUFFIX = "/generated";
+    private static final Logger logger = LoggerFactory.getLogger(EnhancementUtils.class);
 
     // region ******************** Freeze and Defrost ********************
     public static TTopologyTemplate determineStatefulComponents(TTopologyTemplate topology) {
@@ -326,12 +331,17 @@ public class EnhancementUtils {
                     });
             });
 
-            genericTypeToGeneratedFeatureTypeMapping.put(qName, baseNodeType);
+            try {
+                repository.setElement(new NodeTypeId(baseNodeType.getQName()), baseNodeType);
+                repository.setElement(new NodeTypeImplementationId(generatedImplementation.getQName()), generatedImplementation);
+            } catch (IOException e) {
+                logger.error("Error while saving generated definitions.", e);
+            }
 
-            // Save everything :D
+            genericTypeToGeneratedFeatureTypeMapping.put(qName, baseNodeType);
         });
 
-        return null;
+        return genericTypeToGeneratedFeatureTypeMapping;
     }
     // endregion
 }

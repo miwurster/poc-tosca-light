@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.adaptation.enhance;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +22,12 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
+import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TNodeType;
+import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
 import org.eclipse.winery.model.tosca.TPolicy;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
@@ -154,6 +158,7 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
     void mergeFeatureNodeTypes() throws Exception {
         this.setRevisionTo("origin/plain");
 
+        // region preparation
         Map<QName, TExtensibleElements> previousListOfNodeTypes = this.repository.getQNameToElementMapping(NodeTypeId.class);
 
         Map<QName, String> mySqlFeatures = new HashMap<>();
@@ -163,20 +168,45 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
         ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-testable-w1"), "");
         ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-freezable-w1"), "");
 
-        Map<QName, Map<QName, String>> availableFeaturesForTopology = new HashMap<>();
-        availableFeaturesForTopology.put(
-            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}MySQL-Database_w1"),
-            mySqlFeatures
-        );
-        availableFeaturesForTopology.put(
-            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-w1"),
-            ubuntuFeatures
-        );
+        QName mySql = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}MySQL-Database_w1");
+        QName ubuntu = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-w1");
 
-        EnhancementUtils.createFeatureNodeTypes(availableFeaturesForTopology);
+        Map<QName, Map<QName, String>> availableFeaturesForTopology = new HashMap<>();
+        availableFeaturesForTopology.put(mySql, mySqlFeatures);
+        availableFeaturesForTopology.put(ubuntu, ubuntuFeatures);
+        // endregion
+
+        Map<QName, TNodeType> oldNodeTypeToMergedNodeTypeMapping = EnhancementUtils.createFeatureNodeTypes(availableFeaturesForTopology);
 
         Map<QName, TExtensibleElements> listOfNodeTypes = this.repository.getQNameToElementMapping(NodeTypeId.class);
+        QName expectedMergedMySqlQName = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}MySQL-Database_w1");
+        QName expectedMergedUbuntuQName = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}Ubuntu_16.04-w1");
+        TNodeType generatedMySql = oldNodeTypeToMergedNodeTypeMapping.get(mySql);
+        TNodeType generatedUbuntu = oldNodeTypeToMergedNodeTypeMapping.get(ubuntu);
 
-//        assertEquals(1, listOfNodeTypes.size() - previousListOfNodeTypes.size());
+        assertTrue(this.repository.getNamespaceManager()
+            .isGeneratedNamespace("http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX)
+        );
+
+        assertEquals(2, listOfNodeTypes.size() - previousListOfNodeTypes.size());
+        assertEquals(2, oldNodeTypeToMergedNodeTypeMapping.size());
+        assertEquals(expectedMergedMySqlQName, generatedMySql.getQName());
+        assertEquals(expectedMergedUbuntuQName, generatedUbuntu.getQName());
+
+        TNodeTypeImplementation generatedMySqlImpl = this.repository.getElement(
+            new ArrayList<>(this.repository.getAllElementsReferencingGivenType(NodeTypeImplementationId.class, expectedMergedMySqlQName))
+                .get(0)
+        );
+        TNodeTypeImplementation generatedUbuntuImpl = this.repository.getElement(
+            new ArrayList<>(this.repository.getAllElementsReferencingGivenType(NodeTypeImplementationId.class, expectedMergedUbuntuQName))
+                .get(0)
+        );
+
+        assertNotNull(generatedMySqlImpl);
+        assertNotNull(generatedMySqlImpl.getImplementationArtifacts());
+        assertEquals(4, generatedMySqlImpl.getImplementationArtifacts().getImplementationArtifact().size());
+        assertNotNull(generatedUbuntuImpl);
+        assertNotNull(generatedUbuntuImpl.getImplementationArtifacts());
+        assertEquals(3, generatedUbuntuImpl.getImplementationArtifacts().getImplementationArtifact().size());
     }
 }
