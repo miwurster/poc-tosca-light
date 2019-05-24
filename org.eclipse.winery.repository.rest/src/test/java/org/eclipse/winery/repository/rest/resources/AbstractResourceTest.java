@@ -225,6 +225,15 @@ public abstract class AbstractResourceTest extends TestWithGitBackedRepository {
             .statusCode(204);
     }
 
+    public void assertPutWithResponse(String restURL, String fileName) {
+        start()
+            .body(readFromClasspath(fileName))
+            .contentType(getAccept(fileName))
+            .put(callURL(restURL))
+            .then()
+            .statusCode(200);
+    }
+
     /**
      * Maybe remove in order to force JSON.
      */

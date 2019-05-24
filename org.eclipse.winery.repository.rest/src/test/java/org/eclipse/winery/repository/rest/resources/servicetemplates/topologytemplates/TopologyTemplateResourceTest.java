@@ -135,4 +135,20 @@ public class TopologyTemplateResourceTest extends AbstractResourceTest {
         this.assertPut("servicetemplates/http%253A%252F%252Fplain.winery.opentosca.org%252Fservicetemplates/ServiceTemplateMinimalExampleWithAllPropertyVariants/topologytemplate/", "entitytypes/servicetemplates/topologytemplates/empty-xml-test--topology-with-empty-policy.json");
         this.assertGet("servicetemplates/http%253A%252F%252Fplain.winery.opentosca.org%252Fservicetemplates/ServiceTemplateMinimalExampleWithAllPropertyVariants/topologytemplate/", "entitytypes/servicetemplates/topologytemplates/empty-xml-test--topology-without-empty-elements.xml");
     }
+
+    @Test
+    public void getAvailableFeatures() throws Exception {
+        this.setRevisionTo("origin/plain");
+
+        this.assertGet("servicetemplates/http%253A%252F%252Fopentosca.org%252Fadd%252Fmanagement%252Fto%252Finstances%252Fservicetemplates/STWithBasicManagementOnly_w1-wip1/topologytemplate/availablefeatures",
+            "entitytypes/servicetemplates/topologytemplates/availableFeaturesForBasicManagementST.json");
+    }
+
+    @Test
+    public void applyAvailableFeatures() throws Exception {
+        this.setRevisionTo("origin/plain");
+
+        this.assertPutWithResponse("servicetemplates/http%253A%252F%252Fopentosca.org%252Fadd%252Fmanagement%252Fto%252Finstances%252Fservicetemplates/STWithBasicManagementOnly_w1-wip1/topologytemplate/availablefeatures",
+            "entitytypes/servicetemplates/topologytemplates/availableFeaturesForBasicManagementST.json");
+    }
 }
