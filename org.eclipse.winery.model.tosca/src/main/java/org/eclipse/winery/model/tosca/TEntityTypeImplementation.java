@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -104,6 +105,7 @@ public abstract class TEntityTypeImplementation extends TExtensibleElements impl
         this.targetNamespace = value;
     }
 
+    @JsonIgnore
     public QName getQName() {
         return QName.valueOf("{" + this.targetNamespace + "}" + this.name);
     }
