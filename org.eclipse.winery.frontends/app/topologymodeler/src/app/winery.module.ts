@@ -48,6 +48,7 @@ import { ProblemDetectionComponent } from './problemDetection/problemDetection.c
 import { PropertiesModule } from './properties/properties.module';
 import { StatefulAnnotationsService } from './services/statefulAnnotations.service';
 import { WineryModalModule } from '../../../tosca-management/src/app/wineryModalModule/winery.modal.module';
+import { EnricherComponent } from './enricher/enricher.component';
 
 @NgModule({
     declarations: [
@@ -56,7 +57,8 @@ import { WineryModalModule } from '../../../tosca-management/src/app/wineryModal
         SidebarComponent,
         PrintViewComponent,
         RefinementSidebarComponent,
-        ProblemDetectionComponent
+        ProblemDetectionComponent,
+        EnricherComponent
     ],
     exports: [WineryComponent],
     imports: [
