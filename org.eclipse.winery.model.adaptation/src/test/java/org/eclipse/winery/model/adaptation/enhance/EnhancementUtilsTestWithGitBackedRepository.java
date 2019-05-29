@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeType;
@@ -191,58 +192,44 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
     }
 
     @Test
-    void mergeFeatureNodeTypes() throws Exception {
+    void mergeFeatureNodeTypeUbuntu() throws Exception {
         this.setRevisionTo("origin/plain");
 
-        // region preparation
         Map<QName, TExtensibleElements> previousListOfNodeTypes = this.repository.getQNameToElementMapping(NodeTypeId.class);
 
-        Map<QName, String> mySqlFeatures = new HashMap<>();
-        mySqlFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}MySQL-Database_freezable-w1"), "");
+        String testingFeatureName = "Testing";
+        String freezeFeatureName = "Freeze and Defrost";
+        String nodeTemplateId = "myId";
 
         Map<QName, String> ubuntuFeatures = new HashMap<>();
-        ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-testable-w1"), "");
-        ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-freezable-w1"), "");
+        ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-testable-w1"), testingFeatureName);
+        ubuntuFeatures.put(QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-freezable-w1"), freezeFeatureName);
 
-        QName mySql = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}MySQL-Database_w1");
-        QName ubuntu = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-w1");
+        TNodeTemplate nodeTemplate = new TNodeTemplate();
+        nodeTemplate.setType(
+            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-w1")
+        );
+        nodeTemplate.setId(nodeTemplateId);
 
-        Map<QName, Map<QName, String>> availableFeaturesForTopology = new HashMap<>();
-        availableFeaturesForTopology.put(mySql, mySqlFeatures);
-        availableFeaturesForTopology.put(ubuntu, ubuntuFeatures);
-        // endregion
-
-        Map<QName, TNodeType> oldNodeTypeToMergedNodeTypeMapping = EnhancementUtils.createFeatureNodeTypes(availableFeaturesForTopology);
+        TNodeType generatedFeatureEnrichedNodeType = EnhancementUtils.createFeatureNodeType(nodeTemplate, ubuntuFeatures);
 
         Map<QName, TExtensibleElements> listOfNodeTypes = this.repository.getQNameToElementMapping(NodeTypeId.class);
-        QName expectedMergedMySqlQName = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}MySQL-Database_w1");
-        QName expectedMergedUbuntuQName = QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}Ubuntu_16.04-w1");
-        TNodeType generatedMySql = oldNodeTypeToMergedNodeTypeMapping.get(mySql);
-        TNodeType generatedUbuntu = oldNodeTypeToMergedNodeTypeMapping.get(ubuntu);
-
-        assertTrue(this.repository.getNamespaceManager()
-            .isGeneratedNamespace("http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX)
+        QName expectedMergedUbuntuQName = QName.valueOf(
+            "{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX
+                + "}Ubuntu_16.04-w1-" + nodeTemplateId + "-" + "Testing-Freeze_and_Defrost"
+                + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"
         );
 
-        assertEquals(2, listOfNodeTypes.size() - previousListOfNodeTypes.size());
-        assertEquals(2, oldNodeTypeToMergedNodeTypeMapping.size());
-        assertEquals(expectedMergedMySqlQName, generatedMySql.getQName());
-        assertEquals(expectedMergedUbuntuQName, generatedUbuntu.getQName());
-        assertNotNull(generatedUbuntu.getWinerysPropertiesDefinition());
-        assertEquals(9, generatedUbuntu.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().size());
+        assertEquals(1, listOfNodeTypes.size() - previousListOfNodeTypes.size());
+        assertEquals(expectedMergedUbuntuQName, generatedFeatureEnrichedNodeType.getQName());
+        assertNotNull(generatedFeatureEnrichedNodeType.getWinerysPropertiesDefinition());
+        assertEquals(9, generatedFeatureEnrichedNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().size());
 
-        TNodeTypeImplementation generatedMySqlImpl = this.repository.getElement(
-            new ArrayList<>(this.repository.getAllElementsReferencingGivenType(NodeTypeImplementationId.class, expectedMergedMySqlQName))
-                .get(0)
-        );
         TNodeTypeImplementation generatedUbuntuImpl = this.repository.getElement(
             new ArrayList<>(this.repository.getAllElementsReferencingGivenType(NodeTypeImplementationId.class, expectedMergedUbuntuQName))
                 .get(0)
         );
 
-        assertNotNull(generatedMySqlImpl);
-        assertNotNull(generatedMySqlImpl.getImplementationArtifacts());
-        assertEquals(4, generatedMySqlImpl.getImplementationArtifacts().getImplementationArtifact().size());
         assertNotNull(generatedUbuntuImpl);
         assertNotNull(generatedUbuntuImpl.getImplementationArtifacts());
         assertEquals(3, generatedUbuntuImpl.getImplementationArtifacts().getImplementationArtifact().size());
@@ -261,15 +248,24 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
 
         EnhancementUtils.applyFeaturesForTopology(topology, EnhancementUtils.getAvailableFeaturesForTopology(topology));
 
+        String ubuntuNodeTemplateId = "Ubuntu_16.04-w1";
+        String mySqlNodeTemplateId = "MySQL-Database_w1";
+
         assertEquals(
-            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}Ubuntu_16.04-w1"),
-            topology.getNodeTemplate("Ubuntu_16.04-w1").getType()
+            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX
+                + "}Ubuntu_16.04-w1-" + ubuntuNodeTemplateId + "-Testing-Freeze_and_Defrost"
+                + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"),
+            topology.getNodeTemplate(ubuntuNodeTemplateId).getType()
         );
         assertEquals(
-            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX + "}MySQL-Database_w1"),
-            topology.getNodeTemplate("MySQL-Database_w1").getType()
+            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes" + EnhancementUtils.GENERATED_NS_SUFFIX +
+                "}MySQL-Database_w1-" + mySqlNodeTemplateId + "-Freeze_and_defrost"
+                + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"),
+            topology.getNodeTemplate(mySqlNodeTemplateId).getType()
         );
-        assertNotNull(topology.getNodeTemplate("Ubuntu_16.04-w1").getProperties());
-        assertEquals(9, topology.getNodeTemplate("Ubuntu_16.04-w1").getProperties().getKVProperties().size());
+        assertNotNull(topology.getNodeTemplate(ubuntuNodeTemplateId).getProperties());
+        assertEquals(9, topology.getNodeTemplate(ubuntuNodeTemplateId).getProperties().getKVProperties().size());
+        assertNotNull(topology.getNodeTemplate(mySqlNodeTemplateId).getProperties());
+        assertEquals(3, topology.getNodeTemplate(mySqlNodeTemplateId).getProperties().getKVProperties().size());
     }
 }

@@ -144,6 +144,7 @@ public abstract class TEntityType extends TExtensibleElements implements HasName
     }
 
     @JsonIgnore
+    @NonNull
     public QName getQName() {
         return QName.valueOf("{" + this.targetNamespace + "}" + this.name);
     }
