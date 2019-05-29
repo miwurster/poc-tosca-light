@@ -294,17 +294,13 @@ public class EnhancementUtils {
                     // TODO:
                     // We need to set new Properties because the {@link TEntityTemplate#setProperties} is implemented
                     // badly and does not add new properties. Due to time constraints we do it that way for now.
-                    TEntityTemplate.Properties p = new TEntityTemplate.Properties();
-                    p.setKVProperties(kvProperties);
-                    nodeTemplate.setProperties(p);
+                    if (!kvProperties.isEmpty()) {
+                        TEntityTemplate.Properties p = new TEntityTemplate.Properties();
+                        p.setKVProperties(kvProperties);
+                        nodeTemplate.setProperties(p);
+                    }
                 }
             });
-
-        // todo: think about a plugin system?
-        // call freeze methods to enable the freeze and defrost functionality for the topology 
-        determineStatefulComponents(topology);
-        determineFreezableComponents(topology);
-        cleanFreezableComponents(topology);
 
         return topology;
     }
@@ -413,6 +409,14 @@ public class EnhancementUtils {
                     addAllDAsAndIAsToImplementation(generatedImplementation, nodeTypeImplementations.get(id.getQName()));
                 });
         });
+
+        // In the case that neither the basic type, nor the feature types define properties,
+        // remove them from the type to ensure a compliant XML.
+        if (Objects.nonNull(featureEnrichedNodeType.getWinerysPropertiesDefinition())
+            && Objects.nonNull(featureEnrichedNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList())
+            && featureEnrichedNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().isEmpty()) {
+            ModelUtilities.removeWinerysPropertiesDefinition(featureEnrichedNodeType);
+        }
 
         try {
             repository.setElement(new NodeTypeId(featureEnrichedNodeType.getQName()), featureEnrichedNodeType);
