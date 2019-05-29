@@ -366,6 +366,10 @@ public class TopologyTemplateResource {
             }
         });
 
-        return EnhancementUtils.applyFeaturesForTopology(this.topologyTemplate, featureMap);
+        TTopologyTemplate enrichedTopology = EnhancementUtils.applyFeaturesForTopology(this.topologyTemplate, featureMap);
+        this.parent.setTopology(enrichedTopology, this.type);
+        RestUtils.persist(this.parent);
+
+        return enrichedTopology;
     }
 }
