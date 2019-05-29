@@ -142,16 +142,52 @@ class EnhancementUtilsTestWithGitBackedRepository extends TestWithGitBackedRepos
                 )
             );
 
-        Map<QName, Map<QName, String>> availableFeaturesForTopology =
-            EnhancementUtils.getAvailableFeaturesForTopology(serviceTemplate.getTopologyTemplate());
+        Map<String, Map<QName, String>> availableFeaturesForTopology =
+            EnhancementUtils.getAvailableFeaturesForTopology
+                (serviceTemplate.getTopologyTemplate());
 
         assertEquals(2, availableFeaturesForTopology.size());
-        assertEquals(1, availableFeaturesForTopology.get(
-            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}MySQL-Database_w1")).size()
+        assertEquals(1, availableFeaturesForTopology.get("MySQL-Database_w1").size());
+        assertEquals(2, availableFeaturesForTopology.get("Ubuntu_16.04-w1").size());
+    }
+
+    @Test
+    void getAvailableFeaturesWhereNoUbuntuIsAvailableInTheStack() throws Exception {
+        this.setRevisionTo("origin/plain");
+
+        TServiceTemplate serviceTemplate = RepositoryFactory.getRepository()
+            .getElement(
+                new ServiceTemplateId(
+                    QName.valueOf("{http://opentosca.org/add/management/to/instances/servicetemplates}STWithBasicManagementOnly_w1-wip3")
+                )
+            );
+
+        Map<String, Map<QName, String>> availableFeaturesForTopology =
+            EnhancementUtils.getAvailableFeaturesForTopology(serviceTemplate.getTopologyTemplate());
+
+        assertEquals(1, availableFeaturesForTopology.size());
+        assertEquals(1, availableFeaturesForTopology.get("MySQL-Database_w2").size()
         );
-        assertEquals(2, availableFeaturesForTopology.get(
-            QName.valueOf("{http://opentosca.org/add/management/to/instances/nodetypes}Ubuntu_16.04-w1")).size()
-        );
+    }
+
+    @Test
+    void getAvailableFeaturesWhereASpecificRequirementIsSatisfied() throws Exception {
+        this.setRevisionTo("origin/plain");
+
+        TServiceTemplate serviceTemplate = RepositoryFactory.getRepository()
+            .getElement(
+                new ServiceTemplateId(
+                    QName.valueOf("{http://opentosca.org/add/management/to/instances/servicetemplates}STWithBasicManagementOnly_w1-wip2")
+                )
+            );
+
+        Map<String, Map<QName, String>> availableFeaturesForTopology =
+            EnhancementUtils.getAvailableFeaturesForTopology
+                (serviceTemplate.getTopologyTemplate());
+
+        assertEquals(2, availableFeaturesForTopology.size());
+        assertEquals(2, availableFeaturesForTopology.get("MySQL-Database_w2").size());
+        assertEquals(2, availableFeaturesForTopology.get("Ubuntu_16.04-w1").size());
     }
 
     @Test

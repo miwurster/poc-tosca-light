@@ -755,15 +755,15 @@ public class ModelUtilities {
         return children;
     }
 
-    public static <T extends TEntityType> Map<QName, String> getAvailableFeaturesOfType(QName givenType, Map<QName, T> elements) {
-        HashMap<QName, String> features = new HashMap<>();
+    public static <T extends TEntityType> Map<T, String> getAvailableFeaturesOfType(QName givenType, Map<QName, T> elements) {
+        HashMap<T, String> features = new HashMap<>();
         getChildrenOf(givenType, elements).forEach((qName, t) -> {
             if (Objects.nonNull(t.getTags())) {
                 List<TTag> list = t.getTags().getTag();
                 list.stream()
                     .filter(tag -> "feature".equals(tag.getName()))
                     .findFirst()
-                    .ifPresent(tTag -> features.put(qName, tTag.getValue()));
+                    .ifPresent(tTag -> features.put(elements.get(qName), tTag.getValue()));
             }
         });
         return features;

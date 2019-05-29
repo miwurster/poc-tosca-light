@@ -338,12 +338,12 @@ public class TopologyTemplateResource {
     public ArrayList<AvailableFeaturesApiData> getAvailableFeatures() {
         ArrayList<AvailableFeaturesApiData> apiData = new ArrayList<>();
 
-        EnhancementUtils.getAvailableFeaturesForTopology(this.topologyTemplate).forEach((qName, featuresMap) -> {
+        EnhancementUtils.getAvailableFeaturesForTopology(this.topologyTemplate).forEach((nodeTemplateId, featuresMap) -> {
             ArrayList<AvailableFeaturesApiData.Features> features = new ArrayList<>();
             featuresMap.forEach(
                 (featureType, featureName) -> features.add(new AvailableFeaturesApiData.Features(featureType, featureName))
             );
-            apiData.add(new AvailableFeaturesApiData(qName, features));
+            apiData.add(new AvailableFeaturesApiData(nodeTemplateId, features));
         });
 
         return apiData;
@@ -354,7 +354,7 @@ public class TopologyTemplateResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public TTopologyTemplate applyAvailableFeatures(ArrayList<AvailableFeaturesApiData> featuresList) {
-        Map<QName, Map<QName, String>> featureMap = new HashMap<>();
+        Map<String, Map<QName, String>> featureMap = new HashMap<>();
 
         featuresList.forEach(availableFeaturesApiData -> {
             HashMap<QName, String> featureTypesMap = new HashMap<>();
@@ -362,7 +362,7 @@ public class TopologyTemplateResource {
                 && availableFeaturesApiData.getFeatures().size() > 0) {
                 availableFeaturesApiData.getFeatures()
                     .forEach(features -> featureTypesMap.put(features.getType(), features.getFeatureName()));
-                featureMap.put(availableFeaturesApiData.getUsedTypeInTopology(), featureTypesMap);
+                featureMap.put(availableFeaturesApiData.getNodeTemplateId(), featureTypesMap);
             }
         });
 

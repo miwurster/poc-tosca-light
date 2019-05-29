@@ -20,23 +20,23 @@ import javax.xml.namespace.QName;
 
 public class AvailableFeaturesApiData {
 
-    private QName usedTypeInTopology;
+    private String nodeTemplateId;
     private List<Features> features;
 
     public AvailableFeaturesApiData() {
     }
 
-    public AvailableFeaturesApiData(QName usedTypeInTopology, List<Features> features) {
-        this.usedTypeInTopology = usedTypeInTopology;
+    public AvailableFeaturesApiData(String nodeTemplateId, List<Features> features) {
+        this.nodeTemplateId = nodeTemplateId;
         this.features = features;
     }
 
-    public QName getUsedTypeInTopology() {
-        return usedTypeInTopology;
+    public String getNodeTemplateId() {
+        return nodeTemplateId;
     }
 
-    public void setUsedTypeInTopology(QName usedTypeInTopology) {
-        this.usedTypeInTopology = usedTypeInTopology;
+    public void setNodeTemplateId(String nodeTemplateId) {
+        this.nodeTemplateId = nodeTemplateId;
     }
 
     public List<Features> getFeatures() {

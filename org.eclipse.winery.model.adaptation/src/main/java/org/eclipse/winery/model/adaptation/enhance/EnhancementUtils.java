@@ -21,12 +21,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
+import org.eclipse.winery.common.version.VersionUtils;
+import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.TDeploymentArtifacts;
 import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
@@ -37,6 +40,7 @@ import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
 import org.eclipse.winery.model.tosca.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.TRelationshipType;
+import org.eclipse.winery.model.tosca.TRequirementDefinition;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.constants.OpenToscaBaseTypes;
 import org.eclipse.winery.model.tosca.constants.OpenToscaInterfaces;
@@ -203,17 +207,49 @@ public class EnhancementUtils {
      *
      * @param topology The topology to update.
      */
-    public static Map<QName, Map<QName, String>> getAvailableFeaturesForTopology(TTopologyTemplate topology) {
+    public static Map<String, Map<QName, String>> getAvailableFeaturesForTopology(TTopologyTemplate topology) {
         IRepository repository = RepositoryFactory.getRepository();
 
-        Map<QName, Map<QName, String>> availableFeatures = new HashMap<>();
+        Map<String, Map<QName, String>> availableFeatures = new HashMap<>();
         Map<QName, TNodeType> nodeTypes = repository.getQNameToElementMapping(NodeTypeId.class);
 
         topology.getNodeTemplates().forEach(node -> {
-            Map<QName, String> featureChildren = ModelUtilities.getAvailableFeaturesOfType(node.getType(), nodeTypes);
+            Map<TNodeType, String> featureChildren = ModelUtilities.getAvailableFeaturesOfType(node.getType(), nodeTypes);
+            Map<QName, String> applicableFeatures = new HashMap<>();
+
+            // Check requirements
+            featureChildren.forEach((featureType, value) -> {
+                if (Objects.nonNull(featureType.getRequirementDefinitions())) {
+                    List<TRequirementDefinition> requirements = featureType.getRequirementDefinitions().getRequirementDefinition().stream()
+                        .filter(req -> req.getRequirementType().equals(OpenToscaBaseTypes.managementFeatureRequirement))
+                        .collect(Collectors.toList());
+
+                    requirements.forEach(req -> {
+                        boolean applicable = ModelUtilities.getHostedOnSuccessors(topology, node).stream()
+                            .anyMatch(hosts -> {
+                                WineryVersion reqVersion = VersionUtils.getVersion(req.getName());
+                                String reqName = VersionUtils.getNameWithoutVersion(req.getName());
+
+                                String type = hosts.getTypeAsQName().getLocalPart();
+                                if (VersionUtils.getNameWithoutVersion(type).equals(reqName)) {
+                                    return reqVersion.getComponentVersion().isEmpty()
+                                        || reqVersion.getComponentVersion().equals(VersionUtils.getVersion(type).getComponentVersion());
+                                }
+
+                                return false;
+                            });
+
+                        if (applicable) {
+                            applicableFeatures.put(featureType.getQName(), value);
+                        }
+                    });
+                } else {
+                    applicableFeatures.put(featureType.getQName(), value);
+                }
+            });
 
             if (featureChildren.size() > 0) {
-                availableFeatures.put(node.getType(), featureChildren);
+                availableFeatures.put(node.getId(), applicableFeatures);
             }
         });
 
@@ -232,9 +268,9 @@ public class EnhancementUtils {
      * @return The updated topology in which all matching NodeTypes will be replaced with the corresponding feature
      * NodeTypes.
      */
-    public static TTopologyTemplate applyFeaturesForTopology(TTopologyTemplate topology, Map<QName, Map<QName, String>> featureMap) {
+    public static TTopologyTemplate applyFeaturesForTopology(TTopologyTemplate topology, Map<String, Map<QName, String>> featureMap) {
         // first generate the new NodeTypes
-        Map<QName, TNodeType> basicTypeToMergedTypeMap = createFeatureNodeTypes(featureMap);
+        Map<QName, TNodeType> basicTypeToMergedTypeMap = null; //createFeatureNodeTypes(featureMap);
 
         // second update the topology accordingly
         basicTypeToMergedTypeMap.forEach((oldTypeQName, generatedNodeType) -> {
