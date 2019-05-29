@@ -145,6 +145,14 @@
                 [style.background-color]="getStyle(navbarButtonsState.buttonsState.problemDetectionButton)">
                 Detect Problems
             </button>
+            <button
+                class="btn btn-sm align-middle dark-button-style"
+                type="button"
+                id="enrichment"
+                (click)="toggleButton($event)"
+                [style.background-color]="getStyle(navbarButtonsState.buttonsState.enrichmentButton)">
+                Enrich Node Types
+            </button>
         </div>
 
         <div class="btn-group button-group" data-toggle="buttons">
