@@ -14,16 +14,16 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { WineryNotificationService } from './wineryNotificationModule/wineryNotification.service';
 import { ExistService } from './wineryUtils/existService';
-import { backendBaseURL } from './configuration';
 import { BackendAvailabilityStates } from './model/enums';
 import { WineryGitLogComponent } from './wineryGitLog/wineryGitLog.component';
+import { WineryRepositoryConfigurationService } from './wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 @Component({
     selector: 'winery-repository',
     templateUrl: './wineryRepository.html',
     styleUrls: ['./wineryRepository.component.css'],
     providers: [
-        ExistService
+        ExistService, WineryRepositoryConfigurationService
     ]
 })
 /*
@@ -45,21 +45,21 @@ export class WineryRepositoryComponent implements OnInit {
         lastOnBottom: true
     };
 
-    constructor(private notify: WineryNotificationService, private existService: ExistService) {
-
+    constructor(private notify: WineryNotificationService, private existService: ExistService,
+                private configurationService: WineryRepositoryConfigurationService) {
     }
 
     ngOnInit() {
-        this.existService.check(backendBaseURL + '/').subscribe(
-            data => {
-                this.backendState = BackendAvailabilityStates.Available;
-                this.loading = false;
-            },
-            error => {
-                this.loading = false;
-                this.backendState = BackendAvailabilityStates.Unavailable;
-            }
-        );
+        this.configurationService.getConfigurationFromBackend()
+            .subscribe(data => {
+                    this.backendState = BackendAvailabilityStates.Available;
+                    this.loading = false;
+                },
+                error => {
+                    this.loading = false;
+                    this.backendState = BackendAvailabilityStates.Unavailable;
+                }
+            );
     }
 
     onClick() {
