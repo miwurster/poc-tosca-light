@@ -1083,10 +1083,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             let labelString = (isNullOrUndefined(newRelationship.state) ? '' : newRelationship.state + '<br>')
                 // why not use name -> save the type's id into the name (without management version)
                 + newRelationship.name;
-
-            if (labelString.startsWith(this.backendService.configuration.relationshipPrefix)) {
-                // Workaround to support old topology templates with the real name
-                labelString = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
+            
+            if (!isNullOrUndefined(this.backendService.configuration)) {
+                if (labelString.startsWith(this.backendService.configuration.relationshipPrefix)) {
+                    // Workaround to support old topology templates with the real name
+                    labelString = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
+                }
             }
 
             const border = isNullOrUndefined(newRelationship.state)

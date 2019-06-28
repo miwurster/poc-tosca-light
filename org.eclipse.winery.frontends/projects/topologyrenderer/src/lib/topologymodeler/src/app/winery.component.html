@@ -11,11 +11,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
-<hotkeys-cheatsheet></hotkeys-cheatsheet>
+<!--<hotkeys-cheatsheet></hotkeys-cheatsheet> TODO YANNIC : INSERT AGAIN-->
 <router-outlet *ngIf="!readonly"></router-outlet>
 
 <winery-topology-renderer *ngIf="loaded?.loadedData"
-                          [readonly]="backendService.configuration.isReadonly"
+                          [readonly]="readonly"
                           [entityTypes]="entityTypes"
                           [differencesData]="topologyDifferences"
                           [nodeTemplates]="nodeTemplates"

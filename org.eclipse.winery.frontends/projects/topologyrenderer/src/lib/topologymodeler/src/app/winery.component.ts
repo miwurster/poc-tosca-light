@@ -86,7 +86,7 @@ export class WineryComponent implements OnInit, AfterViewInit {
      * inside the Redux store of this application.
      */
     ngOnInit() {
-        this.entityTypes = new EntityTypesModel();
+        this.entityTypes = new EntityTypesModel;
 
         if (this.topologyModelerData) {
             if (this.topologyModelerData.configuration.isReadonly) {
@@ -95,7 +95,7 @@ export class WineryComponent implements OnInit, AfterViewInit {
             // If data is passed to the topologymodeler directly, rendering is initiated immediately without backend
             // calls
             if (this.topologyModelerData.topologyTemplate) {
-                this.initiateLocalRendering(this.topologyModelerData);
+                this.initiateLocalRendering(this.topologyModelerData, this.entityTypes);
             } else {
                 if (this.topologyModelerData.configuration.repositoryURL) {
                     this.backendService.endpointConfiguration.next(this.topologyModelerData.configuration);
@@ -231,13 +231,27 @@ export class WineryComponent implements OnInit, AfterViewInit {
         }
     }
 
-    initiateLocalRendering(tmData: TopologyModelerInputDataFormat): void {
+    initiateLocalRendering(tmData: TopologyModelerInputDataFormat, tEntityTypes: EntityTypesModel): void {
         const nodeTemplateArray: Array<TNodeTemplate>
             = tmData.topologyTemplate.nodeTemplates;
         const relationshipTemplateArray: Array<TRelationshipTemplate>
             = tmData.topologyTemplate.relationshipTemplates;
         // init rendering
         this.entityTypes.nodeVisuals = tmData.visuals;
+        
+        // INIT entityType.Relationshiptype empty
+        this.entityTypes.relationshipTypes = [];
+        this.entityTypes.relationshipTypes
+                        .push(new VisualEntityType(
+                            'Depends On',
+                            'relship1',
+                            'relationshipType.name',
+                            'relationshipType.namespace',
+                            'relationshipType.properties',
+                            'visuals.color',
+                            'relationshipType.full')
+                        );
+
         this.initTopologyTemplate(nodeTemplateArray, relationshipTemplateArray);
         this.loaded = { loadedData: true, generatedReduxState: false };
         this.appReadyEvent.trigger();

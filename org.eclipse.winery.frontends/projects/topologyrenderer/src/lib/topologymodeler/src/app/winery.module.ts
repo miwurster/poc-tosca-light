@@ -28,7 +28,6 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { TopologyRendererModule } from './topology-renderer/topology-renderer.module';
 import { PrintViewComponent } from './print-view/print-view.component';
 import { DevToolsExtension, NgRedux, NgReduxModule } from '@angular-redux/store';
-import { INITIAL_IWINERY_STATE, IWineryState, rootReducer } from './redux/store/winery.store';
 import { WineryActions } from './redux/actions/winery.actions';
 import { TopologyRendererActions } from './redux/actions/topologyRenderer.actions';
 import { LoadedService } from './services/loaded.service';
@@ -49,6 +48,9 @@ import { PropertiesModule } from './properties/properties.module';
 import { StatefulAnnotationsService } from './services/statefulAnnotations.service';
 import { WineryModalModule } from '../../../tosca-management/src/app/wineryModalModule/winery.modal.module';
 import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/wineryFeatureToggleModule/winery-feature-toggle.module';
+import { NavbarComponent } from './navbar/navbar.component';
+import { CanvasComponent } from './canvas/canvas.component';
+import { TopologyRendererComponent } from './topology-renderer/topology-renderer.component';
 
 @NgModule({
     declarations: [
@@ -59,7 +61,13 @@ import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/win
         RefinementSidebarComponent,
         ProblemDetectionComponent
     ],
-    exports: [WineryComponent],
+    exports: [WineryComponent,
+        TopologyRendererModule,
+        SidebarComponent,
+        PaletteComponent,
+        RefinementSidebarComponent,
+        ProblemDetectionComponent
+    ],
     imports: [
         BrowserModule,
         FormsModule,
@@ -105,16 +113,16 @@ import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/win
     bootstrap: [WineryComponent]
 })
 export class WineryModule {
-    constructor(ngRedux: NgRedux<IWineryState>,
+/*    constructor(ngRedux: NgRedux<IWineryState>,
                 devTools: DevToolsExtension) {
         const storeEnhancers = devTools.isEnabled() ?
             [devTools.enhancer()] :
             [];
 
-        ngRedux.configureStore(
+         ngRedux.configureStore(
             rootReducer,
             INITIAL_IWINERY_STATE,
             [],
-            storeEnhancers);
-    }
+            storeEnhancers); 
+    }*/
 }

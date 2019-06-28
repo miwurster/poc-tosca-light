@@ -14,6 +14,7 @@
 
 import {Directive, Input, TemplateRef, ViewContainerRef, OnInit} from '@angular/core';
 import {WineryRepositoryConfigurationService} from './WineryRepositoryConfiguration.service';
+import { isNullOrUndefined } from 'util';
 
 export enum FeatureEnum {
     Splitting = 'splitting', Completion = 'completion', Compliance = 'compliance',
@@ -30,10 +31,12 @@ export class FeatureToggleDirective implements OnInit {
         private configService: WineryRepositoryConfigurationService
     ) {}
     ngOnInit() {
-        if (this.configService.configuration.features[this.wineryRepositoryFeatureToggle]) {
-            this.viewContainer.createEmbeddedView(this.templateRef);
-        } else {
-            this.viewContainer.clear();
+        if (!isNullOrUndefined(this.configService.configuration)) {
+            if (this.configService.configuration.features[this.wineryRepositoryFeatureToggle]) {
+                this.viewContainer.createEmbeddedView(this.templateRef);
+            } else {
+                this.viewContainer.clear();
+            }
         }
     }
 }
