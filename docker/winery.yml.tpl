@@ -1,11 +1,15 @@
 ui:
   features:
-    splitting: true
-    completion: true
-    patternRefinement: true
-    compliance: true
     accountability: true
+    completion: true
+    compliance: true
+    freezeAndDefrost: true
+    managementFeatureEnrichment: true
     nfv: true
+    patternRefinement: true
+    problemDetection: true
+    splitting: true
+    testRefinement: true
   endpoints:
     container: http\://{{ .Env.CONTAINER_HOSTNAME }}\:{{ .Env.CONTAINER_PORT }}
     workflowmodeler: http\://{{ .Env.WORKFLOWMODELER_HOSTNAME }}\:{{ .Env.WORKFLOWMODELER_PORT }}/winery-workflowmodeler
