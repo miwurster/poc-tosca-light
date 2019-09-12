@@ -16,6 +16,7 @@
 
 <winery-topology-renderer *ngIf="loaded?.loadedData"
                           [readonly]="readonly"
+                          [readonlyPropertyDefinitionType]="readonlyPropertyDefinitionType"
                           [entityTypes]="entityTypes"
                           [differencesData]="topologyDifferences"
                           [nodeTemplates]="nodeTemplates"

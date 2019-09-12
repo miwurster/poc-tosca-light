@@ -36,6 +36,7 @@ import { EntityTypesModel } from '../models/entityTypesModel';
 export class TopologyRendererComponent implements OnInit, OnDestroy {
 
     @Input() readonly: boolean;
+    @Input() readonlyPropertyDefinitionType: string;
     @Input() entityTypes: EntityTypesModel;
     @Input() differencesData: [ToscaDiff, TTopologyTemplate];
     @Input() nodeTemplates: Array<TNodeTemplate>;

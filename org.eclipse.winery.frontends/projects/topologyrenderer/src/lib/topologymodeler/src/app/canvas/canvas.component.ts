@@ -69,6 +69,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('importTopologyModal') importTopologyModal: ModalDirective;
     @Input() readonly: boolean;
+    @Input() readonlyPropertyDefinitionType: string;
     @Input() entityTypes: EntityTypesModel;
     @Input() diffMode = false;
     @Input() sidebarDeleteButtonClickEvent: any;

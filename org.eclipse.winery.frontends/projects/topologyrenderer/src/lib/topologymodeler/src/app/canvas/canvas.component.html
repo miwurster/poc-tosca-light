@@ -34,6 +34,7 @@
     <div #nodes>
         <winery-node *ngFor="let nodeTemplate of allNodeTemplates"
                      [readonly]="readonly"
+                     [readonlyPropertyDefinitionType]="readonlyPropertyDefinitionType"
                      [nodeTemplate]="nodeTemplate"
                      [entityTypes]="this.entityTypes"
                      (sendId)="activateNewNode($event)"

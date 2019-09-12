@@ -57,6 +57,9 @@ export class WineryComponent implements OnInit, AfterViewInit {
 
     // This variable is set via the topologyModelerData input and decides if the editing functionalities are enabled
     readonly: boolean;
+    // this variable is only used in readonly mode for properties
+    readonlyPropertyDefinitionType: string;
+
     refiningType: string;
 
     topologyDifferences: [ToscaDiff, TTopologyTemplate];
@@ -236,6 +239,8 @@ export class WineryComponent implements OnInit, AfterViewInit {
             = tmData.topologyTemplate.nodeTemplates;
         const relationshipTemplateArray: Array<TRelationshipTemplate>
             = tmData.topologyTemplate.relationshipTemplates;
+        // init readonlyPropertyDefinitionType (without properties cannot be displayed)
+        this.readonlyPropertyDefinitionType = tmData.readonlyPropertyDefinitionType;
         // init rendering
         this.entityTypes.nodeVisuals = tmData.visuals;
         

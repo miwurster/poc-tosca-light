@@ -42,4 +42,5 @@ export interface TopologyModelerInputDataFormat {
     configuration: TopologyModelerConfiguration;
     topologyTemplate: TTopologyTemplate;
     visuals: Visuals[];
+    readonlyPropertyDefinitionType: string;
 }

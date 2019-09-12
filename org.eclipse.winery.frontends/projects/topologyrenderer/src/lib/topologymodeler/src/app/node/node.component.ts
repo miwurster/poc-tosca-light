@@ -75,6 +75,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     @Input() dragSource: string;
     @Input() navbarButtonsState: TopologyRendererState;
     @Input() nodeTemplate: TNodeTemplate;
+    @Input() readonlyPropertyDefinitionType: string;
 
     @Output() sendId: EventEmitter<string>;
     @Output() askForRepaint: EventEmitter<string>;
@@ -213,8 +214,12 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     ngDoCheck() {
         const nodeTemplateChanges = this.differ.diff(this.entityTypes);
         if (nodeTemplateChanges) {
-            if (this.entityTypes.groupedNodeTypes) {
-                this.findOutPropertyDefinitionTypeForProperties(this.nodeTemplate.type, this.entityTypes.groupedNodeTypes);
+            if (this.readonly) {
+                this.propertyDefinitionType = this.readonlyPropertyDefinitionType;
+            } else {
+                if (this.entityTypes.groupedNodeTypes) {
+                    this.findOutPropertyDefinitionTypeForProperties(this.nodeTemplate.type, this.entityTypes.groupedNodeTypes);
+                }
             }
         }
     }
