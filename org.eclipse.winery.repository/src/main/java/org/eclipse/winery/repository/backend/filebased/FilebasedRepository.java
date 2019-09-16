@@ -13,6 +13,8 @@
  ********************************************************************************/
 package org.eclipse.winery.repository.backend.filebased;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +23,7 @@ import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileVisitResult;
@@ -35,11 +38,16 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -70,6 +78,7 @@ import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
 import org.eclipse.winery.repository.configuration.FileBasedRepositoryConfiguration;
 import org.eclipse.winery.repository.exceptions.WineryRepositoryException;
 
+import javafx.util.Pair;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
@@ -80,6 +89,7 @@ import org.apache.tika.mime.MediaType;
 import org.eclipse.jgit.dircache.InvalidPathException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.web3j.abi.datatypes.Bool;
 
 /**
  * When it comes to a storage of plain files, we use Java 7's nio internally. Therefore, we intend to expose the stream
@@ -92,9 +102,14 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
     protected final Path repositoryRoot;
 
     // convenience variables to have a clean code
-    private final FileSystem fileSystem;
+    public final FileSystem fileSystem;
 
     private final FileSystemProvider provider;
+
+    private final Map<String, List<String>> mapping = new HashMap<>();
+    
+    private final String idRegex;
+    
 
     /**
      * @param fileBasedRepositoryConfiguration configuration of the filebased repository. The contained repositoryPath
@@ -105,7 +120,20 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         this.repositoryRoot = getRepositoryRoot(fileBasedRepositoryConfiguration);
         this.fileSystem = this.repositoryRoot.getFileSystem();
         this.provider = this.fileSystem.provider();
+        this.idRegex = "(.*)@(.*)";
         LOGGER.debug("Repository root: {}", this.repositoryRoot);
+//        mapping.put("nodetypes/", "nodetypes/");
+        mapping.put("nodetypeimplementations/", new ArrayList<>());
+        mapping.get("nodetypeimplementations/").add("nodetypes/");
+        mapping.get("nodetypeimplementations/").add("relationshiptypes/");
+        mapping.put("artifacttemplates/", new ArrayList<>());
+        mapping.get("artifacttemplates/").add("nodetypes/");
+//        mapping.put("artifacttypes/", "artifacttypes/");
+//        mapping.put("capabilitytypes/", "capabilitytypes/");
+//        mapping.put("servicetemplates/", "servicetemplates/");
+//        mapping.put("requirementtypes/", "requirementtypes/");
+//        mapping.put("relationshiptypes/", "relationshiptypes/");
+//        mapping.put("policytypes/", "policytypes/");
     }
 
     public static Path getRepositoryRoot(FileBasedRepositoryConfiguration fileBasedRepositoryConfiguration) {
@@ -116,7 +144,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         }
     }
 
-    private Path makeAbsolute(Path relativePath) {
+    Path makeAbsolute(Path relativePath) {
         return this.repositoryRoot.resolve(relativePath);
     }
 
@@ -139,7 +167,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         return true;
     }
 
-    private Path id2AbsolutePath(GenericId id) {
+    public Path id2AbsolutePath(GenericId id) {
         Path relativePath = this.fileSystem.getPath(Util.getPathInsideRepo(id));
         return this.makeAbsolute(relativePath);
     }
@@ -153,7 +181,8 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         if (subDirectory.isPresent()) {
             resultPath = resultPath.resolve(subDirectory.get());
         }
-        return resultPath.resolve(ref.getFileName());
+        resultPath = resultPath.resolve(ref.getFileName());
+        return resultPath;
     }
 
     protected static Path determineAndCreateRepositoryPath() {
@@ -313,6 +342,11 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
     @Override
     public boolean exists(GenericId id) {
         Path absolutePath = this.id2AbsolutePath(id);
+        System.out.println(id.toString());
+        System.out.println(Util.getEverythingBetweenTheLastDotAndBeforeId(id.getClass()).toLowerCase());
+        if (Util.getEverythingBetweenTheLastDotAndBeforeId(id.getClass()).toLowerCase().equalsIgnoreCase("nodetypeimplementation")) {
+            return true;
+        } else if (Util.getEverythingBetweenTheLastDotAndBeforeId(id.getClass()).toLowerCase().equalsIgnoreCase("artifacttemplate")) {return true;}
         return Files.exists(absolutePath);
     }
 
@@ -332,6 +366,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
 
     @Override
     public void putContentToFile(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) throws IOException {
+        
         if (mediaType == null) {
             // quick hack for storing mime type called this method
             assert (ref.getFileName().endsWith(Constants.SUFFIX_MIMETYPE));
@@ -340,6 +375,22 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
             this.setMimeType(ref, mediaType);
         }
         Path targetPath = this.ref2AbsolutePath(ref);
+
+        ByteArrayOutputStream outputStream = convertInputStream(inputStream);
+        
+        YamlManager dataManager = new YamlManager(this);
+        Pair<Path, InputStream> converted = dataManager.putContentToFile(ref, new ByteArrayInputStream(outputStream.toByteArray()));
+//        X2YConverter converter = new X2YConverter(this, targetPath);
+//        inputStream = converter.convert(inputStream);
+        if (converted != null) {
+            inputStream = converted.getValue();
+            targetPath = converted.getKey();
+            this.putInputStreamToFile(targetPath, inputStream);
+        }
+    }
+    
+    
+    public void putInputStreamToFile(Path targetPath, InputStream inputStream) throws IOException{
         // ensure that parent directory exists
         FileUtils.createDirectory(targetPath.getParent());
 
@@ -356,11 +407,15 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
             }
             Files.createFile(targetPath);
         }
+        YamlManager yamlManager = new YamlManager(this);
+        yamlManager.clearCache();
     }
 
     @Override
     public boolean exists(RepositoryFileReference ref) {
-        return Files.exists(this.ref2AbsolutePath(ref));
+        Path path = this.ref2AbsolutePath(ref);
+        YamlManager yamlManager = new YamlManager(this);
+        return yamlManager.exists(ref, path);
     }
 
     @Override
@@ -373,8 +428,27 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
     }
 
     private <T extends DefinitionsChildId> SortedSet<T> getDefinitionsChildIds(Class<T> idClass, boolean omitDevelopmentVersions) {
-        SortedSet<T> res = new TreeSet<>();
         String rootPathFragment = Util.getRootPathFragment(idClass);
+        List<String> convertedPathFragments = mapping.get(rootPathFragment);
+        if (convertedPathFragments != null) {
+            SortedSet<T> res = new TreeSet<>();
+            for (String convertedPathFragment : convertedPathFragments) {
+                String originalFragment = null;
+                if (!convertedPathFragment.equals(rootPathFragment)) {
+                    originalFragment = rootPathFragment;
+                    rootPathFragment = convertedPathFragment;
+                }
+                res.addAll(addDefinitionsChildIds(rootPathFragment, originalFragment, omitDevelopmentVersions, idClass));
+                rootPathFragment = originalFragment;
+            }
+            return res;
+        } else {
+            return addDefinitionsChildIds(rootPathFragment, null, omitDevelopmentVersions, idClass);
+        }
+    }
+    
+    private <T extends DefinitionsChildId> SortedSet<T> addDefinitionsChildIds(String rootPathFragment, String originalFragment, Boolean omitDevelopmentVersions, Class<T> idClass) {
+        SortedSet<T> res = new TreeSet<>();
         Path dir = this.repositoryRoot.resolve(rootPathFragment);
         if (!Files.exists(dir)) {
             // return empty list if no ids are available
@@ -407,25 +481,14 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
                             // abort everything, return invalid result
                             return res;
                         }
-                        T id;
-                        try {
-                            id = constructor.newInstance(ns, xmlId);
-                        } catch (InstantiationException
-                            | IllegalAccessException
-                            | IllegalArgumentException
-                            | InvocationTargetException e) {
-                            FilebasedRepository.LOGGER.debug("Internal error at invocation of id constructor", e);
-                            // abort everything, return invalid result
-                            return res;
-                        }
-                        res.add(id);
+                        YamlManager yamlManager = new YamlManager(this);
+                        res.addAll(yamlManager.getDefinitionsChildIds(ns, xmlId, idP, originalFragment, constructor));
                     }
                 }
             }
         } catch (IOException e) {
             FilebasedRepository.LOGGER.debug("Cannot close ds", e);
         }
-
         return res;
     }
 
@@ -458,7 +521,6 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         } catch (IOException e1) {
             LOGGER.debug("Error during crawling", e1);
         }
-
         return res;
     }
 
@@ -480,7 +542,6 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
 
         // We do NOT implement reloading as the configuration is only accessed
         // in JAX-RS resources, which are created on a per-request basis
-
         return configuration;
     }
 
@@ -755,13 +816,24 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
     @Override
     public FileTime getLastModifiedTime(RepositoryFileReference ref) throws IOException {
         Path path = this.ref2AbsolutePath(ref);
+        System.out.println(path.toString());
         return Files.getLastModifiedTime(path);
     }
 
     @Override
     public InputStream newInputStream(RepositoryFileReference ref) throws IOException {
         Path path = this.ref2AbsolutePath(ref);
+        return newInputStream(path);
+    }
+    
+    public InputStream newInputStream(Path path) throws IOException {
         return Files.newInputStream(path);
+    }
+
+    @Override
+    public Definitions definitionsFromRef(RepositoryFileReference ref) throws IOException {
+        YamlManager yamlManager = new YamlManager(this);
+        return yamlManager.definitionsFromRef(ref);
     }
 
     @Override
@@ -788,6 +860,21 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
             }
         } catch (IOException e) {
             throw new WineryRepositoryException("I/O exception during export", e);
+        }
+    }
+
+    public ByteArrayOutputStream convertInputStream(InputStream inputStream) {
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) > -1) {
+                byteArrayOutputStream.write(buffer, 0, len);
+            }
+            byteArrayOutputStream.flush();
+            return byteArrayOutputStream;
+        } catch (IOException e) {
+            return null;
         }
     }
 }

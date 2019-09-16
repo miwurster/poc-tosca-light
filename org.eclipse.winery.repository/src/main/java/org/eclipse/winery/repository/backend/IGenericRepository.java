@@ -169,6 +169,8 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
      * @throws IOException if something goes wrong
      */
     InputStream newInputStream(RepositoryFileReference ref) throws IOException;
+    
+    Definitions definitionsFromRef(RepositoryFileReference ref) throws IOException;
 
     /**
      * Creates a stream of a ZIP file containing all files contained in the given id

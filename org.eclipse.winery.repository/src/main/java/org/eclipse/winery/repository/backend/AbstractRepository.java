@@ -16,8 +16,10 @@ package org.eclipse.winery.repository.backend;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.Date;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
 import org.eclipse.winery.common.RepositoryFileReference;
@@ -26,10 +28,13 @@ import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.repository.Constants;
 import org.eclipse.winery.repository.JAXBSupport;
+import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
+import org.eclipse.winery.repository.backend.filebased.converter.Y2XConverter;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.mime.MediaType;
+import org.eclipse.jgit.lib.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,9 +122,18 @@ public abstract class AbstractRepository implements IRepository {
             return BackendUtils.createWrapperDefinitionsAndInitialEmptyElement(this, id);
         }
         try {
-            InputStream is = RepositoryFactory.getRepository().newInputStream(ref);
-            Unmarshaller u = JAXBSupport.createUnmarshaller();
-            return (Definitions) u.unmarshal(is);
+//            InputStream is = RepositoryFactory.getRepository().newInputStream(ref);
+////            Y2XConverter converter = new Y2XConverter(this, id);
+////            return converter.convert(is);
+//            JAXBContext jaxbContext = JAXBContext.newInstance(Definitions.class);
+//            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+//            return (Definitions) unmarshaller.unmarshal(is);
+            Definitions output = RepositoryFactory.getRepository().definitionsFromRef(ref);
+            if (output != null) {
+                return output;
+            } else {
+                return BackendUtils.createWrapperDefinitionsAndInitialEmptyElement(this, id);
+            }
         } catch (Exception e) {
             LOGGER.error("Could not read content from file {}", ref, e);
             throw new IllegalStateException(e);

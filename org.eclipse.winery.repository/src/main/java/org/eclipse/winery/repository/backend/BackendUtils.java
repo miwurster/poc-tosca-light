@@ -347,9 +347,13 @@ public class BackendUtils {
      * @return the reference
      */
     public static RepositoryFileReference getRefOfDefinitions(DefinitionsChildId id) {
-        String name = Util.getTypeForComponentId(id.getClass());
+        return new RepositoryFileReference(id, getFileNameOfDefinitions(id));
+    }
+    
+    public static String getFileNameOfDefinitions(DefinitionsChildId id) {
+        String name = Util.getTypeForComponentId(id.getClass());;
         name = name + Constants.SUFFIX_TOSCA_DEFINITIONS;
-        return new RepositoryFileReference(id, name);
+        return name;
     }
 
     /**

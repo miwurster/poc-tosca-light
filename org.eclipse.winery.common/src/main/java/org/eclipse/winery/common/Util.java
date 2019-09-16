@@ -270,11 +270,11 @@ public class Util {
 
     public static String getEverythingBetweenTheLastDotAndBeforeId(Class<? extends GenericId> cls) {
         String res = cls.getName();
-        // Everything between the last "." and before "Id" is the Type
+//        // Everything between the last "." and before "Id" is the Type
         int dotIndex = res.lastIndexOf('.');
         assert (dotIndex >= 0);
         return res.substring(dotIndex + 1, res.length() - "Id".length());
-    }
+}
 
     public static String getTypeForElementId(Class<? extends ToscaElementId> idClass) {
         return Util.getEverythingBetweenTheLastDotAndBeforeId(idClass);

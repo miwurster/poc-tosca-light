@@ -95,8 +95,6 @@
         <module>org.eclipse.winery.model.tosca.yaml</module>
         <module>org.eclipse.winery.accountability</module>
         <module>org.eclipse.winery.common</module>
-        <module>org.eclipse.winery.yaml.common</module>
-        <module>org.eclipse.winery.yaml.converter</module>
         <module>org.eclipse.winery.cli</module>
         <module>org.eclipse.winery.bpmn4tosca.converter.tobpel</module>
         <module>org.eclipse.winery.repository</module>
@@ -110,6 +108,8 @@
         <module>org.eclipse.winery.tools.copybaragenerator</module>
         <module>org.eclipse.winery.model.adaptation</module>
         <module>org.eclipse.winery.frontends</module>
+        <module>org.eclipse.winery.yaml.common</module>
+        <module>org.eclipse.winery.yaml.converter</module>
     </modules>
     <build>
         <plugins>
