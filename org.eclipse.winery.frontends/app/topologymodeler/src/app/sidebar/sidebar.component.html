@@ -53,6 +53,17 @@
                                     propertyDefinitionType:findOutPropertyDefinitionTypeForProperties()}">
                     </winery-properties>
                 </div>
+                <div class="form-group">
+                    <label>Policies</label>
+                    <winery-policies
+                        [readonly]=false
+                        (toggleModalHandler)="sendToggleAction($event)"
+                        [currentNodeData]="{currentNodeId: sidebarState.id,
+                                    currentNodePart: 'POLICIES',
+                                    currentProperties: ''}"
+                        [policies]="">
+                    </winery-policies>
+                </div>
             </div>
             <div *ngIf="sidebarState.nodeClicked">
                 <div class="form-group">

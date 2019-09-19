@@ -13,7 +13,7 @@
  ********************************************************************************/
 
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { WineryActions } from '../redux/actions/winery.actions';
@@ -24,6 +24,7 @@ import { QName } from '../models/qname';
 import { PropertyDefinitionType, urlElement } from '../models/enums';
 import { BackendService } from '../services/backend.service';
 import { isNullOrUndefined } from 'util';
+import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
 
 /**
  * This is the right sidebar, where attributes of nodes and relationships get displayed.
@@ -55,6 +56,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     sidebarAnimationStatus: string;
     maxInputEnabled = true;
     propertyDefinitionType: string;
+
+    @Input() navbarButtonsState: TopologyRendererState;
 
     @Output() sidebarDeleteButtonClicked: EventEmitter<any> = new EventEmitter<any>();
     public nodeNameKeyUp: Subject<string> = new Subject<string>();

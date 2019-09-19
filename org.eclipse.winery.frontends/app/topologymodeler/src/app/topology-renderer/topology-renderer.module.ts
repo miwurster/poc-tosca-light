@@ -80,6 +80,7 @@ import { WineryFeatureToggleModule } from '../../../../tosca-management/src/app/
     ],
     exports: [
         TopologyRendererComponent,
+        PoliciesComponent,
 
     ],
 })
