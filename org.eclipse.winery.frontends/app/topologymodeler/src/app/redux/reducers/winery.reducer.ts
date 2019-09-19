@@ -312,7 +312,7 @@ export const WineryReducer =
                                         }) : nodeTemplate
                                 )
                         }
-                    }
+                    };
                 } else {
                     const indexOfRelationshipPolicy = lastState.currentJsonTopology.relationshipTemplates
                         .map(node => node.id).indexOf(newPolicy.nodeId);
@@ -339,9 +339,8 @@ export const WineryReducer =
                                         }) : relationshipTemplate
                                 )
                         }
-                    }
+                    };
                 }
-                ;
             case WineryActions.SET_TARGET_LOCATION:
                 const newTargetLocation: any = (<SetTargetLocation>action).nodeTargetLocation;
 
