@@ -286,32 +286,62 @@ export const WineryReducer =
             case WineryActions.SET_POLICY:
                 const newPolicy: any = (<SetPolicyAction>action).nodePolicy;
                 const policy = newPolicy.newPolicy;
-                const indexOfNodePolicy = lastState.currentJsonTopology.nodeTemplates
-                    .map(node => node.id).indexOf(newPolicy.nodeId);
-                const nodePolicyTemplate = lastState.currentJsonTopology.nodeTemplates
-                    .find(nodeTemplate => nodeTemplate.id === newPolicy.nodeId);
-                const policyExist = nodePolicyTemplate.policies && nodePolicyTemplate.policies.policy;
+                if (lastState.currentJsonTopology.nodeTemplates.includes(newPolicy.nodeId)) {
+                    const indexOfNodePolicy = lastState.currentJsonTopology.nodeTemplates
+                        .map(node => node.id).indexOf(newPolicy.nodeId);
+                    const nodePolicyTemplate = lastState.currentJsonTopology.nodeTemplates
+                        .find(nodeTemplate => nodeTemplate.id === newPolicy.nodeId);
+                    const policyExist = nodePolicyTemplate.policies && nodePolicyTemplate.policies.policy;
 
-                return <WineryState>{
-                    ...lastState,
-                    currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
-                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newPolicy.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('policies',
-                                    policyExist ? {
-                                        policy: [
-                                            ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies.policy,
-                                            policy
-                                        ]
-                                    } : {
-                                        policy: [
-                                            policy
-                                        ]
-                                    }) : nodeTemplate
-                            )
+                    return <WineryState>{
+                        ...lastState,
+                        currentJsonTopology: {
+                            ...lastState.currentJsonTopology,
+                            nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                                .map(nodeTemplate => nodeTemplate.id === newPolicy.nodeId ?
+                                    nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('policies',
+                                        policyExist ? {
+                                            policy: [
+                                                ...lastState.currentJsonTopology.nodeTemplates[indexOfNodePolicy].policies.policy,
+                                                policy
+                                            ]
+                                        } : {
+                                            policy: [
+                                                policy
+                                            ]
+                                        }) : nodeTemplate
+                                )
+                        }
                     }
-                };
+                } else {
+                    const indexOfRelationshipPolicy = lastState.currentJsonTopology.relationshipTemplates
+                        .map(node => node.id).indexOf(newPolicy.nodeId);
+                    const relationshipPolicyTemplate = lastState.currentJsonTopology.relationshipTemplates
+                        .find(relationshipTemplate => relationshipTemplate.id === newPolicy.nodeId);
+                    const policyExist = relationshipPolicyTemplate.policies && relationshipPolicyTemplate.policies.policy;
+
+                    return <WineryState>{
+                        ...lastState,
+                        currentJsonTopology: {
+                            ...lastState.currentJsonTopology,
+                            relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates
+                                .map(relationshipTemplate => relationshipTemplate.id === newPolicy.nodeId ?
+                                    relationshipTemplate.generateNewRelTemplateWithUpdatedAttribute('policies',
+                                        policyExist ? {
+                                            policy: [
+                                                ...lastState.currentJsonTopology.relationshipTemplates[indexOfRelationshipPolicy].policies.policy,
+                                                policy
+                                            ]
+                                        } : {
+                                            policy: [
+                                                policy
+                                            ]
+                                        }) : relationshipTemplate
+                                )
+                        }
+                    }
+                }
+                ;
             case WineryActions.SET_TARGET_LOCATION:
                 const newTargetLocation: any = (<SetTargetLocation>action).nodeTargetLocation;
 

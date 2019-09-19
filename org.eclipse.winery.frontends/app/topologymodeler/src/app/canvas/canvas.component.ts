@@ -12,8 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 import {
-    AfterViewInit, Component, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnChanges, OnDestroy, OnInit, QueryList, Renderer2, SimpleChanges,
-    ViewChild, ViewChildren
+    AfterViewInit, Component, ElementRef, HostListener, Input, KeyValueDiffers, NgZone, OnChanges, OnDestroy, OnInit,
+    QueryList, Renderer2, SimpleChanges, ViewChild, ViewChildren
 } from '@angular/core';
 import { JsPlumbService } from '../services/jsPlumb.service';
 import { EntityType, TNodeTemplate, TRelationshipTemplate, VisualEntityType } from '../models/ttopology-template';
@@ -53,6 +53,7 @@ import { ThreatModelingModalData } from '../models/threatModelingModalData';
 import { ThreatCreation } from '../models/threatCreation';
 import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 import { TPolicy } from '../models/policiesModalData';
+import { PolicyService } from '../services/policy.service';
 
 @Component({
     selector: 'winery-canvas',
@@ -158,7 +159,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 private existsService: ExistsService,
                 private splitMatchService: SplitMatchTopologyService,
                 private reqCapService: ReqCapService,
-                private errorHandler: ErrorHandlerService) {
+                private errorHandler: ErrorHandlerService,
+                private policyService: PolicyService) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
 
@@ -1580,6 +1582,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             }
         });
         this.entityTypes.relationshipTypes.forEach(value => this.assignRelTypes(value));
+        this.policyService.addNewPolicyEvent.subscribe(data => this.toggleModalHandler(data));
     }
 
     /**
@@ -1847,7 +1850,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     id: currentRel.id,
                     nameTextFieldValue: currentRel.name,
                     type: currentRel.type,
-                    properties: currentRel.properties
+                    properties: currentRel.properties,
+                    relationshipTemplate: currentRel
                 }
             }));
             conn.addType('marked');

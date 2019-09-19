@@ -13,7 +13,7 @@
  ********************************************************************************/
 
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { WineryActions } from '../redux/actions/winery.actions';
@@ -24,7 +24,7 @@ import { QName } from '../models/qname';
 import { PropertyDefinitionType, urlElement } from '../models/enums';
 import { BackendService } from '../services/backend.service';
 import { isNullOrUndefined } from 'util';
-import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
+import { PolicyService } from '../services/policy.service';
 
 /**
  * This is the right sidebar, where attributes of nodes and relationships get displayed.
@@ -57,9 +57,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     maxInputEnabled = true;
     propertyDefinitionType: string;
 
-    @Input() navbarButtonsState: TopologyRendererState;
-
     @Output() sidebarDeleteButtonClicked: EventEmitter<any> = new EventEmitter<any>();
+    @Output() sendNodeData: EventEmitter<any> = new EventEmitter<any>();
     public nodeNameKeyUp: Subject<string> = new Subject<string>();
     public nodeMinInstancesKeyUp: Subject<string> = new Subject<string>();
     public nodeMaxInstancesKeyUp: Subject<string> = new Subject<string>();
@@ -67,7 +66,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     constructor(private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
-                private backendService: BackendService) {
+                private backendService: BackendService,
+                private policyService: PolicyService) {
     }
 
     deleteButtonSidebarClicked($event) {
@@ -165,7 +165,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         type: this.sidebarState.type,
                         minInstances: Number(this.sidebarState.minInstances),
                         maxInstances: Number(this.sidebarState.maxInstances),
-                        properties: this.sidebarState.properties
+                        properties: this.sidebarState.properties,
+                        relationshipTemplate : this.sidebarState.relationshipTemplate
                     }
                 }));
             });
@@ -193,7 +194,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         type: this.sidebarState.type,
                         minInstances: Number(data),
                         maxInstances: this.sidebarState.maxInstances,
-                        properties: this.sidebarState.properties
+                        properties: this.sidebarState.properties,
+                        relationshipTemplate : this.sidebarState.relationshipTemplate
                     }
                 }));
             });
@@ -220,7 +222,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         type: this.sidebarState.type,
                         minInstances: this.sidebarState.minInstances,
                         maxInstances: Number(data),
-                        properties: this.sidebarState.properties
+                        properties: this.sidebarState.properties,
+                        relationshipTemplate : this.sidebarState.relationshipTemplate
                     }
                 }));
             });
@@ -262,7 +265,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 type: this.sidebarState.type,
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
-                properties: this.sidebarState.properties
+                properties: this.sidebarState.properties,
+                relationshipTemplate : this.sidebarState.relationshipTemplate
             }
         }));
     }
@@ -322,7 +326,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 type: this.sidebarState.type,
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
-                properties: this.sidebarState.properties
+                properties: this.sidebarState.properties,
+                relationshipTemplate : this.sidebarState.relationshipTemplate
             }
         }));
     }
@@ -373,5 +378,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.subscription.unsubscribe();
+    }
+
+    addNewPolicy(nodeData: any) {
+        const currentNodeData = { ...this.sidebarState.relationshipTemplate, ...nodeData };
+        this.policyService.addNewPolicyToRelationship(currentNodeData);
     }
 }
