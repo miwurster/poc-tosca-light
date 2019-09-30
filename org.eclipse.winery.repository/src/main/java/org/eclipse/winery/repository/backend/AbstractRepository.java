@@ -123,8 +123,6 @@ public abstract class AbstractRepository implements IRepository {
         }
         try {
 //            InputStream is = RepositoryFactory.getRepository().newInputStream(ref);
-////            Y2XConverter converter = new Y2XConverter(this, id);
-////            return converter.convert(is);
 //            JAXBContext jaxbContext = JAXBContext.newInstance(Definitions.class);
 //            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 //            return (Definitions) unmarshaller.unmarshal(is);

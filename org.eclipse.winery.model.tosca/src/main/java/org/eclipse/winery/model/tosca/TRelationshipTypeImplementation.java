@@ -137,6 +137,10 @@ public class TRelationshipTypeImplementation extends TEntityTypeImplementation {
             super(builder, name, implementedType);
         }
 
+        public Builder(String name, QName implementedRelationshipType) {
+            super(name, implementedRelationshipType);
+        }
+
         public Builder setDerivedFrom(DerivedFrom derivedFrom) {
             this.derivedFrom = derivedFrom;
             return this;

@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Allows to reset repository to a certain commit id
  */
-public class GitBasedRepository extends FilebasedRepository {
+public class GitBasedRepository extends YamlBasedRepository {
 
     /**
      * Used for synchronizing the method {@link GitBasedRepository#addCommit(RepositoryFileReference)}

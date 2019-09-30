@@ -315,10 +315,15 @@ public class Util {
         } else {
             res = "";
         }
-        res = res + Util.getTypeForComponentId(idClass);
+        res = res + getFolderName(idClass);
+        res = res + "/";
+        return res;
+    }
+    
+    public static String getFolderName(Class<? extends DefinitionsChildId> idClass) {
+        String res = Util.getTypeForComponentId(idClass);
         res = res.toLowerCase();
         res = res + "s";
-        res = res + "/";
         return res;
     }
 

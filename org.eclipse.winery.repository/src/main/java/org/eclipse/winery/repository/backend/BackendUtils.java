@@ -351,7 +351,11 @@ public class BackendUtils {
     }
     
     public static String getFileNameOfDefinitions(DefinitionsChildId id) {
-        String name = Util.getTypeForComponentId(id.getClass());;
+        return getFileNameOfDefinitions(id.getClass());
+    }
+    
+    public static <T extends DefinitionsChildId> String getFileNameOfDefinitions(Class<T> id) {
+        String name = Util.getTypeForComponentId(id);
         name = name + Constants.SUFFIX_TOSCA_DEFINITIONS;
         return name;
     }

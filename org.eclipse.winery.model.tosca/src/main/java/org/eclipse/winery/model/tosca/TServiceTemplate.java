@@ -178,6 +178,11 @@ public class TServiceTemplate extends HasId implements HasName, HasTargetNamespa
         private String name;
         private String targetNamespace;
         private QName substitutableNodeType;
+        
+        public Builder(String id) {
+            super(id);
+            topologyTemplate = null;
+        }
 
         public Builder(String id, TTopologyTemplate topologyTemplate) {
             super(id);
