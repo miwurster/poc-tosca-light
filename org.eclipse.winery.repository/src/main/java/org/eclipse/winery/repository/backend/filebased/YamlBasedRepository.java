@@ -865,27 +865,7 @@ public class YamlBasedRepository extends FilebasedRepository {
         oldNodeType.setDescription(newNodeType.getDescription());
         oldNodeType.setRequirements(newNodeType.getRequirements());
         oldNodeType.setCapabilities(newNodeType.getCapabilities());
-        Map<String, TInterfaceDefinition> oldInterfaces = oldNodeType.getInterfaces();
-        Map<String, TInterfaceDefinition> newInterfaces = newNodeType.getInterfaces();
-        for (Map.Entry<String, TInterfaceDefinition> oldInterface : oldInterfaces.entrySet()) {
-            TInterfaceDefinition newInterfaceDefinition = newInterfaces.get(oldInterface.getKey());
-            if (newInterfaceDefinition != null) {
-                Map<String, TOperationDefinition> oldOperationDefinitions = oldInterface.getValue().getOperations();
-                Map<String, TOperationDefinition> newOperationDefinitions = newInterfaceDefinition.getOperations();
-                for (Map.Entry<String, TOperationDefinition> oldOperationDefinition : oldOperationDefinitions.entrySet()) {
-                    TOperationDefinition newOperationDefinition = newOperationDefinitions.get(oldOperationDefinition.getKey());
-                    if (newOperationDefinition != null) {
-                        newOperationDefinition.setImplementation(oldOperationDefinition.getValue().getImplementation());
-                        newOperationDefinitions.remove(oldOperationDefinition.getKey());
-                        newOperationDefinitions.put(oldOperationDefinition.getKey(), newOperationDefinition);
-                    }
-                }
-                newInterfaceDefinition.setOperations(newOperationDefinitions);
-            }
-            newInterfaces.remove(oldInterface.getKey());
-            newInterfaces.put(oldInterface.getKey(), newInterfaceDefinition);
-        }
-        oldNodeType.setInterfaces(newInterfaces);
+        oldNodeType.setInterfaces(replaceInterfaceDefinitions(oldNodeType.getInterfaces(), newNodeType.getInterfaces()));
         oldData.getNodeTypes().entrySet().iterator().next().setValue(oldNodeType);
         return oldData;
     }
@@ -904,8 +884,19 @@ public class YamlBasedRepository extends FilebasedRepository {
         oldRelationshipType.setProperties(newRelationshipType.getProperties());
         oldRelationshipType.setDerivedFrom(newRelationshipType.getDerivedFrom());
         oldRelationshipType.setDescription(newRelationshipType.getDescription());
-        Map<String, TInterfaceDefinition> oldInterfaces = oldRelationshipType.getInterfaces();
-        Map<String, TInterfaceDefinition> newInterfaces = newRelationshipType.getInterfaces();
+        oldRelationshipType.setInterfaces(replaceInterfaceDefinitions(oldRelationshipType.getInterfaces(), newRelationshipType.getInterfaces()));
+        oldData.getRelationshipTypes().entrySet().iterator().next().setValue(oldRelationshipType);
+        return oldData;
+    }
+
+    /**
+     * Saves already defined interface implementations to be deleted by transmitting them to the new interfaces
+     *
+     * @param oldInterfaces existing interfaces
+     * @param newInterfaces new interfaces
+     * @return edited yaml service template
+     **/
+    private Map<String, TInterfaceDefinition> replaceInterfaceDefinitions(Map<String, TInterfaceDefinition> oldInterfaces, Map<String, TInterfaceDefinition> newInterfaces) {
         for (Map.Entry<String, TInterfaceDefinition> oldInterface : oldInterfaces.entrySet()) {
             TInterfaceDefinition newInterfaceDefinition = newInterfaces.get(oldInterface.getKey());
             if (newInterfaceDefinition != null) {
@@ -924,9 +915,7 @@ public class YamlBasedRepository extends FilebasedRepository {
             newInterfaces.remove(oldInterface.getKey());
             newInterfaces.put(oldInterface.getKey(), newInterfaceDefinition);
         }
-        oldRelationshipType.setInterfaces(newInterfaces);
-        oldData.getRelationshipTypes().entrySet().iterator().next().setValue(oldRelationshipType);
-        return oldData;
+        return newInterfaces;
     }
 
     /**
