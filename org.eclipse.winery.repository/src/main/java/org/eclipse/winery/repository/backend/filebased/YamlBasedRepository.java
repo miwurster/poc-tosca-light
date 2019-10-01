@@ -42,11 +42,14 @@ import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TOperation;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
+import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
 import org.eclipse.winery.model.tosca.yaml.TNodeType;
 import org.eclipse.winery.model.tosca.yaml.TOperationDefinition;
+import org.eclipse.winery.model.tosca.yaml.TRelationshipType;
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.model.tosca.yaml.support.Defaults;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
@@ -187,6 +190,113 @@ public class YamlBasedRepository extends FilebasedRepository {
             return nameMatcher.group(2);
         }
         return "Cache";
+    }
+    
+    private String getTypeFromArtifactName(String name) {
+        Matcher nameMatcher = namePattern.matcher(name);
+        if (nameMatcher.matches()) {
+            return nameMatcher.group(3);
+        }
+        return "nodetypes";
+    }
+
+    @Override
+    public void forceDelete(RepositoryFileReference ref) throws IOException {
+        if (ref.getParent() instanceof NodeTypeImplementationId || ref.getParent() instanceof RelationshipTypeImplementationId) {return;}
+
+        if (ref.getParent() instanceof ArtifactTemplateId) {
+            deleteArtifact((ArtifactTemplateId) ref.getParent());
+        } else {
+            super.forceDelete(ref);
+        }
+    }
+
+    @Override
+    public void forceDelete(GenericId id) {
+        if (id instanceof NodeTypeImplementationId || id instanceof RelationshipTypeImplementationId) {return;}
+        if (id instanceof ArtifactTemplateId) {
+            deleteArtifact((ArtifactTemplateId) id);
+        } else {
+            super.forceDelete(id);
+        }
+    }
+    
+    
+    private void deleteArtifact(ArtifactTemplateId id) {
+        if (getNameOfTypeFromArtifactName(id.getQName().getLocalPart()).equalsIgnoreCase("Cache")) {
+            super.forceDelete(id);
+        } else {
+            Path targetPath = id2AbsolutePath(id);
+            GenericId convertedId = convertGenericId(id);
+            if (convertedId != null) {
+                if (convertedId instanceof DefinitionsChildId) {
+                    String convertedFilename = BackendUtils.getFileNameOfDefinitions((DefinitionsChildId) convertedId);
+                    targetPath.resolve(convertedFilename);
+                }
+            }
+            
+            if (Files.exists(targetPath)) {
+                try {
+                    TServiceTemplate nodeType = readServiceTemplate(targetPath);
+                    String targetArtifactName = getNameOfArtifactFromArtifactName(id.getQName().getLocalPart());
+                    if (getTypeFromArtifactName(id.getQName().getLocalPart()).equalsIgnoreCase("nodetypes")) {
+                        Map<String, TArtifactDefinition> artifacts = nodeType.getNodeTypes().entrySet().iterator().next().getValue().getArtifacts();
+                        nodeType.getNodeTypes().entrySet().iterator().next().setValue(removeImplementation(nodeType.getNodeTypes().entrySet().iterator().next().getValue(), targetArtifactName));
+                        artifacts.remove(targetArtifactName);
+                        nodeType.getNodeTypes().entrySet().iterator().next().getValue().setArtifacts(artifacts);
+                    } 
+                    Writer writer = new Writer();
+                    InputStream output = writer.writeToInputStream(nodeType);
+                    writeInputStreamToPath(targetPath, output);
+                } catch (MultiException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+    
+    private TNodeType removeImplementation(TNodeType nodeType, String targetArtifactName) {
+        Map<String, TInterfaceDefinition> interfaces = nodeType.getInterfaces();
+        if (interfaces != null) {
+            for (Map.Entry<String, TInterfaceDefinition> interfaceDefinition : interfaces.entrySet()) {
+                Map<String, TOperationDefinition> operations = interfaceDefinition.getValue().getOperations();
+                if (operations != null) {
+                    for (Map.Entry<String , TOperationDefinition> operation : operations.entrySet()) {
+                        TOperationDefinition operationDefinition = operation.getValue();
+                        if (operationDefinition != null) {
+                            TImplementation implementation = operationDefinition.getImplementation();
+                            if (implementation != null) {
+                                if (implementation.getPrimary() != null) {
+                                    if (implementation.getPrimary().getLocalPart().equalsIgnoreCase(targetArtifactName)) {
+                                        operationDefinition.setImplementation(null);
+                                    } else {
+                                        if (implementation.getDependencies() != null) {
+                                            List<QName> qNames = implementation.getDependencies();
+                                            for (QName name: implementation.getDependencies()) {
+                                                if (name.getLocalPart().equalsIgnoreCase(targetArtifactName)) {
+                                                    qNames.remove(name);
+                                                }
+                                            }
+                                            implementation.setDependencies(qNames);
+                                        }
+                                    }
+                                }
+                                operationDefinition.setImplementation(implementation);
+                            }
+                        }
+                        operation.setValue(operationDefinition);
+                    }
+                }
+                TInterfaceDefinition tInterfaceDefinition = interfaceDefinition.getValue();
+                tInterfaceDefinition.setOperations(operations);
+                interfaceDefinition.setValue(tInterfaceDefinition);
+            }
+            nodeType.setInterfaces(interfaces);
+        }
+        return nodeType;
     }
 
     @Override
@@ -333,6 +443,9 @@ public class YamlBasedRepository extends FilebasedRepository {
             if (ref.getParent() instanceof NodeTypeImplementationId) {
                 serviceTemplate = readServiceTemplate(ref);
                 serviceTemplate = converter.convertNodeTypeImplementation(serviceTemplate, definitions.getNodeTypeImplementations().get(0));
+            } else if (ref.getParent() instanceof RelationshipTypeImplementationId) {
+                serviceTemplate = readServiceTemplate(ref);
+                serviceTemplate = converter.convertRelationshipTypeImplementation(serviceTemplate, definitions.getRelationshipTypeImplementations().get(0));
             } else if (ref.getParent() instanceof NodeTypeId) {
                 serviceTemplate = converter.convert(definitions);
                 if (exists(ref)) { 
@@ -340,6 +453,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                     serviceTemplate = replaceOldWithNewData(serviceTemplate, oldServiceTemplate);
                 }
             } else if (ref.getParent() instanceof ArtifactTemplateId){
+                ArtifactTemplateId id = (ArtifactTemplateId) ref.getParent();
                 TArtifactTemplate artifactTemplate = definitions.getArtifactTemplates().get(0);
                 TArtifactDefinition artifact = converter.convertArtifactTemplate(artifactTemplate);
                 List<TMapImportDefinition> imports = converter.convertImports();
@@ -348,7 +462,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                     serviceTemplate = readServiceTemplate(targetPath);
                     if (serviceTemplate == null) {
                         serviceTemplate = createNewCacheNodeTypeWithArtifact(ref,artifactTemplate,artifact, imports);
-                    } else {
+                    } else if (getTypeFromArtifactName(id.getQName().getLocalPart()).equalsIgnoreCase("nodetypes")) {
                         TNodeType nodeType = serviceTemplate.getNodeTypes().entrySet().iterator().next().getValue();
                         Map<String, TArtifactDefinition> artifacts = nodeType.getArtifacts();
                         if (artifacts.containsKey(artifactTemplate.getIdFromIdOrNameField())) {
@@ -359,6 +473,10 @@ public class YamlBasedRepository extends FilebasedRepository {
                         nodeType.setArtifacts(artifacts);
                         serviceTemplate.getNodeTypes().entrySet().iterator().next().setValue(nodeType);
                         serviceTemplate.setImports(addImports(serviceTemplate.getImports(), imports));
+                    } else {
+                        TRelationshipType relationshipType = serviceTemplate.getRelationshipTypes().entrySet().iterator().next().getValue();
+                        Map<String, TInterfaceDefinition> interfaceDefinitionMap = relationshipType.getInterfaces();
+                        relationshipType.setInterfaces(addArtifactToInterfaces(interfaceDefinitionMap, artifact, artifactTemplate.getIdFromIdOrNameField()));
                     }
                 } else {
                     serviceTemplate = createNewCacheNodeTypeWithArtifact(ref,artifactTemplate,artifact, imports);
@@ -377,6 +495,40 @@ public class YamlBasedRepository extends FilebasedRepository {
         return null;
     }
     
+    private Map<String, TInterfaceDefinition> addArtifactToInterfaces(Map<String, TInterfaceDefinition> interfaces, TArtifactDefinition artifact, String id) {
+        if (artifact.getFiles().isEmpty()) {return interfaces;}
+        for (Map.Entry<String, TInterfaceDefinition> interfaceDefinitionEntry : interfaces.entrySet()) {
+            interfaceDefinitionEntry.setValue(addArtifactFileToTargetOperation(interfaceDefinitionEntry.getValue(), artifact, id));
+        }
+        return interfaces;
+    }
+    
+    private TInterfaceDefinition addArtifactFileToTargetOperation(TInterfaceDefinition interfaces, TArtifactDefinition artifact, String target) {
+        Map<String, TOperationDefinition> operations = interfaces.getOperations();
+        for (Map.Entry<String, TOperationDefinition> operation : operations.entrySet()) {
+            if (operation.getKey().equalsIgnoreCase(target)) {
+                TImplementation implementation = operation.getValue().getImplementation();
+                implementation.setPrimary(new QName(artifact.getFiles().get(0)));
+                TOperationDefinition operationDefinition = operation.getValue();
+                operationDefinition.setImplementation(implementation);
+                operation.setValue(operationDefinition);
+            } else {
+                TOperationDefinition operationDefinition = operation.getValue();
+                if (operationDefinition.getImplementation() != null) {
+                    if (operationDefinition.getImplementation().getPrimary() != null) {
+                        if (operationDefinition.getImplementation().getPrimary().getLocalPart().equalsIgnoreCase(target)) {
+                            TImplementation implementation = operationDefinition.getImplementation();
+                            implementation.setPrimary(new QName(artifact.getFiles().get(0)));
+                            operationDefinition.setImplementation(implementation);
+                        }
+                    }
+                }
+                operation.setValue(operationDefinition);
+            }
+        } 
+        interfaces.setOperations(operations);
+        return interfaces;
+    }
     private List<TMapImportDefinition> addImports(List<TMapImportDefinition> oldImports, List<TMapImportDefinition> newImport) {
         if (newImport.isEmpty()) {return oldImports;}
         if (newImport.get(0).isEmpty()) {return oldImports;}

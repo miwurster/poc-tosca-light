@@ -576,6 +576,15 @@ public class X2YConverter {
         return type;
     }
     
+    public TServiceTemplate convertRelationshipTypeImplementation(TServiceTemplate type, TRelationshipTypeImplementation node) {
+        if (Objects.isNull(node)) return null;
+        TRelationshipType relationshipType = type.getRelationshipTypes().entrySet().iterator().next().getValue();
+        relationshipType.setInterfaces(convertRelationshipInterfaces(relationshipType.getInterfaces(), node.getImplementationArtifacts()));
+        type.getRelationshipTypes().entrySet().iterator().next().setValue(relationshipType);
+        return type;
+        
+    }
+    
     private List<TMapImportDefinition> addNewImports(List<TMapImportDefinition> imports) {
         List<TMapImportDefinition> newImportsList = convertImports();
         if (newImportsList.isEmpty()) {return imports;}
@@ -595,6 +604,49 @@ public class X2YConverter {
         }
         imports.set(0, newImports);
         return imports;
+    }
+
+    private Map<String, TInterfaceDefinition> convertRelationshipInterfaces(Map<String, TInterfaceDefinition> interfaces, TImplementationArtifacts implementationArtifacts) {
+        if (implementationArtifacts == null) {
+            return interfaces;
+        }
+        List<TImplementationArtifacts.ImplementationArtifact> listImplArt = implementationArtifacts.getImplementationArtifact();
+        for (TImplementationArtifacts.ImplementationArtifact implementationArtifact : listImplArt) {
+            TInterfaceDefinition selectedInterface = interfaces.get(implementationArtifact.getInterfaceName());
+            if (selectedInterface != null) {
+                TOperationDefinition operation = selectedInterface.getOperations().get(implementationArtifact.getOperationName());
+                operation.setImplementation(convertrelationshipImplementation(implementationArtifact, operation.getImplementation()));
+            }
+        }
+        return interfaces;
+    }
+
+    public TImplementation convertrelationshipImplementation(TImplementationArtifacts.ImplementationArtifact node, TImplementation implementation) {
+        if (Objects.isNull(node)) return null;
+        QName name = new QName(node.getArtifactRef().getLocalPart());
+        if (implementation.getPrimary() == null) {
+            implementation.setPrimary(name);
+            return implementation;
+        } else if (implementation.getPrimary().getLocalPart().equalsIgnoreCase("null")) {
+            implementation.setPrimary(name);
+            return implementation;
+        } else if (implementation.getPrimary().equals(name)){
+            return implementation;
+        } else if (implementation.getDependencies() != null) {
+            if (implementation.getDependencies().contains(name)) {
+                return implementation;
+            } else {
+                List<QName> dependencies = implementation.getDependencies();
+                dependencies.add(name);
+                implementation.setDependencies(dependencies);
+                return implementation;
+            }
+        } else {
+            List<QName> dependencies = new ArrayList<>();
+            dependencies.add(name);
+            implementation.setDependencies(dependencies);
+            return implementation;
+        }
     }
     
     private Map<String, TInterfaceDefinition> convertInterfaces(Map<String, TInterfaceDefinition> interfaces, TImplementationArtifacts implementationArtifacts) {

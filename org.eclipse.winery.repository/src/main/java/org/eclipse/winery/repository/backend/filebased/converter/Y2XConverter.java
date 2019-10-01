@@ -701,7 +701,6 @@ public class Y2XConverter {
     private TRelationshipType convert(org.eclipse.winery.model.tosca.yaml.TRelationshipType node, String id) {
         if (Objects.isNull(node)) return null;
         TRelationshipType output = convert(node, new TRelationshipType.Builder(id))
-            //TODO parse Artifact Templates out of Interfaces
             .addSourceInterfaces(convert(node.getInterfaces(), "SourceInterfaces"))
             .addInterfaces(convert(node.getInterfaces(), null))
             .addTargetInterfaces(convert(node.getInterfaces(), "TargetInterfaces"))
@@ -931,14 +930,40 @@ public class Y2XConverter {
         Map<String, TInterfaceDefinition> implArtifacts, String type, String targetNamespace) {
         this.relationshipTypeImplementations.add(new TRelationshipTypeImplementation.Builder(type + "_impl", new QName(targetNamespace, type))
             .setTargetNamespace(targetNamespace)
-//            .addImplementationArtifacts(convertImplmentationsFromInterfaces(implArtifacts))
+            .addImplementationArtifacts(convertImplmentationsFromInterfaces(implArtifacts, targetNamespace))
             .build()
         );
     }
     
-    private TImplementationArtifacts convertImplmentationsFromInterfaces(Map<String, TInterfaceDefinition> interfaces) {
-        //TODO Implmentent conversion from Interface
-        return null;
+    private List<TImplementationArtifacts.ImplementationArtifact> convertImplmentationsFromInterfaces(Map<String, TInterfaceDefinition> interfaces, String targetNamespace) {
+        QName type = new QName("http://www.example.org/tosca/artifacttypes", "ScriptArtifact_w1-wip1");
+        List<TImplementationArtifacts.ImplementationArtifact> output = new ArrayList<>();
+        for (Map.Entry<String, TInterfaceDefinition> interfaceDefinitionEntry : interfaces.entrySet()) {
+            if (interfaceDefinitionEntry.getValue() != null) {
+                if (interfaceDefinitionEntry.getValue().getOperations() != null) {
+                    for (Map.Entry<String, TOperationDefinition> operation: interfaceDefinitionEntry.getValue().getOperations().entrySet()) {
+                        if (operation.getValue().getImplementation() != null) {
+                            if (operation.getValue().getImplementation().getPrimary() != null) {
+                                if (operation.getValue().getImplementation().getPrimary().getLocalPart().contains("/")) {
+                                    TArtifactTemplate artifactTemplate = new TArtifactTemplate.Builder(operation.getKey(), type)
+                                        .addArtifactReferences((new TArtifactReference.Builder(operation.getValue().getImplementation().getPrimary().getLocalPart())).build())
+                                        .build();
+                                    this.artifactTemplates.put(operation.getKey(), artifactTemplate);
+                                    output.add(new TImplementationArtifacts.ImplementationArtifact.Builder(artifactTemplate.getType())
+                                        .setName(operation.getKey())
+                                        .setArtifactRef(new QName(targetNamespace, artifactTemplate.getId()))
+                                        .setInterfaceName(interfaceDefinitionEntry.getKey())
+                                        .setOperationName(operation.getKey())
+                                        .build());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(output.isEmpty()) {return null;}
+        return output;
     }
 
     private TOperation convert(TOperationDefinition node, String id) {
