@@ -955,6 +955,16 @@ public class Y2XConverter {
                                         .setInterfaceName(interfaceDefinitionEntry.getKey())
                                         .setOperationName(operation.getKey())
                                         .build());
+                                } else if (!operation.getValue().getImplementation().getPrimary().getLocalPart().equalsIgnoreCase("null")){
+                                    TArtifactTemplate artifactTemplate = new TArtifactTemplate.Builder(operation.getValue().getImplementation().getPrimary().getLocalPart(), type)
+                                        .build();
+                                    this.artifactTemplates.put(operation.getValue().getImplementation().getPrimary().getLocalPart(), artifactTemplate);
+                                    output.add(new TImplementationArtifacts.ImplementationArtifact.Builder(artifactTemplate.getType())
+                                        .setName(operation.getKey())
+                                        .setArtifactRef(new QName(targetNamespace, artifactTemplate.getId()))
+                                        .setInterfaceName(interfaceDefinitionEntry.getKey())
+                                        .setOperationName(operation.getKey())
+                                        .build());
                                 }
                             }
                         }
