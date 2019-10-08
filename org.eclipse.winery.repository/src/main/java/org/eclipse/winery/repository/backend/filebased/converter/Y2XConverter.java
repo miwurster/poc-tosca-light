@@ -907,13 +907,13 @@ public class Y2XConverter {
     private void convertNodeTypeImplementation(
         Map<String, TArtifactDefinition> implArtifacts,
         Map<String, TArtifactDefinition> deplArtifacts, String type, String targetNamespace) {
-//        for (Map.Entry<String, TArtifactDefinition> implArtifact : implArtifacts.entrySet()) {
-//            for (Map.Entry<String, TArtifactDefinition> deplArtifact: deplArtifacts.entrySet()) {
-//                if (implArtifact.getKey().equalsIgnoreCase(deplArtifact.getKey())) {
-//                    deplArtifacts.remove(deplArtifact.getKey());
-//                }
-//            }
-//        }
+        for (Map.Entry<String, TArtifactDefinition> implArtifact : implArtifacts.entrySet()) {
+            for (Map.Entry<String, TArtifactDefinition> deplArtifact: deplArtifacts.entrySet()) {
+                if (implArtifact.getKey().equalsIgnoreCase(deplArtifact.getKey())) {
+                    deplArtifacts.remove(deplArtifact.getKey());
+                }
+            }
+        }
         TNodeTypeImplementation.Builder builder = (new TNodeTypeImplementation.Builder(type + "_impl", new QName(targetNamespace, type))
             .setTargetNamespace(targetNamespace)
             .setDeploymentArtifacts(convertDeploymentArtifacts(deplArtifacts, targetNamespace))
@@ -936,7 +936,7 @@ public class Y2XConverter {
     }
     
     private List<TImplementationArtifacts.ImplementationArtifact> convertImplmentationsFromInterfaces(Map<String, TInterfaceDefinition> interfaces, String targetNamespace) {
-        QName type = new QName("http://www.example.org/tosca/artifacttypes", "ScriptArtifact_w1-wip1");
+        QName type = new QName("http://opentosca.org/artifacttypes", "ScriptArtifact");
         List<TImplementationArtifacts.ImplementationArtifact> output = new ArrayList<>();
         for (Map.Entry<String, TInterfaceDefinition> interfaceDefinitionEntry : interfaces.entrySet()) {
             if (interfaceDefinitionEntry.getValue() != null) {

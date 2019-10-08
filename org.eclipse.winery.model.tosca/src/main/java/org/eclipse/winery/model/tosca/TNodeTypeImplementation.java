@@ -91,6 +91,7 @@ public class TNodeTypeImplementation extends TEntityTypeImplementation {
         super(builder);
         this.derivedFrom = builder.derivedFrom;
         this.deploymentArtifacts = builder.deploymentArtifacts;
+        this.implementationArtifacts = builder.implementationArtifacts;
     }
 
     @Override
