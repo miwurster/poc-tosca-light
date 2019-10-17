@@ -88,7 +88,6 @@ import org.eclipse.winery.repository.backend.filebased.converter.support.excepti
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.UndefinedPrefix;
 import org.eclipse.winery.repository.backend.filebased.converter.support.validator.FieldValidator;
 
-import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.jdt.annotation.NonNull;
@@ -1145,11 +1144,12 @@ public class Builder {
                 }
                 return Tuples.pair(entry.getKey(), parameter.getBuilderOO().apply(
                     entry.getValue(),
-                new Parameter<T>(parameter.getContext()).addContext(entry.getKey())
-                    .setClazz(parameter.getClazz())
-                    .setValue(parameter.getValue())
-                )
-            );})
+                    new Parameter<T>(parameter.getContext()).addContext(entry.getKey())
+                        .setClazz(parameter.getClazz())
+                        .setValue(parameter.getValue())
+                    )
+                );
+            })
 //            .filter(this::nonNull)
             .collect(Collectors.toMap(Pair::getOne, Pair::getTwo));
         return output;

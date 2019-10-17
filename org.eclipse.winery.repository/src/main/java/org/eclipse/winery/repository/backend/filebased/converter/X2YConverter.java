@@ -13,10 +13,6 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.backend.filebased.converter;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -24,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -98,20 +93,16 @@ import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementDefinition;
-import org.eclipse.winery.repository.backend.IRepository;
-import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
 import org.eclipse.winery.repository.backend.filebased.YamlBasedRepository;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Namespaces;
 import org.eclipse.winery.repository.backend.filebased.converter.support.ValueConverter;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
 import org.eclipse.winery.repository.backend.filebased.converter.support.xml.TypeConverter;
-import org.eclipse.winery.repository.datatypes.ids.elements.ArtifactTemplateFilesDirectoryId;
 
 import org.eclipse.collections.impl.bimap.mutable.HashBiMap;
 import org.eclipse.jdt.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.web3j.abi.datatypes.Bool;
 
 public class X2YConverter {
     public final static Logger LOGGER = LoggerFactory.getLogger(X2YConverter.class);
@@ -127,8 +118,6 @@ public class X2YConverter {
         this.prefixNamespace = new HashBiMap<>();
         this.importDefinitions = new LinkedHashMap<>();
     }
-
-
 
     /**
      * Converts TOSCA XML Definitions to TOSCA YAML ServiceTemplates
@@ -153,12 +142,12 @@ public class X2YConverter {
 //            }
             builder.addMetadata("targetNamespace", node.getTargetNamespace());
         }
-        
+
         builder.setImports(convertImports());
 
         return builder.build();
     }
-    
+
     public List<TMapImportDefinition> convertImports() {
         List<TMapImportDefinition> imports = new ArrayList<>();
         TMapImportDefinition tMapImportDefinition = new TMapImportDefinition();
@@ -350,7 +339,7 @@ public class X2YConverter {
                 .build()
         );
     }
-    
+
     private List<QName> convertTargets(org.eclipse.winery.model.tosca.TRelationshipType.ValidSource validSource, org.eclipse.winery.model.tosca.TRelationshipType.ValidTarget validTarget) {
         if (validSource != null && validTarget != null) {
             List<QName> output = new ArrayList<>();
@@ -510,7 +499,7 @@ public class X2YConverter {
         );
     }
 
-    public Map<String, TInterfaceDefinition>  convert(TInterfaces node, TNodeTypeImplementation implementation) {
+    public Map<String, TInterfaceDefinition> convert(TInterfaces node, TNodeTypeImplementation implementation) {
         if (Objects.isNull(node)) return null;
         return node.getInterface().stream()
             .filter(Objects::nonNull)
@@ -565,7 +554,7 @@ public class X2YConverter {
                 .build()
         );
     }
-    
+
     public TServiceTemplate convertNodeTypeImplementation(TServiceTemplate type, TNodeTypeImplementation node) {
         if (Objects.isNull(node)) return null;
         TNodeType nodeType = type.getNodeTypes().entrySet().iterator().next().getValue();
@@ -575,20 +564,23 @@ public class X2YConverter {
         type.setImports(addNewImports(type.getImports()));
         return type;
     }
-    
+
     public TServiceTemplate convertRelationshipTypeImplementation(TServiceTemplate type, TRelationshipTypeImplementation node) {
         if (Objects.isNull(node)) return null;
         TRelationshipType relationshipType = type.getRelationshipTypes().entrySet().iterator().next().getValue();
         relationshipType.setInterfaces(convertRelationshipInterfaces(relationshipType.getInterfaces(), node.getImplementationArtifacts()));
         type.getRelationshipTypes().entrySet().iterator().next().setValue(relationshipType);
         return type;
-        
     }
-    
+
     private List<TMapImportDefinition> addNewImports(List<TMapImportDefinition> imports) {
         List<TMapImportDefinition> newImportsList = convertImports();
-        if (newImportsList.isEmpty()) {return imports;}
-        if (imports.isEmpty()) {return newImportsList;}
+        if (newImportsList.isEmpty()) {
+            return imports;
+        }
+        if (imports.isEmpty()) {
+            return newImportsList;
+        }
         TMapImportDefinition newImports = newImportsList.get(0);
         TMapImportDefinition existingImports = imports.get(0);
         for (Map.Entry<String, TImportDefinition> newImport : newImports.entrySet()) {
@@ -630,7 +622,7 @@ public class X2YConverter {
         } else if (implementation.getPrimary().getLocalPart().equalsIgnoreCase("null")) {
             implementation.setPrimary(name);
             return implementation;
-        } else if (implementation.getPrimary().equals(name)){
+        } else if (implementation.getPrimary().equals(name)) {
             return implementation;
         } else if (implementation.getDependencies() != null) {
             if (implementation.getDependencies().contains(name)) {
@@ -648,7 +640,7 @@ public class X2YConverter {
             return implementation;
         }
     }
-    
+
     private Map<String, TInterfaceDefinition> convertInterfaces(Map<String, TInterfaceDefinition> interfaces, TImplementationArtifacts implementationArtifacts) {
         if (implementationArtifacts == null) {
             return interfaces;
@@ -673,7 +665,7 @@ public class X2YConverter {
         } else if (implementation.getPrimary().getLocalPart().equalsIgnoreCase("null")) {
             implementation.setPrimary(name);
             return implementation;
-        } else if (implementation.getPrimary().equals(name)){
+        } else if (implementation.getPrimary().equals(name)) {
             return implementation;
         } else if (implementation.getDependencies() != null) {
             if (implementation.getDependencies().contains(name)) {
@@ -721,7 +713,7 @@ public class X2YConverter {
                 output.put(deploymentArtifact.getArtifactRef().getLocalPart(), convertArtifactReference(deploymentArtifact.getArtifactRef()));
             }
         }
-        
+
         return output;
     }
 
@@ -742,7 +734,6 @@ public class X2YConverter {
         if (Objects.isNull(ref)) return null;
         return convert(new ArtifactTemplateId(ref));
     }
-    
 
     public TArtifactDefinition convert(ArtifactTemplateId id) {
         TArtifactTemplate node = repository.getElement(id);
@@ -771,7 +762,7 @@ public class X2YConverter {
 //            .collect(Collectors.toList());
         return convertArtifactTemplate(node);
     }
-    
+
     public TArtifactDefinition convertArtifactTemplate(TArtifactTemplate node) {
         List<String> files = new ArrayList<>();
         TArtifactTemplate.ArtifactReferences artifactReferences = node.getArtifactReferences();
@@ -792,8 +783,6 @@ public class X2YConverter {
         ), files)
             .build();
     }
-    
-    
 
     public TMapRequirementDefinition convert(org.eclipse.winery.model.tosca.TRequirementDefinition node) {
         if (Objects.isNull(node)) return null;

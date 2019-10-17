@@ -231,9 +231,9 @@ public class WriterUtils {
     }
 
     /**
-     * @param path The root path to search from
+     * @param path      The root path to search from
      * @param namespace the namespace
-     * @param name the local name of the file
+     * @param name      the local name of the file
      */
     private static Path getTypeFile(@NonNull Path path, @NonNull String namespace, @NonNull String name) {
         String urlEncodedName = Util.URLencode(name);

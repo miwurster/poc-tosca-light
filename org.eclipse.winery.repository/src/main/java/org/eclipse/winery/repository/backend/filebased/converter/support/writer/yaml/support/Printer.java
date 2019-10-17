@@ -307,7 +307,7 @@ public class Printer extends AbstractResult<Printer> {
                     || name.getPrefix().equals("tosca")
             )
                 || name.getNamespaceURI().isEmpty()
-            ) return name.getLocalPart();
+        ) return name.getLocalPart();
         return name.getPrefix().isEmpty() ?
             ("\"{" + name.getNamespaceURI() + "}" + name.getLocalPart() + "\"") :
             (name.getPrefix() + ":" + name.getLocalPart());

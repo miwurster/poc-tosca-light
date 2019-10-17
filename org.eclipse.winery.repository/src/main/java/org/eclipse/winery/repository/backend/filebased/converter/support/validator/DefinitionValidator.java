@@ -25,11 +25,11 @@ import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Namespaces;
+import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.UndefinedField;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.UndefinedFile;
-import org.eclipse.winery.repository.backend.filebased.converter.support.validator.support.Parameter;
-import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
 import org.eclipse.winery.repository.backend.filebased.converter.support.validator.support.ExceptionVisitor;
+import org.eclipse.winery.repository.backend.filebased.converter.support.validator.support.Parameter;
 import org.eclipse.winery.repository.backend.filebased.converter.support.validator.support.Result;
 
 public class DefinitionValidator extends ExceptionVisitor<Result, Parameter> {

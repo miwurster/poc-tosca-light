@@ -33,10 +33,8 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.plaf.multi.MultiInternalFrameUI;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
@@ -55,7 +53,6 @@ import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
-import org.eclipse.winery.model.tosca.TOperation;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
@@ -66,19 +63,14 @@ import org.eclipse.winery.model.tosca.yaml.TRelationshipType;
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.model.tosca.yaml.support.Defaults;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
-import org.eclipse.winery.repository.Constants;
 import org.eclipse.winery.repository.backend.BackendUtils;
-import org.eclipse.winery.repository.backend.filebased.converter.Y2XConverter;
 import org.eclipse.winery.repository.backend.filebased.converter.X2YConverter;
+import org.eclipse.winery.repository.backend.filebased.converter.Y2XConverter;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
 import org.eclipse.winery.repository.backend.filebased.converter.support.reader.yaml.Reader;
 import org.eclipse.winery.repository.backend.filebased.converter.support.writer.yaml.Writer;
 import org.eclipse.winery.repository.configuration.FileBasedRepositoryConfiguration;
-import org.eclipse.winery.repository.targetallocation.criteria.minexternalconnections.ConnectsToGraph;
 
-import com.fasterxml.jackson.jaxrs.json.annotation.JSONP;
-import com.sun.org.omg.CORBA.OperationDescription;
-import jdk.internal.util.xml.impl.Input;
 import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +80,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlBasedRepository.class);
     private final String nameRegex;
     private final Pattern namePattern;
-    
+
     public YamlBasedRepository(FileBasedRepositoryConfiguration fileBasedRepositoryConfiguration) {
         super(Objects.requireNonNull(fileBasedRepositoryConfiguration));
         this.nameRegex = "(.*)@(.*)@(.*)";
@@ -97,7 +89,7 @@ public class YamlBasedRepository extends FilebasedRepository {
 
     /**
      * Converts RepositoryFileReference to compatible YAML File
-     * 
+     *
      * @param ref RepositoryFileReference
      * @return compatible Path
      **/
@@ -111,8 +103,8 @@ public class YamlBasedRepository extends FilebasedRepository {
         GenericId convertedId = convertGenericId(ref.getParent());
         if (convertedId != null) {
             if (convertedId instanceof DefinitionsChildId) {
-               String convertedFilename = BackendUtils.getFileNameOfDefinitions((DefinitionsChildId) convertedId);
-               return resultPath.resolve(convertedFilename);
+                String convertedFilename = BackendUtils.getFileNameOfDefinitions((DefinitionsChildId) convertedId);
+                return resultPath.resolve(convertedFilename);
             }
         }
         return resultPath.resolve(ref.getFileName());
@@ -155,7 +147,6 @@ public class YamlBasedRepository extends FilebasedRepository {
                 } else {
                     return new RelationshipTypeId(new QName(qName.getNamespaceURI(), typeName));
                 }
-                
             } else {
                 return new NodeTypeId(new QName(qName.getNamespaceURI(), "Cache"));
             }
@@ -189,8 +180,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Checks if XML Definition in exists
-     * Artifact Templates are searched in Type
+     * Checks if XML Definition in exists Artifact Templates are searched in Type
      *
      * @param id generic id of target
      * @return boolean if target exists
@@ -210,8 +200,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Checks if referenced File in exists
-     * Artifact Templates are searched in Type
+     * Checks if referenced File in exists Artifact Templates are searched in Type
      *
      * @param ref Repository File Reference
      * @return boolean if target exists
@@ -236,11 +225,11 @@ public class YamlBasedRepository extends FilebasedRepository {
     private String getNameOfArtifactFromArtifactName(String name) {
         Matcher nameMatcher = namePattern.matcher(name);
         if (nameMatcher.matches()) {
-            return nameMatcher.group(1);    
+            return nameMatcher.group(1);
         }
         return name;
     }
-    
+
     /**
      * Returns name of the type that is contained in the artifact name
      *
@@ -270,15 +259,15 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Deletes referenced File
-     * Does not delete implementations anymore
-     * Deletes artifacts from there referenced type
+     * Deletes referenced File Does not delete implementations anymore Deletes artifacts from there referenced type
      *
      * @param ref Repository File Reference
      **/
     @Override
     public void forceDelete(RepositoryFileReference ref) throws IOException {
-        if (ref.getParent() instanceof NodeTypeImplementationId || ref.getParent() instanceof RelationshipTypeImplementationId) {return;}
+        if (ref.getParent() instanceof NodeTypeImplementationId || ref.getParent() instanceof RelationshipTypeImplementationId) {
+            return;
+        }
 
         if (ref.getParent() instanceof ArtifactTemplateId) {
             deleteArtifact((ArtifactTemplateId) ref.getParent());
@@ -288,15 +277,16 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Deletes referenced Definition
-     * Does not delete implementations anymore
-     * Deletes artifacts from there referenced type
+     * Deletes referenced Definition Does not delete implementations anymore Deletes artifacts from there referenced
+     * type
      *
      * @param id generic id
      **/
     @Override
     public void forceDelete(GenericId id) {
-        if (id instanceof NodeTypeImplementationId || id instanceof RelationshipTypeImplementationId) {return;}
+        if (id instanceof NodeTypeImplementationId || id instanceof RelationshipTypeImplementationId) {
+            return;
+        }
         if (id instanceof ArtifactTemplateId) {
             deleteArtifact((ArtifactTemplateId) id);
         } else {
@@ -321,7 +311,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                     targetPath = targetPath.resolve(convertedFilename);
                 }
             }
-            
+
             if (Files.exists(targetPath)) {
                 try {
                     TServiceTemplate nodeType = readServiceTemplate(targetPath);
@@ -343,14 +333,13 @@ public class YamlBasedRepository extends FilebasedRepository {
                     e.printStackTrace();
                 }
             }
-
         }
     }
 
     /**
      * Deletes artifact from yaml relationship type
      *
-     * @param relationshipType TRelationshipType 
+     * @param relationshipType   TRelationshipType
      * @param targetArtifactName targeted artifact name
      * @return updated node type
      **/
@@ -404,7 +393,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     /**
      * Deletes artifact from yaml node type interfaces
      *
-     * @param nodeType TNodeType 
+     * @param nodeType           TNodeType
      * @param targetArtifactName targeted artifact name
      * @return updated node type
      **/
@@ -414,7 +403,7 @@ public class YamlBasedRepository extends FilebasedRepository {
             for (Map.Entry<String, TInterfaceDefinition> interfaceDefinition : interfaces.entrySet()) {
                 Map<String, TOperationDefinition> operations = interfaceDefinition.getValue().getOperations();
                 if (operations != null) {
-                    for (Map.Entry<String , TOperationDefinition> operation : operations.entrySet()) {
+                    for (Map.Entry<String, TOperationDefinition> operation : operations.entrySet()) {
                         TOperationDefinition operationDefinition = operation.getValue();
                         if (operationDefinition != null) {
                             TImplementation implementation = operationDefinition.getImplementation();
@@ -425,7 +414,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                                     } else {
                                         if (implementation.getDependencies() != null) {
                                             List<QName> qNames = implementation.getDependencies();
-                                            for (QName name: implementation.getDependencies()) {
+                                            for (QName name : implementation.getDependencies()) {
                                                 if (name.getLocalPart().equalsIgnoreCase(targetArtifactName)) {
                                                     qNames.remove(name);
                                                 }
@@ -473,7 +462,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     /**
      * Parses only requested Definition from converted yaml service template
      *
-     * @param id Definitions Child id
+     * @param id          Definitions Child id
      * @param definitions converted definitions
      * @return requested definitions
      **/
@@ -485,7 +474,7 @@ public class YamlBasedRepository extends FilebasedRepository {
         } else if (id instanceof RelationshipTypeId) {
             Definitions.Builder requestedDefinitions = getEmptyDefinition(definitions);
             requestedDefinitions.addRelationshipTypes(definitions.getRelationshipTypes());
-            Definitions output =  requestedDefinitions.build();
+            Definitions output = requestedDefinitions.build();
             return output;
         } else if (id instanceof NodeTypeImplementationId) {
             Definitions.Builder requestedDefinitions = getEmptyDefinition(definitions);
@@ -528,7 +517,7 @@ public class YamlBasedRepository extends FilebasedRepository {
      * Checks if artifact tempaltes exists in type
      *
      * @param targetPath target path of requested type
-     * @param qName target QName
+     * @param qName      target QName
      * @return boolean if it was found
      **/
     private boolean chechIfArtifactTemplateExists(Path targetPath, QName qName) {
@@ -542,23 +531,21 @@ public class YamlBasedRepository extends FilebasedRepository {
                     }
                 }
             }
-            
         } catch (IOException | MultiException e) {
             LOGGER.debug("Internal error", e);
         }
         return false;
-        
     }
 
     /**
      * Reads service template from target path and converts it to XML Definition
      *
-     * @param targetPath target path of service template
-     * @param id id of requested Definition
+     * @param targetPath      target path of service template
+     * @param id              id of requested Definition
      * @param targetNamespace targetNamespace of requested Definition
      * @return xml definitions
      **/
-    private Definitions convertToDefinitions(Path targetPath, String id, String targetNamespace) throws IOException, MultiException{
+    private Definitions convertToDefinitions(Path targetPath, String id, String targetNamespace) throws IOException, MultiException {
         TServiceTemplate serviceTemplate = readServiceTemplate(targetPath);
         Y2XConverter converter = new Y2XConverter();
         return converter.convert(serviceTemplate, id, targetNamespace);
@@ -602,8 +589,8 @@ public class YamlBasedRepository extends FilebasedRepository {
     /**
      * Gets all artifact names from targeted type
      *
-     * @param target target path of service template
-     * @param idClass id Class of requested Definition
+     * @param target          target path of service template
+     * @param idClass         id Class of requested Definition
      * @param targetNamespace targetNamespace of requested Definition
      * @return list of strings
      **/
@@ -622,16 +609,16 @@ public class YamlBasedRepository extends FilebasedRepository {
             }
         } catch (MultiException | IOException e) {
             LOGGER.debug("Internal error", e);
-        } 
+        }
         return output;
     }
 
     /**
      * Converts incoming xml input stream to yaml service tempalte and writes it to file
      *
-     * @param ref repository file reference
+     * @param ref         repository file reference
      * @param inputStream input stream to write to file
-     * @param mediaType Media Type
+     * @param mediaType   Media Type
      **/
     @Override
     public void putContentToFile(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) throws IOException {
@@ -653,7 +640,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     /**
      * Reads xml definition input stream converts it to yaml service template and writes it to input stream
      *
-     * @param ref Repository File Reference
+     * @param ref         Repository File Reference
      * @param inputStream Input Stream
      * @return yaml service template input stream
      **/
@@ -671,7 +658,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                 serviceTemplate = converter.convertRelationshipTypeImplementation(serviceTemplate, definitions.getRelationshipTypeImplementations().get(0));
             } else if (ref.getParent() instanceof NodeTypeId) {
                 serviceTemplate = converter.convert(definitions);
-                if (exists(ref)) { 
+                if (exists(ref)) {
                     TServiceTemplate oldServiceTemplate = readServiceTemplate(ref);
                     serviceTemplate = replaceOldWithNewData(serviceTemplate, oldServiceTemplate);
                 }
@@ -681,7 +668,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                     TServiceTemplate oldServiceTemplate = readServiceTemplate(ref);
                     serviceTemplate = replaceOldRelationshipTypeithNewData(serviceTemplate, oldServiceTemplate);
                 }
-            } else if (ref.getParent() instanceof ArtifactTemplateId){
+            } else if (ref.getParent() instanceof ArtifactTemplateId) {
                 ArtifactTemplateId id = (ArtifactTemplateId) ref.getParent();
                 TArtifactTemplate artifactTemplate = definitions.getArtifactTemplates().get(0);
                 TArtifactDefinition artifact = converter.convertArtifactTemplate(artifactTemplate);
@@ -690,7 +677,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                 if (Files.exists(targetPath)) {
                     serviceTemplate = readServiceTemplate(targetPath);
                     if (serviceTemplate == null) {
-                        serviceTemplate = createNewCacheNodeTypeWithArtifact(ref,artifactTemplate,artifact, imports);
+                        serviceTemplate = createNewCacheNodeTypeWithArtifact(ref, artifactTemplate, artifact, imports);
                     } else if (getTypeFromArtifactName(id.getQName().getLocalPart()).equalsIgnoreCase("nodetypes")) {
                         TNodeType nodeType = serviceTemplate.getNodeTypes().entrySet().iterator().next().getValue();
                         Map<String, TArtifactDefinition> artifacts = nodeType.getArtifacts();
@@ -708,7 +695,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                         relationshipType.setInterfaces(addArtifactToInterfaces(interfaceDefinitionMap, artifact, artifactTemplate.getIdFromIdOrNameField()));
                     }
                 } else {
-                    serviceTemplate = createNewCacheNodeTypeWithArtifact(ref,artifactTemplate,artifact, imports);
+                    serviceTemplate = createNewCacheNodeTypeWithArtifact(ref, artifactTemplate, artifact, imports);
                 }
             } else {
                 serviceTemplate = converter.convert(definitions);
@@ -728,12 +715,14 @@ public class YamlBasedRepository extends FilebasedRepository {
      * Adds artifact to interface for implementation artifact
      *
      * @param interfaces interfaces of type
-     * @param id name of artifact
-     * @param artifact artifact
+     * @param id         name of artifact
+     * @param artifact   artifact
      * @return edited interfaces
      **/
     private Map<String, TInterfaceDefinition> addArtifactToInterfaces(Map<String, TInterfaceDefinition> interfaces, TArtifactDefinition artifact, String id) {
-        if (artifact.getFiles().isEmpty()) {return interfaces;}
+        if (artifact.getFiles().isEmpty()) {
+            return interfaces;
+        }
         for (Map.Entry<String, TInterfaceDefinition> interfaceDefinitionEntry : interfaces.entrySet()) {
             interfaceDefinitionEntry.setValue(addArtifactFileToTargetOperation(interfaceDefinitionEntry.getValue(), artifact, id));
         }
@@ -744,8 +733,8 @@ public class YamlBasedRepository extends FilebasedRepository {
      * Adds artifacts filepath to interfaces for relationship type artifact templates
      *
      * @param interfaces interfaces of type
-     * @param target name of artifact
-     * @param artifact artifact
+     * @param target     name of artifact
+     * @param artifact   artifact
      * @return edited interfaces
      **/
     private TInterfaceDefinition addArtifactFileToTargetOperation(TInterfaceDefinition interfaces, TArtifactDefinition artifact, String target) {
@@ -770,7 +759,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                 }
                 operation.setValue(operationDefinition);
             }
-        } 
+        }
         interfaces.setOperations(operations);
         return interfaces;
     }
@@ -779,15 +768,19 @@ public class YamlBasedRepository extends FilebasedRepository {
      * Adds new import to existing imports
      *
      * @param oldImports existing imports
-     * @param newImport new import
+     * @param newImport  new import
      * @return edited imports
      **/
     private List<TMapImportDefinition> addImports(List<TMapImportDefinition> oldImports, List<TMapImportDefinition> newImport) {
-        if (newImport.isEmpty()) {return oldImports;}
-        if (newImport.get(0).isEmpty()) {return oldImports;}
+        if (newImport.isEmpty()) {
+            return oldImports;
+        }
+        if (newImport.get(0).isEmpty()) {
+            return oldImports;
+        }
         Map.Entry<String, TImportDefinition> targetImport = newImport.get(0).entrySet().iterator().next();
         for (TMapImportDefinition tMapImportDefinition : oldImports) {
-            for(Map.Entry<String, TImportDefinition> tImportDefinitionEntry : tMapImportDefinition.entrySet()) {
+            for (Map.Entry<String, TImportDefinition> tImportDefinitionEntry : tMapImportDefinition.entrySet()) {
                 if (tImportDefinitionEntry.getKey().equalsIgnoreCase(targetImport.getKey())) {
                     if (tImportDefinitionEntry.getValue().equals(targetImport.getValue())) {
                         return oldImports;
@@ -802,10 +795,10 @@ public class YamlBasedRepository extends FilebasedRepository {
     /**
      * Creates new cache node type and saves artifact until it's referenced
      *
-     * @param ref repository file reference
+     * @param ref              repository file reference
      * @param artifactTemplate new artifact template
-     * @param artifact yaml artifact
-     * @param imports imports
+     * @param artifact         yaml artifact
+     * @param imports          imports
      * @return new yaml service template
      **/
     private TServiceTemplate createNewCacheNodeTypeWithArtifact(RepositoryFileReference ref, TArtifactTemplate artifactTemplate, TArtifactDefinition artifact, List<TMapImportDefinition> imports) {
@@ -825,14 +818,12 @@ public class YamlBasedRepository extends FilebasedRepository {
      **/
     private TServiceTemplate createEmptyCacheNodeType(String targetNamespace) {
         return new TServiceTemplate.Builder(Defaults.TOSCA_DEFINITIONS_VERSION)
-                .setNodeType("Cache", (new TNodeType.Builder().addMetadata("targetNamespace", targetNamespace).build()))
+            .setNodeType("Cache", (new TNodeType.Builder().addMetadata("targetNamespace", targetNamespace).build()))
             .build();
     }
 
     /**
-     * Clears cache
-     * Checks if Cache node types can get deleted
-     *
+     * Clears cache Checks if Cache node types can get deleted
      **/
     private void clearCache() {
         SortedSet<ArtifactTemplateId> artifacts = getAllDefinitionsChildIds(ArtifactTemplateId.class);
@@ -841,7 +832,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                 for (ArtifactTemplateId otherArtifact : artifacts) {
                     if (otherArtifact.getQName().getNamespaceURI().equalsIgnoreCase(artifact.getQName().getNamespaceURI())
                         && getNameOfArtifactFromArtifactName(otherArtifact.getQName().getLocalPart()).equalsIgnoreCase(getNameOfArtifactFromArtifactName(artifact.getQName().getLocalPart()))
-                        && !getNameOfTypeFromArtifactName(otherArtifact.getQName().getLocalPart()).equalsIgnoreCase("cache")){
+                        && !getNameOfTypeFromArtifactName(otherArtifact.getQName().getLocalPart()).equalsIgnoreCase("cache")) {
                         forceDelete(artifact);
                     }
                 }
@@ -850,7 +841,8 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Replaces old data of yaml node type with new data from xml node type to prevent deletion of implementation artifacts
+     * Replaces old data of yaml node type with new data from xml node type to prevent deletion of implementation
+     * artifacts
      *
      * @param newData new saved node type
      * @param oldData already saved node type
@@ -871,7 +863,8 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Replaces old data of yaml relationship type with new data from xml relationship type to prevent deletion of implementation artifacts
+     * Replaces old data of yaml relationship type with new data from xml relationship type to prevent deletion of
+     * implementation artifacts
      *
      * @param newData new saved relationship type
      * @param oldData already saved relationship type
@@ -919,12 +912,11 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Creates Set of Definitions Child Id
-     * Mapps xml definition to compatible yaml definition 
+     * Creates Set of Definitions Child Id Mapps xml definition to compatible yaml definition
      *
-     * @param inputIdClass requested id class
+     * @param inputIdClass            requested id class
      * @param omitDevelopmentVersions omit development versions
-     * @return set of definitions child id 
+     * @return set of definitions child id
      **/
     @Override
     public <T extends DefinitionsChildId> SortedSet<T> getDefinitionsChildIds(Class<T> inputIdClass, boolean omitDevelopmentVersions) {
@@ -950,8 +942,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                     Namespace ns = new Namespace(nsP.getFileName().toString(), true);
                     try (DirectoryStream<Path> idDS = Files.newDirectoryStream(nsP, onhdf)) {
                         for (Path idP : idDS) {
-                            
-                            
+
                             List<XmlId> xmlIds = new ArrayList<>();
                             if (ArtifactTemplateId.class.isAssignableFrom(inputIdClass)) {
                                 List<String> artifactNames = getAllArtifactNamesFromType(idP, idClass, ns.getDecoded());
@@ -961,9 +952,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                             } else {
                                 xmlIds.add(new XmlId(idP.getFileName().toString(), true));
                             }
-                            
-                            
-                            
+
                             for (XmlId xmlId : xmlIds) {
                                 if (omitDevelopmentVersions) {
                                     WineryVersion version = VersionUtils.getVersion(xmlId.getDecoded());
@@ -1004,7 +993,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Converts input stream to byte array output stream for create reusable input streams 
+     * Converts input stream to byte array output stream for create reusable input streams
      *
      * @param inputStream target input stream
      * @return byte array output stream of inputstream

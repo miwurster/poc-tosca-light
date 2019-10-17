@@ -14,6 +14,7 @@
 package org.eclipse.winery.repository.backend.filebased.converter.support.validator.support;
 
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.InvalidYamlSyntax;
+
 import org.yaml.snakeyaml.constructor.ConstructorException;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
 import org.yaml.snakeyaml.scanner.ScannerException;

@@ -78,7 +78,7 @@ public class Reader {
     public TServiceTemplate parse(InputStream inputStream, String namespace) throws MultiException {
         return this.readServiceTemplate(inputStream, namespace);
     }
-    
+
     public TServiceTemplate parse(TImportDefinition definition, Path path, String namespace) throws MultiException {
         return this.readImportDefinition(definition, path, namespace);
     }
@@ -113,7 +113,7 @@ public class Reader {
         return builder.buildServiceTemplate(object);
     }
 
-/**
+    /**
      * Uses snakeyaml to convert a file into an Object
      *
      * @param path name
@@ -134,12 +134,12 @@ public class Reader {
             return null;
         }
     }
-    
+
     private Object readObjectFromInputStream(InputStream inputStream) {
         return this.yaml.load(inputStream);
     }
 
-/**
+    /**
      * Uses snakeyaml to convert the part of an file containing metadata into an Object
      *
      * @return Object (Lists, Maps, Strings, Integers, Dates)
@@ -178,7 +178,7 @@ public class Reader {
         }
     }
 
-/**
+    /**
      * Checks if a file has been read before and is changed
      *
      * @return false if has been read and did not change else true
@@ -200,7 +200,8 @@ public class Reader {
             return true;
         }
     }
-/**
+
+    /**
      * Reads a file and converts it to a ServiceTemplate
      *
      * @return ServiceTemplate
@@ -240,8 +241,8 @@ public class Reader {
             throw e;
         }
     }
-    
-    private TServiceTemplate readServiceTemplate(Path path,Path file, String namespace) throws MultiException {
+
+    private TServiceTemplate readServiceTemplate(Path path, Path file, String namespace) throws MultiException {
         Path filePath;
         if (Objects.isNull(path)) {
             filePath = file;

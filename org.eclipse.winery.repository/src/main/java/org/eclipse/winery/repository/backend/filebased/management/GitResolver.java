@@ -46,5 +46,4 @@ public class GitResolver extends AbstractGitResolver {
             return fullRepositoryName.split("." + getVcsSystem())[0];
         }
     }
-
 }

@@ -11,8 +11,9 @@ public class ConvertedPath {
         this.originalPath = originalPath;
         this.convertedPath = convertedPath;
     }
-    
-    public ConvertedPath(){}
+
+    public ConvertedPath() {
+    }
 
     public Path getOriginalPath() {
         return originalPath;
@@ -29,6 +30,4 @@ public class ConvertedPath {
     public void setConvertedPath(Path convertedPath) {
         this.convertedPath = convertedPath;
     }
-    
-    
 }

@@ -13,14 +13,10 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.backend.filebased.converter.support.writer.yaml;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -98,12 +94,12 @@ public class Writer extends AbstractVisitor<Printer, Writer.Parameter> {
     public Writer(int indentSize) {
         this.INDENT_SIZE = indentSize;
     }
-    
+
     public InputStream writeToInputStream(TServiceTemplate serviceTemplate) {
         try {
             String output = this.visit(serviceTemplate, new Parameter(0)).toString();
             return new ByteArrayInputStream(output.getBytes());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }

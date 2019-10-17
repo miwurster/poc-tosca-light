@@ -16,8 +16,8 @@ package org.eclipse.winery.repository.backend.filebased.converter.support;
 import javax.xml.XMLConstants;
 
 /**
- * Defines namespaces of YAML and related ones.
- * For general namespaces used in Winery, see {@link org.eclipse.winery.model.tosca.constants.Namespaces}
+ * Defines namespaces of YAML and related ones. For general namespaces used in Winery, see {@link
+ * org.eclipse.winery.model.tosca.constants.Namespaces}
  */
 public class Namespaces {
     public static final String TOSCA_NS = "http://docs.oasis-open.org/tosca/ns/simple/yaml/1.1";

@@ -78,7 +78,6 @@ import org.eclipse.winery.repository.backend.xsd.RepositoryBasedXsdImportManager
 import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
 import org.eclipse.winery.repository.exceptions.WineryRepositoryException;
 
-import jnr.ffi.annotations.In;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.event.ConfigurationEvent;
@@ -97,7 +96,7 @@ import org.slf4j.LoggerFactory;
 public class FilebasedRepository extends AbstractRepository implements IRepositoryAdministration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FilebasedRepository.class);
-    
+
     private static final Path repository = FilebasedRepository.getActiveRepositoryFilePath().toPath();
     private static final Path workspaceRepository = new File(FilebasedRepository.getActiveRepositoryFilePath(), Constants.DEFAULT_LOCAL_REPO_NAME).toPath();
 
@@ -167,7 +166,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         }
         return true;
     }
-    
+
     protected Path id2RelativePath(GenericId id) {
         return this.fileSystem.getPath(Util.getPathInsideRepo(id));
     }
@@ -396,7 +395,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         Path targetPath = this.ref2AbsolutePath(ref);
         writeInputStreamToPath(targetPath, inputStream);
     }
-    
+
     public void writeInputStreamToPath(Path targetPath, InputStream inputStream) throws IOException {
         // ensure that parent directory exists
         FileUtils.createDirectory(targetPath.getParent());
@@ -414,7 +413,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
             }
             Files.createFile(targetPath);
         }
-    } 
+    }
 
     @Override
     public boolean exists(RepositoryFileReference ref) {
@@ -431,7 +430,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         return getDefinitionsChildIds(idClass, true);
     }
 
-    public  <T extends DefinitionsChildId> SortedSet<T> getDefinitionsChildIds(Class<T> idClass, boolean omitDevelopmentVersions) {
+    public <T extends DefinitionsChildId> SortedSet<T> getDefinitionsChildIds(Class<T> idClass, boolean omitDevelopmentVersions) {
         SortedSet<T> res = new TreeSet<>();
         String rootPathFragment = Util.getRootPathFragment(idClass);
         Path dir = this.getRepositoryRoot().resolve(rootPathFragment);
@@ -829,8 +828,8 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
         Path path = this.ref2AbsolutePath(ref);
         return newInputStream(path);
     }
-    
-    public  InputStream newInputStream(Path path) throws IOException {
+
+    public InputStream newInputStream(Path path) throws IOException {
         return Files.newInputStream(path);
     }
 

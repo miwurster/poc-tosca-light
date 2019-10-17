@@ -1,6 +1,6 @@
 MultiException: *
   - YamlParserException
-  
+
 YamlParserException:
   Invalid:
     InvalidSyntax:
@@ -12,7 +12,7 @@ YamlParserException:
       InvalidTypeExtend
     InvalidField:
       InvalidToscaVersion
-  Undefined: 
+  Undefined:
     UndefinedType
     UndefinedDefinition
     UndefinedPrefix
@@ -24,6 +24,6 @@ YamlParserException:
 
 Explanation:
   Undefined: Something is used but not defined or missing
-  Invalid: 
+  Invalid:
     - Something is used defined but wrong
     - Something is missing but MUST be used and defined
