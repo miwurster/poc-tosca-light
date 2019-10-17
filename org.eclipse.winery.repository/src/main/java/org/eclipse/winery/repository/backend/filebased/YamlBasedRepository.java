@@ -40,6 +40,7 @@ import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.Util;
+import org.eclipse.winery.common.configuration.FileBasedRepositoryConfiguration;
 import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.Namespace;
 import org.eclipse.winery.common.ids.XmlId;
@@ -69,7 +70,6 @@ import org.eclipse.winery.repository.backend.filebased.converter.Y2XConverter;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
 import org.eclipse.winery.repository.backend.filebased.converter.support.reader.yaml.Reader;
 import org.eclipse.winery.repository.backend.filebased.converter.support.writer.yaml.Writer;
-import org.eclipse.winery.repository.configuration.FileBasedRepositoryConfiguration;
 
 import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
