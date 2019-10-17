@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  ~ Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+  ~ Copyright (c) 2013-2019 Contributors to the Eclipse Foundation
   ~
   ~ See the NOTICE file(s) distributed with this work for additional
   ~ information regarding copyright ownership.
@@ -77,9 +77,12 @@
         <io.github.adr.e-adr.version>1.0.0</io.github.adr.e-adr.version>
         <org.apache.commons.configuration>2.3</org.apache.commons.configuration>
         <org.eclipse.jdt.annotation>2.1.0</org.eclipse.jdt.annotation>
+        <org.eclipse.jgit.version>5.5.0.201909110433-r</org.eclipse.jgit.version>
         <org.mockito.moickito-core.version>2.19.0</org.mockito.moickito-core.version>
         <de.danielbechler.java-object-diff>0.95</de.danielbechler.java-object-diff>
-        <org.jgrapht.jgrapht-core.version>1.0.1</org.jgrapht.jgrapht-core.version>
+        <org.jgrapht.jgrapht-core.version>1.3.1</org.jgrapht.jgrapht-core.version>
+        <org.web3j>4.2.0</org.web3j>
+        <org.apache.commons-lang3.version>3.7</org.apache.commons-lang3.version>
 
         <!-- grouped libraries -->
         <org.apache.cxf.version>2.7.6</org.apache.cxf.version>
@@ -95,11 +98,12 @@
         <module>org.eclipse.winery.model.tosca.yaml</module>
         <module>org.eclipse.winery.accountability</module>
         <module>org.eclipse.winery.common</module>
+        <module>org.eclipse.winery.yaml.common</module>
+        <module>org.eclipse.winery.yaml.converter</module>
         <module>org.eclipse.winery.cli</module>
         <module>org.eclipse.winery.bpmn4tosca.converter.tobpel</module>
         <module>org.eclipse.winery.repository</module>
         <module>org.eclipse.winery.repository.client</module>
-        <module>org.eclipse.winery.repository.configuration</module>
         <module>org.eclipse.winery.repository.rest</module>
         <module>org.eclipse.winery.topologygraph</module>
         <module>org.eclipse.winery.compliance</module>
@@ -108,8 +112,9 @@
         <module>org.eclipse.winery.tools.copybaragenerator</module>
         <module>org.eclipse.winery.model.adaptation</module>
         <module>org.eclipse.winery.frontends</module>
-        <module>org.eclipse.winery.yaml.common</module>
-        <module>org.eclipse.winery.yaml.converter</module>
+        <module>org.eclipse.winery.crawler</module>
+        <module>org.eclipse.winery.tools.deployablecomponents</module>
+        <module>org.eclipse.winery.model.threatmodeling</module>
     </modules>
     <build>
         <plugins>
@@ -414,25 +419,6 @@
                                             </artifact>
                                             <artifact>
                                                 <id>
-                                                    org.eclipse.winery:org.eclipse.winery.repository.configuration:${project.version}
-                                                </id>
-                                                <source>true</source>
-                                                <transitive>true</transitive>
-                                                <excludes>
-                                                    <exclude>org.eclipse.winery*</exclude>
-                                                    <exclude>com.github.jnr:*:::</exclude>
-                                                    <exclude>org.web3j:*</exclude>
-                                                    <exclude>org.bouncycastle</exclude>
-                                                </excludes>
-                                                <instructions>
-                                                    <Import-Package>*;resolution:=optional</Import-Package>
-                                                    <Export-Package>
-                                                        org.eclipse.winery.repository.configuration.*;-noimport:=true;version:=${project.version.osgi}
-                                                    </Export-Package>
-                                                </instructions>
-                                            </artifact>
-                                            <artifact>
-                                                <id>
                                                     org.eclipse.winery:org.eclipse.winery.compliance:${project.version}
                                                 </id>
                                                 <source>true</source>
@@ -526,6 +512,26 @@
                                                     </Export-Package>
                                                 </instructions>
                                             </artifact>
+                                            <artifact>
+                                                <id>
+                                                    org.eclipse.winery:org.eclipse.winery.model.threatmodeling:${project.version}
+                                                </id>
+                                                <source>true</source>
+                                                <transitive>true</transitive>
+                                                <excludes>
+                                                    <exclude>org.eclipse.winery*</exclude>
+                                                    <exclude>com.github.jnr:*:::</exclude>
+                                                    <exclude>org.web3j:*</exclude>
+                                                    <exclude>org.bouncycastle</exclude>
+                                                </excludes>
+                                                <instructions>
+                                                    <Import-Package>*;resolution:=optional</Import-Package>
+                                                    <Export-Package>
+                                                        org.eclipse.winery.model.threatmodeling.*;-noimport:=true;version:=${project.version.osgi}
+                                                    </Export-Package>
+                                                </instructions>
+                                            </artifact>
+
                                             <!-- 
                                                 SECTION: Special artifact imports that fix some failed dependency chains
                                              -->
@@ -578,7 +584,7 @@
                 <plugin>
                     <groupId>org.web3j</groupId>
                     <artifactId>web3j-maven-plugin</artifactId>
-                    <version>0.3.1</version>
+                    <version>${org.web3j}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

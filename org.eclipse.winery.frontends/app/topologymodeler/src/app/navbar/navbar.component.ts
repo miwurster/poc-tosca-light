@@ -24,6 +24,7 @@ import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
+import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
 
 /**
  * The navbar of the topologymodeler.
@@ -58,6 +59,7 @@ export class NavbarComponent implements OnDestroy {
     exportCsarUrl: string;
     splittingOngoing: boolean;
     matchingOngoing: boolean;
+    configEnum = FeatureEnum;
 
     constructor(private alert: ToastrService,
                 private ngRedux: NgRedux<IWineryState>,
@@ -174,6 +176,10 @@ export class NavbarComponent implements OnDestroy {
                 this.ngRedux.dispatch(this.actions.importTopology());
                 break;
             }
+            case 'threatModeling': {
+                this.ngRedux.dispatch(this.actions.threatModeling());
+                break;
+            }
             case 'split': {
                 this.ngRedux.dispatch(this.actions.splitTopology());
                 this.splittingOngoing = true;
@@ -186,6 +192,10 @@ export class NavbarComponent implements OnDestroy {
             }
             case 'problemdetection': {
                 this.ngRedux.dispatch(this.actions.detectProblems());
+                break;
+            }
+            case 'enrichment': {
+                this.ngRedux.dispatch(this.actions.enrichNodeTemplates());
                 break;
             }
             case 'substituteTopology':

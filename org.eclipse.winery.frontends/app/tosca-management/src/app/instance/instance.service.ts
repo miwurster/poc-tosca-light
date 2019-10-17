@@ -19,6 +19,7 @@ import { ToscaComponent } from '../model/toscaComponent';
 import { ToscaTypes } from '../model/enums';
 import { WineryVersion } from '../model/wineryVersion';
 import { HttpClient, HttpResponse } from '@angular/common/http';
+import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 @Injectable()
 export class InstanceService {
@@ -29,7 +30,7 @@ export class InstanceService {
     currentVersion: WineryVersion;
     path: string;
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient, private configurationService: WineryRepositoryConfigurationService) {
     }
 
     /**
@@ -50,6 +51,9 @@ export class InstanceService {
             case ToscaTypes.ServiceTemplate:
                 subMenu = ['README', 'LICENSE', 'Topology Template', 'Plans', 'Selfservice Portal',
                     'Boundary Definitions', 'Tags', 'Constraint Checking', 'Documentation', 'XML'];
+                if (this.configurationService.configuration.features.nfv) {
+                    subMenu.push('Threat Modeling');
+                }
                 break;
             case ToscaTypes.RelationshipType:
                 subMenu = ['README', 'LICENSE', 'Appearance', 'Instance States', 'Source Interfaces', 'Interfaces',
@@ -88,15 +92,21 @@ export class InstanceService {
                 subMenu = ['README', 'LICENSE', 'Identifier', 'Required Structure', 'Tags', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.PatternRefinementModel:
-                subMenu = ['README', 'LICENSE', 'Detector', 'Refinement Structure', 'Relation Mappings', 'Property Mappings', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Detector', 'Refinement Structure', 'Relation Mappings', 'Attribute Mappings', 'Stay Mappings', 'XML'];
                 break;
             case ToscaTypes.TestRefinementModel:
                 subMenu = ['README', 'LICENSE', 'Detector', 'Test Fragment', 'Relation Mappings', 'XML'];
                 break;
             default: // assume Admin
-                subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Constraint Types', 'Consistency Check', 'Accountability', 'Log'];
+                subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types',
+                    'Constraint Types', 'Consistency Check', 'Log', 'Configuration'];
+                if (this.configurationService.configuration.features.accountability) {
+                    subMenu.push('Accountability');
+                }
+                if (this.configurationService.configuration.features.edmmModeling) {
+                    subMenu.push('1 to 1 EDMM Mappings', 'EDMM Type Mappings');
+                }
         }
-
         return subMenu;
     }
 

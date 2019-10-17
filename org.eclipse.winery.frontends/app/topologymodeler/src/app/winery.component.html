@@ -27,7 +27,7 @@
 <div *ngIf="loaded?.generatedReduxState">
     <div *ngIf="!hideNavBarState">
         <winery-palette-component *ngIf="!topologyDifferences && !readonly"
-                                  style="width:200px;float:left;margin-top:50px"
+                                  style="width:300px;float:left;margin-top:50px;"
                                   [entityTypes]="this.entityTypes">
         </winery-palette-component>
     </div>
@@ -37,6 +37,9 @@
 
     <winery-problem-detection class="sidebar">
     </winery-problem-detection>
+    
+    <winery-enricher class="sidebar">
+    </winery-enricher>
 
     <winery-sidebar (sidebarDeleteButtonClicked)="sidebarDeleteButtonClicked($event)" class="sidebar">
     </winery-sidebar>

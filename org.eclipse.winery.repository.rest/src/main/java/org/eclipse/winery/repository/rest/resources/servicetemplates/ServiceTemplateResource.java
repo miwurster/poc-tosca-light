@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,7 +11,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
-
 package org.eclipse.winery.repository.rest.resources.servicetemplates;
 
 import java.io.IOException;
@@ -43,6 +42,8 @@ import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.compliance.checking.ServiceTemplateCheckingResult;
 import org.eclipse.winery.compliance.checking.ServiceTemplateComplianceRuleRuleChecker;
 import org.eclipse.winery.model.adaptation.substitution.Substitution;
+import org.eclipse.winery.model.threatmodeling.ThreatAssessment;
+import org.eclipse.winery.model.threatmodeling.ThreatModeling;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TPlans;
@@ -323,6 +324,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     @Path("createnewstatefulversion")
     @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response createNewStatefulVersion() {
+        LOGGER.debug("Creating new stateful version of Service Template {}...", this.getId());
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
         WineryVersion version = VersionUtils.getVersion(id);
 
@@ -343,7 +345,17 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
             response.setMessage(new QNameApiData(newId));
         }
 
+        LOGGER.debug("Created Service Template {}", newId.getQName());
+
         return response.getResponse();
+    }
+
+    @Path("threatmodeling")
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET
+    public ThreatAssessment threatModeling() {
+        ThreatModeling threatModeling = new ThreatModeling((ServiceTemplateId) this.id);
+        return threatModeling.getServiceTemplateThreats();
     }
 
     @Override

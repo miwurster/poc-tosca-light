@@ -22,11 +22,11 @@ import java.util.Date;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
+import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.model.tosca.Definitions;
-import org.eclipse.winery.repository.Constants;
 import org.eclipse.winery.repository.JAXBSupport;
 import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
 import org.eclipse.winery.repository.backend.filebased.converter.Y2XConverter;
@@ -45,7 +45,6 @@ public abstract class AbstractRepository implements IRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRepository.class);
 
-
     /**
      * @param ref the file reference to store the mime type for
      * @return a reference to the file holding the mime type
@@ -55,10 +54,9 @@ public abstract class AbstractRepository implements IRepository {
     }
 
     /**
-     * This is a simple implementation using the information put by
-     * setMimeType(RepositoryFileReference ref) or determining the mime type
-     * using Utils.getMimeType. If the latter is done, the mime type is
-     * persisted using setMimeType
+     * This is a simple implementation using the information put by setMimeType(RepositoryFileReference ref) or
+     * determining the mime type using Utils.getMimeType. If the latter is done, the mime type is persisted using
+     * setMimeType
      */
     @Override
     public String getMimeType(RepositoryFileReference ref) throws IOException {
@@ -91,9 +89,8 @@ public abstract class AbstractRepository implements IRepository {
     /**
      * Stores the mime type of the given file reference in a separate file
      * <p>
-     * This method calls putContentToFile(), where the filename is appended with
-     * Constants.SUFFIX_MIMETYPE and a null mime type. The latter indicates that
-     * no "normal" file is stored.
+     * This method calls putContentToFile(), where the filename is appended with Constants.SUFFIX_MIMETYPE and a null
+     * mime type. The latter indicates that no "normal" file is stored.
      *
      * @param ref       the file reference
      * @param mediaType the mimeType

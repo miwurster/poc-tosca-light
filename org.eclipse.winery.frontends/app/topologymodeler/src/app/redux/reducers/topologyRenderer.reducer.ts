@@ -28,9 +28,11 @@ export interface TopologyRendererState {
         alignHButton?: boolean;
         alignVButton?: boolean;
         importTopologyButton?: boolean;
+        threatModelingButton?: boolean;
         splitTopologyButton?: boolean;
         matchTopologyButton?: boolean;
         problemDetectionButton?: boolean;
+        enrichmentButton?: boolean;
         substituteTopologyButton?: boolean;
         refineTopologyButton?: boolean;
         refineTopologyWithTestsButton?: boolean;
@@ -54,9 +56,11 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
         alignHButton: false,
         alignVButton: false,
         importTopologyButton: false,
+        threatModelingButton: false,
         splitTopologyButton: false,
         matchTopologyButton: false,
         problemDetectionButton: false,
+        enrichmentButton: false,
         substituteTopologyButton: false,
         refineTopologyButton: false,
         refineTopologyWithTestsButton: false,
@@ -161,6 +165,14 @@ export const TopologyRendererReducer =
                         importTopologyButton: !lastState.buttonsState.importTopologyButton
                     }
                 };
+            case TopologyRendererActions.THREATMODEL_TOPOLOGY:
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        threatModelingButton: !lastState.buttonsState.threatModelingButton
+                    }
+                };
             case TopologyRendererActions.SPLIT_TOPOLOGY:
                 return {
                     ...lastState,
@@ -185,6 +197,14 @@ export const TopologyRendererReducer =
                         problemDetectionButton: !lastState.buttonsState.problemDetectionButton
                     }
                 };
+            case TopologyRendererActions.ENRICH_NODE_TEMPLATES:
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        enrichmentButton: !lastState.buttonsState.enrichmentButton
+                }
+            };
             case TopologyRendererActions.SUBSTITUTE_TOPOLOGY:
                 return {
                     ...lastState,

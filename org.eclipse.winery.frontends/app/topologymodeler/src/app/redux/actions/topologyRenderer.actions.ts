@@ -36,6 +36,7 @@ export class TopologyRendererActions {
     static EXECUTE_ALIGN_H = 'EXECUTE_ALIGN_H';
     static EXECUTE_ALIGN_V = 'EXECUTE_ALIGN_V';
     static IMPORT_TOPOLOGY = 'IMPORT_TOPOLOGY';
+    static THREATMODEL_TOPOLOGY = 'THREATMODEL_TOPOLOGY';
     static SPLIT_TOPOLOGY = 'SPLIT_TOPOLOGY';
     static MATCH_TOPOLOGY = 'MATCH_TOPOLOGY';
     static SUBSTITUTE_TOPOLOGY = 'SUBSTITUTE_TOPOLOGY';
@@ -43,6 +44,7 @@ export class TopologyRendererActions {
     static REFINE_TOPOLOGY_WITH_TESTS = 'REFINE_TOPOLOGY_WITH_TESTS';
     static HIGHLIGHT_NODES = 'HIGHLIGHT_NODES';
     static DETECT_PROBLEMS = 'DETECT_PROBLEMS';
+    static ENRICH_NODE_TEMPLATES = 'ENRICH_NODE_TEMPLATES';
     static DETERMINE_STATEFUL_COMPONENTS = 'DETERMINE_STATEFUL_COMPONENTS';
     static DETERMINE_FREEZABLE_COMPONENTS = 'DETERMINE_FREEZABLE_COMPONENTS';
     static CLEAN_FREEZABLE_COMPONENTS = 'CLEAN_FREEZABLE_COMPONENTS';
@@ -91,6 +93,10 @@ export class TopologyRendererActions {
         return { type: TopologyRendererActions.IMPORT_TOPOLOGY };
     }
 
+    threatModeling(): Action {
+        return { type: TopologyRendererActions.THREATMODEL_TOPOLOGY };
+    }
+
     splitTopology(): Action {
         return { type: TopologyRendererActions.SPLIT_TOPOLOGY };
     }
@@ -101,6 +107,10 @@ export class TopologyRendererActions {
 
     detectProblems(): Action {
         return { type: TopologyRendererActions.DETECT_PROBLEMS };
+    }
+
+    enrichNodeTemplates(): Action {
+        return { type: TopologyRendererActions.ENRICH_NODE_TEMPLATES };
     }
 
     substituteTopology(): Action {

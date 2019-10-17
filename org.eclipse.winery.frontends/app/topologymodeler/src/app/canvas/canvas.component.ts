@@ -33,7 +33,6 @@ import { NodeIdAndFocusModel } from '../models/nodeIdAndFocusModel';
 import { ToggleModalDataModel } from '../models/toggleModalDataModel';
 import { ToastrService } from 'ngx-toastr';
 import { BackendService } from '../services/backend.service';
-import { hostURL } from '../models/configuration';
 import { CapabilityModel } from '../models/capabilityModel';
 import { isNullOrUndefined } from 'util';
 import { RequirementModel } from '../models/requirementModel';
@@ -50,7 +49,10 @@ import { DifferenceStates, VersionUtils } from '../models/ToscaDiff';
 import { ErrorHandlerService } from '../services/error-handler.service';
 import { DragSource } from '../models/DragSource';
 import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
-import { Utils } from '../models/utils';
+import { ThreatModelingModalData } from '../models/threatModelingModalData';
+import { ThreatCreation } from '../models/threatCreation';
+import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
+import { TPolicy } from '../models/policiesModalData';
 
 @Component({
     selector: 'winery-canvas',
@@ -68,6 +70,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('importTopologyModal') importTopologyModal: ModalDirective;
+    @ViewChild('threatModelingModal') threatModelingModal: ModalDirective;
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
     @Input() diffMode = false;
@@ -106,6 +109,10 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     capabilities: CapabilitiesModalData;
     requirements: RequirementsModalData;
     importTopologyData: ImportTopologyModalData;
+    threatModelingData: ThreatModelingModalData;
+
+    // threatmodeling accordion state
+    threatModalTab = 'create';
 
     indexOfNewNode: number;
     targetNodes: Array<string> = [];
@@ -178,6 +185,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.capabilities = new CapabilitiesModalData();
         this.requirements = new RequirementsModalData();
         this.importTopologyData = new ImportTopologyModalData();
+        this.threatModelingData = new ThreatModelingModalData();
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -316,12 +324,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.requirements.properties = Utils.setKVProperties(reqType);
+                                        this.requirements.properties = TopologyTemplateUtil.setKVProperties(reqType);
                                         this.setDefaultReqKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.requirements.properties = Utils.setKVProperties(reqType);
+                                    this.requirements.properties = TopologyTemplateUtil.setKVProperties(reqType);
                                     this.setDefaultReqKVProperties();
                                     return true;
                                 }
@@ -398,12 +406,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.capabilities.properties = Utils.setKVProperties(capType);
+                                        this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
                                         this.setDefaultCapKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.capabilities.properties = Utils.setKVProperties(capType);
+                                    this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
                                     this.setDefaultCapKVProperties();
                                     return true;
                                 }
@@ -572,10 +580,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.requirementsModal.hide();
     }
 
-    getHostUrl(): string {
-        return hostURL;
-    }
-
     /**
      * Saves a capability template to the model and gets pushed into the Redux store of the application
      */
@@ -639,7 +643,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.capabilities.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.capabilities.properties = Utils.setKVProperties(cap);
+                    this.capabilities.properties = TopologyTemplateUtil.setKVProperties(cap);
                     // if propertiesDefinition is defined it's a XML property
                 } else if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
                     if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
@@ -745,7 +749,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.requirements.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.requirements.properties = Utils.setKVProperties(req);
+                    this.requirements.properties = TopologyTemplateUtil.setKVProperties(req);
                     return true;
                     // if propertiesDefinition is defined it's a XML property
                 } else if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
@@ -962,6 +966,28 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.importTopologyModal.show();
             } else if (this.topologyRendererState.buttonsState.splitTopologyButton) {
                 this.splitMatchService.splitTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
+            } else if (this.topologyRendererState.buttonsState.threatModelingButton) {
+
+                // don't cache data, always refetch.
+                this.threatModelingData = new ThreatModelingModalData();
+                this.ngRedux.dispatch(this.topologyRendererActions.threatModeling());
+                // show modal
+                this.threatModelingModal.show();
+
+                this.backendService.threatCatalogue().subscribe(
+                    threats => threats.forEach(threat => this.threatModelingData.threatCatalog.push(threat))
+                );
+
+                this.backendService.threatAssessment().subscribe(
+                    assessment => {
+                        Object.keys(assessment.threats)
+                            .map(key => assessment.threats[key])
+                            .map(threat => threat.mitigations
+                                .filter(mitigation => assessment.svnfs.includes(mitigation))
+                                .map(mitigation => this.threatModelingData.mitigations.add(new QName(mitigation)))
+                            );
+                    }
+                );
             } else if (this.topologyRendererState.buttonsState.matchTopologyButton) {
                 this.splitMatchService.matchTopology(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
             } else if (this.topologyRendererState.buttonsState.substituteTopologyButton) {
@@ -1015,6 +1041,44 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         });
         this.importTopologyService.importTopologyTemplate(selectedTopologyTemplate.qName, this.backendService, this.errorHandler);
         this.importTopologyData.selectedTopologyTemplateId = null;
+    }
+
+    /**
+     * Closes the threat modeling modal
+     */
+    closeThreatModeling(): void {
+        this.threatModelingModal.hide();
+    }
+
+    createNewThreat(): void {
+        this.backendService.threatCreation(this.threatModelingData.threatCreation).subscribe(res => {
+            this.threatModelingData.threatCreation = new ThreatCreation();
+            this.alert.info(res);
+        });
+    }
+
+    addMitigationToTopology(mitigation): void {
+        this.closeThreatModeling();
+        const newNode: TNodeTemplate = new TNodeTemplate(
+            {},
+            mitigation.localName + '_' + Math.floor(Math.random() * 10),
+            mitigation.qName,
+            mitigation.localName,
+            1,
+            1,
+            TopologyTemplateUtil.getNodeVisualsForNodeTemplate(mitigation.qName, this.entityTypes.nodeVisuals),
+            [],
+            [],
+            {},
+            1,
+            1,
+            null,
+            null,
+            null,
+            null
+        );
+
+        this.ngRedux.dispatch(this.actions.saveNodeTemplate(newNode));
     }
 
     /**
@@ -1089,12 +1153,54 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 labelString = newRelationship.type.substring(newRelationship.type.indexOf('}') + 1);
             }
 
+            let relationSource = newRelationship.sourceElement.ref;
+            let relationTarget = newRelationship.targetElement.ref;
+
+            if (newRelationship.policies && newRelationship.policies.policy) {
+                const list: TPolicy[] = newRelationship.policies.policy;
+                labelString += '<br>';
+                for (const value of list) {
+                    const visual = this.entityTypes.policyTypeVisuals.find(
+                        policyTypeVisual => policyTypeVisual.typeId === value.policyType
+                    );
+
+                    if (visual && visual.imageUrl) {
+                        labelString += '<img style="display: block; margin-left: auto; margin-right: auto; margin-top: 5px;' +
+                            ' max-width: 40px; max-height: 40px;" src="' + visual.imageUrl + '" />';
+                    }
+                }
+            }
+
+            // check if source reference is not a node template
+            {
+                if (!this.allNodesIds.includes(relationSource)) {
+                    // check if source reference is a requirement of a node template
+                    const findNode = this.allNodeTemplates
+                        .find(node => node.requirements && node.requirements.requirement
+                            && node.requirements.requirement.find(req => req.id === relationSource)
+                        );
+                    if (findNode) {
+                        relationSource = findNode.id;
+                    }
+                }
+            }
+
+            // check if target reference is a node template
+            if (!this.allNodesIds.includes(relationTarget)) {
+                // check if target reference is a capability of a node template
+                const findNode = this.allNodeTemplates
+                    .find(node => node.capabilities && node.capabilities.capability && node.capabilities.capability.find(cap => cap.id === relationTarget));
+                if (findNode) {
+                    relationTarget = findNode.id;
+                }
+            }
+
             const border = isNullOrUndefined(newRelationship.state)
                 ? '#fafafa' : VersionUtils.getElementColorByDiffState(newRelationship.state);
             const me = this;
             const conn = this.newJsPlumbInstance.connect({
-                source: newRelationship.sourceElement.ref,
-                target: newRelationship.targetElement.ref,
+                source: relationSource,
+                target: relationTarget,
                 overlays: [['Arrow', { width: 15, length: 15, location: 1, id: 'arrow', direction: 1 }],
                     ['Label', {
                         label: labelString,
@@ -1907,7 +2013,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             this.selectedRelationshipType.name,
                             relationshipId,
                             this.selectedRelationshipType.qName,
-                            Utils.getDefaultPropertiesFromEntityTypes(this.selectedRelationshipType.name, this.entityTypes.relationshipTypes),
+                            TopologyTemplateUtil.getDefaultPropertiesFromEntityTypes(this.selectedRelationshipType.name, this.entityTypes.relationshipTypes),
                             [],
                             [],
                             {}
