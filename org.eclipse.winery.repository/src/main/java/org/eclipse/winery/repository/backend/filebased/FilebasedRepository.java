@@ -45,6 +45,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+
 import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.Util;
@@ -226,7 +229,14 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
 
     @Override
     public Definitions definitionsFromRef(RepositoryFileReference ref) throws IOException {
-        return null;
+        try {
+            InputStream is = newInputStream(ref);
+            JAXBContext jaxbContext = JAXBContext.newInstance(Definitions.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            return (Definitions) unmarshaller.unmarshal(is);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static Path createDefaultRepositoryPath() {
