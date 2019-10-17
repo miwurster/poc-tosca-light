@@ -13,8 +13,6 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.backend.filebased;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -64,7 +62,9 @@ import org.eclipse.winery.model.tosca.yaml.TRelationshipType;
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.model.tosca.yaml.support.Defaults;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
+import org.eclipse.winery.repository.JAXBSupport;
 import org.eclipse.winery.repository.backend.BackendUtils;
+import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.backend.filebased.converter.X2YConverter;
 import org.eclipse.winery.repository.backend.filebased.converter.Y2XConverter;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
@@ -630,7 +630,7 @@ public class YamlBasedRepository extends FilebasedRepository {
 //            this.setMimeType(ref, mediaType);
 //        }
         Path targetPath = this.ref2AbsolutePath(ref);
-        inputStream = convertToServiceTemplate(ref, inputStream);
+        inputStream = convertToServiceTemplate(ref, inputStream, mediaType);
         writeInputStreamToPath(targetPath, inputStream);
         if (ref.getParent() instanceof NodeTypeImplementationId || ref.getParent() instanceof RelationshipTypeImplementationId) {
             clearCache();
@@ -644,71 +644,81 @@ public class YamlBasedRepository extends FilebasedRepository {
      * @param inputStream Input Stream
      * @return yaml service template input stream
      **/
-    private InputStream convertToServiceTemplate(RepositoryFileReference ref, InputStream inputStream) {
-        ByteArrayOutputStream outputStream = convertInputStream(inputStream);
-        try {
-            Definitions definitions = readInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
-            X2YConverter converter = new X2YConverter(this);
-            TServiceTemplate serviceTemplate;
-            if (ref.getParent() instanceof NodeTypeImplementationId) {
-                serviceTemplate = readServiceTemplate(ref);
-                serviceTemplate = converter.convertNodeTypeImplementation(serviceTemplate, definitions.getNodeTypeImplementations().get(0));
-            } else if (ref.getParent() instanceof RelationshipTypeImplementationId) {
-                serviceTemplate = readServiceTemplate(ref);
-                serviceTemplate = converter.convertRelationshipTypeImplementation(serviceTemplate, definitions.getRelationshipTypeImplementations().get(0));
-            } else if (ref.getParent() instanceof NodeTypeId) {
-                serviceTemplate = converter.convert(definitions);
-                if (exists(ref)) {
-                    TServiceTemplate oldServiceTemplate = readServiceTemplate(ref);
-                    serviceTemplate = replaceOldWithNewData(serviceTemplate, oldServiceTemplate);
-                }
-            } else if (ref.getParent() instanceof RelationshipTypeId) {
-                serviceTemplate = converter.convert(definitions);
-                if (exists(ref)) {
-                    TServiceTemplate oldServiceTemplate = readServiceTemplate(ref);
-                    serviceTemplate = replaceOldRelationshipTypeithNewData(serviceTemplate, oldServiceTemplate);
-                }
-            } else if (ref.getParent() instanceof ArtifactTemplateId) {
-                ArtifactTemplateId id = (ArtifactTemplateId) ref.getParent();
-                TArtifactTemplate artifactTemplate = definitions.getArtifactTemplates().get(0);
-                TArtifactDefinition artifact = converter.convertArtifactTemplate(artifactTemplate);
-                List<TMapImportDefinition> imports = converter.convertImports();
-                Path targetPath = ref2AbsolutePath(ref);
-                if (Files.exists(targetPath)) {
-                    serviceTemplate = readServiceTemplate(targetPath);
-                    if (serviceTemplate == null) {
-                        serviceTemplate = createNewCacheNodeTypeWithArtifact(ref, artifactTemplate, artifact, imports);
-                    } else if (getTypeFromArtifactName(id.getQName().getLocalPart()).equalsIgnoreCase("nodetypes")) {
-                        TNodeType nodeType = serviceTemplate.getNodeTypes().entrySet().iterator().next().getValue();
-                        Map<String, TArtifactDefinition> artifacts = nodeType.getArtifacts();
-                        if (artifacts.containsKey(artifactTemplate.getIdFromIdOrNameField())) {
-                            artifacts.replace(artifactTemplate.getIdFromIdOrNameField(), artifact);
+    private InputStream convertToServiceTemplate(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) {
+
+        //ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        if (mediaType.equals(MediaTypes.MEDIATYPE_TOSCA_DEFINITIONS)) {
+            try {
+                //IOUtils.copy(inputStream, outputStream);
+                //Definitions definitions = readInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
+                Definitions definitions = (Definitions) JAXBSupport.createUnmarshaller().unmarshal(inputStream);
+
+                X2YConverter converter = new X2YConverter(this);
+                TServiceTemplate serviceTemplate;
+                if (ref.getParent() instanceof NodeTypeImplementationId) {
+                    serviceTemplate = readServiceTemplate(ref);
+                    serviceTemplate = converter.convertNodeTypeImplementation(serviceTemplate, definitions.getNodeTypeImplementations().get(0));
+                } else if (ref.getParent() instanceof RelationshipTypeImplementationId) {
+                    serviceTemplate = readServiceTemplate(ref);
+                    serviceTemplate = converter.convertRelationshipTypeImplementation(serviceTemplate, definitions.getRelationshipTypeImplementations().get(0));
+                } else if (ref.getParent() instanceof NodeTypeId) {
+                    serviceTemplate = converter.convert(definitions);
+                    if (exists(ref)) {
+                        TServiceTemplate oldServiceTemplate = readServiceTemplate(ref);
+                        serviceTemplate = replaceOldWithNewData(serviceTemplate, oldServiceTemplate);
+                    }
+                } else if (ref.getParent() instanceof RelationshipTypeId) {
+                    serviceTemplate = converter.convert(definitions);
+                    if (exists(ref)) {
+                        TServiceTemplate oldServiceTemplate = readServiceTemplate(ref);
+                        serviceTemplate = replaceOldRelationshipTypeithNewData(serviceTemplate, oldServiceTemplate);
+                    }
+                } else if (ref.getParent() instanceof ArtifactTemplateId) {
+                    ArtifactTemplateId id = (ArtifactTemplateId) ref.getParent();
+                    TArtifactTemplate artifactTemplate = definitions.getArtifactTemplates().get(0);
+                    TArtifactDefinition artifact = converter.convertArtifactTemplate(artifactTemplate);
+                    List<TMapImportDefinition> imports = converter.convertImports();
+                    Path targetPath = ref2AbsolutePath(ref);
+                    if (Files.exists(targetPath)) {
+                        serviceTemplate = readServiceTemplate(targetPath);
+                        if (serviceTemplate == null) {
+                            serviceTemplate = createNewCacheNodeTypeWithArtifact(ref, artifactTemplate, artifact, imports);
+                        } else if (getTypeFromArtifactName(id.getQName().getLocalPart()).equalsIgnoreCase("nodetypes")) {
+                            TNodeType nodeType = serviceTemplate.getNodeTypes().entrySet().iterator().next().getValue();
+                            Map<String, TArtifactDefinition> artifacts = nodeType.getArtifacts();
+                            if (artifacts.containsKey(artifactTemplate.getIdFromIdOrNameField())) {
+                                artifacts.replace(artifactTemplate.getIdFromIdOrNameField(), artifact);
+                            } else {
+                                artifacts.put(artifactTemplate.getIdFromIdOrNameField(), artifact);
+                            }
+                            nodeType.setArtifacts(artifacts);
+                            serviceTemplate.getNodeTypes().entrySet().iterator().next().setValue(nodeType);
+                            serviceTemplate.setImports(addImports(serviceTemplate.getImports(), imports));
                         } else {
-                            artifacts.put(artifactTemplate.getIdFromIdOrNameField(), artifact);
+                            TRelationshipType relationshipType = serviceTemplate.getRelationshipTypes().entrySet().iterator().next().getValue();
+                            Map<String, TInterfaceDefinition> interfaceDefinitionMap = relationshipType.getInterfaces();
+                            relationshipType.setInterfaces(addArtifactToInterfaces(interfaceDefinitionMap, artifact, artifactTemplate.getIdFromIdOrNameField()));
                         }
-                        nodeType.setArtifacts(artifacts);
-                        serviceTemplate.getNodeTypes().entrySet().iterator().next().setValue(nodeType);
-                        serviceTemplate.setImports(addImports(serviceTemplate.getImports(), imports));
                     } else {
-                        TRelationshipType relationshipType = serviceTemplate.getRelationshipTypes().entrySet().iterator().next().getValue();
-                        Map<String, TInterfaceDefinition> interfaceDefinitionMap = relationshipType.getInterfaces();
-                        relationshipType.setInterfaces(addArtifactToInterfaces(interfaceDefinitionMap, artifact, artifactTemplate.getIdFromIdOrNameField()));
+                        serviceTemplate = createNewCacheNodeTypeWithArtifact(ref, artifactTemplate, artifact, imports);
                     }
                 } else {
-                    serviceTemplate = createNewCacheNodeTypeWithArtifact(ref, artifactTemplate, artifact, imports);
+                    serviceTemplate = converter.convert(definitions);
                 }
-            } else {
-                serviceTemplate = converter.convert(definitions);
+                Writer writer = new Writer();
+                InputStream outputStream = writer.writeToInputStream(serviceTemplate);
+                return outputStream;
+            } catch (MultiException | IOException e) {
+                LOGGER.debug("Internal error", e);
+            } catch (JAXBException e) {
+                LOGGER.debug("Internal error", e);
+            } finally {
+                //IOUtils.closeQuietly(outputStream);
             }
-            Writer writer = new Writer();
-            InputStream output = writer.writeToInputStream(serviceTemplate);
-            return output;
-        } catch (MultiException | IOException e) {
-            LOGGER.debug("Internal error", e);
-        } catch (JAXBException e) {
-            return new ByteArrayInputStream(outputStream.toByteArray());
+            return null;
+        } else {
+            return inputStream;
         }
-        return null;
     }
 
     /**
@@ -990,26 +1000,5 @@ public class YamlBasedRepository extends FilebasedRepository {
             }
         }
         return res;
-    }
-
-    /**
-     * Converts input stream to byte array output stream for create reusable input streams
-     *
-     * @param inputStream target input stream
-     * @return byte array output stream of inputstream
-     **/
-    private ByteArrayOutputStream convertInputStream(InputStream inputStream) {
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = inputStream.read(buffer)) > -1) {
-                byteArrayOutputStream.write(buffer, 0, len);
-            }
-            byteArrayOutputStream.flush();
-            return byteArrayOutputStream;
-        } catch (IOException e) {
-            return null;
-        }
     }
 }

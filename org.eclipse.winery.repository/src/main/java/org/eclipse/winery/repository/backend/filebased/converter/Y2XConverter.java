@@ -15,7 +15,12 @@
 package org.eclipse.winery.repository.backend.filebased.converter;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,6 +60,9 @@ import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
+import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TAttributeDefinition;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
@@ -224,11 +232,28 @@ public class Y2XConverter {
             builder.addTags(tag);
         }
 
+//        if (!node.getProperties().isEmpty()) {
+//            builder.setPropertiesDefinition(convertPropertyDefinition(builder.build().getIdFromIdOrNameField() + "_Properties"));
+//        }
+
         if (!node.getProperties().isEmpty()) {
-            builder.setPropertiesDefinition(convertPropertyDefinition(builder.build().getIdFromIdOrNameField() + "_Properties"));
+            builder.addAny(convertWineryPropertiesDefinition(node.getProperties(), builder.build().getTargetNamespace(), builder.build().getIdFromIdOrNameField()));
         }
 
         return builder;
+    }
+
+    private WinerysPropertiesDefinition convertWineryPropertiesDefinition(Map<String, TPropertyDefinition> properties, String targetNamespace, String typeName) {
+        WinerysPropertiesDefinition winerysPropertiesDefinition = new WinerysPropertiesDefinition();
+        winerysPropertiesDefinition.setElementName("properties");
+        winerysPropertiesDefinition.setNamespace(targetNamespace + "/propertiesDefinition/" + typeName);
+
+        PropertyDefinitionKVList wineryProperties = new PropertyDefinitionKVList();
+        for (Map.Entry<String, TPropertyDefinition> property : properties.entrySet()) {
+            wineryProperties.add(new PropertyDefinitionKV(property.getKey(), "xsd:" + property.getValue().getType().getLocalPart()));
+        }
+        winerysPropertiesDefinition.setPropertyDefinitionKVList(wineryProperties);
+        return winerysPropertiesDefinition;
     }
 
     /**
