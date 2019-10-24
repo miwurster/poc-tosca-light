@@ -127,10 +127,8 @@ public class Y2XConverter {
      */
     private void init(org.eclipse.winery.model.tosca.yaml.TServiceTemplate node) {
         // no interface type for xml -> interface type information inserted into interface definitions
-//        convert(node.getInterfaceTypes());
-//        SchemaVisitor schemaVisitor = new SchemaVisitor();
-//        schemaVisitor.visit(node, path, outPath, namespace);
-//        this.assignmentBuilder = new AssignmentBuilder(schemaVisitor.getPropertyDefinition());
+        convert(node.getInterfaceTypes());
+        this.assignmentBuilder = new AssignmentBuilder(new LinkedHashMap<>());
     }
 
     /**
@@ -950,7 +948,7 @@ public class Y2XConverter {
     private TEntityTemplate.Properties convertPropertyAssignments(Map<String, TPropertyAssignment> propertyMap, QName type) {
         if (Objects.isNull(propertyMap) || propertyMap.isEmpty()) return null;
         TEntityTemplate.Properties properties = new TEntityTemplate.Properties();
-        properties.setAny(assignmentBuilder.getAssignment(propertyMap, type));
+        //properties.setAny(assignmentBuilder.getAssignment(propertyMap, type));
         return properties;
     }
 
