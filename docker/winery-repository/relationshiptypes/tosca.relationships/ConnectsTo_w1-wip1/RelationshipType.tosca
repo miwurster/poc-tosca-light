@@ -1,0 +1,9 @@
+tosca_definitions_version: tosca_simple_yaml_1_1
+
+imports:
+relationship_types:
+  ConnectsTo_w1-wip1:
+    metadata:
+      targetNamespace: tosca.relationships
+      abstract: no
+      final: no
