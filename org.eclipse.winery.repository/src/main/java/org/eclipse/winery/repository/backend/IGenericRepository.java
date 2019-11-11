@@ -488,7 +488,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
 
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ArtifactTypeId id) {
         // no recursive crawling needed
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     /**
@@ -783,6 +783,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         } else if (id instanceof RequirementTypeId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((RequirementTypeId) id);
         } else if (id instanceof ArtifactTypeId) {
+            // returns an empty collection (new ArrayList())
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ArtifactTypeId) id);
         } else if (id instanceof ArtifactTemplateId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ArtifactTemplateId) id);
