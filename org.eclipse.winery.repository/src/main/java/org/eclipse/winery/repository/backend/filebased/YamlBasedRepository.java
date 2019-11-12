@@ -43,6 +43,7 @@ import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.Namespace;
 import org.eclipse.winery.common.ids.XmlId;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
+import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
@@ -483,6 +484,10 @@ public class YamlBasedRepository extends FilebasedRepository {
         } else if (id instanceof RelationshipTypeImplementationId) {
             Definitions.Builder requestedDefinitions = getEmptyDefinition(definitions);
             requestedDefinitions.addRelationshipTypeImplementations(definitions.getRelationshipTypeImplementations());
+            return requestedDefinitions.build();
+        } else if (id instanceof ArtifactTypeId) {
+            Definitions.Builder requestedDefinitions = getEmptyDefinition(definitions);
+            requestedDefinitions.addArtifactTypes(definitions.getArtifactTypes());
             return requestedDefinitions.build();
         } else if (id instanceof ArtifactTemplateId) {
             String artifactName = getNameOfArtifactFromArtifactName(id.getQName().getLocalPart());

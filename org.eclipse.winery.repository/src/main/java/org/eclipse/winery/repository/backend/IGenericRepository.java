@@ -485,11 +485,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         // IAs
         return this.getReferencedTOSCAComponentImplementationArtifactIds(ids, element.getImplementationArtifacts(), id);
     }
-
-    default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ArtifactTypeId id) {
-        // no recursive crawling needed
-        return Collections.emptyList();
-    }
+    
 
     /**
      * Helper method
@@ -782,14 +778,12 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((RelationshipTypeImplementationId) id);
         } else if (id instanceof RequirementTypeId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((RequirementTypeId) id);
-        } else if (id instanceof ArtifactTypeId) {
-            referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ArtifactTypeId) id);
         } else if (id instanceof ArtifactTemplateId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ArtifactTemplateId) id);
         } else if (id instanceof PolicyTemplateId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((PolicyTemplateId) id);
-        } else if (id instanceof GenericImportId || id instanceof PolicyTypeId || id instanceof CapabilityTypeId) {
-            // in case of imports, policy types, and capability types, there are no other ids referenced
+        } else if (id instanceof ArtifactTypeId || id instanceof  GenericImportId || id instanceof PolicyTypeId || id instanceof CapabilityTypeId) {
+            // in case of artifact types, imports, policy types, and capability types, there are no other ids referenced
             // Collections.emptyList() cannot be used as we add elements later on in the case of inheritance
             referencedDefinitionsChildIds = new ArrayList();
         } else if (id instanceof ComplianceRuleId) {
