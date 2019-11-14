@@ -65,6 +65,9 @@ public final class Environments {
         Iterator<String> endpointIterator = configuration.getKeys(endpointPrefix);
         featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), configuration.getBoolean((key))));
         endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), configuration.getString(key)));
+        if (RepositoryProvider.YAML.equals(getRepositoryProvider())) {
+            features.put(RepositoryProvider.YAML.name().toLowerCase(), true);
+        }
         return new ConfigurationObject(features, endpoints);
     }
 
@@ -155,7 +158,9 @@ public final class Environments {
      */
     public static void saveFeatures(final ConfigurationObject changedProperties) {
         YAMLConfiguration config = Environment.getConfiguration();
-        changedProperties.getFeatures().keySet().forEach(property -> config.setProperty(featurePrefix + property, changedProperties.getFeatures().get(property)));
+        changedProperties.getFeatures().keySet().stream()
+            .filter(p -> !RepositoryProvider.YAML.equals(Enums.valueOf(RepositoryProvider.class, p)))
+            .forEach(property -> config.setProperty(featurePrefix + property, changedProperties.getFeatures().get(property)));
         Environment.save();
     }
 

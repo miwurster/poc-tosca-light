@@ -30,6 +30,7 @@ export interface WineryConfiguration {
         testRefinement: boolean;
         edmmModeling: boolean;
         updateTemplates: boolean;
+        yaml: boolean;
     };
     endpoints: {
         container: String;
