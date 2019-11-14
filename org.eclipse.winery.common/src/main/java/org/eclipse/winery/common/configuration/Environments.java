@@ -98,7 +98,7 @@ public final class Environments {
     }
 
     /**
-     * Returns the path to the repositiory saved in the configuration file.
+     * Returns the path to the repository saved in the configuration file.
      *
      * @return path to configuration
      */
@@ -126,7 +126,7 @@ public final class Environments {
      *
      * @return an instance of GitBasedRepositoryConfiguration
      */
-    public static Optional<GitBasedRepositoryConfiguration> getGitBasedRepsitoryConfiguration() {
+    public static Optional<GitBasedRepositoryConfiguration> getGitBasedRepositoryConfiguration() {
         final FileBasedRepositoryConfiguration filebasedRepositoryConfiguration = getFilebasedRepositoryConfiguration();
         return Optional.of(new GitBasedRepositoryConfiguration(isAutoCommit(), filebasedRepositoryConfiguration));
     }
@@ -146,7 +146,7 @@ public final class Environments {
     /**
      * Sets the repositoryRoot property to the value of the given path.
      *
-     * @param repositoryRoot The path wich represents the new repositoryRoot
+     * @param repositoryRoot The path which represents the new repositoryRoot
      */
     public static void setRepositoryRoot(String repositoryRoot) {
         YAMLConfiguration config = Environment.getConfiguration();

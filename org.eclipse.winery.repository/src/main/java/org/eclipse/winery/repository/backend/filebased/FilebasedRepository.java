@@ -102,13 +102,11 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
 
     private static List<String> ignoreFile = new ArrayList<>();
 
-    protected final Path repositoryRoot;
-    protected final Path repositoryDep;
+    private final Path repositoryRoot;
+    private final Path repositoryDep;
 
-    // convenience variables to have a clean code
-    final FileSystem fileSystem;
-
-    final FileSystemProvider provider;
+    private final FileSystem fileSystem;
+    private final FileSystemProvider provider;
 
     private final boolean isLocal;
 
@@ -147,11 +145,13 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
     /**
      * @return the currently configured repository root
      */
+    @Override
     public Path getRepositoryRoot() {
         return repositoryRoot;
     }
 
-    protected Path getRepositoryDep() {
+    @Override
+    public Path getRepositoryDep() {
         return repositoryDep;
     }
 

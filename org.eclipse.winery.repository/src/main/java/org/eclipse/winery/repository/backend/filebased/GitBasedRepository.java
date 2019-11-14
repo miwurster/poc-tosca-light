@@ -22,20 +22,77 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.attribute.FileTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
+
+import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.configuration.GitBasedRepositoryConfiguration;
+import org.eclipse.winery.common.ids.GenericId;
+import org.eclipse.winery.common.ids.Namespace;
+import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
+import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
+import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
+import org.eclipse.winery.common.ids.definitions.ComplianceRuleId;
+import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
+import org.eclipse.winery.common.ids.definitions.HasInheritanceId;
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
+import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
+import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
+import org.eclipse.winery.common.ids.definitions.PolicyTemplateId;
+import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
+import org.eclipse.winery.common.ids.definitions.RefinementId;
+import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
+import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationId;
+import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
+import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.common.ids.definitions.TestRefinementModelId;
+import org.eclipse.winery.common.ids.definitions.imports.GenericImportId;
+import org.eclipse.winery.common.ids.elements.ToscaElementId;
+import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TArtifactType;
+import org.eclipse.winery.model.tosca.TCapabilityType;
+import org.eclipse.winery.model.tosca.TComplianceRule;
+import org.eclipse.winery.model.tosca.TEntityTemplate;
+import org.eclipse.winery.model.tosca.TEntityType;
+import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TImplementationArtifacts;
+import org.eclipse.winery.model.tosca.TNodeType;
+import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
+import org.eclipse.winery.model.tosca.TPatternRefinementModel;
+import org.eclipse.winery.model.tosca.TPolicyTemplate;
+import org.eclipse.winery.model.tosca.TPolicyType;
+import org.eclipse.winery.model.tosca.TRefinementModel;
+import org.eclipse.winery.model.tosca.TRelationshipType;
+import org.eclipse.winery.model.tosca.TRelationshipTypeImplementation;
+import org.eclipse.winery.model.tosca.TRequirementType;
+import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.TTestRefinementModel;
+import org.eclipse.winery.repository.backend.AccountabilityConfigurationManager;
 import org.eclipse.winery.repository.backend.BackendUtils;
+import org.eclipse.winery.repository.backend.EdmmManager;
+import org.eclipse.winery.repository.backend.IRepository;
+import org.eclipse.winery.repository.backend.IRepositoryAdministration;
+import org.eclipse.winery.repository.backend.NamespaceManager;
+import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
+import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
+import org.eclipse.winery.repository.exceptions.WineryRepositoryException;
 
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tika.mime.MediaType;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CleanCommand;
@@ -57,7 +114,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Allows to reset repository to a certain commit id
  */
-public class GitBasedRepository extends YamlBasedRepository {
+public class GitBasedRepository extends FilebasedRepository implements IRepository, IRepositoryAdministration {
 
     /**
      * Used for synchronizing the method {@link GitBasedRepository#addCommit(RepositoryFileReference)}
@@ -65,27 +122,35 @@ public class GitBasedRepository extends YamlBasedRepository {
     private static final Object COMMIT_LOCK = new Object();
     private static final Logger LOGGER = LoggerFactory.getLogger(GitBasedRepository.class);
 
-    protected final Path workingRepositoryRoot;
+    private final Path workingRepositoryRoot;
 
     private final Git git;
     private final EventBus eventBus;
-    private final GitBasedRepositoryConfiguration gitBasedRepositoryConfiguration;
+    private final GitBasedRepositoryConfiguration configuration;
+
+    private final FilebasedRepository repository;
+    private final Path repositoryRoot;
 
     /**
-     * @param gitBasedRepositoryConfiguration the configuration of the repository
+     * @param configuration the configuration of the repository
+     * @param repository    a repository reference to use
      * @throws IOException         thrown if repository does not exist
      * @throws GitAPIException     thrown if there was an error while checking the status of the repository
      * @throws NoWorkTreeException thrown if the directory is not a git work tree
      */
-    public GitBasedRepository(GitBasedRepositoryConfiguration gitBasedRepositoryConfiguration) throws IOException, NoWorkTreeException, GitAPIException {
-        super(Objects.requireNonNull(gitBasedRepositoryConfiguration));
-        this.gitBasedRepositoryConfiguration = gitBasedRepositoryConfiguration;
+    public GitBasedRepository(GitBasedRepositoryConfiguration configuration, FilebasedRepository repository) throws IOException, NoWorkTreeException, GitAPIException {
+        super(Objects.requireNonNull(configuration));
+
+        this.configuration = configuration;
+        this.repository = repository;
+
+        this.repositoryRoot = repository.getRepositoryRoot();
 
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         Repository gitRepo = builder.setWorkTree(this.repositoryRoot.toFile()).setMustExist(false).build();
 
-        String repoUrl = gitBasedRepositoryConfiguration.getRepositoryUrl();
-        String branch = gitBasedRepositoryConfiguration.getBranch();
+        String repoUrl = configuration.getRepositoryUrl();
+        String branch = configuration.getBranch();
 
         if (!Files.exists(this.repositoryRoot.resolve(".git"))) {
             if (repoUrl != null && !repoUrl.isEmpty()) {
@@ -102,10 +167,10 @@ public class GitBasedRepository extends YamlBasedRepository {
             if (!(this instanceof MultiRepository)) {
                 this.workingRepositoryRoot = this.repositoryRoot.resolve(Constants.DEFAULT_LOCAL_REPO_NAME);
             } else {
-                this.workingRepositoryRoot = repositoryDep;
+                this.workingRepositoryRoot = this.repository.getRepositoryDep();
             }
         } else {
-            this.workingRepositoryRoot = repositoryDep;
+            this.workingRepositoryRoot = this.repository.getRepositoryDep();
         }
 
         this.eventBus = new EventBus();
@@ -114,7 +179,7 @@ public class GitBasedRepository extends YamlBasedRepository {
         gitRepo.getConfig().setBoolean("core", null, "longpaths", true);
         gitRepo.getConfig().save();
 
-        if (gitBasedRepositoryConfiguration.isAutoCommit() && !this.git.status().call().isClean()) {
+        if (configuration.isAutoCommit() && !this.git.status().call().isClean()) {
             this.addCommit("Files changed externally.");
         }
     }
@@ -123,7 +188,7 @@ public class GitBasedRepository extends YamlBasedRepository {
         if (this.repositoryRoot.resolve(Constants.DEFAULT_LOCAL_REPO_NAME).toFile().exists()) {
             return this.repositoryRoot.resolve(Constants.DEFAULT_LOCAL_REPO_NAME);
         } else {
-            return repositoryDep;
+            return this.repository.getRepositoryDep();
         }
     }
 
@@ -256,9 +321,9 @@ public class GitBasedRepository extends YamlBasedRepository {
 
     @Override
     public void putContentToFile(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) throws IOException {
-        super.putContentToFile(ref, inputStream, mediaType);
+        this.repository.putContentToFile(ref, inputStream, mediaType);
         try {
-            if (gitBasedRepositoryConfiguration.isAutoCommit()) {
+            if (configuration.isAutoCommit()) {
                 this.addCommit(ref);
             } else {
                 postEventMap();
@@ -296,19 +361,477 @@ public class GitBasedRepository extends YamlBasedRepository {
         }
     }
 
-    private Git cloneRepository(String repoUrl, String branch) throws GitAPIException {
-        Git git = Git.cloneRepository().setURI(repoUrl).setDirectory(this.getRepositoryDep().toFile()).setBranchesToClone(Arrays.asList(branch))
-            .setBranch(branch).call();
-
-        return git;
+    public String getRepositoryUrl() {
+        return this.configuration.getRepositoryUrl();
     }
 
-    public String getRepositoryUrl() {
-        return this.gitBasedRepositoryConfiguration.getRepositoryUrl();
+    private Git cloneRepository(String repoUrl, String branch) throws GitAPIException {
+        return Git
+            .cloneRepository()
+            .setURI(repoUrl)
+            .setDirectory(this.repository.getRepositoryDep().toFile())
+            .setBranchesToClone(Collections.singletonList(branch))
+            .setBranch(branch)
+            .call();
+    }
+
+    @Override
+    protected Path id2RelativePath(GenericId id) {
+        return repository.id2RelativePath(id);
+    }
+
+    @Override
+    protected Path id2AbsolutePath(GenericId id) {
+        return repository.id2AbsolutePath(id);
+    }
+
+    @Override
+    protected Path ref2AbsolutePath(RepositoryFileReference ref) {
+        return repository.ref2AbsolutePath(ref);
+    }
+
+    @Override
+    public void writeInputStreamToPath(Path targetPath, InputStream inputStream) throws IOException {
+        repository.writeInputStreamToPath(targetPath, inputStream);
+    }
+
+    @Override
+    public <T extends DefinitionsChildId> SortedSet<T> getDefinitionsChildIds(Class<T> idClass, boolean omitDevelopmentVersions) {
+        return repository.getDefinitionsChildIds(idClass, omitDevelopmentVersions);
+    }
+
+    @Override
+    public Collection<? extends DefinitionsChildId> getAllIdsInNamespace(Class<? extends DefinitionsChildId> clazz, Namespace namespace) {
+        return repository.getAllIdsInNamespace(clazz, namespace);
+    }
+
+    @Override
+    public void forceClear() {
+        repository.forceClear();
+    }
+
+    @Override
+    public InputStream newInputStream(Path path) throws IOException {
+        return repository.newInputStream(path);
+    }
+
+    @Override
+    public void setMimeType(RepositoryFileReference ref, MediaType mediaType) throws IOException {
+        repository.setMimeType(ref, mediaType);
+    }
+
+    @Override
+    public boolean flagAsExisting(GenericId id) {
+        return repository.flagAsExisting(id);
+    }
+
+    @Override
+    public boolean exists(GenericId id) {
+        return repository.exists(id);
+    }
+
+    @Override
+    public void forceDelete(RepositoryFileReference ref) throws IOException {
+        repository.forceDelete(ref);
+    }
+
+    @Override
+    public boolean exists(RepositoryFileReference ref) {
+        return repository.exists(ref);
+    }
+
+    @Override
+    public void putContentToFile(RepositoryFileReference ref, String content, MediaType mediaType) throws IOException {
+        repository.putContentToFile(ref, content, mediaType);
+    }
+
+    @Override
+    public InputStream newInputStream(RepositoryFileReference ref) throws IOException {
+        return repository.newInputStream(ref);
+    }
+
+    @Override
+    public Definitions definitionsFromRef(RepositoryFileReference ref) throws IOException {
+        return repository.definitionsFromRef(ref);
+    }
+
+    @Override
+    public void getZippedContents(GenericId id, OutputStream out) throws WineryRepositoryException {
+        repository.getZippedContents(id, out);
+    }
+
+    @Override
+    public long getSize(RepositoryFileReference ref) throws IOException {
+        return repository.getSize(ref);
+    }
+
+    @Override
+    public FileTime getLastModifiedTime(RepositoryFileReference ref) throws IOException {
+        return repository.getLastModifiedTime(ref);
+    }
+
+    @Override
+    public String getMimeType(RepositoryFileReference ref) throws IOException {
+        return repository.getMimeType(ref);
+    }
+
+    @Override
+    public Date getLastUpdate(RepositoryFileReference ref) {
+        return repository.getLastUpdate(ref);
+    }
+
+    @Override
+    public <T extends DefinitionsChildId> SortedSet<T> getAllDefinitionsChildIds(Class<T> idClass) {
+        return repository.getAllDefinitionsChildIds(idClass);
+    }
+
+    @Override
+    public <T extends DefinitionsChildId> SortedSet<T> getStableDefinitionsChildIdsOnly(Class<T> idClass) {
+        return repository.getStableDefinitionsChildIdsOnly(idClass);
+    }
+
+    @Override
+    public SortedSet<DefinitionsChildId> getAllDefinitionsChildIds() {
+        return repository.getAllDefinitionsChildIds();
+    }
+
+    @Override
+    public <T extends DefinitionsChildId, S extends TExtensibleElements> Map<QName, S> getQNameToElementMapping(Class<T> idClass) {
+        return repository.getQNameToElementMapping(idClass);
+    }
+
+    @Override
+    public <T extends ToscaElementId> SortedSet<T> getNestedIds(GenericId ref, Class<T> idClass) {
+        return repository.getNestedIds(ref, idClass);
+    }
+
+    @Override
+    public SortedSet<RepositoryFileReference> getContainedFiles(GenericId id) {
+        return repository.getContainedFiles(id);
+    }
+
+    @Override
+    public Collection<Namespace> getUsedNamespaces() {
+        return repository.getUsedNamespaces();
+    }
+
+    @Override
+    public Collection<Namespace> getComponentsNamespaces(Class<? extends DefinitionsChildId> clazz) {
+        return repository.getComponentsNamespaces(clazz);
+    }
+
+    @Override
+    public <X extends DefinitionsChildId> Collection<X> getAllElementsReferencingGivenType(Class<X> clazz, QName qNameOfTheType) {
+        return repository.getAllElementsReferencingGivenType(clazz, qNameOfTheType);
+    }
+
+    @Override
+    public Optional<DefinitionsChildId> getDefinitionsChildIdOfParent(HasInheritanceId id) {
+        return repository.getDefinitionsChildIdOfParent(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(NodeTypeId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(NodeTypeImplementationId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(RelationshipTypeImplementationId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedTOSCAComponentImplementationArtifactIds(Collection<DefinitionsChildId> ids, TImplementationArtifacts implementationArtifacts, DefinitionsChildId id) {
+        return repository.getReferencedTOSCAComponentImplementationArtifactIds(ids, implementationArtifacts, id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(RequirementTypeId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(PolicyTemplateId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(RelationshipTypeId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ArtifactTemplateId id) throws RepositoryCorruptException {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ServiceTemplateId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(PatternRefinementModelId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(TestRefinementModelId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ComplianceRuleId id) {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(DefinitionsChildId id) throws RepositoryCorruptException {
+        return repository.getReferencedDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(NodeTypeId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(NodeTypeImplementationId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(RelationshipTypeImplementationId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(RelationshipTypeId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(RequirementTypeId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(ArtifactTypeId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(ArtifactTemplateId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(PolicyTemplateId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(PolicyTypeId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(CapabilityTypeId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(GenericImportId id) {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(DefinitionsChildId id) throws RepositoryCorruptException {
+        return repository.getReferencingDefinitionsChildIds(id);
+    }
+
+    @Override
+    public NamespaceManager getNamespaceManager() {
+        return repository.getNamespaceManager();
+    }
+
+    @Override
+    public EdmmManager getEdmmManager() {
+        return repository.getEdmmManager();
+    }
+
+    @Override
+    public AccountabilityConfigurationManager getAccountabilityConfigurationManager() {
+        return repository.getAccountabilityConfigurationManager();
+    }
+
+    @Override
+    public XsdImportManager getXsdImportManager() {
+        return repository.getXsdImportManager();
+    }
+
+    @Override
+    public void setElement(DefinitionsChildId id, TExtensibleElements element) throws IOException {
+        repository.setElement(id, element);
+    }
+
+    @Override
+    public int getReferenceCount(ArtifactTemplateId id) {
+        return repository.getReferenceCount(id);
     }
 
     @Override
     public Path getRepositoryRoot() {
         return this.workingRepositoryRoot;
+    }
+
+    @Override
+    public Path getRepositoryDep() {
+        return repository.getRepositoryDep();
+    }
+
+    @Override
+    public Configuration getConfiguration(GenericId id) {
+        return repository.getConfiguration(id);
+    }
+
+    @Override
+    public Configuration getConfiguration(RepositoryFileReference ref) {
+        return repository.getConfiguration(ref);
+    }
+
+    @Override
+    public Date getConfigurationLastUpdate(GenericId id) {
+        return repository.getConfigurationLastUpdate(id);
+    }
+
+    @Override
+    public Definitions getDefinitions(DefinitionsChildId id) {
+        return repository.getDefinitions(id);
+    }
+
+    @Override
+    public <T extends DefinitionsChildId, S extends TExtensibleElements> S getElement(T id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TNodeTypeImplementation getElement(NodeTypeImplementationId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TRelationshipTypeImplementation getElement(RelationshipTypeImplementationId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TNodeType getElement(NodeTypeId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TRelationshipType getElement(RelationshipTypeId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TServiceTemplate getElement(ServiceTemplateId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TArtifactTemplate getElement(ArtifactTemplateId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TArtifactType getElement(ArtifactTypeId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TPolicyTemplate getElement(PolicyTemplateId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TCapabilityType getElement(CapabilityTypeId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TRequirementType getElement(RequirementTypeId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TPolicyType getElement(PolicyTypeId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TComplianceRule getElement(ComplianceRuleId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TPatternRefinementModel getElement(PatternRefinementModelId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TTestRefinementModel getElement(TestRefinementModelId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public TRefinementModel getElement(RefinementId id) {
+        return repository.getElement(id);
+    }
+
+    @Override
+    public void forceDelete(GenericId id) {
+        repository.forceDelete(id);
+    }
+
+    @Override
+    public void rename(DefinitionsChildId oldId, DefinitionsChildId newId) throws IOException {
+        repository.rename(oldId, newId);
+    }
+
+    @Override
+    public void duplicate(DefinitionsChildId from, DefinitionsChildId newId) throws IOException {
+        repository.duplicate(from, newId);
+    }
+
+    @Override
+    public void forceDelete(Class<? extends DefinitionsChildId> definitionsChildIdClazz, Namespace namespace) {
+        repository.forceDelete(definitionsChildIdClazz, namespace);
+    }
+
+    @Override
+    public TEntityType getTypeForTemplate(TEntityTemplate template) {
+        return repository.getTypeForTemplate(template);
+    }
+
+    @Override
+    public void doDump(OutputStream out) throws IOException {
+        repository.doDump(out);
+    }
+
+    @Override
+    public void doClear() {
+        repository.doClear();
+    }
+
+    @Override
+    public void doImport(InputStream in) {
+        repository.doImport(in);
     }
 }

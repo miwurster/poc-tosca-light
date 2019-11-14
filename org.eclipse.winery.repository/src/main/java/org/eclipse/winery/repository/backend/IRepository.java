@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.backend;
 
+import java.nio.file.Path;
 import java.util.Date;
 
 import org.eclipse.winery.common.RepositoryFileReference;
@@ -62,4 +63,8 @@ public interface IRepository extends IGenericRepository {
      * id. NULL if the associated TOSCA element does not exist.
      */
     Date getConfigurationLastUpdate(GenericId id);
+
+    Path getRepositoryRoot();
+
+    Path getRepositoryDep();
 }

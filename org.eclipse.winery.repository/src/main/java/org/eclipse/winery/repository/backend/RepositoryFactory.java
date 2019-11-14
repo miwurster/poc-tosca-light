@@ -52,10 +52,11 @@ public class RepositoryFactory {
         RepositoryFactory.gitBasedRepositoryConfiguration = gitBasedRepositoryConfiguration;
         RepositoryFactory.fileBasedRepositoryConfiguration = null;
 
+        FilebasedRepository compositeRepository = new FilebasedRepository(Environments.getFilebasedRepositoryConfiguration());
         if (repositoryContainsRepoConfig(gitBasedRepositoryConfiguration)) {
-            repository = new MultiRepository(gitBasedRepositoryConfiguration);
+            repository = new MultiRepository(gitBasedRepositoryConfiguration, compositeRepository);
         } else {
-            repository = new GitBasedRepository(gitBasedRepositoryConfiguration);
+            repository = new GitBasedRepository(gitBasedRepositoryConfiguration, compositeRepository);
         }
     }
 
@@ -65,7 +66,8 @@ public class RepositoryFactory {
 
         if (repositoryContainsRepoConfig(fileBasedRepositoryConfiguration)) {
             try {
-                repository = new MultiRepository(new GitBasedRepositoryConfiguration(false, fileBasedRepositoryConfiguration));
+                FilebasedRepository compositeRepository = new FilebasedRepository(fileBasedRepositoryConfiguration);
+                repository = new MultiRepository(new GitBasedRepositoryConfiguration(false, fileBasedRepositoryConfiguration), compositeRepository);
             } catch (IOException | GitAPIException exception) {
                 exception.printStackTrace();
             }
@@ -78,7 +80,7 @@ public class RepositoryFactory {
      * Reconfigures based on Environment
      */
     public static void reconfigure() throws Exception {
-        final Optional<GitBasedRepositoryConfiguration> gitBasedRepositoryConfiguration = Environments.getGitBasedRepsitoryConfiguration();
+        final Optional<GitBasedRepositoryConfiguration> gitBasedRepositoryConfiguration = Environments.getGitBasedRepositoryConfiguration();
         final FileBasedRepositoryConfiguration filebasedRepositoryConfiguration = Environments.getFilebasedRepositoryConfiguration();
 
         // Determine whether the filebased repository could be git repository.

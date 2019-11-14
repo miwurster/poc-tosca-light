@@ -59,15 +59,15 @@ public class MultiRepository extends GitBasedRepository {
 
     private GitBasedRepository localRepository;
 
-    public MultiRepository(GitBasedRepositoryConfiguration configuration) throws IOException, GitAPIException {
-        super(configuration);
+    public MultiRepository(GitBasedRepositoryConfiguration configuration, FilebasedRepository repository) throws IOException, GitAPIException {
+        super(configuration, repository);
 
         try {
             LOGGER.debug("Trying to initialize local repository...");
             File localRepoPath = new File(FilebasedRepository.getActiveRepositoryFilePath(), Constants.DEFAULT_LOCAL_REPO_NAME);
             FileBasedRepositoryConfiguration localRepoConfig = new FileBasedRepositoryConfiguration(localRepoPath.toPath());
             GitBasedRepositoryConfiguration gitConfig = new GitBasedRepositoryConfiguration(false, localRepoConfig);
-            this.localRepository = new GitBasedRepository(gitConfig);
+            this.localRepository = new GitBasedRepository(gitConfig, new FilebasedRepository(localRepoConfig));
             LOGGER.debug("Local repo has been initialized at {}", localRepoPath.getAbsolutePath());
         } catch (IOException | GitAPIException e) {
             LOGGER.error("Error while initializing local repository of the Multi Repository!", e);
@@ -82,7 +82,7 @@ public class MultiRepository extends GitBasedRepository {
 
     @Override
     Path generateWorkingRepositoryRoot() {
-        return this.repositoryDep;
+        return this.getRepositoryDep();
     }
 
     protected FilebasedRepository getLocalRepository() {
