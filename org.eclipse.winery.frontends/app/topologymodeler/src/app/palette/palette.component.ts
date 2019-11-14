@@ -136,14 +136,14 @@ export class PaletteComponent implements OnDestroy {
     generateNewNode($event: MouseEvent, child: any): void {
         const x = $event.pageX - this.newNodePositionOffsetX;
         const y = $event.pageY - this.newNodePositionOffsetY;
-
+        
         const newIdTypeColorProperties = this.generateIdTypeAndProperties(child.text);
         const nodeVisuals: Visuals = TopologyTemplateUtil.getNodeVisualsForNodeTemplate(newIdTypeColorProperties.type, this.entityTypes.nodeVisuals);
         const newNode: TNodeTemplate = new TNodeTemplate(
             newIdTypeColorProperties.properties,
-            newIdTypeColorProperties.id,
+            this.removeVersionIdentifier(newIdTypeColorProperties.id),
             newIdTypeColorProperties.type,
-            child.text,
+            this.removeVersionIdentifier(child.text),
             1,
             1,
             nodeVisuals,
@@ -158,6 +158,15 @@ export class PaletteComponent implements OnDestroy {
             null
         );
         this.ngRedux.dispatch(this.actions.saveNodeTemplate(newNode));
+    }
+
+    /**
+     * strips versioning substring 
+     * @param name
+     * @return result
+     */
+    removeVersionIdentifier(name: string): string {
+        return name.replace(/_([a-zA-Z0-9\.\-]*)(-w[0-9]+)(-wip[0-9]+)?/g, '');                                  
     }
 
     /**
@@ -179,6 +188,7 @@ export class PaletteComponent implements OnDestroy {
                 name = name.replace(/\s+/g, '');
                 if (name === typeOfCurrentNode) {
                     const idOfCurrentNode = this.allNodeTemplates[i].id;
+                    name = this.removeVersionIdentifier(name);
                     const numberOfNewInstance = parseInt(idOfCurrentNode.substring(name.length + 1), 10) + 1;
                     let newId;
                     if (numberOfNewInstance) {
