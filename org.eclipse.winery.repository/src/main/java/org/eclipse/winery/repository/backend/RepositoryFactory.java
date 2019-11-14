@@ -52,7 +52,7 @@ public class RepositoryFactory {
         RepositoryFactory.gitBasedRepositoryConfiguration = gitBasedRepositoryConfiguration;
         RepositoryFactory.fileBasedRepositoryConfiguration = null;
 
-        FilebasedRepository compositeRepository = new FilebasedRepository(Environments.getFilebasedRepositoryConfiguration());
+        FilebasedRepository compositeRepository = new FilebasedRepository(gitBasedRepositoryConfiguration);
         if (repositoryContainsRepoConfig(gitBasedRepositoryConfiguration)) {
             repository = new MultiRepository(gitBasedRepositoryConfiguration, compositeRepository);
         } else {
