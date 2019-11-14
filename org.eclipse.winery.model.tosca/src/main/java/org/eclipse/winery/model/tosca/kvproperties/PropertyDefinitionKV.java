@@ -64,20 +64,6 @@ public class PropertyDefinitionKV implements Serializable {
         this.type = type;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PropertyDefinitionKV that = (PropertyDefinitionKV) o;
-        return Objects.equals(key, that.key) &&
-            Objects.equals(type, that.type);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.key.hashCode();
-    }
-
     public Boolean isRequired() {
         return required;
     }
@@ -92,5 +78,18 @@ public class PropertyDefinitionKV implements Serializable {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PropertyDefinitionKV that = (PropertyDefinitionKV) o;
+        return Objects.equals(key, that.key);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.key.hashCode();
     }
 }

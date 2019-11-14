@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.eclipse.winery.common.Constants;
+import org.eclipse.winery.common.Enums;
 
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.slf4j.Logger;
@@ -35,11 +36,17 @@ import org.slf4j.LoggerFactory;
  * properties that are not part of the configuration by default.
  */
 public final class Environments {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Environments.class);
+
     private final static String featurePrefix = "ui.features.";
     private final static String endpointPrefix = "ui.endpoints.";
     private final static String gitPrefix = "repository.git.";
     private final static String repositoryPrefix = "repository.";
+
+    public enum RepositoryProvider {
+        FILE, YAML
+    }
 
     private Environments() {
     }
@@ -108,6 +115,15 @@ public final class Environments {
             return org.apache.commons.io.FileUtils.getUserDirectory().getAbsolutePath() + File.separator + Constants.DEFAULT_REPO_NAME;
         } else {
             return repositoryRoot;
+        }
+    }
+
+    public static RepositoryProvider getRepositoryProvider() {
+        String provider = Environment.getConfiguration().getString(repositoryPrefix + "provider");
+        if (provider == null || provider.isEmpty()) {
+            return RepositoryProvider.FILE;
+        } else {
+            return Enums.valueOf(RepositoryProvider.class, provider);
         }
     }
 
