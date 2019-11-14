@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 
 import org.eclipse.winery.common.configuration.FileBasedRepositoryConfiguration;
 import org.eclipse.winery.common.configuration.GitBasedRepositoryConfiguration;
+import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -58,7 +59,8 @@ public abstract class AbstractGitResolver implements IRepositoryResolver {
 
     @Override
     public GitBasedRepository createRepository(File repositoryLocation) throws IOException, GitAPIException {
-        GitBasedRepositoryConfiguration configuration = new GitBasedRepositoryConfiguration(false, repositoryUrl, repositoryBranch, new FileBasedRepositoryConfiguration(Paths.get(repositoryLocation.toString())));
-        return new GitBasedRepository(configuration);
+        FileBasedRepositoryConfiguration compositeConfiguration = new FileBasedRepositoryConfiguration(Paths.get(repositoryLocation.toString()));
+        GitBasedRepositoryConfiguration configuration = new GitBasedRepositoryConfiguration(false, repositoryUrl, repositoryBranch, compositeConfiguration);
+        return new GitBasedRepository(configuration, RepositoryFactory.createXmlOrYamlRepository(compositeConfiguration));
     }
 }

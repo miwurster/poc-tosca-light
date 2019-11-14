@@ -45,7 +45,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
 import org.eclipse.winery.common.Constants;
@@ -65,6 +64,7 @@ import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.HasIdInIdOrNameField;
+import org.eclipse.winery.repository.JAXBSupport;
 import org.eclipse.winery.repository.backend.AbstractRepository;
 import org.eclipse.winery.repository.backend.AccountabilityConfigurationManager;
 import org.eclipse.winery.repository.backend.BackendUtils;
@@ -102,13 +102,11 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
 
     private static List<String> ignoreFile = new ArrayList<>();
 
-    protected final Path repositoryRoot;
-    protected final Path repositoryDep;
+    private final Path repositoryRoot;
+    private final Path repositoryDep;
 
-    // convenience variables to have a clean code
-    final FileSystem fileSystem;
-
-    final FileSystemProvider provider;
+    private final FileSystem fileSystem;
+    private final FileSystemProvider provider;
 
     private final boolean isLocal;
 
@@ -147,11 +145,13 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
     /**
      * @return the currently configured repository root
      */
+    @Override
     public Path getRepositoryRoot() {
         return repositoryRoot;
     }
 
-    protected Path getRepositoryDep() {
+    @Override
+    public Path getRepositoryDep() {
         return repositoryDep;
     }
 
@@ -230,8 +230,7 @@ public class FilebasedRepository extends AbstractRepository implements IReposito
     public Definitions definitionsFromRef(RepositoryFileReference ref) throws IOException {
         try {
             InputStream is = newInputStream(ref);
-            JAXBContext jaxbContext = JAXBContext.newInstance(Definitions.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            Unmarshaller unmarshaller = JAXBSupport.createUnmarshaller();
             return (Definitions) unmarshaller.unmarshal(is);
         } catch (Exception e) {
             return null;

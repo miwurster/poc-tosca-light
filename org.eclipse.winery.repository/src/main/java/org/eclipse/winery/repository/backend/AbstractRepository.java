@@ -87,7 +87,7 @@ public abstract class AbstractRepository implements IRepository {
      * @param ref       the file reference
      * @param mediaType the mimeType
      */
-    protected void setMimeType(RepositoryFileReference ref, MediaType mediaType) throws IOException {
+    public void setMimeType(RepositoryFileReference ref, MediaType mediaType) throws IOException {
         RepositoryFileReference mimeFileRef = this.getMimeFileRef(ref);
         this.putContentToFile(mimeFileRef, mediaType.toString(), null);
     }
@@ -111,10 +111,6 @@ public abstract class AbstractRepository implements IRepository {
             return BackendUtils.createWrapperDefinitionsAndInitialEmptyElement(this, id);
         }
         try {
-//            InputStream is = RepositoryFactory.getRepository().newInputStream(ref);
-//            JAXBContext jaxbContext = JAXBContext.newInstance(Definitions.class);
-//            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-//            return (Definitions) unmarshaller.unmarshal(is);
             Definitions output = RepositoryFactory.getRepository().definitionsFromRef(ref);
             if (output != null) {
                 return output;

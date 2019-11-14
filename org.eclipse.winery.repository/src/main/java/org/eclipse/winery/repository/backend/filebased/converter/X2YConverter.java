@@ -93,7 +93,7 @@ import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementDefinition;
-import org.eclipse.winery.repository.backend.filebased.YamlBasedRepository;
+import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Namespaces;
 import org.eclipse.winery.repository.backend.filebased.converter.support.ValueConverter;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
@@ -107,13 +107,13 @@ import org.slf4j.LoggerFactory;
 public class X2YConverter {
     public final static Logger LOGGER = LoggerFactory.getLogger(X2YConverter.class);
 
-    private final YamlBasedRepository repository;
+    private final YamlRepository repository;
 //    private final Path path;
 
     private HashBiMap<String, String> prefixNamespace;
     private Map<DefinitionsChildId, Definitions> importDefinitions;
 
-    public X2YConverter(YamlBasedRepository repository) {
+    public X2YConverter(YamlRepository repository) {
         this.repository = repository;
         this.prefixNamespace = new HashBiMap<>();
         this.importDefinitions = new LinkedHashMap<>();

@@ -79,15 +79,16 @@ import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class YamlBasedRepository extends FilebasedRepository {
+public class YamlRepository extends FilebasedRepository {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(YamlBasedRepository.class);
-    private final String nameRegex;
+    private static final Logger LOGGER = LoggerFactory.getLogger(YamlRepository.class);
+
     private final Pattern namePattern;
 
-    public YamlBasedRepository(FileBasedRepositoryConfiguration fileBasedRepositoryConfiguration) {
+    public YamlRepository(FileBasedRepositoryConfiguration fileBasedRepositoryConfiguration) {
         super(Objects.requireNonNull(fileBasedRepositoryConfiguration));
-        this.nameRegex = "(.*)@(.*)@(.*)";
+
+        String nameRegex = "(.*)@(.*)@(.*)";
         this.namePattern = Pattern.compile(nameRegex);
     }
 
@@ -164,6 +165,7 @@ public class YamlBasedRepository extends FilebasedRepository {
      * @param idClasses id Class of target
      * @return converted id Classes
      **/
+    @SuppressWarnings("unchecked")
     private <T extends DefinitionsChildId> List<Class<T>> convertDefinitionsChildIdIfNeeded(List<Class<T>> idClasses) {
         List<Class<T>> output = new ArrayList<>();
         if (idClasses.size() == 1) {
@@ -331,10 +333,8 @@ public class YamlBasedRepository extends FilebasedRepository {
                     Writer writer = new Writer();
                     InputStream output = writer.writeToInputStream(nodeType);
                     writeInputStreamToPath(targetPath, output);
-                } catch (MultiException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    LOGGER.error("Error deleting file: {}", e.getMessage(), e);
                 }
             }
         }
@@ -484,11 +484,11 @@ public class YamlBasedRepository extends FilebasedRepository {
                 }
             }
             // we did not find the artifact template id (this should not happen!)
-            LOGGER.error("requested artifact template id (" + id.toReadableString() +") cannot be extracted from definitions object!");
+            LOGGER.error("requested artifact template id (" + id.toReadableString() + ") cannot be extracted from definitions object!");
             return definitions;
         } else {
             Definitions.Builder requestedDefinitions = getEmptyDefinition(definitions);
-            
+
             if (id instanceof NodeTypeId) {
                 requestedDefinitions.addNodeTypes(definitions.getNodeTypes());
             } else if (id instanceof RelationshipTypeId) {
@@ -509,7 +509,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                 // we do not need to filter anything
                 return definitions;
             }
-            
+
             return requestedDefinitions.build();
         }
     }
@@ -526,7 +526,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Checks if artifact tempaltes exists in type
+     * Checks if artifact templates exists in type
      *
      * @param targetPath target path of requested type
      * @param qName      target QName
@@ -718,14 +718,9 @@ public class YamlBasedRepository extends FilebasedRepository {
                     serviceTemplate = converter.convert(definitions);
                 }
                 Writer writer = new Writer();
-                InputStream outputStream = writer.writeToInputStream(serviceTemplate);
-                return outputStream;
-            } catch (MultiException | IOException e) {
-                LOGGER.debug("Internal error", e);
-            } catch (JAXBException e) {
-                LOGGER.debug("Internal error", e);
-            } finally {
-                //IOUtils.closeQuietly(outputStream);
+                return writer.writeToInputStream(serviceTemplate);
+            } catch (Exception e) {
+                LOGGER.error("Error converting service template: {}", e.getMessage(), e);
             }
             return null;
         } else {
@@ -948,7 +943,7 @@ public class YamlBasedRepository extends FilebasedRepository {
         idClasses = convertDefinitionsChildIdIfNeeded(idClasses);
         for (Class<T> idClass : idClasses) {
             String rootPathFragment = Util.getRootPathFragment(idClass);
-            Path dir = this.repositoryRoot.resolve(rootPathFragment);
+            Path dir = this.getRepositoryRoot().resolve(rootPathFragment);
             if (!Files.exists(dir)) {
                 // return empty list if no ids are available
                 return res;
