@@ -321,7 +321,7 @@ public class GitBasedRepository extends FilebasedRepository implements IReposito
 
     @Override
     public void putContentToFile(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) throws IOException {
-        this.repository.putContentToFile(ref, inputStream, mediaType);
+        repository.putContentToFile(ref, inputStream, mediaType);
         try {
             if (configuration.isAutoCommit()) {
                 this.addCommit(ref);

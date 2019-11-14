@@ -95,8 +95,6 @@ public class JAXBSupport {
                 MockXMLElement.class);
             // @formatter:on
         } catch (JAXBException e) {
-            System.out.println("HALLO");
-            System.out.println(e);
             LOGGER.error("Could not initialize JAXBContext", e);
             throw new IllegalStateException(e);
         }

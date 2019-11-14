@@ -28,6 +28,7 @@ import org.eclipse.winery.repository.backend.constants.Filename;
 import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.filebased.MultiRepository;
+import org.eclipse.winery.repository.backend.filebased.YamlBasedRepository;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -48,15 +49,23 @@ public class RepositoryFactory {
         return FilebasedRepository.getRepositoryRoot(config).resolve(Filename.FILENAME_JSON_REPOSITORIES).toFile().exists();
     }
 
+    public static FilebasedRepository createXmlOrYamlRepository(FileBasedRepositoryConfiguration configuration) {
+        if (Environments.RepositoryProvider.FILE.equals(configuration.getRepositoryProvider())) {
+            // XML-based repository
+            return new FilebasedRepository(configuration);
+        } else {
+            return new YamlBasedRepository(configuration);
+        }
+    }
+
     public static void reconfigure(GitBasedRepositoryConfiguration gitBasedRepositoryConfiguration) throws IOException, GitAPIException {
         RepositoryFactory.gitBasedRepositoryConfiguration = gitBasedRepositoryConfiguration;
         RepositoryFactory.fileBasedRepositoryConfiguration = null;
 
-        FilebasedRepository compositeRepository = new FilebasedRepository(gitBasedRepositoryConfiguration);
         if (repositoryContainsRepoConfig(gitBasedRepositoryConfiguration)) {
-            repository = new MultiRepository(gitBasedRepositoryConfiguration, compositeRepository);
+            repository = new MultiRepository(gitBasedRepositoryConfiguration, createXmlOrYamlRepository(gitBasedRepositoryConfiguration));
         } else {
-            repository = new GitBasedRepository(gitBasedRepositoryConfiguration, compositeRepository);
+            repository = new GitBasedRepository(gitBasedRepositoryConfiguration, createXmlOrYamlRepository(gitBasedRepositoryConfiguration));
         }
     }
 
@@ -66,7 +75,7 @@ public class RepositoryFactory {
 
         if (repositoryContainsRepoConfig(fileBasedRepositoryConfiguration)) {
             try {
-                FilebasedRepository compositeRepository = new FilebasedRepository(fileBasedRepositoryConfiguration);
+                FilebasedRepository compositeRepository = createXmlOrYamlRepository(fileBasedRepositoryConfiguration);
                 repository = new MultiRepository(new GitBasedRepositoryConfiguration(false, fileBasedRepositoryConfiguration), compositeRepository);
             } catch (IOException | GitAPIException exception) {
                 exception.printStackTrace();
@@ -120,6 +129,6 @@ public class RepositoryFactory {
         // FIXME: currently, the CSAR export does not reuse the repository instance returned here. Thus, we have to reconfigure the repository.
         // This should be fixed by always passing IRepository when working with the repository
         reconfigure(fileBasedRepositoryConfiguration);
-        return new FilebasedRepository(Objects.requireNonNull(fileBasedRepositoryConfiguration));
+        return createXmlOrYamlRepository(fileBasedRepositoryConfiguration);
     }
 }
