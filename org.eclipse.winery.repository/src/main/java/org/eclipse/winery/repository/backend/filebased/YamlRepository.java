@@ -79,13 +79,13 @@ import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class YamlBasedRepository extends FilebasedRepository {
+public class YamlRepository extends FilebasedRepository {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(YamlBasedRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(YamlRepository.class);
 
     private final Pattern namePattern;
 
-    public YamlBasedRepository(FileBasedRepositoryConfiguration fileBasedRepositoryConfiguration) {
+    public YamlRepository(FileBasedRepositoryConfiguration fileBasedRepositoryConfiguration) {
         super(Objects.requireNonNull(fileBasedRepositoryConfiguration));
 
         String nameRegex = "(.*)@(.*)@(.*)";

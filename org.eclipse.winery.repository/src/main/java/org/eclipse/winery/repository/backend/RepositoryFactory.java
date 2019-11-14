@@ -28,7 +28,7 @@ import org.eclipse.winery.repository.backend.constants.Filename;
 import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.filebased.MultiRepository;
-import org.eclipse.winery.repository.backend.filebased.YamlBasedRepository;
+import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ public class RepositoryFactory {
             // XML-based repository
             return new FilebasedRepository(configuration);
         } else {
-            return new YamlBasedRepository(configuration);
+            return new YamlRepository(configuration);
         }
     }
 

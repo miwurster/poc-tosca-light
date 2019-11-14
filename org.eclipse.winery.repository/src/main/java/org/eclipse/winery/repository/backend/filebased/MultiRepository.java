@@ -32,7 +32,6 @@ import java.util.TreeSet;
 
 import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.RepositoryFileReference;
-import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.configuration.FileBasedRepositoryConfiguration;
 import org.eclipse.winery.common.configuration.GitBasedRepositoryConfiguration;
 import org.eclipse.winery.common.ids.GenericId;
