@@ -484,11 +484,11 @@ public class YamlBasedRepository extends FilebasedRepository {
                 }
             }
             // we did not find the artifact template id (this should not happen!)
-            LOGGER.error("requested artifact template id (" + id.toReadableString() +") cannot be extracted from definitions object!");
+            LOGGER.error("requested artifact template id (" + id.toReadableString() + ") cannot be extracted from definitions object!");
             return definitions;
         } else {
             Definitions.Builder requestedDefinitions = getEmptyDefinition(definitions);
-            
+
             if (id instanceof NodeTypeId) {
                 requestedDefinitions.addNodeTypes(definitions.getNodeTypes());
             } else if (id instanceof RelationshipTypeId) {
@@ -509,7 +509,7 @@ public class YamlBasedRepository extends FilebasedRepository {
                 // we do not need to filter anything
                 return definitions;
             }
-            
+
             return requestedDefinitions.build();
         }
     }
@@ -526,7 +526,7 @@ public class YamlBasedRepository extends FilebasedRepository {
     }
 
     /**
-     * Checks if artifact tempaltes exists in type
+     * Checks if artifact templates exists in type
      *
      * @param targetPath target path of requested type
      * @param qName      target QName
