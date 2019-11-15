@@ -136,7 +136,7 @@ export class PaletteComponent implements OnDestroy {
     generateNewNode($event: MouseEvent, child: any): void {
         const x = $event.pageX - this.newNodePositionOffsetX;
         const y = $event.pageY - this.newNodePositionOffsetY;
-        
+
         const newIdTypeColorProperties = this.generateIdTypeAndProperties(child.text);
         const nodeVisuals: Visuals = TopologyTemplateUtil.getNodeVisualsForNodeTemplate(newIdTypeColorProperties.type, this.entityTypes.nodeVisuals);
         const newNode: TNodeTemplate = new TNodeTemplate(
@@ -161,12 +161,12 @@ export class PaletteComponent implements OnDestroy {
     }
 
     /**
-     * strips versioning substring 
+     * strips versioning substring
      * @param name
      * @return result
      */
     removeVersionIdentifier(name: string): string {
-        return name.replace(/_([a-zA-Z0-9\.\-]*)(-w[0-9]+)(-wip[0-9]+)?/g, '');                                  
+        return name.replace(/_([a-zA-Z0-9\.\-]*)(-w[0-9]+)(-wip[0-9]+)?/g, '');
     }
 
     /**
