@@ -63,7 +63,6 @@ public class ShowcasesTest extends AbstractTestY2X {
         return exception;
     }
 
-    @Ignore
     @Test
     public void nodeTypesTest() throws Exception {
         String path = "nodetypes";
@@ -74,7 +73,6 @@ public class ShowcasesTest extends AbstractTestY2X {
         Assert.assertTrue(convert(path, namespace, files).isEmpty());
     }
 
-    @Ignore
     @Test
     public void serviceTemplateTest() throws Exception {
         String path = "servicetemplates";

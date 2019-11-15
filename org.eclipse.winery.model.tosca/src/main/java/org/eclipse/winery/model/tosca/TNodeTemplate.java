@@ -83,8 +83,11 @@ public class TNodeTemplate extends RelationshipSourceOrTarget implements HasPoli
         this.name = builder.name;
         this.minInstances = builder.minInstances;
         this.maxInstances = builder.maxInstances;
-        this.setX(builder.x);
-        this.setY(builder.y);
+
+        if (Objects.nonNull(builder.x) && Objects.nonNull(builder.y)) {
+            this.setX(builder.x);
+            this.setY(builder.y);
+        }
     }
 
     @Override
