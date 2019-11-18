@@ -131,20 +131,6 @@ public final class Environments {
         return Optional.of(new GitBasedRepositoryConfiguration(getGitConfig().isAutocommit(), filebasedRepositoryConfiguration));
     }
 
-//    /**
-//     * This method propagates changes made to the feature flags to the config file.
-//     *
-//     * @param changedProperties a Map that contains the name of the changed properties as keys and the changed flags as
-//     *                          values as
-//     */
-//    public static void saveFeatures(final ConfigurationObject changedProperties) {
-//        YAMLConfiguration config = Environment.getConfiguration();
-//        changedProperties.getFeatures().keySet().stream()
-//            .filter(p -> !RepositoryProvider.YAML.equals(Enums.valueOf(RepositoryProvider.class, p)))
-//            .forEach(property -> config.setProperty(featurePrefix + property, changedProperties.getFeatures().get(property)));
-//        Environment.save();
-//    }
-
     /**
      * Changes the configuration accordingly to the given ConfigurationObject.
      *
