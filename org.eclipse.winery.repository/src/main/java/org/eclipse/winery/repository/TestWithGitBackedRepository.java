@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.configuration.FileBasedRepositoryConfiguration;
 import org.eclipse.winery.common.configuration.GitBasedRepositoryConfiguration;
+import org.eclipse.winery.common.configuration.RepositoryConfigurationObject;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TTopologyElementInstanceStates;
@@ -83,7 +84,7 @@ public abstract class TestWithGitBackedRepository {
 
             // inject the current path to the repository factory
             FileBasedRepositoryConfiguration fileBasedRepositoryConfiguration = new FileBasedRepositoryConfiguration(repositoryPath);
-            fileBasedRepositoryConfiguration.setRepositoryProvider(Environments.RepositoryProvider.FILE);
+            fileBasedRepositoryConfiguration.setRepositoryProvider(RepositoryConfigurationObject.RepositoryProvider.FILE);
             GitBasedRepositoryConfiguration gitBasedRepositoryConfiguration = new GitBasedRepositoryConfiguration(false, fileBasedRepositoryConfiguration);
             RepositoryFactory.reconfigure(gitBasedRepositoryConfiguration);
 

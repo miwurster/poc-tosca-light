@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.NonNull;
 public class FileBasedRepositoryConfiguration {
 
     private Path repositoryPath = null;
-    private Environments.RepositoryProvider repositoryProvider;
+    private RepositoryConfigurationObject.RepositoryProvider repositoryProvider;
 
     /**
      * There are no required values for the configuration
@@ -32,10 +32,10 @@ public class FileBasedRepositoryConfiguration {
     }
 
     public FileBasedRepositoryConfiguration(@NonNull Path repositoryPath) {
-        this(repositoryPath, Environments.getRepositoryProvider());
+        this(repositoryPath, Environments.getRepositoryConfig().getProvider());
     }
 
-    private FileBasedRepositoryConfiguration(@NonNull Path repositoryPath, Environments.RepositoryProvider repositoryProvider) {
+    private FileBasedRepositoryConfiguration(@NonNull Path repositoryPath, RepositoryConfigurationObject.RepositoryProvider repositoryProvider) {
         this.repositoryPath = Objects.requireNonNull(repositoryPath);
         this.repositoryProvider = Objects.requireNonNull(repositoryProvider);
     }
@@ -54,11 +54,11 @@ public class FileBasedRepositoryConfiguration {
         this.repositoryPath = Objects.requireNonNull(repositoryPath);
     }
 
-    public Environments.RepositoryProvider getRepositoryProvider() {
+    public RepositoryConfigurationObject.RepositoryProvider getRepositoryProvider() {
         return repositoryProvider;
     }
 
-    public void setRepositoryProvider(Environments.RepositoryProvider repositoryProvider) {
+    public void setRepositoryProvider(RepositoryConfigurationObject.RepositoryProvider repositoryProvider) {
         this.repositoryProvider = repositoryProvider;
     }
 }

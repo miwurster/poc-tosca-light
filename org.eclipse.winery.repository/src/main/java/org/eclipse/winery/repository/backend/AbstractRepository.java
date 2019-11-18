@@ -111,7 +111,7 @@ public abstract class AbstractRepository implements IRepository {
             return BackendUtils.createWrapperDefinitionsAndInitialEmptyElement(this, id);
         }
         try {
-            Definitions output = RepositoryFactory.getRepository().definitionsFromRef(ref);
+            Definitions output = this.definitionsFromRef(ref);
             if (output != null) {
                 return output;
             } else {

@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.configuration.FileBasedRepositoryConfiguration;
 import org.eclipse.winery.common.configuration.GitBasedRepositoryConfiguration;
+import org.eclipse.winery.common.configuration.RepositoryConfigurationObject;
 import org.eclipse.winery.repository.backend.constants.Filename;
 import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
@@ -50,7 +51,7 @@ public class RepositoryFactory {
     }
 
     public static FilebasedRepository createXmlOrYamlRepository(FileBasedRepositoryConfiguration configuration) {
-        if (Environments.RepositoryProvider.FILE.equals(configuration.getRepositoryProvider())) {
+        if (RepositoryConfigurationObject.RepositoryProvider.FILE.equals(configuration.getRepositoryProvider())) {
             // XML-based repository
             return new FilebasedRepository(configuration);
         } else {
