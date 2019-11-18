@@ -14,13 +14,6 @@
 
 package org.eclipse.winery.tools.deployablecomponents.crawler;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.winery.tools.deployablecomponents.DeployableComponents;
-import org.eclipse.winery.tools.deployablecomponents.commons.Dockerfile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,7 +26,17 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import org.eclipse.winery.tools.deployablecomponents.DeployableComponents;
+import org.eclipse.winery.tools.deployablecomponents.commons.Dockerfile;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GithubCrawler implements ICrawlerImplementation {
+
+    public final static Logger LOGGER = LoggerFactory.getLogger(GithubCrawler.class);
 
     private int lastId = 0;
     private URL baseUrl;
@@ -44,8 +47,6 @@ public class GithubCrawler implements ICrawlerImplementation {
     private Instant rateLimitReset;
     private int rateLimitRemainingSearch = 30;
     private Instant rateLimitResetSearch;
-
-    public final static Logger LOGGER = LoggerFactory.getLogger(GithubCrawler.class);
 
     GithubCrawler(String githubName, String oauthToken) {
         try {
@@ -100,7 +101,7 @@ public class GithubCrawler implements ICrawlerImplementation {
         StringBuilder responseBuilder;
         HttpURLConnection connection;
         int fails = 0;
-        
+
         // as long as rate limit is not exceeded this do-while is done only once
         do {
             if (fails >= DeployableComponents.MAX_FAILED_CRAWLER_REQUESTS) {

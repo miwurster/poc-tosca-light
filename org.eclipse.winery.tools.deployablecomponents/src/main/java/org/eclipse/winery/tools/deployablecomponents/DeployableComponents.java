@@ -30,6 +30,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class DeployableComponents {
 
+    public static final int MAX_FAILED_CRAWLER_REQUESTS = 10;
+
     private final Crawler crawler;
     private final Fileanalyzer analyzer;
 
@@ -37,7 +39,6 @@ public class DeployableComponents {
 
     private boolean crawlStatus = false;
     private final int CRAWL_AT_ONCE = 1;
-    public static final int MAX_FAILED_CRAWLER_REQUESTS = 10;
 
     public DeployableComponents(CrawlerType type, String serviceName, String serviceToken, String localCopyPath) {
         crawler = new Crawler(type, serviceName, serviceToken, localCopyPath);
