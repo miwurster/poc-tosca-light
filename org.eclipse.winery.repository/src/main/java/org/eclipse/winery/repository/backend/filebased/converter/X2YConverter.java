@@ -158,11 +158,12 @@ public class X2YConverter {
                 .build();
             tMapImportDefinition.put(importDefinition.getKey().getQName().getLocalPart(), tImportDefinition);
         }
-        imports.add(tMapImportDefinition);
-        if (imports.isEmpty()) {
+        if (!tMapImportDefinition.isEmpty()) {
+            imports.add(tMapImportDefinition);
+            return imports;
+        } else {
             return null;
         }
-        return imports;
     }
 
     public Map<String, TPropertyAssignment> convert(TEntityTemplate tEntityTemplate, TEntityTemplate.Properties node) {
