@@ -146,14 +146,45 @@ export class TopologyTemplateUtil {
             if (element.name === name) {
                 // if any is defined with at least one element it's a KV property, sets default values if there aren't
                 // any in the node template
-                if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any) {
-                    if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0 &&
-                        element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList) {
-                        const properties = {
+                if (this.hasKVPropDefinition(element)) {
+                    let properties;
+                    if (this.hasParentType(element)) {
+                        let parent = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.typeRef;
+                        let continueFlag;
+                        let inheritedProperties = {};
+
+                        while (parent) {
+                            continueFlag = false;
+                            for (const parentElement of entities) {
+                                if (parentElement.qName === parent) {
+                                    if (this.hasKVPropDefinition(parentElement)) {
+                                        inheritedProperties = {
+                                            ...inheritedProperties, ...TopologyTemplateUtil.setKVProperties(parentElement)
+                                        };
+                                    }
+                                    if (this.hasParentType(parentElement)) {
+                                        parent = parentElement.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.typeRef;
+                                        continueFlag = true;
+                                    }
+                                    break;
+                                }
+                            }
+                            if (continueFlag) {
+                                continue;
+                            }
+                            parent = null;
+                        }
+
+                        properties = {
+                            kvproperties: { ...inheritedProperties, ...TopologyTemplateUtil.setKVProperties(element) }
+                        };
+                    } else {
+                        properties = {
                             kvproperties: TopologyTemplateUtil.setKVProperties(element)
                         };
-                        return properties;
                     }
+                    return properties;
+
                     // if propertiesDefinition is defined it's a XML property
                 } else if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition
                     && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
@@ -168,6 +199,23 @@ export class TopologyTemplateUtil {
                 }
             }
         }
+    }
+
+    static hasKVPropDefinition(element: EntityType): boolean {
+        if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any) {
+            if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0 &&
+                element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static hasParentType(element: EntityType): boolean {
+        if (element && element.full && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0] && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom) {
+            return true;
+        }
+        return false;
     }
 
     /**
