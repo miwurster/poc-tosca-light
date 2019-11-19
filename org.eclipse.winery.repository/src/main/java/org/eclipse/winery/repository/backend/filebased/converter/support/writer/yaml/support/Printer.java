@@ -300,17 +300,16 @@ public class Printer extends AbstractResult<Printer> {
     }
 
     private String qNameToString(QName name) {
-        if (
-            !name.getPrefix().isEmpty()
-                && (
-                name.getPrefix().equals("yaml")
-                    || name.getPrefix().equals("tosca")
-            )
-                || name.getNamespaceURI().isEmpty()
-        ) return name.getLocalPart();
-        return name.getPrefix().isEmpty() ?
-            ("\"{" + name.getNamespaceURI() + "}" + name.getLocalPart() + "\"") :
-            (name.getPrefix() + ":" + name.getLocalPart());
+        // when processing property types - only use the local part
+        if (!name.getPrefix().isEmpty() && (
+            name.getPrefix().equals("yaml") || name.getPrefix().equals("tosca"))
+            || name.getNamespaceURI().isEmpty()) {
+            return name.getLocalPart();
+        }
+
+        // TODO decide on namespace handling w.r.t. Simple Profile spec
+        // current solution: use dotted notation for namespaces as in RADON particles
+        return name.getNamespaceURI() + "." + name.getLocalPart();
     }
 
     private String getIndentString() {
