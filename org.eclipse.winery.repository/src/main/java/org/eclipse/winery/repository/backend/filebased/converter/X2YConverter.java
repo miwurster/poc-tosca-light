@@ -303,9 +303,15 @@ public class X2YConverter {
 
     public Map<String, TNodeType> convert(org.eclipse.winery.model.tosca.TNodeType node) {
         if (Objects.isNull(node)) return null;
-//        TNodeTypeImplementation impl = getNodeTypeImplementation(new QName(node.getTargetNamespace(), node.getName()));
+        // TNodeTypeImplementation impl = getNodeTypeImplementation(new QName(node.getTargetNamespace(), node.getName()));
+
+        String nodeFullName = node.getIdFromIdOrNameField();
+        if (node.getTargetNamespace() != null) {
+            nodeFullName = node.getTargetNamespace().concat(".").concat(node.getIdFromIdOrNameField());
+        }
+
         return Collections.singletonMap(
-            node.getIdFromIdOrNameField(),
+            nodeFullName,
             convert(node, new TNodeType.Builder(), org.eclipse.winery.model.tosca.TNodeType.class)
                 .setRequirements(convert(node.getRequirementDefinitions()))
                 .setCapabilities(convert(node.getCapabilityDefinitions()))
