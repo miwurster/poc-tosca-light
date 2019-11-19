@@ -205,7 +205,8 @@ public class X2YConverter {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList())
             ))
-            .setSubstitutionMappings(convert(boundary))
+            // TODO substitution mappings are currently not converted
+            //.setSubstitutionMappings(convert(boundary))
             .build();
     }
 
