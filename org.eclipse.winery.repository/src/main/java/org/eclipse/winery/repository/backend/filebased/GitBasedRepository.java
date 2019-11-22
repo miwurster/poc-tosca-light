@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -366,11 +365,9 @@ public class GitBasedRepository extends FilebasedRepository implements IReposito
     }
 
     private Git cloneRepository(String repoUrl, String branch) throws GitAPIException {
-        return Git
-            .cloneRepository()
+        return Git.cloneRepository()
             .setURI(repoUrl)
-            .setDirectory(this.repository.getRepositoryDep().toFile())
-            .setBranchesToClone(Collections.singletonList(branch))
+            .setDirectory(getRepositoryDep().toFile())
             .setBranch(branch)
             .call();
     }
