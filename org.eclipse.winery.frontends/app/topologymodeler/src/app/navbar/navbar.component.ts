@@ -215,6 +215,9 @@ export class NavbarComponent implements OnDestroy {
                 this.ngRedux.dispatch(this.wineryActions.sendPaletteOpened(false));
                 this.ngRedux.dispatch(this.actions.addTestRefinements());
                 break;
+            case 'generatePlaceholder':
+                this.ngRedux.dispatch(this.actions.generatePlaceholder());
+                break;
             case 'determineStatefulComponents':
                 this.ngRedux.dispatch(this.actions.determineStatefulComponents());
                 break;

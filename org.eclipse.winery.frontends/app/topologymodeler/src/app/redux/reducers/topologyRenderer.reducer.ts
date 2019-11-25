@@ -36,6 +36,7 @@ export interface TopologyRendererState {
         substituteTopologyButton?: boolean;
         refineTopologyButton?: boolean;
         refineTopologyWithTestsButton?: boolean;
+        generatePlaceholder?: boolean;
         determineStatefulComponents?: boolean;
         determineFreezableComponentsButton?: boolean;
         cleanFreezableComponentsButton?: boolean;
@@ -66,6 +67,7 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
         refineTopologyButton: false,
         refineTopologyWithTestsButton: false,
         determineStatefulComponents: false,
+        generatePlaceholder: false,
         determineFreezableComponentsButton: false,
         cleanFreezableComponentsButton: false,
         placeComponentsButton: false,
@@ -237,6 +239,14 @@ export const TopologyRendererReducer =
                     buttonsState: {
                         ...lastState.buttonsState,
                         refineTopologyWithTestsButton: !lastState.buttonsState.refineTopologyWithTestsButton
+                    }
+                };
+            case TopologyRendererActions.GENERATE_PLACEHOLDER:
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        generatePlaceholder: !lastState.buttonsState.generatePlaceholder
                     }
                 };
             case TopologyRendererActions.HIGHLIGHT_NODES:
