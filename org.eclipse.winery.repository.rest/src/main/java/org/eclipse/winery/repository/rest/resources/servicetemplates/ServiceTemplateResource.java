@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -45,11 +46,15 @@ import org.eclipse.winery.model.adaptation.substitution.Substitution;
 import org.eclipse.winery.model.threatmodeling.ThreatAssessment;
 import org.eclipse.winery.model.threatmodeling.ThreatModeling;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
+import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TNodeTemplate.Capabilities;
 import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
+import org.eclipse.winery.model.tosca.constants.ToscaBaseTypes;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.driverspecificationandinjection.DASpecification;
@@ -227,6 +232,48 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     }
 
     @POST
+    @Path("placeholder/generator")
+    @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
+    @Produces( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
+    public Response generatePlaceholdersWithCapability() {
+        Splitting splitting = new Splitting();
+        TTopologyTemplate topologyTemplate = this.getServiceTemplate().getTopologyTemplate();
+
+        try {
+            Map<TRequirement, TNodeTemplate> requirementsAndItsNodeTemplates =
+                splitting.getOpenRequirementsAndItsNodeTemplate(topologyTemplate);
+
+            for (Map.Entry<TRequirement, TNodeTemplate> entry : requirementsAndItsNodeTemplates.entrySet()) {
+                QName capabilityType = splitting.getRequiredCapabilityTypeQNameOfRequirement(entry.getKey());
+                TNodeTemplate tNodeTemplate = entry.getValue();
+                TNodeTemplate placeholderNodeTemplate = new TNodeTemplate();
+                placeholderNodeTemplate.setName(tNodeTemplate.getName() + "_placeholder");
+                placeholderNodeTemplate.setType(new QName("http://www.opentosca.org/placeholdernodetypes", tNodeTemplate.getName() +
+                    "_placeholder"));
+
+                TCapability capa = new TCapability();
+                capa.setId(UUID.randomUUID().toString());
+                capa.setName(capabilityType.getLocalPart() + "_placeholder");
+                capa.setType(capabilityType);
+                placeholderNodeTemplate.setCapabilities(new Capabilities());
+                placeholderNodeTemplate.getCapabilities().getCapability().add(capa);
+
+                topologyTemplate.addNodeTemplate(placeholderNodeTemplate);
+                ModelUtilities.createRelationshipTemplateAndAddToTopology(tNodeTemplate, placeholderNodeTemplate, ToscaBaseTypes.hostedOnRelationshipType, topologyTemplate);
+            }
+            LOGGER.debug("PERSISTING");
+            // TODO: FIX
+            RestUtils.persist(this);
+            LOGGER.debug("PERSISTED");
+
+            return Response.ok().entity(requirementsAndItsNodeTemplates).build();
+        } catch (Exception e) {
+            LOGGER.error("Could not fetch requirements and capabilities", e);
+            return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
+    }
+
+    @POST
     @Path("injector/replace")
     @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
     @Produces( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
@@ -318,6 +365,37 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     public ServiceTemplateId substitute() {
         Substitution substitution = new Substitution();
         return substitution.substituteTopologyOfServiceTemplate((ServiceTemplateId) this.id);
+    }
+
+    @POST()
+    @Path("createplaceholderversion")
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response createNewPlaceholderVersion() {
+        LOGGER.debug("Creating new placeholder version of Service Template {}...", this.getId());
+        ServiceTemplateId id = (ServiceTemplateId) this.getId();
+        WineryVersion version = VersionUtils.getVersion(id);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
+        WineryVersion newVersion = new WineryVersion(
+            "placeholder-" + version.toString() + "-" + dateFormat.format(new Date()),
+            1,
+            0
+        );
+
+        ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
+            VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
+            false);
+
+        ResourceResult response = RestUtils.duplicate(id, newId);
+
+        if (response.getStatus() == Status.CREATED) {
+            response.setUri(null);
+            response.setMessage(new QNameApiData(newId));
+        }
+
+        LOGGER.debug("Created Service Template {}", newId.getQName());
+
+        return response.getResponse();
     }
 
     @POST()

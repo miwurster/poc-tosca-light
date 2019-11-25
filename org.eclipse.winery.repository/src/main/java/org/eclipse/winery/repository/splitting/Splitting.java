@@ -956,6 +956,51 @@ public class Splitting {
 
     /**
      *
+     * @param topologyTemplate
+     * @return
+     */
+    public Map<TRequirement, TNodeTemplate> getOpenRequirementsAndItsNodeTemplate(TTopologyTemplate topologyTemplate) {
+        Map<TRequirement, TNodeTemplate> openRequirementsAndItsNodeTemplates = new HashMap<>();
+        List<TNodeTemplate> nodeTemplates = ModelUtilities.getAllNodeTemplates(topologyTemplate);
+
+        for (TNodeTemplate nodeTemplate : nodeTemplates) {
+            if (nodeTemplate.getRequirements() != null) {
+                List<TRequirement> containedRequirements = nodeTemplate.getRequirements().getRequirement();
+                List<TNodeTemplate> successorsOfNodeTemplate = new ArrayList<>();
+                List<TRelationshipTemplate> outgoingRelationships = ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate);
+                if (outgoingRelationships != null && !outgoingRelationships.isEmpty()) {
+                    for (TRelationshipTemplate relationshipTemplate : outgoingRelationships) {
+                        if (relationshipTemplate.getSourceElement().getRef() instanceof TNodeTemplate) {
+                            successorsOfNodeTemplate.add((TNodeTemplate) relationshipTemplate.getTargetElement().getRef());
+                        } else {
+                            TCapability targetElement = (TCapability) relationshipTemplate.getTargetElement().getRef();
+                            successorsOfNodeTemplate.add(nodeTemplates.stream()
+                                .filter(nt -> nt.getCapabilities() != null)
+                                .filter(nt -> nt.getCapabilities().getCapability().stream().anyMatch(c -> c.getId().equals(targetElement.getId()))).findAny().get());
+                        }
+                    }
+                }
+                for (TRequirement requirement : containedRequirements) {
+                    QName requiredCapabilityTypeQName = getRequiredCapabilityTypeQNameOfRequirement(requirement);
+
+                    if (!successorsOfNodeTemplate.isEmpty()) {
+                        boolean existingCap = successorsOfNodeTemplate.stream()
+                            .filter(x -> x.getCapabilities() != null)
+                            .anyMatch(x -> x.getCapabilities().getCapability().stream().anyMatch(y -> y.getType().equals(requiredCapabilityTypeQName)));
+                        if (!existingCap) {
+                            openRequirementsAndItsNodeTemplates.put(requirement, nodeTemplate);
+                        }
+                    } else {
+                        openRequirementsAndItsNodeTemplates.put(requirement, nodeTemplate);
+                    }
+                }
+            }
+        }
+        return openRequirementsAndItsNodeTemplates;
+    }
+
+    /**
+     *
      * @param requirement
      * @param capability
      * @return
@@ -1350,7 +1395,7 @@ public class Splitting {
         return basisCapabilityType;
     }
 
-    private QName getRequiredCapabilityTypeQNameOfRequirement(TRequirement requirement) {
+    public QName getRequiredCapabilityTypeQNameOfRequirement(TRequirement requirement) {
         QName reqTypeQName = requirement.getType();
         RequirementTypeId reqTypeId = new RequirementTypeId(reqTypeQName);
         TRequirementType requirementType = RepositoryFactory.getRepository().getElement(reqTypeId);
