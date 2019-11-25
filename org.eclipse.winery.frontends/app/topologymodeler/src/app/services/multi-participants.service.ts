@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BackendService } from './backend.service';
 import { Observable } from 'rxjs';
-import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
+import { backendBaseURL } from '../../../../tosca-management/src/app/configuration';
 
 @Injectable({
     providedIn: 'root',
@@ -43,5 +43,14 @@ export class MultiParticipantsService {
         return this.httpClient.post(
             url,
             { headers: this.httpHeaders, observe: 'response', responseType: 'json' });
+    }
+    
+    postPlaceholderNodeType(name: string, namespace: string): Observable<any> {
+        const saveObject: any = { localname: name, namespace: namespace };
+        const url = this.configuration.repositoryURL
+            + '/nodetypes/';
+        return this.httpClient.post(url,
+            JSON.stringify(saveObject),
+            { headers: this.httpHeaders, observe: 'response', responseType: 'text' });
     }
 }

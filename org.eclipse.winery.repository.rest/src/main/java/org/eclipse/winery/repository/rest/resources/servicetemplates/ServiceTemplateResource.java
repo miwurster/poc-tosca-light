@@ -16,6 +16,7 @@ package org.eclipse.winery.repository.rest.resources.servicetemplates;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -50,6 +51,7 @@ import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeTemplate.Capabilities;
+import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
@@ -239,18 +241,30 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         Splitting splitting = new Splitting();
         TTopologyTemplate topologyTemplate = this.getServiceTemplate().getTopologyTemplate();
 
+        List<TNodeType> nodeTypesToCreate = new ArrayList<>();
         try {
             Map<TRequirement, TNodeTemplate> requirementsAndItsNodeTemplates =
                 splitting.getOpenRequirementsAndItsNodeTemplate(topologyTemplate);
 
             for (Map.Entry<TRequirement, TNodeTemplate> entry : requirementsAndItsNodeTemplates.entrySet()) {
-                QName capabilityType = splitting.getRequiredCapabilityTypeQNameOfRequirement(entry.getKey());
                 TNodeTemplate tNodeTemplate = entry.getValue();
-                TNodeTemplate placeholderNodeTemplate = new TNodeTemplate();
-                placeholderNodeTemplate.setName(tNodeTemplate.getName() + "_placeholder");
-                placeholderNodeTemplate.setType(new QName("http://www.opentosca.org/placeholdernodetypes", tNodeTemplate.getName() +
-                    "_placeholder"));
 
+                QName capabilityType = splitting.getRequiredCapabilityTypeQNameOfRequirement(entry.getKey());
+
+                // TODO: write generic function to create node type
+                TNodeType tNodeType = new TNodeType();
+                tNodeType.setName(tNodeTemplate.getName() + "_placeholder");
+                tNodeType.setId(tNodeTemplate.getName() + "_placeholder");
+                tNodeType.setTargetNamespace("http://www.example.org/tosca/placeholdertypes");
+                nodeTypesToCreate.add(tNodeType);
+
+                // TODO: write generic function to create node template
+                TNodeTemplate placeholderNodeTemplate = new TNodeTemplate();
+                placeholderNodeTemplate.setId(tNodeTemplate.getName() + "_placeholder" + UUID.randomUUID().toString());
+                placeholderNodeTemplate.setName(tNodeTemplate.getName() + "_placeholder");
+                placeholderNodeTemplate.setType(new QName(tNodeType.getTargetNamespace(), tNodeType.getName()));
+
+                // TODO: write generic function to create capability
                 TCapability capa = new TCapability();
                 capa.setId(UUID.randomUUID().toString());
                 capa.setName(capabilityType.getLocalPart() + "_placeholder");
@@ -262,11 +276,10 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 ModelUtilities.createRelationshipTemplateAndAddToTopology(tNodeTemplate, placeholderNodeTemplate, ToscaBaseTypes.hostedOnRelationshipType, topologyTemplate);
             }
             LOGGER.debug("PERSISTING");
-            // TODO: FIX
             RestUtils.persist(this);
             LOGGER.debug("PERSISTED");
 
-            return Response.ok().entity(requirementsAndItsNodeTemplates).build();
+            return Response.ok().entity(nodeTypesToCreate).build();
         } catch (Exception e) {
             LOGGER.error("Could not fetch requirements and capabilities", e);
             return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

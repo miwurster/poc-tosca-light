@@ -20,6 +20,7 @@ export class MultiParticipantsComponent implements OnInit {
 
     readonly uiURL = encodeURIComponent(window.location.origin + window.location.pathname + '#/');
     private readonly configuration: TopologyModelerConfiguration;
+    private editorConfiguration;
 
     constructor(private ngRedux: NgRedux<IWineryState>,
                 private actions: TopologyRendererActions,
@@ -49,15 +50,36 @@ export class MultiParticipantsComponent implements OnInit {
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
                         + '&ns=' + response.namespace
                         + '&id=' + response.localname;
-                    window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
+                    this.editorConfiguration = editorConfig;
                     this.multiParticipantsService.postPlaceholders(response.localname).subscribe(
                         data => {
-                            console.log(data);
+                            let count = data.length;
+                            for (const nodeType of data) {
+                                this.multiParticipantsService.postPlaceholderNodeType(nodeType.name, nodeType.targetNamespace).subscribe(
+                                    data => {
+                                        count -= 1;
+                                        if (count === 0) {
+                                            window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
+                                        }
+                                    },
+                                    err => {
+                                        // node type exists already
+                                        if (err.status === 409) {
+                                            count -= 1;
+                                            if (count === 0) {
+                                                window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
+                                            }
+                                        } else {
+                                            // TODO: error handling with toaster
+                                        }
+                                    }
+                                )
+                            }
                         }
                     );
                 },
                 err => {
-                    console.log(err);
+                    // TODO: error handling with toastr
                 }
             );
         }
