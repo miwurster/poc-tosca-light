@@ -53,28 +53,7 @@ export class MultiParticipantsComponent implements OnInit {
                     this.editorConfiguration = editorConfig;
                     this.multiParticipantsService.postPlaceholders(response.localname).subscribe(
                         data => {
-                            let count = data.length;
-                            for (const nodeType of data) {
-                                this.multiParticipantsService.postPlaceholderNodeType(nodeType.name, nodeType.targetNamespace).subscribe(
-                                    data => {
-                                        count -= 1;
-                                        if (count === 0) {
-                                            window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                        }
-                                    },
-                                    err => {
-                                        // node type exists already
-                                        if (err.status === 409) {
-                                            count -= 1;
-                                            if (count === 0) {
-                                                window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                            }
-                                        } else {
-                                            // TODO: error handling with toaster
-                                        }
-                                    }
-                                )
-                            }
+                            window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
                         }
                     );
                 },

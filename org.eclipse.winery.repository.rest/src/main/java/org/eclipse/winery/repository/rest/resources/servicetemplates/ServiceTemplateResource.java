@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,6 +39,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
@@ -48,26 +51,35 @@ import org.eclipse.winery.model.threatmodeling.ThreatAssessment;
 import org.eclipse.winery.model.threatmodeling.ThreatModeling;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TCapability;
+import org.eclipse.winery.model.tosca.TEntityType;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeTemplate.Capabilities;
 import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TPlans;
+import org.eclipse.winery.model.tosca.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.constants.ToscaBaseTypes;
+import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
+import org.eclipse.winery.repository.backend.IRepository;
+import org.eclipse.winery.repository.backend.NamespaceManager;
+import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.driverspecificationandinjection.DASpecification;
 import org.eclipse.winery.repository.driverspecificationandinjection.DriverInjection;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResourceContainingATopology;
+import org.eclipse.winery.repository.rest.resources._support.AbstractComponentsResource;
 import org.eclipse.winery.repository.rest.resources._support.IHasName;
 import org.eclipse.winery.repository.rest.resources._support.ResourceResult;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.injectionadapter.InjectorReplaceData;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.injectionadapter.InjectorReplaceOptions;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameApiData;
+import org.eclipse.winery.repository.rest.resources.entitytypes.nodetypes.NodeTypeResource;
+import org.eclipse.winery.repository.rest.resources.entitytypes.nodetypes.NodeTypesResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions.BoundaryDefinitionsResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.plans.PlansResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.selfserviceportal.SelfServicePortalResource;
@@ -76,6 +88,7 @@ import org.eclipse.winery.repository.splitting.InjectRemoval;
 import org.eclipse.winery.repository.splitting.Splitting;
 import org.eclipse.winery.repository.splitting.SplittingException;
 
+import io.fabric8.kubernetes.client.dsl.Resource;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -241,37 +254,71 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         Splitting splitting = new Splitting();
         TTopologyTemplate topologyTemplate = this.getServiceTemplate().getTopologyTemplate();
 
-        List<TNodeType> nodeTypesToCreate = new ArrayList<>();
         try {
+            // get all open requirements and the respective node templates with open requirements
             Map<TRequirement, TNodeTemplate> requirementsAndItsNodeTemplates =
                 splitting.getOpenRequirementsAndItsNodeTemplate(topologyTemplate);
+            IRepository repo = RepositoryFactory.getRepository();
 
+            // iterate over all open requirements
             for (Map.Entry<TRequirement, TNodeTemplate> entry : requirementsAndItsNodeTemplates.entrySet()) {
+                // current node template with open requirements
                 TNodeTemplate tNodeTemplate = entry.getValue();
 
+                // get type of node template with open requirements
+                NodeTypeId id = new NodeTypeId(tNodeTemplate.getType());
+                TNodeType sourceNodeType = repo.getElement(id);
+
+                // get required capability type of open requirement
                 QName capabilityType = splitting.getRequiredCapabilityTypeQNameOfRequirement(entry.getKey());
 
                 // TODO: write generic function to create node type
+                // create new placeholder node type
                 TNodeType tNodeType = new TNodeType();
                 tNodeType.setName(tNodeTemplate.getName() + "_placeholder");
                 tNodeType.setId(tNodeTemplate.getName() + "_placeholder");
                 tNodeType.setTargetNamespace("http://www.example.org/tosca/placeholdertypes");
-                nodeTypesToCreate.add(tNodeType);
+                QName placeholderQName = new QName(tNodeType.getTargetNamespace(), tNodeType.getName());
+
+                // add properties definition
+                tNodeType.setPropertiesDefinition(null);
+                ModelUtilities.replaceWinerysPropertiesDefinition(tNodeType, sourceNodeType.getWinerysPropertiesDefinition());
+                String namespace = tNodeType.getWinerysPropertiesDefinition().getNamespace();
+                NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
+                if (!namespaceManager.hasPermanentProperties(namespace)) {
+                    namespaceManager.addPermanentNamespace(namespace);
+                }
+
+                NodeTypeId placeholderId = new NodeTypeId(placeholderQName);
+                // check if placeholder node type exists
+                if (repo.exists(placeholderId)) {
+                    // delete and create new
+                    RestUtils.delete(placeholderId);
+                }
+                ResourceResult res;
+                // create node type in repo
+                res = RestUtils.create(placeholderId, tNodeType.getName());
 
                 // TODO: write generic function to create node template
+                // create placeholder node template
                 TNodeTemplate placeholderNodeTemplate = new TNodeTemplate();
                 placeholderNodeTemplate.setId(tNodeTemplate.getName() + "_placeholder" + UUID.randomUUID().toString());
                 placeholderNodeTemplate.setName(tNodeTemplate.getName() + "_placeholder");
-                placeholderNodeTemplate.setType(new QName(tNodeType.getTargetNamespace(), tNodeType.getName()));
+                placeholderNodeTemplate.setType(placeholderQName);
 
                 // TODO: write generic function to create capability
+                // create capability of placeholder node template
                 TCapability capa = new TCapability();
                 capa.setId(UUID.randomUUID().toString());
                 capa.setName(capabilityType.getLocalPart() + "_placeholder");
                 capa.setType(capabilityType);
+
                 placeholderNodeTemplate.setCapabilities(new Capabilities());
                 placeholderNodeTemplate.getCapabilities().getCapability().add(capa);
 
+                placeholderNodeTemplate.setProperties(tNodeTemplate.getProperties());
+
+                // add placeholder to node template and connect with source node template with open requirements
                 topologyTemplate.addNodeTemplate(placeholderNodeTemplate);
                 ModelUtilities.createRelationshipTemplateAndAddToTopology(tNodeTemplate, placeholderNodeTemplate, ToscaBaseTypes.hostedOnRelationshipType, topologyTemplate);
             }
@@ -279,7 +326,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
             RestUtils.persist(this);
             LOGGER.debug("PERSISTED");
 
-            return Response.ok().entity(nodeTypesToCreate).build();
+            return Response.ok().build();
         } catch (Exception e) {
             LOGGER.error("Could not fetch requirements and capabilities", e);
             return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();

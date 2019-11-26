@@ -18,8 +18,7 @@ export class MultiParticipantsService {
         this.configuration = backendService.configuration;
         this.httpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
     }
-
-    // TODO: create result object type
+    
     postNewVersion(): Observable<any> {
         const url = this.configuration.repositoryURL
             + '/servicetemplates/'
@@ -43,14 +42,5 @@ export class MultiParticipantsService {
         return this.httpClient.post(
             url,
             { headers: this.httpHeaders, observe: 'response', responseType: 'json' });
-    }
-    
-    postPlaceholderNodeType(name: string, namespace: string): Observable<any> {
-        const saveObject: any = { localname: name, namespace: namespace };
-        const url = this.configuration.repositoryURL
-            + '/nodetypes/';
-        return this.httpClient.post(url,
-            JSON.stringify(saveObject),
-            { headers: this.httpHeaders, observe: 'response', responseType: 'text' });
     }
 }
