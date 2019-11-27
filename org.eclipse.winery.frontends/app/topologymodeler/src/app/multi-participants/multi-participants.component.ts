@@ -45,20 +45,52 @@ export class MultiParticipantsComponent implements OnInit {
         if (currentButtonsState.buttonsState.generatePlaceholder) {
             this.multiParticipantsService.postNewVersion().subscribe(
                 response => {
-                    console.log(response);
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
                         + '&ns=' + response.namespace
                         + '&id=' + response.localname;
                     this.editorConfiguration = editorConfig;
                     this.multiParticipantsService.postPlaceholders(response.localname).subscribe(
-                        data => {
-                            window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                        }
+                        response => {
+                            this.multiParticipantsService.postParticipantsVersion(response.localname, response.namespace).subscribe(
+                                response => {
+                                    window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
+                                    for (const resp of response) {
+                                        const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
+                                            + '&uiURL=' + encodeURIComponent(backendBaseURL)
+                                            + '&ns=' + resp.entity.namespace
+                                            + '&id=' + resp.entity.localname;
+                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
+                                    }
+                                },
+                                error => {
+                                    console.log(error);
+                                }
+                            )
+                        },
+                        error => {
+                            // TODO: fix error when returning entities
+                            this.multiParticipantsService.postParticipantsVersion(error.error.text).subscribe(
+                                response => {
+                                    window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
+                                    for (const resp of response) {
+                                        const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
+                                            + '&uiURL=' + encodeURIComponent(backendBaseURL)
+                                            + '&ns=' + resp.entity.namespace
+                                            + '&id=' + resp.entity.localname;
+                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
+                                    }
+
+                                },
+                                error => {
+                                    console.log(error);
+                                }
+                            )
+                        },
                     );
                 },
-                err => {
-                    // TODO: error handling with toastr
+                error => {
+                    console.log(error);
                 }
             );
         }

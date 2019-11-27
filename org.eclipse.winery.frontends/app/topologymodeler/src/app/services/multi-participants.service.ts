@@ -18,7 +18,7 @@ export class MultiParticipantsService {
         this.configuration = backendService.configuration;
         this.httpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
     }
-    
+
     postNewVersion(): Observable<any> {
         const url = this.configuration.repositoryURL
             + '/servicetemplates/'
@@ -32,6 +32,20 @@ export class MultiParticipantsService {
             { headers: this.httpHeaders, observe: 'response', responseType: 'text' });
     }
 
+    postParticipantsVersion(serviceTemplateId: string, serviceTemplateNs?: string): Observable<any> {
+        const url = this.configuration.repositoryURL
+            + '/servicetemplates/'
+            + encodeURIComponent(encodeURIComponent(this.configuration.ns))
+            + '/'
+            + encodeURIComponent(serviceTemplateId)
+            + '/createparticipantsversion';
+        console.log(url);
+        return this.httpClient.post(
+            url,
+            { headers: this.httpHeaders, observe: 'response', responseType: 'json' }
+        );
+    }
+
     postPlaceholders(serviceTemplateId: string): Observable<any> {
         const url = this.configuration.repositoryURL
             + '/servicetemplates/'
@@ -41,6 +55,6 @@ export class MultiParticipantsService {
             + '/placeholder/generator';
         return this.httpClient.post(
             url,
-            { headers: this.httpHeaders, observe: 'response', responseType: 'json' });
+            { headers: this.httpHeaders, observe: 'response', responseType: 'string' });
     }
 }

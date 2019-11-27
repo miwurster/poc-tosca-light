@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -39,7 +38,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.version.VersionUtils;
@@ -51,17 +49,25 @@ import org.eclipse.winery.model.threatmodeling.ThreatAssessment;
 import org.eclipse.winery.model.threatmodeling.ThreatModeling;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TCapability;
-import org.eclipse.winery.model.tosca.TEntityType;
+import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TInterface;
+import org.eclipse.winery.model.tosca.TInterfaces;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeTemplate.Capabilities;
 import org.eclipse.winery.model.tosca.TNodeType;
+import org.eclipse.winery.model.tosca.TOperation;
+import org.eclipse.winery.model.tosca.TParameter;
 import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.TTag;
+import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.constants.ToscaBaseTypes;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
@@ -72,14 +78,11 @@ import org.eclipse.winery.repository.driverspecificationandinjection.DASpecifica
 import org.eclipse.winery.repository.driverspecificationandinjection.DriverInjection;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResourceContainingATopology;
-import org.eclipse.winery.repository.rest.resources._support.AbstractComponentsResource;
 import org.eclipse.winery.repository.rest.resources._support.IHasName;
 import org.eclipse.winery.repository.rest.resources._support.ResourceResult;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.injectionadapter.InjectorReplaceData;
 import org.eclipse.winery.repository.rest.resources._support.dataadapter.injectionadapter.InjectorReplaceOptions;
 import org.eclipse.winery.repository.rest.resources.apiData.QNameApiData;
-import org.eclipse.winery.repository.rest.resources.entitytypes.nodetypes.NodeTypeResource;
-import org.eclipse.winery.repository.rest.resources.entitytypes.nodetypes.NodeTypesResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.boundarydefinitions.BoundaryDefinitionsResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.plans.PlansResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.selfserviceportal.SelfServicePortalResource;
@@ -88,7 +91,6 @@ import org.eclipse.winery.repository.splitting.InjectRemoval;
 import org.eclipse.winery.repository.splitting.Splitting;
 import org.eclipse.winery.repository.splitting.SplittingException;
 
-import io.fabric8.kubernetes.client.dsl.Resource;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -262,72 +264,90 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
             // iterate over all open requirements
             for (Map.Entry<TRequirement, TNodeTemplate> entry : requirementsAndItsNodeTemplates.entrySet()) {
+                PropertyDefinitionKVList propertyDefinitionKVList = new PropertyDefinitionKVList();
+                LinkedHashMap<String, String> placeholderNodeTemplateProperties = new LinkedHashMap<>();
                 // current node template with open requirements
-                TNodeTemplate tNodeTemplate = entry.getValue();
-
+                TNodeTemplate nodeTemplateWithOpenReq = entry.getValue();
                 // get type of node template with open requirements
-                NodeTypeId id = new NodeTypeId(tNodeTemplate.getType());
+                NodeTypeId id = new NodeTypeId(nodeTemplateWithOpenReq.getType());
                 TNodeType sourceNodeType = repo.getElement(id);
+
+                TInterfaces sourceNodeTypeInterfaces = sourceNodeType.getInterfaces();
+                for (TInterface tInterface : sourceNodeTypeInterfaces.getInterface()) {
+                    // TODO: make this more safe
+                    for (TOperation tOperation : tInterface.getOperation()) {
+                        TOperation.InputParameters inputParameters = tOperation.getInputParameters();
+                        for (TParameter inputParameter : inputParameters.getInputParameter()) {
+                            PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
+                            if (!sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV) && !propertyDefinitionKVList.getPropertyDefinitionKVs().contains(inputParamKV)) {
+                                propertyDefinitionKVList.getPropertyDefinitionKVs().add(inputParamKV);
+                                placeholderNodeTemplateProperties.put(inputParameter.getName(), "get_input: " + inputParameter.getName());
+                            }
+                        }
+                    }
+                }
+
+                List<TRelationshipTemplate> incomingRelationshipTemplates = ModelUtilities.getIncomingRelationshipTemplates(topologyTemplate, nodeTemplateWithOpenReq);
+                List<TParameter> inputParameters = splitting.getInputParamListofIncomingRelationshipTemplates(topologyTemplate, incomingRelationshipTemplates);
+                for (TParameter inputParameter : inputParameters) {
+                    PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
+                    if (!sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV)
+                        && !propertyDefinitionKVList.getPropertyDefinitionKVs().contains(inputParamKV)) {
+                        propertyDefinitionKVList.getPropertyDefinitionKVs().add(inputParamKV);
+                        placeholderNodeTemplateProperties.put(inputParameter.getName(), "get_input: " + inputParameter.getName());
+                    }
+                }
 
                 // get required capability type of open requirement
                 QName capabilityType = splitting.getRequiredCapabilityTypeQNameOfRequirement(entry.getKey());
 
-                // TODO: write generic function to create node type
                 // create new placeholder node type
-                TNodeType tNodeType = new TNodeType();
-                tNodeType.setName(tNodeTemplate.getName() + "_placeholder");
-                tNodeType.setId(tNodeTemplate.getName() + "_placeholder");
-                tNodeType.setTargetNamespace("http://www.example.org/tosca/placeholdertypes");
-                QName placeholderQName = new QName(tNodeType.getTargetNamespace(), tNodeType.getName());
+                TNodeType placeholderNodeType = splitting.createPlaceholderNodeType(nodeTemplateWithOpenReq.getName());
+                QName placeholderQName = new QName(placeholderNodeType.getTargetNamespace(), placeholderNodeType.getName());
 
+                WinerysPropertiesDefinition winerysPropertiesDefinition = sourceNodeType.getWinerysPropertiesDefinition();
+                winerysPropertiesDefinition.setPropertyDefinitionKVList(propertyDefinitionKVList);
                 // add properties definition
-                tNodeType.setPropertiesDefinition(null);
-                ModelUtilities.replaceWinerysPropertiesDefinition(tNodeType, sourceNodeType.getWinerysPropertiesDefinition());
-                String namespace = tNodeType.getWinerysPropertiesDefinition().getNamespace();
+                placeholderNodeType.setPropertiesDefinition(null);
+                ModelUtilities.replaceWinerysPropertiesDefinition(placeholderNodeType, winerysPropertiesDefinition);
+                String namespace = placeholderNodeType.getWinerysPropertiesDefinition().getNamespace();
                 NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
                 if (!namespaceManager.hasPermanentProperties(namespace)) {
                     namespaceManager.addPermanentNamespace(namespace);
                 }
-
                 NodeTypeId placeholderId = new NodeTypeId(placeholderQName);
                 // check if placeholder node type exists
                 if (repo.exists(placeholderId)) {
                     // delete and create new
                     RestUtils.delete(placeholderId);
                 }
-                ResourceResult res;
-                // create node type in repo
-                res = RestUtils.create(placeholderId, tNodeType.getName());
+                repo.setElement(placeholderId, placeholderNodeType);
 
-                // TODO: write generic function to create node template
                 // create placeholder node template
-                TNodeTemplate placeholderNodeTemplate = new TNodeTemplate();
-                placeholderNodeTemplate.setId(tNodeTemplate.getName() + "_placeholder" + UUID.randomUUID().toString());
-                placeholderNodeTemplate.setName(tNodeTemplate.getName() + "_placeholder");
-                placeholderNodeTemplate.setType(placeholderQName);
+                TNodeTemplate placeholderNodeTemplate = splitting.createPlaceholderNodeTemplate(nodeTemplateWithOpenReq.getName(), placeholderQName);
 
-                // TODO: write generic function to create capability
                 // create capability of placeholder node template
-                TCapability capa = new TCapability();
-                capa.setId(UUID.randomUUID().toString());
-                capa.setName(capabilityType.getLocalPart() + "_placeholder");
-                capa.setType(capabilityType);
+                TCapability capa = splitting.createPlaceholderCapability(capabilityType);
 
+                TEntityTemplate.Properties properties = new TEntityTemplate.Properties();
+                properties.setKVProperties(placeholderNodeTemplateProperties);
                 placeholderNodeTemplate.setCapabilities(new Capabilities());
                 placeholderNodeTemplate.getCapabilities().getCapability().add(capa);
-
-                placeholderNodeTemplate.setProperties(tNodeTemplate.getProperties());
-
+                placeholderNodeTemplate.setProperties(properties);
+                for (Map.Entry<QName, String> targetLocation : nodeTemplateWithOpenReq.getOtherAttributes().entrySet()) {
+                    placeholderNodeTemplate.getOtherAttributes().put(targetLocation.getKey(), targetLocation.getValue());
+                }
                 // add placeholder to node template and connect with source node template with open requirements
                 topologyTemplate.addNodeTemplate(placeholderNodeTemplate);
-                ModelUtilities.createRelationshipTemplateAndAddToTopology(tNodeTemplate, placeholderNodeTemplate, ToscaBaseTypes.hostedOnRelationshipType, topologyTemplate);
+                ModelUtilities.createRelationshipTemplateAndAddToTopology(nodeTemplateWithOpenReq, placeholderNodeTemplate, ToscaBaseTypes.hostedOnRelationshipType, topologyTemplate);
             }
             LOGGER.debug("PERSISTING");
             RestUtils.persist(this);
             LOGGER.debug("PERSISTED");
-
-            return Response.ok().build();
-        } catch (Exception e) {
+            String responseId = this.getServiceTemplate().getId();
+            return Response.ok().entity(responseId).build();
+        } catch (
+            Exception e) {
             LOGGER.error("Could not fetch requirements and capabilities", e);
             return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
@@ -337,7 +357,8 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     @Path("injector/replace")
     @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
     @Produces( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
-    public Response injectNodeTemplates(InjectorReplaceData injectorReplaceData, @Context UriInfo uriInfo) throws Exception, IOException, ParserConfigurationException, SAXException, SplittingException {
+    public Response injectNodeTemplates(InjectorReplaceData injectorReplaceData, @Context UriInfo uriInfo) throws
+        Exception, IOException, ParserConfigurationException, SAXException, SplittingException {
 
         if (injectorReplaceData.hostInjections != null) {
             Collection<TTopologyTemplate> hostInjectorTopologyTemplates = injectorReplaceData.hostInjections.values();
@@ -425,6 +446,44 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     public ServiceTemplateId substitute() {
         Substitution substitution = new Substitution();
         return substitution.substituteTopologyOfServiceTemplate((ServiceTemplateId) this.id);
+    }
+
+    @POST()
+    @Path("createparticipantsversion")
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public List<Response> createParticipantsVersion() throws IOException {
+        IRepository repo = RepositoryFactory.getRepository();
+        // create list of responses because we create multiple resources at once
+        List<Response> listOfResponses = new ArrayList<>();
+
+        ServiceTemplateId id = (ServiceTemplateId) this.getId();
+
+        Splitting splitting = new Splitting();
+        Map<QName, TTags> newServiceTemplateIdsAndTags = splitting.getTagsForParticipantServiceTemplate(
+            this.getServiceTemplate().getTags(), id, this.getServiceTemplate().getTopologyTemplate().getNodeTemplates());
+
+        // iterate over participants version ids and add their respective tag list
+        for (Map.Entry<QName, TTags> resultEntry : newServiceTemplateIdsAndTags.entrySet()) {
+            // get id of service template version to get service template from repo
+            ServiceTemplateId tempId = new ServiceTemplateId(resultEntry.getKey());
+            TServiceTemplate tempServiceTempl = repo.getElement(tempId);
+
+            // reset tags and set tags with respective entry
+            tempServiceTempl.setTags(null);
+            tempServiceTempl.setTags(resultEntry.getValue());
+
+            ResourceResult response = RestUtils.duplicate(id, tempId);
+
+            if (response.getStatus() == Status.CREATED) {
+                response.setUri(null);
+                response.setMessage(new QNameApiData(tempId));
+            }
+
+            listOfResponses.add(response.getResponse());
+            // set element to propagate changed tags
+            repo.setElement(tempId, tempServiceTempl);
+        }
+        return listOfResponses;
     }
 
     @POST()
