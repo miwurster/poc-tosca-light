@@ -16,8 +16,8 @@ import { Action } from 'redux';
 import {
     DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
     DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
-    SaveRelationshipAction, SendCurrentNodeIdAction, SendPaletteOpenedAction, SetCababilityAction,
-    SetDeploymentArtifactAction, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
+    SaveRelationshipAction, SendCurrentNodeIdAction, SendLiveModelingLog, SendPaletteOpenedAction, SetCababilityAction,
+    SetDeploymentArtifactAction, SetNodeLiveModelingData, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
     UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
 } from '../actions/winery.actions';
@@ -32,6 +32,7 @@ export interface WineryState {
     currentJsonTopology: TTopologyTemplate;
     currentNodeData: any;
     nodeVisuals: Visuals[];
+    liveModelingLog: any;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -52,7 +53,8 @@ export const INITIAL_WINERY_STATE: WineryState = {
         id: '',
         focus: false
     },
-    nodeVisuals: null
+    nodeVisuals: null,
+    liveModelingLog: {},
 };
 
 /**
@@ -462,7 +464,27 @@ export const WineryReducer =
                     ...lastState,
                     nodeVisuals: visuals
                 };
+            case WineryActions.SET_LIVE_MODELING_DATA:
+                const newLiveModelingData = (<SetNodeLiveModelingData>action).liveModelingData;
 
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                            .map(nodeTemplate => nodeTemplate.id === newLiveModelingData.nodeId ?
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('liveModelingData', newLiveModelingData.liveModelingData)
+                                : nodeTemplate
+                            )
+                    }
+                };
+            case WineryActions.SEND_LIVE_MODELING_LOG:
+                const liveModelingLog = (<SendLiveModelingLog>action).liveModelingLog;
+
+                return <WineryState>{
+                    ...lastState,
+                    liveModelingLog: liveModelingLog
+                };
             default:
                 return <WineryState> lastState;
         }

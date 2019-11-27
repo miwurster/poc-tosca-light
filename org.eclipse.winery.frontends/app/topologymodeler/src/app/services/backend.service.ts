@@ -31,6 +31,7 @@ import { Threat, ThreatAssessmentApiData } from '../models/threatModelingModalDa
 import { Visuals } from '../models/visuals';
 import { VersionElement } from '../models/versionElement';
 import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { concatMap } from 'rxjs/operators';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -272,12 +273,56 @@ export class BackendService {
      */
     saveTopologyTemplate(topologyTemplate: any): Observable<HttpResponse<string>> {
         if (this.configuration) {
+            const topologyToBeSaved = this.prepareTopologyTemplateForExport(topologyTemplate);
             const headers = new HttpHeaders().set('Content-Type', 'application/json');
             return this.http.put(this.configuration.elementUrl,
-                topologyTemplate,
+                topologyToBeSaved,
                 { headers: headers, responseType: 'text', observe: 'response' }
             );
         }
+    }
+
+    /**
+     * Clones current service template and replaces its topology template. Used for live-modeling.
+     */
+    createTemporaryServiceTemplate(topologyTemplate: any): Observable<ServiceTemplateId> {
+        if (this.configuration) {
+            const topologyToBeSaved = this.prepareTopologyTemplateForExport(topologyTemplate);
+            const ns = encodeURIComponent(encodeURIComponent(this.configuration.definitionsElement.nameSpace));
+            const id = this.configuration.definitionsElement.localName;
+            const queryParams = '?namespace=' + ns + '&id=' + id;
+            const headers = new HttpHeaders().set('Content-Type', 'application/json');
+            return this.http.post<ServiceTemplateId>(this.configuration.parentUrl + 'createtemporaryclone' + queryParams,
+                topologyToBeSaved,
+                { headers: headers }
+            );
+        }
+    }
+
+    /**
+     * Prepare topology by removing properties that are not recognizable by the REST API
+     * @param topologyTemplate
+     */
+    private prepareTopologyTemplateForExport(topologyTemplate: any) {
+        const topologySkeleton = {
+            documentation: [],
+            any: [],
+            otherAttributes: {},
+            relationshipTemplates: topologyTemplate.relationshipTemplates,
+            nodeTemplates: topologyTemplate.nodeTemplates
+        };
+
+        topologySkeleton.relationshipTemplates.map(relationship => {
+            delete relationship.state;
+        });
+
+        topologySkeleton.nodeTemplates.map(nodeTemplate => {
+            delete nodeTemplate.visuals;
+            delete nodeTemplate._state;
+            delete nodeTemplate.liveModelingData;
+        });
+
+        return topologySkeleton;
     }
 
     /**

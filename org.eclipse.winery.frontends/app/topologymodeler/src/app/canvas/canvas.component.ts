@@ -1814,6 +1814,9 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 } else if (nodeTemplate.otherAttributes !== node.otherAttributes) {
                     nodeTemplate.otherAttributes = node.otherAttributes;
                     return true;
+                } else if (nodeTemplate.liveModelingData !== node.liveModelingData) {
+                    nodeTemplate.liveModelingData = node.liveModelingData;
+                    return true;
                 }
             }
         });

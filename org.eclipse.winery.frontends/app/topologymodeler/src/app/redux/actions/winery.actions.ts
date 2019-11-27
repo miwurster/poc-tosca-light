@@ -18,6 +18,8 @@ import { TNodeTemplate, TRelationshipTemplate } from '../../models/ttopology-tem
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 import { TPolicy } from '../../models/policiesModalData';
 import { Visuals } from '../../models/visuals';
+import { LiveModelingData } from '../../models/liveModelingData';
+import { LiveModelingLog } from '../../models/liveModelingLog';
 
 export interface SendPaletteOpenedAction extends Action {
     paletteOpened: boolean;
@@ -185,6 +187,17 @@ export interface SetNodeVisuals extends Action {
     visuals: Visuals[];
 }
 
+export interface SetNodeLiveModelingData extends Action {
+    liveModelingData: {
+        nodeId: string;
+        liveModelingData: LiveModelingData;
+    }
+}
+
+export interface SendLiveModelingLog extends Action {
+    liveModelingLog: LiveModelingLog;
+}
+
 /**
  * Winery Actions
  */
@@ -219,6 +232,8 @@ export class WineryActions {
     static DELETE_POLICY = 'DELETE_POLICY';
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
     static SET_NODE_VISUALS = 'SET_NODE_VISUALS';
+    static SET_LIVE_MODELING_DATA = 'SET_LIVE_MODELING_DATA';
+    static SEND_LIVE_MODELING_LOG = 'SEND_LIVE_MODELING_LOG';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
@@ -350,5 +365,15 @@ export class WineryActions {
         ((visuals: Visuals[]) => ({
             type: WineryActions.SET_NODE_VISUALS,
             visuals: visuals
+        }));
+    setLiveModelingData: ActionCreator<SetNodeLiveModelingData> =
+        ((liveModelingData) => ({
+            type: WineryActions.SET_LIVE_MODELING_DATA,
+            liveModelingData: liveModelingData
+        }));
+    sendLiveModelingLog: ActionCreator<SendLiveModelingLog> =
+        ((liveModelingLog) => ({
+            type: WineryActions.SEND_LIVE_MODELING_LOG,
+            liveModelingLog: liveModelingLog
         }));
 }

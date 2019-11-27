@@ -237,5 +237,79 @@
                 <li role="menuitem"><a class="dropdown-item" href="#">About</a></li>
             </ul>
         </div>
+        
+        <div class="btn-group button-group"
+             data-toggle="buttons">
+            <button
+                class="btn btn-sm align-middle dark-button-style"
+                type="button"
+                id="liveModeling"
+                (click)="toggleButton($event)"
+                [disabled]="navbarButtonsState.liveModelingState != liveModelingState.DISABLED && navbarButtonsState.liveModelingState != liveModelingState.ENABLED"
+                [style.background-color]="getStyle(navbarButtonsState.liveModelingState == liveModelingState.ENABLED)">
+                Live-Modeling
+            </button>
+
+            <button
+                class="btn btn-sm align-middle dark-button-style"
+                type="button"
+                id="liveModeling-redeployButton"
+                [disabled]="navbarButtonsState.liveModelingState != liveModelingState.ENABLED"
+                (click)="toggleButton($event)">
+                Redeploy
+            </button>
+            <button
+                class="btn btn-sm align-middle dark-button-style"
+                type="button"
+                id="liveModeling-update"
+                [disabled]="navbarButtonsState.liveModelingState != liveModelingState.ENABLED"
+                (click)="toggleButton($event)">
+                <i class="fa fa-refresh" style="pointer-events: none;"></i>
+            </button>
+            <button
+                class="btn btn-sm align-middle dark-button-style"
+                type="button"
+                id="liveModeling-test"
+                (click)="toggleButton($event)">
+                Test
+            </button>
+        </div>
     </form>
 </nav>
+
+<ng-template #enableLiveModelingModalTemplate>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Enable Live-Modeling</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p>Caution! This will enable live-modeling.</p>
+        <div class="form-group">
+            <label for="containerUrlInput">Enter OpenTOSCA container Url:</label>
+            <input [(ngModel)]="containerUrl" class="form-control" type="text" id="containerUrlInput"
+                   placeholder="containerUrl">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button" class="btn btn-primary" (click)="enableLiveModeling()">Enable</button>
+    </div>
+</ng-template>
+
+<ng-template #disableLiveModelingModalTemplate>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Disable Live-Modeling</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p>Caution! This will terminate all running instances!</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button" class="btn btn-danger" (click)="disableLiveModeling()">Disable</button>
+    </div>
+</ng-template>

@@ -1,0 +1,65 @@
+/*******************************************************************************
+ * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+
+.container {
+    position: fixed;
+    right: 50px;
+    bottom: 25px;
+    z-index: 999;
+    border: 1px solid #e1e1e1;
+    background-color: #f6f6f6;
+    width: 500px;
+    border-radius: .25rem;
+    max-width: 500px;
+    padding: 0;
+}
+
+.scroll-container {
+    padding: 2px;
+    overflow-y: auto;
+    max-height: 250px;
+}
+
+.log {
+    width: 100%;
+    font-size: x-small;
+    vertical-align: top;
+    display: flex;
+}
+
+.log > span {
+    vertical-align: top;
+    padding: 2px;
+    cursor: text;
+}
+
+.log-timestamp {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.log-type {
+    font-size: xx-small;
+    color: white;
+    border-radius: 5px;
+    padding: 1px 2px;
+}
+
+.log-message {
+
+}
+
+progressbar {
+    height: 5px;
+}

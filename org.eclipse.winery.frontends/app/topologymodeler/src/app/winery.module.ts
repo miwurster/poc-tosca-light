@@ -51,6 +51,11 @@ import { WineryModalModule } from '../../../tosca-management/src/app/wineryModal
 import { EnricherComponent } from './enricher/enricher.component';
 import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/wineryFeatureToggleModule/winery-feature-toggle.module';
 import { PlaceComponentsService } from './services/placement.service';
+import { LiveModelingService } from './services/live-modeling.service';
+import { ContainerService } from './services/container.service';
+import { LiveModelingLoggerService } from './services/live-modeling-logger.service';
+import { LiveModelingSidebarComponent } from './live-modeling-sidebar/live-modeling-sidebar.component';
+import { ProgressbarModule } from 'ngx-bootstrap';
 
 @NgModule({
     declarations: [
@@ -60,7 +65,8 @@ import { PlaceComponentsService } from './services/placement.service';
         PrintViewComponent,
         RefinementSidebarComponent,
         ProblemDetectionComponent,
-        EnricherComponent
+        EnricherComponent,
+        LiveModelingSidebarComponent
     ],
     exports: [WineryComponent],
     imports: [
@@ -87,7 +93,8 @@ import { PlaceComponentsService } from './services/placement.service';
         TypeaheadModule.forRoot(),
         PopoverModule.forRoot(),
         PropertiesModule,
-        WineryFeatureToggleModule
+        WineryFeatureToggleModule,
+        ProgressbarModule.forRoot()
     ],
     providers: [
         // { provide: ToastOptions, useClass: WineryCustomOption },
@@ -105,6 +112,9 @@ import { PlaceComponentsService } from './services/placement.service';
         ErrorHandlerService,
         StatefulAnnotationsService,
         PlaceComponentsService,
+        LiveModelingLoggerService,
+        ContainerService,
+        LiveModelingService
     ],
     bootstrap: [WineryComponent]
 })

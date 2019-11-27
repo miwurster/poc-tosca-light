@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ToastrService } from 'ngx-toastr';
 import { NgRedux } from '@angular-redux/store';
@@ -25,6 +25,9 @@ import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reduce
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { LiveModelingStates } from '../models/enums';
+import { LiveModelingService } from '../services/live-modeling.service';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap';
 
 /**
  * The navbar of the topologymodeler.
@@ -52,6 +55,13 @@ export class NavbarComponent implements OnDestroy {
 
     @ViewChild('exportCsarButton')
     private exportCsarButtonRef: ElementRef;
+    
+    @ViewChild('enableLiveModelingModalTemplate')
+    private enableLiveModelingModalRef: TemplateRef<any>;
+
+    @ViewChild('disableLiveModelingModalTemplate')
+    private disableLiveModelingModalRef: TemplateRef<any>;
+
 
     navbarButtonsState: TopologyRendererState;
     unformattedTopologyTemplate;
@@ -61,6 +71,9 @@ export class NavbarComponent implements OnDestroy {
     matchingOngoing: boolean;
     placingOngoing: boolean;
     configEnum = FeatureEnum;
+    liveModelingState = LiveModelingStates;
+    containerUrl: string;
+    modalRef: BsModalRef;
 
     constructor(private alert: ToastrService,
                 private ngRedux: NgRedux<IWineryState>,
@@ -68,7 +81,9 @@ export class NavbarComponent implements OnDestroy {
                 private wineryActions: WineryActions,
                 private backendService: BackendService,
                 private statefulService: StatefulAnnotationsService,
-                private hotkeysService: HotkeysService) {
+                private hotkeysService: HotkeysService,
+                private liveModelingService: LiveModelingService,
+                private modalService: BsModalService,) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
@@ -84,6 +99,7 @@ export class NavbarComponent implements OnDestroy {
             return false; // Prevent bubbling
         }, undefined, 'Apply the layout directive to the Node Templates'));
         this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
+        this.containerUrl = 'http://' + window.location.hostname + ':1337';
     }
 
     /**
@@ -228,36 +244,45 @@ export class NavbarComponent implements OnDestroy {
                 this.ngRedux.dispatch(this.actions.placeComponents());
                 this.placingOngoing = true;
                 break;
+            case 'liveModeling':
+                if (this.navbarButtonsState.liveModelingState == LiveModelingStates.DISABLED) {
+                    this.modalRef = this.modalService.show(this.enableLiveModelingModalRef, { ignoreBackdropClick: true });
+                } else if (this.navbarButtonsState.liveModelingState == LiveModelingStates.ENABLED) {
+                    this.modalRef = this.modalService.show(this.disableLiveModelingModalRef, { ignoreBackdropClick: true });
+                }
+                break;
+            case 'liveModeling-redeployButton':
+                this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.REDEPLOY));
+                break;
+            case 'liveModeling-update':
+                this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.UPDATE));
+                break;
+            case 'liveModeling-test':
+                this.liveModelingService.test();
+                break;
         }
     }
+    
+    enableLiveModeling() {
+        this.liveModelingService.configureContainerUrl(this.containerUrl);
+        this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.START));
+        this.dismissModal();
+    }
 
+    disableLiveModeling() {
+        this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.TERMINATE));
+        this.dismissModal();
+    }
+
+    dismissModal() {
+        this.modalRef.hide();
+    }
+    
     /**
      * Calls the BackendService's saveTopologyTemplate method and displays a success message if successful.
      */
     saveTopologyTemplateToRepository() {
-        // Initialization
-        const topologySkeleton = {
-            documentation: [],
-            any: [],
-            otherAttributes: {},
-            relationshipTemplates: [],
-            nodeTemplates: []
-        };
-        // Prepare for saving by updating the existing topology with the current topology state inside the Redux store
-        topologySkeleton.nodeTemplates = this.unformattedTopologyTemplate.nodeTemplates;
-        topologySkeleton.relationshipTemplates = this.unformattedTopologyTemplate.relationshipTemplates;
-        topologySkeleton.relationshipTemplates.map(relationship => {
-            delete relationship.state;
-        });
-        // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
-        topologySkeleton.nodeTemplates.map(nodeTemplate => {
-            delete nodeTemplate.visuals;
-            delete nodeTemplate._state;
-        });
-        const topologyToBeSaved = topologySkeleton;
-        console.log(topologyToBeSaved);
-        // The topology gets saved here.
-        this.backendService.saveTopologyTemplate(topologyToBeSaved)
+        this.backendService.saveTopologyTemplate(this.unformattedTopologyTemplate)
             .subscribe(res => {
                 res.ok === true ? this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
                     + res.statusText + ' ' + res.status + '</p>')

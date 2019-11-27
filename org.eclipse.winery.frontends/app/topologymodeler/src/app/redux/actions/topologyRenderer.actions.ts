@@ -14,9 +14,14 @@
 
 import { Injectable } from '@angular/core';
 import { Action } from 'redux';
+import { LiveModelingStates } from '../../models/enums';
 
 export interface HighlightNodesAction extends Action {
     nodesToHighlight: string[];
+}
+
+export interface LiveModelingStateAction extends Action{
+    newState: LiveModelingStates;
 }
 
 /**
@@ -49,6 +54,7 @@ export class TopologyRendererActions {
     static DETERMINE_FREEZABLE_COMPONENTS = 'DETERMINE_FREEZABLE_COMPONENTS';
     static CLEAN_FREEZABLE_COMPONENTS = 'CLEAN_FREEZABLE_COMPONENTS';
     static PLACE_COMPONENTS = 'PLACE_COMPONENTS';
+    static SET_LIVE_MODELING_STATE = 'SET_LIVE_MODELING_STATE';
 
     togglePolicies(): Action {
         return { type: TopologyRendererActions.TOGGLE_POLICIES };
@@ -149,5 +155,9 @@ export class TopologyRendererActions {
 
     placeComponents(): Action {
         return { type: TopologyRendererActions.PLACE_COMPONENTS };
+    }
+
+    setLiveModelingState(newState: LiveModelingStates): LiveModelingStateAction {
+        return { type: TopologyRendererActions.SET_LIVE_MODELING_STATE, newState: newState};
     }
 }

@@ -51,3 +51,47 @@ export enum PropertyDefinitionType {
     KV = 'KV',
     XML = 'XML'
 }
+
+export enum LiveModelingStates {
+    DISABLED = 'DISABLED',
+    START = 'START',
+    TERMINATE = 'TERMINATE',
+    ENABLED = 'ENABLED',
+    REDEPLOY = 'REDEPLOY',
+    UPDATE = 'UPDATE',
+    ERROR = 'ERROR'
+}
+
+export enum PlanTypes {
+    BuildPlan = 'http://docs.oasis-open.org/tosca/ns/2011/12/PlanTypes/BuildPlan',
+    TerminationPlan = 'http://docs.oasis-open.org/tosca/ns/2011/12/PlanTypes/TerminationPlan',
+    ManagementPlan = 'http://docs.oasis-open.org/tosca/ns/2011/12/PlanTypes/ManagementPlan',
+    TransformationPlan = 'http://opentosca.org/plantypes/TransformationPlan'
+}
+
+export enum ServiceTemplateInstanceStates {
+    INITIAL = 'INITIAL',
+    CREATING = 'CREATING',
+    CREATED = 'CREATED',
+    DELETING = 'DELETING',
+    DELETED = 'DELETED',
+    ERROR = 'ERROR',
+    MIGRATING = 'MIGRATING',
+    MIGRATED = 'MIGRATED'
+}
+
+export enum NodeTemplateInstanceStates {
+    INITIAL = 'INITIAL',
+    CREATING = 'CREATING',
+    CREATED = 'CREATED',
+    CONFIGURING = 'CONFIGURING',
+    CONFIGURED = 'CONFIGURED',
+    STARTING = 'STARTING',
+    STARTED = 'STARTED',
+    STOPPING = 'STOPPING',
+    STOPPED = 'STOPPED',
+    DELETING = 'DELETING',
+    DELETED = 'DELETED',
+    ERROR = 'ERROR',
+    MIGRATED = 'MIGRATED',
+}
