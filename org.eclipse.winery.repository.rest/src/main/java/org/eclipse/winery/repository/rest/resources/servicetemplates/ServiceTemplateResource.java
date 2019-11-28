@@ -456,32 +456,72 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         // create list of responses because we create multiple resources at once
         List<Response> listOfResponses = new ArrayList<>();
 
+        Map<QName, TTags> newServiceTemplateIdsAndTags = new LinkedHashMap<>();
+
+        LOGGER.debug("Creating new participants version of Service Template {}...", this.getId());
+
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
+        WineryVersion version = VersionUtils.getVersion(id);
 
-        Splitting splitting = new Splitting();
-        Map<QName, TTags> newServiceTemplateIdsAndTags = splitting.getTagsForParticipantServiceTemplate(
-            this.getServiceTemplate().getTags(), id, this.getServiceTemplate().getTopologyTemplate().getNodeTemplates());
+        TTags tagsOfServiceTemplate = this.getServiceTemplate().getTags();
 
-        // iterate over participants version ids and add their respective tag list
-        for (Map.Entry<QName, TTags> resultEntry : newServiceTemplateIdsAndTags.entrySet()) {
-            // get id of service template version to get service template from repo
-            ServiceTemplateId tempId = new ServiceTemplateId(resultEntry.getKey());
-            TServiceTemplate tempServiceTempl = repo.getElement(tempId);
+        // iterate over tags of origin service template
+        for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
+            // check if tag with partner in service template
+            if (tagOfServiceTemplate.getName().contains("partner")) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
+                WineryVersion newVersion = new WineryVersion(
+                    tagOfServiceTemplate.getName() + "-" + version.toString() + "-" + dateFormat.format(new Date()),
+                    1,
+                    0
+                );
+                // create list of tags to add to service tempalte
+                TTags tTagList = new TTags();
 
-            // reset tags and set tags with respective entry
-            tempServiceTempl.setTags(null);
-            tempServiceTempl.setTags(resultEntry.getValue());
+                // new tag to define participant of service template
+                TTag participantTag = new TTag();
+                participantTag.setName("participant");
+                participantTag.setValue(tagOfServiceTemplate.getName());
+                tTagList.getTag().add(participantTag);
 
-            ResourceResult response = RestUtils.duplicate(id, tempId);
+                String choreoValue = "";
+                // iterate over node templates and check if their target location == current participant
+                for (TNodeTemplate tNodeTemplate : this.getServiceTemplate().getTopologyTemplate().getNodeTemplates()) {
+                    for (Map.Entry<QName, String> entry : tNodeTemplate.getOtherAttributes().entrySet()) {
+                        if (entry.getValue().equals(tagOfServiceTemplate.getName())) {
+                            // add to choregraphy value
+                            choreoValue += tNodeTemplate.getId() + ",";
+                        }
+                    }
+                }
+                choreoValue = choreoValue.substring(0, choreoValue.length() - 1);
+                TTag choreoTag = new TTag();
+                choreoTag.setName("choreography");
+                choreoTag.setValue(choreoValue);
+                tTagList.getTag().add(choreoTag);
 
-            if (response.getStatus() == Status.CREATED) {
-                response.setUri(null);
-                response.setMessage(new QNameApiData(tempId));
+                ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
+                    VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
+                    false);
+
+                ResourceResult response = RestUtils.duplicate(id, newId);
+
+                if (response.getStatus() == Status.CREATED) {
+                    response.setUri(null);
+                    response.setMessage(new QNameApiData(newId));
+                }
+
+                TServiceTemplate tempServiceTempl = repo.getElement(newId);
+                // reset tags and set tags with respective entry
+                tempServiceTempl.setTags(null);
+                tempServiceTempl.setTags(tTagList);
+
+                listOfResponses.add(response.getResponse());
+                // set element to propagate changed tags
+                repo.setElement(newId, tempServiceTempl);
+
+                newServiceTemplateIdsAndTags.put(newId.getQName(), tTagList);
             }
-
-            listOfResponses.add(response.getResponse());
-            // set element to propagate changed tags
-            repo.setElement(tempId, tempServiceTempl);
         }
         return listOfResponses;
     }

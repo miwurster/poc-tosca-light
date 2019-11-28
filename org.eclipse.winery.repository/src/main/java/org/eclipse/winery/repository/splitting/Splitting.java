@@ -250,53 +250,6 @@ public class Splitting {
         return placeholderNodeTemplate;
     }
 
-    public Map<QName, TTags> getTagsForParticipantServiceTemplate(TTags tagsOfServiceTemplate, ServiceTemplateId id, List<TNodeTemplate> nodeTemplates) {
-        Map<QName, TTags> serviceTemplateIdAndTags = new LinkedHashMap<>();
-        WineryVersion version = VersionUtils.getVersion(id);
-        // iterate over tags of origin service template
-        for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
-            // check if tag with partner in service template
-            if (tagOfServiceTemplate.getName().contains("partner")) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
-                WineryVersion newVersion = new WineryVersion(
-                    tagOfServiceTemplate.getName() + "_" + version.toString() + "-" + dateFormat.format(new Date()),
-                    1,
-                    0
-                );
-                // create list of tags to add to service tempalte
-                TTags tTagList = new TTags();
-
-                // new tag to define participant of service template
-                TTag participantTag = new TTag();
-                participantTag.setName("participant");
-                participantTag.setValue(tagOfServiceTemplate.getName());
-                tTagList.getTag().add(participantTag);
-
-                String choreoValue = "";
-                // iterate over node templates and check if their target location == current participant
-                for (TNodeTemplate tNodeTemplate : nodeTemplates) {
-                    for (Map.Entry<QName, String> entry : tNodeTemplate.getOtherAttributes().entrySet()) {
-                        if (entry.getValue().equals(tagOfServiceTemplate.getName())) {
-                            // add to choregraphy value
-                            choreoValue += tNodeTemplate.getId() + ",";
-                        }
-                    }
-                }
-                TTag choreoTag = new TTag();
-                choreoTag.setName("choreography");
-                choreoTag.setValue(choreoValue);
-                tTagList.getTag().add(choreoTag);
-
-                ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
-                    VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
-                    false);
-
-                serviceTemplateIdAndTags.put(newId.getQName(), tTagList);
-            }
-        }
-        return serviceTemplateIdAndTags;
-    }
-
     public List<TParameter> getInputParamListofIncomingRelationshipTemplates(TTopologyTemplate topologyTemplate, List<TRelationshipTemplate> listOfIncomingRelationshipTemplates) {
         List<TParameter> listOfInputs = new ArrayList<>();
         IRepository repo = RepositoryFactory.getRepository();
