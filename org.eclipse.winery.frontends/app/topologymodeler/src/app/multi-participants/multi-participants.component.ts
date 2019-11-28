@@ -53,9 +53,9 @@ export class MultiParticipantsComponent implements OnInit {
                     this.multiParticipantsService.postPlaceholders(response.localname).subscribe(
                         response => {
                             this.multiParticipantsService.postParticipantsVersion(response.localname, response.namespace).subscribe(
-                                response => {
+                                resps => {
                                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                    for (const resp of response) {
+                                    for (const resp of resps) {
                                         const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                                             + '&uiURL=' + encodeURIComponent(backendBaseURL)
                                             + '&ns=' + resp.entity.namespace
@@ -74,16 +74,16 @@ export class MultiParticipantsComponent implements OnInit {
                                 response => {
                                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
                                     for (const resp of response) {
-                                        const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
+                                        const editorConf = '?repositoryURL=' + this.configuration.repositoryURL
                                             + '&uiURL=' + encodeURIComponent(backendBaseURL)
                                             + '&ns=' + resp.entity.namespace
                                             + '&id=' + resp.entity.localname;
-                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
+                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConf);
                                     }
 
                                 },
-                                error => {
-                                    console.log(error);
+                                er => {
+                                    console.log(er);
                                 }
                             );
                         },

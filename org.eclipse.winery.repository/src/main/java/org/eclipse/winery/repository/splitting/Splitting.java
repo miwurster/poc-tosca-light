@@ -259,6 +259,7 @@ public class Splitting {
             if (!incomingNodeTypeInterfaces.getInterface().isEmpty()) {
                 List<TInterface> connectionInterfaces = incomingNodeTypeInterfaces.getInterface().stream().filter(tInterface -> tInterface.getIdFromIdOrNameField().contains("connection")).collect(Collectors.toList());
                 if (connectionInterfaces.size() > 1) {
+                    TNodeTemplate targetNodeTemplate = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, incomingRelationshipTemplate);
                     
                 }
                 for (TInterface tInterface : incomingNodeTypeInterfaces.getInterface()) {
