@@ -56,11 +56,11 @@ export class MultiParticipantsComponent implements OnInit {
                                 resps => {
                                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
                                     for (const resp of resps) {
-                                        const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
+                                        const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
                                             + '&uiURL=' + encodeURIComponent(backendBaseURL)
                                             + '&ns=' + resp.entity.namespace
                                             + '&id=' + resp.entity.localname;
-                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
+                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfiguration);
                                     }
                                 },
                                 error => {
@@ -71,9 +71,9 @@ export class MultiParticipantsComponent implements OnInit {
                         error => {
                             // TODO: fix error when returning entities
                             this.multiParticipantsService.postParticipantsVersion(error.error.text).subscribe(
-                                response => {
+                                responses => {
                                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                    for (const resp of response) {
+                                    for (const resp of responses) {
                                         const editorConf = '?repositoryURL=' + this.configuration.repositoryURL
                                             + '&uiURL=' + encodeURIComponent(backendBaseURL)
                                             + '&ns=' + resp.entity.namespace

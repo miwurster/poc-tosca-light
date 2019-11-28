@@ -255,12 +255,15 @@ public class Splitting {
             TInterfaces incomingNodeTypeInterfaces = incomingNodeType.getInterfaces();
             RelationshipTypeId incomingRelationshipTypeId = new RelationshipTypeId(incomingRelationshipTemplate.getType());
             TRelationshipType incomingRelationshipType = repo.getElement(incomingRelationshipTypeId);
+            TInterface relevantInterface = new TInterface();
 
             if (!incomingNodeTypeInterfaces.getInterface().isEmpty()) {
                 List<TInterface> connectionInterfaces = incomingNodeTypeInterfaces.getInterface().stream().filter(tInterface -> tInterface.getIdFromIdOrNameField().contains("connection")).collect(Collectors.toList());
                 if (connectionInterfaces.size() > 1) {
                     TNodeTemplate targetNodeTemplate = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, incomingRelationshipTemplate);
-                    
+                    for (TInterface tInterface : connectionInterfaces) {
+                        
+                    }
                 }
                 for (TInterface tInterface : incomingNodeTypeInterfaces.getInterface()) {
                     for (TOperation tOperation : tInterface.getOperation()) {
