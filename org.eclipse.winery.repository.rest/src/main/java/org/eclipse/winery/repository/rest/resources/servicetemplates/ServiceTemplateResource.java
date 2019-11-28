@@ -273,25 +273,44 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 TNodeType sourceNodeType = repo.getElement(id);
 
                 TInterfaces sourceNodeTypeInterfaces = sourceNodeType.getInterfaces();
-                for (TInterface tInterface : sourceNodeTypeInterfaces.getInterface()) {
-                    // TODO: make this more safe
-                    for (TOperation tOperation : tInterface.getOperation()) {
-                        TOperation.InputParameters inputParameters = tOperation.getInputParameters();
-                        for (TParameter inputParameter : inputParameters.getInputParameter()) {
-                            PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
-                            if (!sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV) && !propertyDefinitionKVList.getPropertyDefinitionKVs().contains(inputParamKV)) {
-                                propertyDefinitionKVList.getPropertyDefinitionKVs().add(inputParamKV);
-                                placeholderNodeTemplateProperties.put(inputParameter.getName(), "get_input: " + inputParameter.getName());
+                if (sourceNodeTypeInterfaces != null) {
+                    for (TInterface tInterface : sourceNodeTypeInterfaces.getInterface()) {
+                        // TODO: make this more safe
+                        for (TOperation tOperation : tInterface.getOperation()) {
+                            TOperation.InputParameters inputParameters = tOperation.getInputParameters();
+                            if (inputParameters != null) {
+                                for (TParameter inputParameter : inputParameters.getInputParameter()) {
+                                    PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
+                                    if (sourceNodeType.getWinerysPropertiesDefinition() != null &&
+                                        !sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV)
+                                        && !propertyDefinitionKVList.getPropertyDefinitionKVs().contains(inputParamKV)) {
+                                        propertyDefinitionKVList.getPropertyDefinitionKVs().add(inputParamKV);
+                                        placeholderNodeTemplateProperties.put(inputParameter.getName(), "get_input: " + inputParameter.getName());
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                
 
                 List<TRelationshipTemplate> incomingRelationshipTemplates = ModelUtilities.getIncomingRelationshipTemplates(topologyTemplate, nodeTemplateWithOpenReq);
                 List<TParameter> inputParameters = splitting.getInputParamListofIncomingRelationshipTemplates(topologyTemplate, incomingRelationshipTemplates);
                 for (TParameter inputParameter : inputParameters) {
+                    String prefixTARGET = "TARGET_";
+                    String prefixSOURCE = "SOURCE_";
+                    String inputParamName = inputParameter.getName();
+                    if (inputParamName.contains(prefixTARGET)) {
+                        inputParamName = inputParamName.replaceAll(prefixTARGET, "");
+                    }
+                    if (inputParamName.contains(prefixSOURCE)) {
+                        inputParamName = inputParamName.replaceAll(prefixSOURCE, "");
+                    }
+                    inputParameter.setName(inputParamName);
+                    
                     PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
-                    if (!sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV)
+                    if (sourceNodeType.getWinerysPropertiesDefinition() != null &&
+                        !sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV)
                         && !propertyDefinitionKVList.getPropertyDefinitionKVs().contains(inputParamKV)) {
                         propertyDefinitionKVList.getPropertyDefinitionKVs().add(inputParamKV);
                         placeholderNodeTemplateProperties.put(inputParameter.getName(), "get_input: " + inputParameter.getName());
@@ -306,15 +325,18 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 QName placeholderQName = new QName(placeholderNodeType.getTargetNamespace(), placeholderNodeType.getName());
 
                 WinerysPropertiesDefinition winerysPropertiesDefinition = sourceNodeType.getWinerysPropertiesDefinition();
-                winerysPropertiesDefinition.setPropertyDefinitionKVList(propertyDefinitionKVList);
                 // add properties definition
                 placeholderNodeType.setPropertiesDefinition(null);
-                ModelUtilities.replaceWinerysPropertiesDefinition(placeholderNodeType, winerysPropertiesDefinition);
-                String namespace = placeholderNodeType.getWinerysPropertiesDefinition().getNamespace();
-                NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
-                if (!namespaceManager.hasPermanentProperties(namespace)) {
-                    namespaceManager.addPermanentNamespace(namespace);
+                if (winerysPropertiesDefinition != null) {
+                    winerysPropertiesDefinition.setPropertyDefinitionKVList(propertyDefinitionKVList);
+                    ModelUtilities.replaceWinerysPropertiesDefinition(placeholderNodeType, winerysPropertiesDefinition);
+                    String namespace = placeholderNodeType.getWinerysPropertiesDefinition().getNamespace();
+                    NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
+                    if (!namespaceManager.hasPermanentProperties(namespace)) {
+                        namespaceManager.addPermanentNamespace(namespace);
+                    }
                 }
+                
                 NodeTypeId placeholderId = new NodeTypeId(placeholderQName);
                 // check if placeholder node type exists
                 if (repo.exists(placeholderId)) {

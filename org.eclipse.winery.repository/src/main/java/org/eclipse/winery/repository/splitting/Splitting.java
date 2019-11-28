@@ -261,14 +261,19 @@ public class Splitting {
             RelationshipTypeId incomingRelationshipTypeId = new RelationshipTypeId(incomingRelationshipTemplate.getType());
             TRelationshipType incomingRelationshipType = repo.getElement(incomingRelationshipTypeId);
 
-            for (TInterface tInterface : incomingNodeTypeInterfaces.getInterface()) {
-                for (TOperation tOperation : tInterface.getOperation()) {
-                    TOperation.InputParameters inputParameters = tOperation.getInputParameters();
-                    for (TParameter param : inputParameters.getInputParameter()) {
-                        listOfInputs.add(param);
+            if(!incomingNodeTypeInterfaces.getInterface().isEmpty()) {
+                for (TInterface tInterface : incomingNodeTypeInterfaces.getInterface()) {
+                    for (TOperation tOperation : tInterface.getOperation()) {
+                        TOperation.InputParameters inputParameters = tOperation.getInputParameters();
+                        if (inputParameters != null) {
+                            for (TParameter param : inputParameters.getInputParameter()) {
+                                listOfInputs.add(param);
+                            }
+                        }
                     }
                 }
             }
+            
         }
         return listOfInputs;
     }
