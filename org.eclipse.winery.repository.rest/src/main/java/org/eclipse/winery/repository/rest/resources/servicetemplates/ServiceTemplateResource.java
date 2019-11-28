@@ -292,7 +292,6 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                         }
                     }
                 }
-                
 
                 List<TRelationshipTemplate> incomingRelationshipTemplates = ModelUtilities.getIncomingRelationshipTemplates(topologyTemplate, nodeTemplateWithOpenReq);
                 List<TParameter> inputParameters = splitting.getInputParamListofIncomingRelationshipTemplates(topologyTemplate, incomingRelationshipTemplates);
@@ -307,7 +306,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                         inputParamName = inputParamName.replaceAll(prefixSOURCE, "");
                     }
                     inputParameter.setName(inputParamName);
-                    
+
                     PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
                     if (sourceNodeType.getWinerysPropertiesDefinition() != null &&
                         !sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV)
@@ -336,7 +335,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                         namespaceManager.addPermanentNamespace(namespace);
                     }
                 }
-                
+
                 NodeTypeId placeholderId = new NodeTypeId(placeholderQName);
                 // check if placeholder node type exists
                 if (repo.exists(placeholderId)) {
