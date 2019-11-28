@@ -43,6 +43,7 @@ export class TopologyRendererActions {
     static REFINE_TOPOLOGY = 'REFINE_TOPOLOGY';
     static REFINE_TOPOLOGY_WITH_TESTS = 'REFINE_TOPOLOGY_WITH_TESTS';
     static GENERATE_PLACEHOLDER = 'GENERATE_PLACEHOLDER';
+    static GENERATE_PLACEHOLDER_SUBS = 'GENERATE_PLACEHOLDER_SUBS';
     static HIGHLIGHT_NODES = 'HIGHLIGHT_NODES';
     static DETECT_PROBLEMS = 'DETECT_PROBLEMS';
     static ENRICH_NODE_TEMPLATES = 'ENRICH_NODE_TEMPLATES';
@@ -125,6 +126,10 @@ export class TopologyRendererActions {
 
     generatePlaceholder(): Action {
         return { type: TopologyRendererActions.GENERATE_PLACEHOLDER };
+    }
+    
+    generatePlaceholderSubs(): Action {
+        return { type: TopologyRendererActions.GENERATE_PLACEHOLDER_SUBS };
     }
 
     addTestRefinements(): Action {
