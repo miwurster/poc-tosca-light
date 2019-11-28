@@ -15,9 +15,7 @@
 package org.eclipse.winery.repository.splitting;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -39,7 +37,6 @@ import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.version.VersionUtils;
-import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TCapabilityType;
 import org.eclipse.winery.model.tosca.TInterface;
@@ -53,8 +50,6 @@ import org.eclipse.winery.model.tosca.TRelationshipType;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementType;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
-import org.eclipse.winery.model.tosca.TTag;
-import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
@@ -260,12 +255,29 @@ public class Splitting {
             TInterfaces incomingNodeTypeInterfaces = incomingNodeType.getInterfaces();
             RelationshipTypeId incomingRelationshipTypeId = new RelationshipTypeId(incomingRelationshipTemplate.getType());
             TRelationshipType incomingRelationshipType = repo.getElement(incomingRelationshipTypeId);
+            TInterface relevantInterface = new TInterface();
 
-            for (TInterface tInterface : incomingNodeTypeInterfaces.getInterface()) {
-                for (TOperation tOperation : tInterface.getOperation()) {
+            if (!incomingNodeTypeInterfaces.getInterface().isEmpty()) {
+                List<TInterface> connectionInterfaces = incomingNodeTypeInterfaces.getInterface().stream().filter(tInterface -> tInterface.getIdFromIdOrNameField().contains("connection")).collect(Collectors.toList());
+                if (connectionInterfaces.size() > 1) {
+                    TNodeTemplate targetNodeTemplate = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, incomingRelationshipTemplate);
+                    for (TInterface tInterface : connectionInterfaces) {
+                        int separator = tInterface.getIdFromIdOrNameField().lastIndexOf("/");
+                        String prefixRelation = tInterface.getIdFromIdOrNameField().substring(separator + 1);
+                        if (targetNodeTemplate.getName().toLowerCase().contains(prefixRelation.toLowerCase())) {
+                            relevantInterface = tInterface;
+                        }
+                    }
+                } else {
+                    relevantInterface = connectionInterfaces.get(0);
+                }
+
+                for (TOperation tOperation : relevantInterface.getOperation()) {
                     TOperation.InputParameters inputParameters = tOperation.getInputParameters();
-                    for (TParameter param : inputParameters.getInputParameter()) {
-                        listOfInputs.add(param);
+                    if (inputParameters != null) {
+                        for (TParameter param : inputParameters.getInputParameter()) {
+                            listOfInputs.add(param);
+                        }
                     }
                 }
             }

@@ -217,8 +217,8 @@ export const TopologyRendererReducer =
                     buttonsState: {
                         ...lastState.buttonsState,
                         enrichmentButton: !lastState.buttonsState.enrichmentButton
-                }
-            };
+                    }
+                };
             case TopologyRendererActions.SUBSTITUTE_TOPOLOGY:
                 return {
                     ...lastState,

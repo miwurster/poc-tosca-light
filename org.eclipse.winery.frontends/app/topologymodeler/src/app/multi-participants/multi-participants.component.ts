@@ -55,44 +55,41 @@ export class MultiParticipantsComponent implements OnInit {
                     this.multiParticipantsService.postPlaceholders(response.localname).subscribe(
                         response => {
                             this.multiParticipantsService.postParticipantsVersion(response.localname, response.namespace).subscribe(
-                                response => {
+                                resps => {
                                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                    this.alert.success("Successfully created placeholder version");
-                                    for (const resp of response) {
-                                        const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
+                                    for (const resp of resps) {
+                                        const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
                                             + '&uiURL=' + encodeURIComponent(backendBaseURL)
                                             + '&ns=' + resp.entity.namespace
                                             + '&id=' + resp.entity.localname;
-                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
-                                        this.alert.success("Successfully created placeholder version for partner");
+                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfiguration);
                                     }
                                 },
                                 error => {
                                     this.errorHandlerService.handleError(error);
                                 }
-                            )
+                            );
                         },
                         error => {
                             console.log(error);
                             // TODO: fix error when returning entities
                             this.multiParticipantsService.postParticipantsVersion(error.error.text).subscribe(
-                                response => {
+                                responses => {
                                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                    for (const resp of response) {
-                                        const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
+                                    for (const resp of responses) {
+                                        const editorConf = '?repositoryURL=' + this.configuration.repositoryURL
                                             + '&uiURL=' + encodeURIComponent(backendBaseURL)
                                             + '&ns=' + resp.entity.namespace
                                             + '&id=' + resp.entity.localname;
-                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
+                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConf);
                                         this.alert.success("Successfully created placeholder version for partner");
                                     }
-
                                 },
                                 error => {
                                     this.errorHandlerService.handleError(error);
                                 }
-                            )
-                        },
+                            );
+                        }
                     );
                 },
                 error => {
