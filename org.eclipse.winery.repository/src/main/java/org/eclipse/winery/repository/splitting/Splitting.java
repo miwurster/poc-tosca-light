@@ -257,6 +257,10 @@ public class Splitting {
             TRelationshipType incomingRelationshipType = repo.getElement(incomingRelationshipTypeId);
 
             if (!incomingNodeTypeInterfaces.getInterface().isEmpty()) {
+                List<TInterface> connectionInterfaces = incomingNodeTypeInterfaces.getInterface().stream().filter(tInterface -> tInterface.getIdFromIdOrNameField().contains("connection")).collect(Collectors.toList());
+                if (connectionInterfaces.size() > 1) {
+                    
+                }
                 for (TInterface tInterface : incomingNodeTypeInterfaces.getInterface()) {
                     for (TOperation tOperation : tInterface.getOperation()) {
                         TOperation.InputParameters inputParameters = tOperation.getInputParameters();

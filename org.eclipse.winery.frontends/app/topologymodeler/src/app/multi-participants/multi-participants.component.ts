@@ -66,7 +66,7 @@ export class MultiParticipantsComponent implements OnInit {
                                 error => {
                                     console.log(error);
                                 }
-                            )
+                            );
                         },
                         error => {
                             // TODO: fix error when returning entities
@@ -85,7 +85,7 @@ export class MultiParticipantsComponent implements OnInit {
                                 error => {
                                     console.log(error);
                                 }
-                            )
+                            );
                         },
                     );
                 },
