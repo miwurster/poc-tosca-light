@@ -262,19 +262,26 @@ public class Splitting {
                 if (connectionInterfaces.size() > 1) {
                     TNodeTemplate targetNodeTemplate = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, incomingRelationshipTemplate);
                     for (TInterface tInterface : connectionInterfaces) {
-                        
+                        int separator = tInterface.getIdFromIdOrNameField().lastIndexOf("/");
+                       String prefixRelation =  tInterface.getIdFromIdOrNameField().substring(separator+1);
+                       if (targetNodeTemplate.getName().toLowerCase().contains(prefixRelation.toLowerCase())) {
+                           relevantInterface = tInterface;
+                       }
                     }
+                } else {
+                    relevantInterface = connectionInterfaces.get(0);
                 }
-                for (TInterface tInterface : incomingNodeTypeInterfaces.getInterface()) {
-                    for (TOperation tOperation : tInterface.getOperation()) {
-                        TOperation.InputParameters inputParameters = tOperation.getInputParameters();
-                        if (inputParameters != null) {
-                            for (TParameter param : inputParameters.getInputParameter()) {
-                                listOfInputs.add(param);
-                            }
+
+                for (TOperation tOperation : relevantInterface.getOperation()) {
+                    TOperation.InputParameters inputParameters = tOperation.getInputParameters();
+                    if (inputParameters != null) {
+                        for (TParameter param : inputParameters.getInputParameter()) {
+                            listOfInputs.add(param);
                         }
                     }
                 }
+                    
+                
             }
         }
         return listOfInputs;
