@@ -237,10 +237,26 @@ public class Splitting {
         return placeholderNodeType;
     }
 
-    public TNodeTemplate createPlaceholderNodeTemplate(String nameOfNodeTemplateGettingPlaceholder, QName placeholderQName) {
+    public TNodeTemplate createPlaceholderNodeTemplate(TTopologyTemplate topologyTemplate, String nameOfNodeTemplateGettingPlaceholder, QName placeholderQName) {
         TNodeTemplate placeholderNodeTemplate = new TNodeTemplate();
-        placeholderNodeTemplate.setId(nameOfNodeTemplateGettingPlaceholder + "_placeholder" + UUID.randomUUID().toString());
-        placeholderNodeTemplate.setName(nameOfNodeTemplateGettingPlaceholder + "_placeholder");
+        String id;
+        List<String> ids = new ArrayList<>();
+        for (TNodeTemplate nt : topologyTemplate.getNodeTemplates()) {
+            ids.add(nt.getId());
+        }
+        boolean uniqueID = false;
+        id = nameOfNodeTemplateGettingPlaceholder + "_placeholder";
+        while (!uniqueID) {
+            if (!ids.contains(id + IdCounter)) {
+                id = id + IdCounter;
+                IdCounter++;
+                uniqueID = true;
+            } else {
+                IdCounter++;
+            }
+        }
+        placeholderNodeTemplate.setId(id);
+        placeholderNodeTemplate.setName(id);
         placeholderNodeTemplate.setType(placeholderQName);
 
         return placeholderNodeTemplate;
@@ -292,7 +308,7 @@ public class Splitting {
         String id;
         List<String> ids = new ArrayList<>();
         for (TNodeTemplate nt : topologyTemplate.getNodeTemplates()) {
-            if(nt.getCapabilities() != null) {
+            if (nt.getCapabilities() != null) {
                 nt.getCapabilities().getCapability().stream().forEach(cap -> ids.add(cap.getId()));
             }
         }
