@@ -10,6 +10,7 @@ import { WineryRepositoryConfigurationService } from '../../../../tosca-manageme
 import { backendBaseURL } from '../../../../tosca-management/src/app/configuration';
 import { TopologyModelerConfiguration } from '../models/topologyModelerConfiguration';
 import { BackendService } from '../services/backend.service';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
     selector: 'winery-multi-participants',
@@ -26,6 +27,7 @@ export class MultiParticipantsComponent implements OnInit {
                 private actions: TopologyRendererActions,
                 private wineryActions: WineryActions,
                 private alert: ToastrService,
+                private errorHandlerService: ErrorHandlerService,
                 private multiParticipantsService: MultiParticipantsService,
                 private wineryConfigurationService: WineryRepositoryConfigurationService,
                 private backendService: BackendService) {
@@ -64,11 +66,12 @@ export class MultiParticipantsComponent implements OnInit {
                                     }
                                 },
                                 error => {
-                                    console.log(error);
+                                    this.errorHandlerService.handleError(error);
                                 }
                             );
                         },
                         error => {
+                            console.log(error);
                             // TODO: fix error when returning entities
                             this.multiParticipantsService.postParticipantsVersion(error.error.text).subscribe(
                                 responses => {
@@ -79,20 +82,35 @@ export class MultiParticipantsComponent implements OnInit {
                                             + '&ns=' + resp.entity.namespace
                                             + '&id=' + resp.entity.localname;
                                         window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConf);
+                                        this.alert.success("Successfully created placeholder version for partner");
                                     }
-
                                 },
-                                er => {
-                                    console.log(er);
+                                error => {
+                                    this.errorHandlerService.handleError(error);
                                 }
                             );
-                        },
+                        }
                     );
                 },
                 error => {
-                    console.log(error);
+                    this.errorHandlerService.handleError(error);
                 }
             );
+        } else if (currentButtonsState.buttonsState.generatePlaceholderSubs) {
+            this.multiParticipantsService.postSubstituteVersion().subscribe(
+                data => {
+                    console.log(data);
+                    const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
+                        + '&uiURL=' + encodeURIComponent(backendBaseURL)
+                        + '&ns=' + data.namespace
+                        + '&id=' + data.localname;
+                    window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
+                    this.alert.success("Successfully substituted placeholder for topology");
+                },
+                error => {
+                    this.errorHandlerService.handleError(error);
+                }
+            )
         }
     }
 

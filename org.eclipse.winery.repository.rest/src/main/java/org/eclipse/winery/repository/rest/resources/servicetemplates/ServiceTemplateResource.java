@@ -36,7 +36,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
@@ -96,7 +95,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 public class ServiceTemplateResource extends AbstractComponentInstanceResourceContainingATopology implements IHasName {
 
@@ -379,7 +377,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
     @Produces( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
     public Response injectNodeTemplates(InjectorReplaceData injectorReplaceData, @Context UriInfo uriInfo) throws
-        Exception, IOException, ParserConfigurationException, SAXException, SplittingException {
+        Exception {
 
         if (injectorReplaceData.hostInjections != null) {
             Collection<TTopologyTemplate> hostInjectorTopologyTemplates = injectorReplaceData.hostInjections.values();
@@ -469,6 +467,117 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         return substitution.substituteTopologyOfServiceTemplate((ServiceTemplateId) this.id);
     }
 
+    @Path("placeholdersubstitution")
+    @POST()
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response createPlaceholderSubstituteVersion() throws IOException, SplittingException {
+        TTopologyTemplate originTopologyTemplate = this.getServiceTemplate().getTopologyTemplate();
+        TTags tagsOfServiceTemplate = this.getServiceTemplate().getTags();
+        Map<String, TNodeTemplate> nodeTemplateIdAndPlaceholderMap = new LinkedHashMap<>();
+
+        String participantId = "";
+        for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
+            if (tagOfServiceTemplate.getName().equals("participant")) {
+                participantId = tagOfServiceTemplate.getValue();
+            }
+        }
+        final String finalParticipantId = participantId;
+
+        List<TNodeTemplate> nodeTemplatesToBeRemoved = new ArrayList<>();
+
+        for (TNodeTemplate tNodeTemplate : originTopologyTemplate.getNodeTemplates()) {
+            if (ModelUtilities.getTargetLabel(tNodeTemplate).isPresent()) {
+                if (tNodeTemplate.getTypeAsQName().getNamespaceURI().equals("http://www.example.org/tosca/placeholdertypes")
+                    && ModelUtilities.getTargetLabel(tNodeTemplate).get().equals(finalParticipantId.toLowerCase())) {
+                    nodeTemplatesToBeRemoved.add(tNodeTemplate);
+                    for (TRelationshipTemplate tRelationshipTemplate : ModelUtilities.getIncomingRelationshipTemplates(originTopologyTemplate, tNodeTemplate)) {
+                        nodeTemplateIdAndPlaceholderMap.put(ModelUtilities.getSourceNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate).getId(), tNodeTemplate);
+                    }
+                }
+            }
+        }
+
+        List<TRelationshipTemplate> relationshipTemplatesToBeRemoved = new ArrayList<>();
+
+        for (TRelationshipTemplate tRelationshipTemplate : originTopologyTemplate.getRelationshipTemplates()) {
+            if (ModelUtilities.getTargetLabel(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate)).isPresent()) {
+                if (tRelationshipTemplate.getTargetElement().getRef().getTypeAsQName().getNamespaceURI().equals("http://www.example.org/tosca/placeholdertypes")
+                    && ModelUtilities.getTargetLabel(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate)).get().equals(finalParticipantId.toLowerCase())) {
+                    relationshipTemplatesToBeRemoved.add(tRelationshipTemplate);
+                }
+            }
+        }
+
+        for (TNodeTemplate nodeTemplateToBeRemoved : nodeTemplatesToBeRemoved) {
+            originTopologyTemplate.getNodeTemplateOrRelationshipTemplate().remove(nodeTemplateToBeRemoved);
+        }
+
+        for (TRelationshipTemplate relationshipTemplateToBeRemoved : relationshipTemplatesToBeRemoved) {
+            originTopologyTemplate.getNodeTemplateOrRelationshipTemplate().remove(relationshipTemplateToBeRemoved);
+        }
+        ServiceTemplateId id = (ServiceTemplateId) this.getId();
+        WineryVersion version = VersionUtils.getVersion(id);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
+        WineryVersion newVersion = new WineryVersion(
+            version.toString() + "-" + dateFormat.format(new Date()),
+            1,
+            0
+        );
+
+        ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
+            VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
+            false);
+
+        ResourceResult response = RestUtils.duplicate(id, newId);
+
+        IRepository repo = RepositoryFactory.getRepository();
+        TServiceTemplate newServiceTemplate = repo.getElement(newId);
+        newServiceTemplate.setTopologyTemplate(originTopologyTemplate);
+
+        Splitting splitting = new Splitting();
+
+        Map<String, List<TTopologyTemplate>> resultList = splitting.getHostingInjectionOptions(newServiceTemplate.getTopologyTemplate());
+        for (Map.Entry<String, List<TTopologyTemplate>> entry : resultList.entrySet()) {
+            List<TTopologyTemplate> toBeRemovedTopologyTemplates = new ArrayList<>();
+            for (TTopologyTemplate tTopologyTemplate : entry.getValue()) {
+                LinkedHashMap<String, String> substitutionProperties = new LinkedHashMap<>();
+                for (TNodeTemplate tNodeTemplate : tTopologyTemplate.getNodeTemplates()) {
+                    for (Map.Entry<String, String> prop : tNodeTemplate.getProperties().getKVProperties().entrySet()) {
+                        substitutionProperties.put(prop.getKey(), prop.getValue());
+                    }
+                }
+                /*for (Map.Entry<String, TNodeTemplate> nodeTemplateAndItsPlaceholder : nodeTemplateIdAndPlaceholderMap.entrySet()) {
+                    if (nodeTemplateAndItsPlaceholder.getKey().equals(entry.getKey())) {
+                        for (Map.Entry<String, String> propOfPlaceholder : nodeTemplateAndItsPlaceholder.getValue().getProperties().getKVProperties().entrySet()) {
+                            if (!substitutionProperties.containsKey(propOfPlaceholder.getKey())) {
+                                // remove topology template from valid candidate set if it doesn't contain all properties we need
+                                toBeRemovedTopologyTemplates.add(tTopologyTemplate);
+                            }
+                        }
+                    }
+                }*/
+            }
+            if (!toBeRemovedTopologyTemplates.isEmpty()) {
+                entry.getValue().removeAll(toBeRemovedTopologyTemplates);
+            }
+            if (!resultList.get(entry.getKey()).isEmpty()) {
+                Map<String, TTopologyTemplate> choiceTopologyTemplate = new LinkedHashMap<>();
+                choiceTopologyTemplate.put(entry.getKey(), entry.getValue().get(0));
+                splitting.injectNodeTemplates(originTopologyTemplate, choiceTopologyTemplate, InjectRemoval.REMOVE_NOTHING);
+            }
+        }
+
+        repo.setElement(newId, newServiceTemplate);
+
+        if (response.getStatus() == Status.CREATED) {
+            response.setUri(null);
+            response.setMessage(new QNameApiData(newId));
+        }
+
+        return response.getResponse();
+    }
+
     @POST()
     @Path("createparticipantsversion")
     @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -497,7 +606,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                     0
                 );
                 // create list of tags to add to service tempalte
-                TTags tTagList = new TTags();
+                TTags tTagList = tagsOfServiceTemplate;
 
                 // new tag to define participant of service template
                 TTag participantTag = new TTag();

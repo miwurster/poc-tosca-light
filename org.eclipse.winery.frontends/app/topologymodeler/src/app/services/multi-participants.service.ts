@@ -45,6 +45,20 @@ export class MultiParticipantsService {
             { headers: this.httpHeaders, observe: 'response', responseType: 'json' }
         );
     }
+    
+    postSubstituteVersion(): Observable<any> {
+        const url = this.configuration.repositoryURL
+            + '/servicetemplates/'
+            + encodeURIComponent(encodeURIComponent(this.configuration.ns))
+            + '/'
+            + encodeURIComponent(this.configuration.id)
+            + '/placeholdersubstitution';
+        console.log(url);
+        return this.httpClient.post(
+            url,
+            { headers: this.httpHeaders, observe: 'response', responseType: 'json' }
+        );
+    }
 
     postPlaceholders(serviceTemplateId: string): Observable<any> {
         const url = this.configuration.repositoryURL
