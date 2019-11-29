@@ -535,9 +535,13 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
             VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
             false);
 
+        IRepository repo = RepositoryFactory.getRepository();
+        if (repo.exists(newId)) {
+            repo.forceDelete(newId);
+        }
+
         ResourceResult response = RestUtils.duplicate(id, newId);
 
-        IRepository repo = RepositoryFactory.getRepository();
         TServiceTemplate newServiceTemplate = repo.getElement(newId);
         newServiceTemplate.setTopologyTemplate(originTopologyTemplate);
 
@@ -546,14 +550,14 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         Map<String, List<TTopologyTemplate>> resultList = splitting.getHostingInjectionOptions(newServiceTemplate.getTopologyTemplate());
         for (Map.Entry<String, List<TTopologyTemplate>> entry : resultList.entrySet()) {
             List<TTopologyTemplate> toBeRemovedTopologyTemplates = new ArrayList<>();
-            for (TTopologyTemplate tTopologyTemplate : entry.getValue()) {
+            /*for (TTopologyTemplate tTopologyTemplate : entry.getValue()) {
                 LinkedHashMap<String, String> substitutionProperties = new LinkedHashMap<>();
                 for (TNodeTemplate tNodeTemplate : tTopologyTemplate.getNodeTemplates()) {
                     for (Map.Entry<String, String> prop : tNodeTemplate.getProperties().getKVProperties().entrySet()) {
                         substitutionProperties.put(prop.getKey(), prop.getValue());
                     }
                 }
-                /*for (Map.Entry<String, TNodeTemplate> nodeTemplateAndItsPlaceholder : nodeTemplateIdAndPlaceholderMap.entrySet()) {
+                for (Map.Entry<String, TNodeTemplate> nodeTemplateAndItsPlaceholder : nodeTemplateIdAndPlaceholderMap.entrySet()) {
                     if (nodeTemplateAndItsPlaceholder.getKey().equals(entry.getKey())) {
                         for (Map.Entry<String, String> propOfPlaceholder : nodeTemplateAndItsPlaceholder.getValue().getProperties().getKVProperties().entrySet()) {
                             if (!substitutionProperties.containsKey(propOfPlaceholder.getKey())) {
@@ -562,11 +566,11 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                             }
                         }
                     }
-                }*/
+                }
             }
             if (!toBeRemovedTopologyTemplates.isEmpty()) {
                 entry.getValue().removeAll(toBeRemovedTopologyTemplates);
-            }
+            }*/
             if (!resultList.get(entry.getKey()).isEmpty()) {
                 Map<String, TTopologyTemplate> choiceTopologyTemplate = new LinkedHashMap<>();
                 choiceTopologyTemplate.put(entry.getKey(), entry.getValue().get(0));
@@ -586,10 +590,6 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         newTagList.getTag().add(choreoTag);
         newServiceTemplate.setTags(newTagList);
 
-        if (repo.exists(newId)) {
-            repo.forceDelete(newId);
-        }
-        
         repo.setElement(newId, newServiceTemplate);
 
         if (response.getStatus() == Status.CREATED) {
@@ -697,7 +697,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
             VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
             false);
-        
+
         if (repository.exists(newId)) {
             repository.forceDelete(newId);
         }
