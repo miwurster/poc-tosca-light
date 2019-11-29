@@ -46,16 +46,16 @@ export class MultiParticipantsComponent implements OnInit {
         // check if Generate Placeholder Button is clicked
         if (currentButtonsState.buttonsState.generateGDM) {
             this.multiParticipantsService.postNewVersion().subscribe(
-                response => {
+                newVersion => {
                     this.alert.success('Successfully created placeholders for tolopgy template');
                     this.ngRedux.dispatch(this.actions.generatePlaceholder());
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
-                        + '&ns=' + response.namespace
-                        + '&id=' + response.localname;
+                        + '&ns=' + newVersion.namespace
+                        + '&id=' + newVersion.localname;
                     this.editorConfiguration = editorConfig;
-                    this.multiParticipantsService.postPlaceholders(response.localname).subscribe(
-                        response => {
+                    this.multiParticipantsService.postPlaceholders(newVersion.localname).subscribe(
+                        placeholderResponse => {
                             window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
                         },
                         error => {
@@ -69,12 +69,12 @@ export class MultiParticipantsComponent implements OnInit {
             );
         } else if (currentButtonsState.buttonsState.generatePlaceholderSubs) {
             this.multiParticipantsService.postSubstituteVersion().subscribe(
-                data => {
+                placeholderSubstitution => {
                     this.ngRedux.dispatch(this.actions.generatePlaceholderSubs());
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
-                        + '&ns=' + data.namespace
-                        + '&id=' + data.localname;
+                        + '&ns=' + placeholderSubstitution.namespace
+                        + '&id=' + placeholderSubstitution.localname;
                     this.alert.success('Successfully substituted placeholder for topology');
                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
                 },
@@ -84,14 +84,14 @@ export class MultiParticipantsComponent implements OnInit {
             );
         } else if (currentButtonsState.buttonsState.extractLDM) {
             this.multiParticipantsService.postParticipantsVersion().subscribe(
-                resps => {
+                participantVersions => {
                     this.ngRedux.dispatch(this.actions.extractLDM());
                     this.alert.success('Successfully extracted partner LDM');
-                    for (const resp of resps) {
+                    for (const participantVersion of participantVersions) {
                         const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
                             + '&uiURL=' + encodeURIComponent(backendBaseURL)
-                            + '&ns=' + resp.entity.namespace
-                            + '&id=' + resp.entity.localname;
+                            + '&ns=' + participantVersion.entity.namespace
+                            + '&id=' + participantVersion.entity.localname;
                         window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfiguration);
                     }
                 },
