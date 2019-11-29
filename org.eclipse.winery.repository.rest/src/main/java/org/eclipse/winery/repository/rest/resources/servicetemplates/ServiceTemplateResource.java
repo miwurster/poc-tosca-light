@@ -607,9 +607,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         IRepository repo = RepositoryFactory.getRepository();
         // create list of responses because we create multiple resources at once
         List<Response> listOfResponses = new ArrayList<>();
-
-        //Map<QName, TTags> newServiceTemplateIdsAndTags = new LinkedHashMap<>();
-
+        
         LOGGER.debug("Creating new participants version of Service Template {}...", this.getId());
 
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
