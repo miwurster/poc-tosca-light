@@ -50,6 +50,7 @@ import org.eclipse.winery.model.tosca.TRelationshipType;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementType;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
@@ -292,7 +293,7 @@ public class Splitting {
         String id;
         List<String> ids = new ArrayList<>();
         for (TNodeTemplate nt : topologyTemplate.getNodeTemplates()) {
-            if(nt.getCapabilities() != null) {
+            if (nt.getCapabilities() != null) {
                 nt.getCapabilities().getCapability().stream().forEach(cap -> ids.add(cap.getId()));
             }
         }
@@ -736,6 +737,23 @@ public class Splitting {
         connectionInjectionOptions.entrySet().forEach(entry -> defaultConnectorSelection.put(entry.getKey(), entry.getValue().get(0)));
 
         return injectConnectionNodeTemplates(topologyTemplate, defaultConnectorSelection);
+    }
+
+    public String calculateChoreographyTag(List<TNodeTemplate> nodeTemplateList, String participantName) {
+        String choreoValue = "";
+        // iterate over node templates and check if their target location == current participant
+        for (TNodeTemplate tNodeTemplate : nodeTemplateList) {
+            for (Map.Entry<QName, String> entry : tNodeTemplate.getOtherAttributes().entrySet()) {
+                if (entry.getValue().equals(participantName)) {
+                    // add to choregraphy value
+                    choreoValue += tNodeTemplate.getId() + ",";
+                }
+            }
+        }
+
+        choreoValue = choreoValue.substring(0, choreoValue.length() - 1);
+
+        return choreoValue;
     }
 
     /**

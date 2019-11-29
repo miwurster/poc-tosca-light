@@ -565,9 +565,19 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 Map<String, TTopologyTemplate> choiceTopologyTemplate = new LinkedHashMap<>();
                 choiceTopologyTemplate.put(entry.getKey(), entry.getValue().get(0));
                 splitting.injectNodeTemplates(originTopologyTemplate, choiceTopologyTemplate, InjectRemoval.REMOVE_NOTHING);
+                for (TNodeTemplate injectNodeTemplate : choiceTopologyTemplate.get(entry.getKey()).getNodeTemplates()) {
+                    injectNodeTemplate.getOtherAttributes().put(new QName("{http://www.opentosca.org/winery/extensions/tosca/2013/02/12}location"), finalParticipantId);
+                }
             }
         }
 
+        String choreoValue = splitting.calculateChoreographyTag(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates(), participantId);
+
+        TTag choreoTag = new TTag();
+        choreoTag.setName("choreography");
+        choreoTag.setValue(choreoValue);
+
+        newServiceTemplate.getTags().getTag().add(choreoTag);
         repo.setElement(newId, newServiceTemplate);
 
         if (response.getStatus() == Status.CREATED) {
@@ -595,6 +605,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
         TTags tagsOfServiceTemplate = this.getServiceTemplate().getTags();
 
+        Splitting splitting = new Splitting();
         // iterate over tags of origin service template
         for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
             // check if tag with partner in service template
@@ -614,17 +625,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 participantTag.setValue(tagOfServiceTemplate.getName());
                 tTagList.getTag().add(participantTag);
 
-                String choreoValue = "";
-                // iterate over node templates and check if their target location == current participant
-                for (TNodeTemplate tNodeTemplate : this.getServiceTemplate().getTopologyTemplate().getNodeTemplates()) {
-                    for (Map.Entry<QName, String> entry : tNodeTemplate.getOtherAttributes().entrySet()) {
-                        if (entry.getValue().equals(tagOfServiceTemplate.getName())) {
-                            // add to choregraphy value
-                            choreoValue += tNodeTemplate.getId() + ",";
-                        }
-                    }
-                }
-                choreoValue = choreoValue.substring(0, choreoValue.length() - 1);
+                String choreoValue = splitting.calculateChoreographyTag(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates(), tagOfServiceTemplate.getName());
                 TTag choreoTag = new TTag();
                 choreoTag.setName("choreography");
                 choreoTag.setValue(choreoValue);
