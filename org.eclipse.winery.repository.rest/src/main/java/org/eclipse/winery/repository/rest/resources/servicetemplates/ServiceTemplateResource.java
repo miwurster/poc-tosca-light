@@ -343,7 +343,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 repo.setElement(placeholderId, placeholderNodeType);
 
                 // create placeholder node template
-                TNodeTemplate placeholderNodeTemplate = splitting.createPlaceholderNodeTemplate(nodeTemplateWithOpenReq.getName(), placeholderQName);
+                TNodeTemplate placeholderNodeTemplate = splitting.createPlaceholderNodeTemplate(topologyTemplate, nodeTemplateWithOpenReq.getName(), placeholderQName);
 
                 // create capability of placeholder node template
                 TCapability capa = splitting.createPlaceholderCapability(topologyTemplate, capabilityType);
@@ -596,7 +596,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         // create list of responses because we create multiple resources at once
         List<Response> listOfResponses = new ArrayList<>();
 
-        Map<QName, TTags> newServiceTemplateIdsAndTags = new LinkedHashMap<>();
+        //Map<QName, TTags> newServiceTemplateIdsAndTags = new LinkedHashMap<>();
 
         LOGGER.debug("Creating new participants version of Service Template {}...", this.getId());
 
@@ -607,7 +607,8 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
         Splitting splitting = new Splitting();
         // iterate over tags of origin service template
-        for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
+        List<TTag> tags = tagsOfServiceTemplate.getTag();
+        for (TTag tagOfServiceTemplate : tags) {
             // check if tag with partner in service template
             if (tagOfServiceTemplate.getName().contains("partner")) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
@@ -616,8 +617,14 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                     1,
                     0
                 );
+
                 // create list of tags to add to service tempalte
-                TTags tTagList = tagsOfServiceTemplate;
+                TTags tTagList = new TTags();
+                for (TTag tag : tags) {
+                    if (tagOfServiceTemplate.getName().contains("partner") && !tag.getName().equals(tagOfServiceTemplate.getName())) {
+                        tTagList.getTag().add(tag);
+                    }
+                }
 
                 // new tag to define participant of service template
                 TTag participantTag = new TTag();
@@ -651,7 +658,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 // set element to propagate changed tags
                 repo.setElement(newId, tempServiceTempl);
 
-                newServiceTemplateIdsAndTags.put(newId.getQName(), tTagList);
+                //newServiceTemplateIdsAndTags.put(newId.getQName(), tTagList);
             }
         }
         return listOfResponses;
