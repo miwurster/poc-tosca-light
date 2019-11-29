@@ -43,7 +43,7 @@ export class MultiParticipantsService {
             { headers: this.httpHeaders, observe: 'response', responseType: 'json' }
         );
     }
-    
+
     postSubstituteVersion(): Observable<any> {
         const url = this.configuration.repositoryURL
             + '/servicetemplates/'
