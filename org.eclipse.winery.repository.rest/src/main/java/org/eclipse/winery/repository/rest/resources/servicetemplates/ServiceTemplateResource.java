@@ -64,6 +64,7 @@ import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
+import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.model.tosca.constants.ToscaBaseTypes;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
@@ -99,6 +100,8 @@ import org.slf4j.LoggerFactory;
 public class ServiceTemplateResource extends AbstractComponentInstanceResourceContainingATopology implements IHasName {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTemplateResource.class);
+
+    public static final QName QNAME_LOCATION = new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "location");
 
     public ServiceTemplateResource(ServiceTemplateId id) {
         super(id);
@@ -476,9 +479,13 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         Map<String, TNodeTemplate> nodeTemplateIdAndPlaceholderMap = new LinkedHashMap<>();
 
         String participantId = "";
+        TTags newTagList = new TTags();
         for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
             if (tagOfServiceTemplate.getName().equals("participant")) {
                 participantId = tagOfServiceTemplate.getValue();
+                newTagList.getTag().add(tagOfServiceTemplate);
+            } else if (!tagOfServiceTemplate.getName().equals("choreography")) {
+                newTagList.getTag().add(tagOfServiceTemplate);
             }
         }
         final String finalParticipantId = participantId;
@@ -566,7 +573,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 choiceTopologyTemplate.put(entry.getKey(), entry.getValue().get(0));
                 splitting.injectNodeTemplates(originTopologyTemplate, choiceTopologyTemplate, InjectRemoval.REMOVE_NOTHING);
                 for (TNodeTemplate injectNodeTemplate : choiceTopologyTemplate.get(entry.getKey()).getNodeTemplates()) {
-                    injectNodeTemplate.getOtherAttributes().put(new QName("{http://www.opentosca.org/winery/extensions/tosca/2013/02/12}location"), finalParticipantId);
+                    injectNodeTemplate.getOtherAttributes().put(QNAME_LOCATION, finalParticipantId);
                 }
             }
         }
@@ -577,7 +584,8 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         choreoTag.setName("choreography");
         choreoTag.setValue(choreoValue);
 
-        newServiceTemplate.getTags().getTag().add(choreoTag);
+        newTagList.getTag().add(choreoTag);
+        newServiceTemplate.setTags(newTagList);
         repo.setElement(newId, newServiceTemplate);
 
         if (response.getStatus() == Status.CREATED) {
@@ -674,7 +682,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
         WineryVersion newVersion = new WineryVersion(
-            "placeholder-" + version.toString() + "-" + dateFormat.format(new Date()),
+            "gdm-" + version.toString() + "-" + dateFormat.format(new Date()),
             1,
             0
         );

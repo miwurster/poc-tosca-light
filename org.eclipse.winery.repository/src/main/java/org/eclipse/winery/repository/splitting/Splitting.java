@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
@@ -760,7 +759,7 @@ public class Splitting {
         // iterate over node templates and check if their target location == current participant
         for (TNodeTemplate tNodeTemplate : nodeTemplateList) {
             for (Map.Entry<QName, String> entry : tNodeTemplate.getOtherAttributes().entrySet()) {
-                if (entry.getValue().equals(participantName)) {
+                if (entry.getValue().toLowerCase().equals(participantName.toLowerCase())) {
                     // add to choregraphy value
                     choreoValue += tNodeTemplate.getId() + ",";
                 }
