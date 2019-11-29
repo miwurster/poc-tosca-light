@@ -101,7 +101,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTemplateResource.class);
 
-    public static final QName QNAME_LOCATION = new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "location");
+    private static final QName QNAME_LOCATION = new QName(Namespaces.TOSCA_WINERY_EXTENSIONS_NAMESPACE, "location");
 
     public ServiceTemplateResource(ServiceTemplateId id) {
         super(id);
@@ -525,9 +525,8 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
         WineryVersion version = VersionUtils.getVersion(id);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
         WineryVersion newVersion = new WineryVersion(
-            version.toString() + "-" + dateFormat.format(new Date()),
+            version.toString(),
             1,
             0
         );
@@ -586,6 +585,11 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
         newTagList.getTag().add(choreoTag);
         newServiceTemplate.setTags(newTagList);
+
+        if (repo.exists(newId)) {
+            repo.forceDelete(newId);
+        }
+        
         repo.setElement(newId, newServiceTemplate);
 
         if (response.getStatus() == Status.CREATED) {
@@ -619,9 +623,8 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         for (TTag tagOfServiceTemplate : tags) {
             // check if tag with partner in service template
             if (tagOfServiceTemplate.getName().contains("partner")) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
                 WineryVersion newVersion = new WineryVersion(
-                    tagOfServiceTemplate.getName() + "-" + version.toString() + "-" + dateFormat.format(new Date()),
+                    tagOfServiceTemplate.getName() + "-" + version.toString().replace("gdm", "ldm"),
                     1,
                     0
                 );
@@ -645,10 +648,13 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 choreoTag.setName("choreography");
                 choreoTag.setValue(choreoValue);
                 tTagList.getTag().add(choreoTag);
-
                 ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
                     VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
                     false);
+
+                if (repo.exists(newId)) {
+                    repo.forceDelete(newId);
+                }
 
                 ResourceResult response = RestUtils.duplicate(id, newId);
 
@@ -675,21 +681,26 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     @POST()
     @Path("createplaceholderversion")
     @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response createNewPlaceholderVersion() {
+    public Response createNewPlaceholderVersion() throws IOException {
         LOGGER.debug("Creating new placeholder version of Service Template {}...", this.getId());
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
         WineryVersion version = VersionUtils.getVersion(id);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
         WineryVersion newVersion = new WineryVersion(
-            "gdm-" + version.toString() + "-" + dateFormat.format(new Date()),
+            "gdm-" + version.toString(),
             1,
             0
         );
 
+        IRepository repository = RepositoryFactory.getRepository();
+
         ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
             VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
             false);
+        
+        if (repository.exists(newId)) {
+            repository.forceDelete(newId);
+        }
 
         ResourceResult response = RestUtils.duplicate(id, newId);
 
