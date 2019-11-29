@@ -49,7 +49,6 @@ import org.eclipse.winery.model.tosca.TRelationshipType;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementType;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
-import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
@@ -66,7 +65,6 @@ public class Splitting {
 
     // counter for relationships starts at 100 because all TRelationshipTemplate should have a 3 digit number in their id
     private static int newRelationshipIdCounter = 100;
-    private static int nodeTemplateIdCounter = 1;
     private static int IdCounter = 1;
     private static int newcapabilityCounter = 1;
 
