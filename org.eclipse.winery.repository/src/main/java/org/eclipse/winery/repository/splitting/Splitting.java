@@ -68,6 +68,7 @@ public class Splitting {
     private static int newRelationshipIdCounter = 100;
     private static int nodeTemplateIdCounter = 1;
     private static int IdCounter = 1;
+    private static int newcapabilityCounter = 1;
 
     // Required variables for the following computation of the transitive closure of a given topology
     private Map<TNodeTemplate, Set<TNodeTemplate>> initDirectSuccessors = new HashMap<>();
@@ -263,10 +264,10 @@ public class Splitting {
                     TNodeTemplate targetNodeTemplate = ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(topologyTemplate, incomingRelationshipTemplate);
                     for (TInterface tInterface : connectionInterfaces) {
                         int separator = tInterface.getIdFromIdOrNameField().lastIndexOf("/");
-                       String prefixRelation =  tInterface.getIdFromIdOrNameField().substring(separator+1);
-                       if (targetNodeTemplate.getName().toLowerCase().contains(prefixRelation.toLowerCase())) {
-                           relevantInterface = tInterface;
-                       }
+                        String prefixRelation = tInterface.getIdFromIdOrNameField().substring(separator + 1);
+                        if (targetNodeTemplate.getName().toLowerCase().contains(prefixRelation.toLowerCase())) {
+                            relevantInterface = tInterface;
+                        }
                     }
                 } else {
                     relevantInterface = connectionInterfaces.get(0);
@@ -280,19 +281,35 @@ public class Splitting {
                         }
                     }
                 }
-                    
-                
             }
         }
         return listOfInputs;
     }
 
-    public TCapability createPlaceholderCapability(QName capabilityType) {
+    public TCapability createPlaceholderCapability(TTopologyTemplate topologyTemplate, QName capabilityType) {
         TCapability capa = new TCapability();
-        capa.setId(UUID.randomUUID().toString());
-        capa.setName(capabilityType.getLocalPart() + "_placeholder");
+        // unique id for capability
+        String id;
+        List<String> ids = new ArrayList<>();
+        for (TNodeTemplate nt : topologyTemplate.getNodeTemplates()) {
+            if(nt.getCapabilities() != null) {
+                nt.getCapabilities().getCapability().stream().forEach(cap -> ids.add(cap.getId()));
+            }
+        }
+        boolean uniqueID = false;
+        id = "0";
+        while (!uniqueID) {
+            if (!ids.contains("cap" + newcapabilityCounter)) {
+                id = "cap_" + newcapabilityCounter;
+                newcapabilityCounter++;
+                uniqueID = true;
+            } else {
+                newcapabilityCounter++;
+            }
+        }
+        capa.setId(id);
+        capa.setName(id);
         capa.setType(capabilityType);
-
         return capa;
     }
 

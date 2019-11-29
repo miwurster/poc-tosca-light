@@ -348,7 +348,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 TNodeTemplate placeholderNodeTemplate = splitting.createPlaceholderNodeTemplate(nodeTemplateWithOpenReq.getName(), placeholderQName);
 
                 // create capability of placeholder node template
-                TCapability capa = splitting.createPlaceholderCapability(capabilityType);
+                TCapability capa = splitting.createPlaceholderCapability(topologyTemplate, capabilityType);
 
                 TEntityTemplate.Properties properties = new TEntityTemplate.Properties();
                 properties.setKVProperties(placeholderNodeTemplateProperties);
