@@ -3,7 +3,6 @@ import { TopologyModelerConfiguration } from '../models/topologyModelerConfigura
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BackendService } from './backend.service';
 import { Observable } from 'rxjs';
-import { backendBaseURL } from '../../../../tosca-management/src/app/configuration';
 
 @Injectable({
     providedIn: 'root',
@@ -32,14 +31,13 @@ export class MultiParticipantsService {
             { headers: this.httpHeaders, observe: 'response', responseType: 'text' });
     }
 
-    postParticipantsVersion(serviceTemplateId: string, serviceTemplateNs?: string): Observable<any> {
+    postParticipantsVersion(): Observable<any> {
         const url = this.configuration.repositoryURL
             + '/servicetemplates/'
             + encodeURIComponent(encodeURIComponent(this.configuration.ns))
             + '/'
-            + encodeURIComponent(serviceTemplateId)
+            + encodeURIComponent(this.configuration.id)
             + '/createparticipantsversion';
-        console.log(url);
         return this.httpClient.post(
             url,
             { headers: this.httpHeaders, observe: 'response', responseType: 'json' }

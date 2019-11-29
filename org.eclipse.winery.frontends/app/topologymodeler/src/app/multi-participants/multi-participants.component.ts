@@ -22,6 +22,7 @@ export class MultiParticipantsComponent implements OnInit {
     readonly uiURL = encodeURIComponent(window.location.origin + window.location.pathname + '#/');
     private readonly configuration: TopologyModelerConfiguration;
     private editorConfiguration;
+    private placeholderBasicLocalName;
 
     constructor(private ngRedux: NgRedux<IWineryState>,
                 private actions: TopologyRendererActions,
@@ -44,9 +45,11 @@ export class MultiParticipantsComponent implements OnInit {
      */
     private checkButtonsState(currentButtonsState: TopologyRendererState) {
         // check if Generate Placeholder Button is clicked
-        if (currentButtonsState.buttonsState.generatePlaceholder) {
+        if (currentButtonsState.buttonsState.generateGDM) {
             this.multiParticipantsService.postNewVersion().subscribe(
                 response => {
+                    this.alert.success('Successfully created placeholders for tolopgy template');
+                    this.ngRedux.dispatch(this.actions.generatePlaceholder());
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
                         + '&ns=' + response.namespace
@@ -54,41 +57,10 @@ export class MultiParticipantsComponent implements OnInit {
                     this.editorConfiguration = editorConfig;
                     this.multiParticipantsService.postPlaceholders(response.localname).subscribe(
                         response => {
-                            this.multiParticipantsService.postParticipantsVersion(response.localname, response.namespace).subscribe(
-                                resps => {
-                                    window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                    for (const resp of resps) {
-                                        const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
-                                            + '&uiURL=' + encodeURIComponent(backendBaseURL)
-                                            + '&ns=' + resp.entity.namespace
-                                            + '&id=' + resp.entity.localname;
-                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfiguration);
-                                    }
-                                },
-                                error => {
-                                    this.errorHandlerService.handleError(error);
-                                }
-                            );
+                            window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
                         },
                         error => {
-                            console.log(error);
-                            // TODO: fix error when returning entities
-                            this.multiParticipantsService.postParticipantsVersion(error.error.text).subscribe(
-                                responses => {
-                                    window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
-                                    for (const resp of responses) {
-                                        const editorConf = '?repositoryURL=' + this.configuration.repositoryURL
-                                            + '&uiURL=' + encodeURIComponent(backendBaseURL)
-                                            + '&ns=' + resp.entity.namespace
-                                            + '&id=' + resp.entity.localname;
-                                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConf);
-                                        this.alert.success("Successfully created placeholder version for partner");
-                                    }
-                                },
-                                error => {
-                                    this.errorHandlerService.handleError(error);
-                                }
-                            );
+                            window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
                         }
                     );
                 },
@@ -99,18 +71,35 @@ export class MultiParticipantsComponent implements OnInit {
         } else if (currentButtonsState.buttonsState.generatePlaceholderSubs) {
             this.multiParticipantsService.postSubstituteVersion().subscribe(
                 data => {
-                    console.log(data);
+                    this.ngRedux.dispatch(this.actions.generatePlaceholderSubs());
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
                         + '&ns=' + data.namespace
                         + '&id=' + data.localname;
+                    this.alert.success('Successfully substituted placeholder for topology');
                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
-                    this.alert.success("Successfully substituted placeholder for topology");
                 },
                 error => {
                     this.errorHandlerService.handleError(error);
                 }
-            )
+            );
+        } else if (currentButtonsState.buttonsState.extractLDM) {
+            this.multiParticipantsService.postParticipantsVersion().subscribe(
+                resps => {
+                    this.ngRedux.dispatch(this.actions.extractLDM());
+                    this.alert.success('Successfully extracted partner LDM');
+                    for (const resp of resps) {
+                        const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
+                            + '&uiURL=' + encodeURIComponent(backendBaseURL)
+                            + '&ns=' + resp.entity.namespace
+                            + '&id=' + resp.entity.localname;
+                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfiguration);
+                    }
+                },
+                error => {
+                    this.errorHandlerService.handleError(error);
+                }
+            );
         }
     }
 
