@@ -526,7 +526,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         WineryVersion version = VersionUtils.getVersion(id);
 
         WineryVersion newVersion = new WineryVersion(
-            version.toString(),
+            "_substituted_" + version.toString(),
             1,
             0
         );
