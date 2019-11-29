@@ -22,7 +22,6 @@ export class MultiParticipantsComponent implements OnInit {
     readonly uiURL = encodeURIComponent(window.location.origin + window.location.pathname + '#/');
     private readonly configuration: TopologyModelerConfiguration;
     private editorConfiguration;
-    private placeholderBasicLocalName;
 
     constructor(private ngRedux: NgRedux<IWineryState>,
                 private actions: TopologyRendererActions,
