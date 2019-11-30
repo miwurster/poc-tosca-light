@@ -64,6 +64,6 @@ const serviceTemplateRoutes: Routes = [
     ],
 })
 
-export class serviceTemplateRouter{
+export class ServiceCompositionRouterModule{
     
 }

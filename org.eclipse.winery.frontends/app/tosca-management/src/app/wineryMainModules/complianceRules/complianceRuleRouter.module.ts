@@ -34,7 +34,7 @@ const complianceRuleRoutes: Routes = [
         path: toscaType + '/:namespace/:localName',
         component: InstanceComponent,
         resolve: { resolveData: InstanceResolver },
-        children: [
+        children: [ 
             { path: 'readme', component: WineryReadmeComponent },
             { path: 'license', component: WineryLicenseComponent },
             { path: 'identifier', component: TopologyTemplateComponent },
