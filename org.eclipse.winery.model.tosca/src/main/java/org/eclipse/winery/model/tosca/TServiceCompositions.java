@@ -24,26 +24,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.eclipse.jdt.annotation.NonNull;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "tTestRefinementModel")
-public class TTestRefinementModel extends TRefinementModel {
+@XmlType(name = "tServiceComposition")
+public class TServiceCompositions extends TRefinementModel {
 
-    @XmlElement(name = "TestFragment")
-    private TTopologyTemplate testFragment;
-    
-    
+    @XmlElement(name = "ServiceFragment")
+    private TTopologyTemplate ServiceFragment;
+
+
 
     @NonNull
     @JsonIgnore
     @XmlTransient
     public TTopologyTemplate getRefinementTopology() {
-        if (testFragment == null) {
-            testFragment = new TTopologyTemplate();
+        if (ServiceFragment == null) {
+            ServiceFragment = new TTopologyTemplate();
         }
-        return testFragment;
+        return ServiceFragment;
     }
 
     public void setRefinementTopology(TTopologyTemplate refinementStructure) {
-        this.testFragment = refinementStructure;
+        this.ServiceFragment = refinementStructure;
     }
 
     public TTopologyTemplate getTestFragment() {

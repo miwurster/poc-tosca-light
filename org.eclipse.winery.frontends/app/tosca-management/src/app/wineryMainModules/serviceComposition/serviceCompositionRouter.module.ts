@@ -13,6 +13,8 @@ import { PropertyConstraintsComponent } from '../../instance/serviceTemplates/bo
 import { DocumentationComponent } from '../../instance/sharedComponents/documentation/documentation.component';
 import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXML.component';
 import { NgModule } from '@angular/core';
+import { TopologyTemplateComponent } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.component';
+import { RelationMappingsComponent } from '../../instance/refinementModels/relationshipMappings/relationMappings.component';
 
 /*******************************************************************************
  * Copyright (c) 2019 Contributors to the Eclipse Foundation
@@ -30,7 +32,7 @@ import { NgModule } from '@angular/core';
 
 const toscaType = ToscaTypes.ServiceComposition;
 
-const serviceTemplateRoutes: Routes = [
+const serviceCompositionRoutes: Routes = [
     { path: toscaType, component: SectionComponent, resolve: { resolveData: SectionResolver } },
     { path: toscaType + '/:namespace', component: SectionComponent, resolve: { resolveData: SectionResolver } },
     {
@@ -40,11 +42,10 @@ const serviceTemplateRoutes: Routes = [
         children: [
             { path: 'readme', component: WineryReadmeComponent },
             { path: 'license', component: WineryLicenseComponent },
-            { path: 'files', component: FilesComponent },
-            { path: 'source', component: SourceComponent },
-            { path: 'properties', component: PropertiesComponent },
-            { path: 'propertyconstraints', component: PropertyConstraintsComponent },
+            { path: 'detector', component: TopologyTemplateComponent },
+            { path: 'servicefragment', component: TopologyTemplateComponent },
             { path: 'documentation', component: DocumentationComponent },
+            { path: 'relationmappings', component: RelationMappingsComponent },
             { path: 'xml', component: EditXMLComponent },
             { path: '', redirectTo: 'readme', pathMatch: 'full' }
         ]
@@ -53,7 +54,7 @@ const serviceTemplateRoutes: Routes = [
 
 @NgModule({
     imports: [
-        RouterModule.forChild(serviceTemplateRoutes),
+        RouterModule.forChild(serviceCompositionRoutes),
     ],
     exports: [
         RouterModule

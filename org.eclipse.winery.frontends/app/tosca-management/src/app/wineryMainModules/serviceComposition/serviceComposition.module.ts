@@ -27,16 +27,18 @@ import { WinerySourceModule } from '../../instance/sharedComponents/artifactSour
 import { WineryEditorModule } from '../../wineryEditorModule/wineryEditor.module';
 import { HttpModule } from '@angular/http';
 import { TabsModule } from 'ngx-bootstrap';
-import { FilesComponent } from '../../instance/artifactTemplates/filesTag/files.component';
-import { PropertiesComponent } from '../../instance/sharedComponents/properties/properties.component';
+import { InstanceModule } from '../../instance/instance.module';
+import { TopologyTemplateModule } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.module';
 
 @NgModule({
     imports: [
         HttpModule,
         CommonModule,
+        InstanceModule,
         FormsModule,
         WineryLoaderModule,
         WineryModalModule,
+        TopologyTemplateModule,
         WineryTableModule,
         WineryUploaderModule,
         WinerySourceModule,
@@ -46,10 +48,6 @@ import { PropertiesComponent } from '../../instance/sharedComponents/properties/
         WineryLicenseModule,
         ServiceCompositionRouterModule
     
-    ],
-    declarations: [
-        FilesComponent,
-        PropertiesComponent,
     ]
 })
 export class ServiceCompositionModule {

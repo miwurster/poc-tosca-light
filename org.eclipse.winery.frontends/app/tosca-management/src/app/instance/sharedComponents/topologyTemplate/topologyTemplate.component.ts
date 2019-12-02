@@ -25,7 +25,6 @@ import { WineryRepositoryConfigurationService } from '../../../wineryFeatureTogg
     templateUrl: 'topologyTemplate.component.html',
 })
 export class TopologyTemplateComponent implements OnInit {
-
     readonly uiURL = encodeURIComponent(window.location.origin + window.location.pathname + '#/');
 
     loading = true;

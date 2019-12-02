@@ -36,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
     "boundaryDefinitions",
     "topologyTemplate",
     "plans"
+    
 })
 public class TServiceTemplate extends HasId implements HasName, HasTargetNamespace {
 
