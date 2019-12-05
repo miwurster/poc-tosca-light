@@ -50,12 +50,11 @@ COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/topologymode
 COPY --from=builder /tmp/winery/org.eclipse.winery.frontends/target/workflowmodeler.war ${CATALINA_HOME}/webapps/winery-workflowmodeler.war
 
 ADD docker/winery.yml.tpl /root/.winery/winery.yml.tpl
-ADD docker/winery-repository /var/opentosca/repository/
 
 EXPOSE 8080
 
 CMD dockerize -template /root/.winery/winery.yml.tpl:/root/.winery/winery.yml \
-    && if [ ! "x${WINERY_REPOSITORY_URL}" = "x" ]; then git clone ${WINERY_REPOSITORY_URL} ${WINERY_REPOSITORY_PATH}; else git init $WINERY_REPOSITORY_PATH; fi \
+    && if [ -d "${WINERY_REPOSITORY_PATH}" ] && [ "$(ls -A ${WINERY_REPOSITORY_PATH})" ]; then echo "Repository at ${WINERY_REPOSITORY_PATH} is already initialized!"; else if [ ! "x${WINERY_REPOSITORY_URL}" = "x" ]; then git clone ${WINERY_REPOSITORY_URL} ${WINERY_REPOSITORY_PATH}; else git init $WINERY_REPOSITORY_PATH; fi fi \
     && cd ${WINERY_REPOSITORY_PATH} \
     && git config --global core.fscache true \
     && git lfs install \
