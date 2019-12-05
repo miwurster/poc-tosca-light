@@ -17,8 +17,8 @@ import { ProgressbarConfig } from 'ngx-bootstrap';
 import { Subscription } from 'rxjs';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
-import { LiveModelingStates } from '../models/enums';
-import { LiveModelingLog, LiveModelingLogTypes } from '../models/liveModelingData';
+import { LiveModelingLogTypes, LiveModelingStates } from '../models/enums';
+import { LiveModelingLog } from '../models/liveModelingLog';
 
 export function getProgressbarConfig(): ProgressbarConfig {
     return Object.assign(new ProgressbarConfig(), { animate: true, striped: true, max: 100 });
@@ -50,13 +50,13 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
     }
 
     ngOnInit() {
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingData.logs)
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.logs)
             .subscribe(logs => {
                 if (logs.length > 0) {
                     this.displayLiveModelingLog(logs[logs.length - 1]);
                 }
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingData.state)
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.state)
             .subscribe(state => {
                 this.liveModelingState = state;
                 this.updateProgressbar();

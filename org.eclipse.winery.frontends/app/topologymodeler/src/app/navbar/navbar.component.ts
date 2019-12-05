@@ -29,6 +29,7 @@ import { LiveModelingStates } from '../models/enums';
 import { LiveModelingService } from '../services/live-modeling.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap';
 import { LiveModelingModalComponent, LiveModelingModalComponentViews } from '../live-modeling-modal/live-modeling-modal.component';
+import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
 
 /**
  * The navbar of the topologymodeler.
@@ -82,7 +83,8 @@ export class NavbarComponent implements OnDestroy {
                 private statefulService: StatefulAnnotationsService,
                 private hotkeysService: HotkeysService,
                 private liveModelingService: LiveModelingService,
-                private modalService: BsModalService) {
+                private modalService: BsModalService,
+                private liveModelingActions: LiveModelingActions) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
@@ -98,7 +100,7 @@ export class NavbarComponent implements OnDestroy {
             return false; // Prevent bubbling
         }, undefined, 'Apply the layout directive to the Node Templates'));
         this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
-        this.subscriptions.push(ngRedux.select(state => state.wineryState.liveModelingData.state).subscribe(
+        this.subscriptions.push(ngRedux.select(state => state.liveModelingState.state).subscribe(
             state => {
                 this.liveModelingState = state;
             }
@@ -261,10 +263,10 @@ export class NavbarComponent implements OnDestroy {
                 }
                 break;
             case 'liveModeling-redeployButton':
-                this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.REDEPLOY));
+                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.REDEPLOY));
                 break;
             case 'liveModeling-update':
-                this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
+                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
                 break;
             case 'liveModeling-test':
                 this.liveModelingService.test();

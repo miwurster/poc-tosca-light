@@ -97,3 +97,10 @@ export enum NodeTemplateInstanceStates {
     ERROR = 'ERROR',
     MIGRATED = 'MIGRATED',
 }
+
+export enum LiveModelingLogTypes {
+    SUCCESS = 'success',
+    INFO = 'info',
+    WARNING = 'warning',
+    DANGER = 'danger'
+}

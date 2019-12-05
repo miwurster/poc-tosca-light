@@ -79,7 +79,7 @@ export class ContainerService {
         private ngRedux: NgRedux<IWineryState>,
         private http: HttpClient,
     ) {
-        this.ngRedux.select(state => state.wineryState.liveModelingData.containerUrl)
+        this.ngRedux.select(state => state.liveModelingState.containerUrl)
             .subscribe(containerUrl => {
                 this.containerUrl = containerUrl;
             });
@@ -292,7 +292,6 @@ export class ContainerService {
         state: NodeTemplateInstanceStates
     ): Observable<any> {
         return this.getNodeTemplateInstance(csarId, serviceTemplateInstanceId, nodeTemplateId).pipe(
-            tap(resp => console.log(resp)),
             concatMap(resp => this.http.put(resp._links['state'].href, state.toString(), this.headerContentTextPlain))
         );
     }

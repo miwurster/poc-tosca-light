@@ -18,8 +18,7 @@ import { TNodeTemplate, TRelationshipTemplate } from '../../models/ttopology-tem
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 import { TPolicy } from '../../models/policiesModalData';
 import { Visuals } from '../../models/visuals';
-import { LiveModelingData, LiveModelingLog, LiveModelingNodeTemplateData } from '../../models/liveModelingData';
-import { LiveModelingStates } from '../../models/enums';
+import { LiveModelingNodeTemplateData } from '../../models/liveModelingNodeTemplateData';
 
 export interface SendPaletteOpenedAction extends Action {
     paletteOpened: boolean;
@@ -190,30 +189,6 @@ export interface SetNodeVisuals extends Action {
     visuals: Visuals[];
 }
 
-export interface SetLiveModelingState extends Action {
-    newState: LiveModelingStates;
-}
-
-export interface SetNodeLiveModelingData extends Action {
-    liveModelingNodeTemplateData: LiveModelingNodeTemplateData;
-}
-
-export interface SendLiveModelingLog extends Action {
-    liveModelingLog: LiveModelingLog;
-}
-
-export interface SetCurrentServiceTemplateInstanceId extends Action {
-    serviceTemplateInstanceId: string;
-}
-
-export interface SetCurrentCsarId extends Action {
-    csarId: string;
-}
-
-export interface SetContainerUrl extends Action {
-    containerUrl: string;
-}
-
 /**
  * Winery Actions
  */
@@ -248,13 +223,6 @@ export class WineryActions {
     static DELETE_POLICY = 'DELETE_POLICY';
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
     static SET_NODE_VISUALS = 'SET_NODE_VISUALS';
-    static SET_LIVE_MODELING_STATE = 'SET_LIVE_MODELING_STATE';
-    static SET_NODE_LIVE_MODELING_DATA = 'SET_NODE_LIVE_MODELING_DATA';
-    static SEND_LIVE_MODELING_LOG = 'SEND_LIVE_MODELING_LOG';
-    static SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID = 'SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID';
-    static SET_CURRENT_CSAR_ID = 'SET_CURRENT_CSAR_ID';
-    static SET_CONTAINER_URL = 'SET_CONTAINER_URL';
-    static DELETE_NODE_LIVE_MODELING_DATA = 'DELETE_NODE_LIVE_MODELING_DATA';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
@@ -387,37 +355,4 @@ export class WineryActions {
             type: WineryActions.SET_NODE_VISUALS,
             visuals: visuals
         }));
-    setLiveModelingState: ActionCreator<SetLiveModelingState> =
-        ((newState) => ({
-            type: WineryActions.SET_LIVE_MODELING_STATE,
-            newState: newState
-        }));
-    setNodeLiveModelingData: ActionCreator<SetNodeLiveModelingData> =
-        ((liveModelingNodeTemplateData) => ({
-            type: WineryActions.SET_NODE_LIVE_MODELING_DATA,
-            liveModelingNodeTemplateData: liveModelingNodeTemplateData
-        }));
-    sendLiveModelingLog: ActionCreator<SendLiveModelingLog> =
-        ((liveModelingLog) => ({
-            type: WineryActions.SEND_LIVE_MODELING_LOG,
-            liveModelingLog: liveModelingLog
-        }));
-    setCurrentServiceTemplateInstanceId: ActionCreator<SetCurrentServiceTemplateInstanceId> =
-        ((serviceTemplateInstanceId) => ({
-            type: WineryActions.SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID,
-            serviceTemplateInstanceId: serviceTemplateInstanceId
-        }));
-    setCurrentCsarId: ActionCreator<SetCurrentCsarId> =
-        ((csarId) => ({
-            type: WineryActions.SET_CURRENT_CSAR_ID,
-            csarId: csarId
-        }));
-    setContainerUrl: ActionCreator<SetContainerUrl> =
-        ((containerUrl) => ({
-            type: WineryActions.SET_CONTAINER_URL,
-            containerUrl: containerUrl
-        }));
-    deleteNodeLiveModelingData: Action = {
-        type: WineryActions.DELETE_NODE_LIVE_MODELING_DATA
-    };
 }

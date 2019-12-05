@@ -34,7 +34,7 @@ import { VersionElement } from '../models/versionElement';
 import { VersionsComponent } from './versions/versions.component';
 import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
-import { LiveModelingNodeTemplateData } from '../models/liveModelingData';
+import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
 
 /**
  * Every node has its own component and gets created dynamically.

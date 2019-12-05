@@ -55,7 +55,7 @@ import { ThreatCreation } from '../models/threatCreation';
 import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 import { ReqCapRelationshipService } from '../services/req-cap-relationship.service';
 import { TPolicy } from '../models/policiesModalData';
-import { LiveModelingNodeTemplateData } from '../models/liveModelingData';
+import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
 
 @Component({
     selector: 'winery-canvas',
@@ -179,7 +179,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.gridTemplate = new GridTemplate(100, false, false, 30);
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened)));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingData.nodeTemplatesData)
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.nodeTemplatesData)
             .subscribe(currentLiveModelingNodeTemplatesData => this.updateNodesLiveModelingData(currentLiveModelingNodeTemplatesData)));
         this.hotkeysService.add(new Hotkey('mod+a', (event: KeyboardEvent): boolean => {
             event.stopPropagation();

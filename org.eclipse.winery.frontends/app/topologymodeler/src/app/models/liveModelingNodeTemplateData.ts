@@ -11,31 +11,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { LiveModelingStates, NodeTemplateInstanceStates } from './enums';
 
-export class LiveModelingData {
-
-    static initial() {
-        return new this(
-            LiveModelingStates.DISABLED,
-            null,
-            null,
-            null,
-            <LiveModelingNodeTemplateData[]>[],
-            <LiveModelingLog[]>[]
-        );
-    }
-
-    constructor(
-        public state?: LiveModelingStates,
-        public currentServiceTemplateInstanceId?: string,
-        public currentCsarId?: string,
-        public containerUrl?: string,
-        public nodeTemplatesData?: LiveModelingNodeTemplateData[],
-        public logs?: LiveModelingLog[],
-    ) {
-    }
-}
+import { NodeTemplateInstanceStates } from './enums';
 
 export class LiveModelingNodeTemplateData {
 
@@ -61,19 +38,4 @@ export class LiveModelingNodeTemplateData {
                 return '';
         }
     }
-}
-
-export class LiveModelingLog {
-    public timestamp: any;
-
-    constructor(public message: string, public type: LiveModelingLogTypes, public value?: number) {
-        this.timestamp = new Date().toLocaleTimeString();
-    }
-}
-
-export enum LiveModelingLogTypes {
-    SUCCESS = 'success',
-    INFO = 'info',
-    WARNING = 'warning',
-    DANGER = 'danger'
 }

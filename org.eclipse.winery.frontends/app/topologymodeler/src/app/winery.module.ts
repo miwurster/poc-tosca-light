@@ -57,6 +57,7 @@ import { LiveModelingSidebarComponent } from './live-modeling-sidebar/live-model
 import { ProgressbarModule } from 'ngx-bootstrap';
 import { LiveModelingModalComponent } from './live-modeling-modal/live-modeling-modal.component';
 import { ReqCapRelationshipService } from './services/req-cap-relationship.service';
+import { LiveModelingActions } from './redux/actions/live-modeling.actions';
 
 @NgModule({
     declarations: [
@@ -103,6 +104,7 @@ import { ReqCapRelationshipService } from './services/req-cap-relationship.servi
         JsPlumbService,
         WineryActions,
         TopologyRendererActions,
+        LiveModelingActions,
         LoadedService,
         AppReadyEventService,
         BackendService,

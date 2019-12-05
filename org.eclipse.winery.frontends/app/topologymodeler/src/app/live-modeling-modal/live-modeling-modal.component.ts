@@ -6,7 +6,7 @@ import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { ContainerService } from '../services/container.service';
 import { BackendService } from '../services/backend.service';
-import { WineryActions } from '../redux/actions/winery.actions';
+import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
 
 export enum LiveModelingModalComponentViews {
     'ENABLE_LIVE_MODELING' = 'ENABLE_LIVE_MODELING',
@@ -37,7 +37,7 @@ export class LiveModelingModalComponent {
                 private containerService: ContainerService,
                 private backendService: BackendService,
                 private ngRedux: NgRedux<IWineryState>,
-                private wineryActions: WineryActions
+                private liveModelingActions: LiveModelingActions
     ) {
         this.currentCsarId = this.normalizeCsarId(this.backendService.configuration.id);
         this.containerUrl = 'http://' + window.location.hostname + ':1337';
@@ -65,20 +65,20 @@ export class LiveModelingModalComponent {
 
     enableLiveModeling() {
         if (this.selectedServiceTemplateId) {
-            this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(this.selectedServiceTemplateId));
+            this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(this.selectedServiceTemplateId));
         } else {
-            this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(null));
+            this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(null));
         }
-        this.ngRedux.dispatch(this.wineryActions.setContainerUrl(this.containerUrl));
-        this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.START));
+        this.ngRedux.dispatch(this.liveModelingActions.setContainerUrl(this.containerUrl));
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.START));
         this.dismissModal();
     }
 
     disableLiveModeling() {
         if (this.terminateInstance) {
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.TERMINATE));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.TERMINATE));
         } else {
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.DISABLED));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DISABLED));
         }
         this.dismissModal();
     }
@@ -87,4 +87,3 @@ export class LiveModelingModalComponent {
         this.bsModalRef.hide();
     }
 }
-

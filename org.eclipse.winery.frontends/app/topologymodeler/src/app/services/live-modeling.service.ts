@@ -16,14 +16,16 @@ import { Injectable } from '@angular/core';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
-import { LiveModelingStates, NodeTemplateInstanceStates, ServiceTemplateInstanceStates } from '../models/enums';
+import { LiveModelingLogTypes, LiveModelingStates, NodeTemplateInstanceStates, ServiceTemplateInstanceStates } from '../models/enums';
 import { BackendService } from './backend.service';
 import { CsarUpload } from '../models/container/csar-upload.model';
 import { ContainerService } from './container.service';
 import { ErrorHandlerService } from './error-handler.service';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { TTopologyTemplate } from '../models/ttopology-template';
-import { LiveModelingLog, LiveModelingLogTypes, LiveModelingNodeTemplateData } from '../models/liveModelingData';
+import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
+import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
+import { LiveModelingLog } from '../models/liveModelingLog';
 
 @Injectable()
 export class LiveModelingService {
@@ -39,18 +41,18 @@ export class LiveModelingService {
 
     constructor(
         private ngRedux: NgRedux<IWineryState>,
-        private wineryActions: WineryActions,
+        private liveModelingActions: LiveModelingActions,
         private topologyRendererActions: TopologyRendererActions,
         private containerService: ContainerService,
         private backendService: BackendService,
         private errorHandler: ErrorHandlerService) {
 
-        this.ngRedux.dispatch(wineryActions.setCurrentCsarId(this.normalizeCsarId(this.backendService.configuration.id)));
+        this.ngRedux.dispatch(liveModelingActions.setCurrentCsarId(this.normalizeCsarId(this.backendService.configuration.id)));
 
         this.pollInterval = 1000;
         this.pollTimeout = 60000;
 
-        this.ngRedux.select(state => state.wineryState.liveModelingData.state)
+        this.ngRedux.select(state => state.liveModelingState.state)
             .subscribe(state => this.performAction(state));
 
         this.ngRedux.select(state => state.wineryState.currentJsonTopology)
@@ -58,12 +60,12 @@ export class LiveModelingService {
                 this.currentTopologyTemplate = topologyTemplate;
             });
 
-        this.ngRedux.select(state => state.wineryState.liveModelingData.currentServiceTemplateInstanceId)
+        this.ngRedux.select(state => state.liveModelingState.currentServiceTemplateInstanceId)
             .subscribe(serviceTemplateInstanceId => {
                 this.currentServiceTemplateInstanceId = serviceTemplateInstanceId;
             });
 
-        this.ngRedux.select(state => state.wineryState.liveModelingData.currentCsarId)
+        this.ngRedux.select(state => state.liveModelingState.currentCsarId)
             .subscribe(csarId => {
                 this.currentCsarId = csarId;
             });
@@ -122,13 +124,13 @@ export class LiveModelingService {
             await this.installCsarIfNeeded(this.currentCsarId);
             if (!this.currentServiceTemplateInstanceId) {
                 const newServiceTemplateInstanceId = await this.deployServiceTemplateInstanceOfGivenCsar(this.currentCsarId);
-                this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(newServiceTemplateInstanceId));
+                this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(newServiceTemplateInstanceId));
             }
             this.initiateNodeTemplateData();
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
         } catch (error) {
             this.errorHandler.handleError(error);
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ERROR));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ERROR));
         }
     }
 
@@ -175,7 +177,7 @@ export class LiveModelingService {
 
     private initiateNodeTemplateData() {
         for (const nodeTemplate of this.currentTopologyTemplate.nodeTemplates) {
-            this.ngRedux.dispatch(this.wineryActions.setNodeLiveModelingData(LiveModelingNodeTemplateData.initial(nodeTemplate.id)));
+            this.ngRedux.dispatch(this.liveModelingActions.setNodeTemplateData(LiveModelingNodeTemplateData.initial(nodeTemplate.id)));
         }
     }
 
@@ -183,17 +185,17 @@ export class LiveModelingService {
         try {
             if (this.currentServiceTemplateInstanceId) {
                 await this.terminateServiceTemplateInstance(this.currentCsarId, this.currentServiceTemplateInstanceId);
-                this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(null));
+                this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(null));
             }
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.DISABLED));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DISABLED));
         } catch (error) {
             this.errorHandler.handleError(error);
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ERROR));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ERROR));
         }
     }
 
     private deleteNodeTemplateData() {
-        this.ngRedux.dispatch(this.wineryActions.deleteNodeLiveModelingData);
+        this.ngRedux.dispatch(this.liveModelingActions.deleteNodeTemplateData());
     }
 
     private async terminateServiceTemplateInstance(csarId: string, serviceTemplateInstanceId: string) {
@@ -231,10 +233,10 @@ export class LiveModelingService {
             // ---------------- TEMPORARY ------------------- //
 
             await this.terminateServiceTemplateInstance(this.currentCsarId, this.currentServiceTemplateInstanceId);
-            this.ngRedux.dispatch(this.wineryActions.setCurrentCsarId(newCsarId));
+            this.ngRedux.dispatch(this.liveModelingActions.setCurrentCsarId(newCsarId));
 
             const newServiceTemplateInstanceId = await this.deployServiceTemplateInstanceOfGivenCsar(newCsarId);
-            this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(newServiceTemplateInstanceId));
+            this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(newServiceTemplateInstanceId));
 
             // ---------------------------------------------- //
 
@@ -264,10 +266,10 @@ export class LiveModelingService {
             //
             // console.log('Found new instance id: ' + this.instanceId);
 
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ENABLED));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ENABLED));
         } catch (error) {
             this.errorHandler.handleError(error);
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ERROR));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ERROR));
         }
     }
 
@@ -293,7 +295,7 @@ export class LiveModelingService {
         } catch (error) {
             this.errorHandler.handleError(error);
         } finally {
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ENABLED));
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ENABLED));
         }
     }
 
@@ -305,7 +307,7 @@ export class LiveModelingService {
                 this.currentServiceTemplateInstanceId,
                 nodeTemplate.id
             ).toPromise();
-            this.ngRedux.dispatch(this.wineryActions.setNodeLiveModelingData(new LiveModelingNodeTemplateData(nodeTemplate.id, state)));
+            this.ngRedux.dispatch(this.liveModelingActions.setNodeTemplateData(new LiveModelingNodeTemplateData(nodeTemplate.id, state)));
         }
     }
 
@@ -325,7 +327,7 @@ export class LiveModelingService {
             nodeTemplateId,
             NodeTemplateInstanceStates.STARTED
         ).toPromise();
-        this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
     }
 
     public async stopNode(nodeTemplateId: string) {
@@ -335,22 +337,22 @@ export class LiveModelingService {
             nodeTemplateId,
             NodeTemplateInstanceStates.STOPPED
         ).toPromise();
-        this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
     }
 
     private logInfo(message: string) {
-        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.INFO)));
+        this.ngRedux.dispatch(this.liveModelingActions.sendLog(new LiveModelingLog(message, LiveModelingLogTypes.INFO)));
     }
 
     private logSuccess(message: string) {
-        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.SUCCESS)));
+        this.ngRedux.dispatch(this.liveModelingActions.sendLog(new LiveModelingLog(message, LiveModelingLogTypes.SUCCESS)));
     }
 
     private logWarning(message: string) {
-        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.WARNING)));
+        this.ngRedux.dispatch(this.liveModelingActions.sendLog(new LiveModelingLog(message, LiveModelingLogTypes.WARNING)));
     }
 
     private logError(message: string) {
-        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.DANGER)));
+        this.ngRedux.dispatch(this.liveModelingActions.sendLog(new LiveModelingLog(message, LiveModelingLogTypes.DANGER)));
     }
 }
