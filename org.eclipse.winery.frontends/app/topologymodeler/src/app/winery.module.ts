@@ -56,6 +56,7 @@ import { ContainerService } from './services/container.service';
 import { LiveModelingSidebarComponent } from './live-modeling-sidebar/live-modeling-sidebar.component';
 import { ProgressbarModule } from 'ngx-bootstrap';
 import { LiveModelingModalComponent } from './live-modeling-modal/live-modeling-modal.component';
+import { ReqCapRelationshipService } from './services/req-cap-relationship.service';
 
 @NgModule({
     declarations: [
@@ -114,7 +115,8 @@ import { LiveModelingModalComponent } from './live-modeling-modal/live-modeling-
         StatefulAnnotationsService,
         PlaceComponentsService,
         ContainerService,
-        LiveModelingService
+        LiveModelingService,
+        ReqCapRelationshipService
     ],
     bootstrap: [WineryComponent],
     entryComponents: [LiveModelingModalComponent]

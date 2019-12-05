@@ -153,7 +153,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         relData: {
                             newRelName: data,
                             id: this.sidebarState.id,
-                            properties: this.sidebarState.properties
+                            properties: this.sidebarState.properties,
+                            source: this.sidebarState.source,
+                            target: this.sidebarState.target
                         }
                     }));
                 }
@@ -168,7 +170,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         minInstances: Number(this.sidebarState.minInstances),
                         maxInstances: Number(this.sidebarState.maxInstances),
                         properties: this.sidebarState.properties,
-                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
+                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
+                        source: this.sidebarState.source,
+                        target: this.sidebarState.target
                     }
                 }));
             });
@@ -197,7 +201,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         minInstances: Number(data),
                         maxInstances: this.sidebarState.maxInstances,
                         properties: this.sidebarState.properties,
-                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
+                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
+                        source: this.sidebarState.source,
+                        target: this.sidebarState.target
                     }
                 }));
             });
@@ -225,7 +231,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         minInstances: this.sidebarState.minInstances,
                         maxInstances: Number(data),
                         properties: this.sidebarState.properties,
-                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
+                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
+                        source: this.sidebarState.source,
+                        target: this.sidebarState.target
                     }
                 }));
             });
@@ -268,7 +276,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
                 properties: this.sidebarState.properties,
-                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
+                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
+                source: this.sidebarState.source,
+                target: this.sidebarState.target
             }
         }));
     }
@@ -329,7 +339,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
                 properties: this.sidebarState.properties,
-                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
+                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
+                source: this.sidebarState.source,
+                target: this.sidebarState.target
             }
         }));
     }

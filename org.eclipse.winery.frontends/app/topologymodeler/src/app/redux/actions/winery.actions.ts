@@ -39,7 +39,9 @@ export interface SidebarStateAction extends Action {
         minInstances: string,
         maxInstances: string,
         properties: string,
-        liveModelingNodeTemplateData: LiveModelingNodeTemplateData
+        liveModelingNodeTemplateData: LiveModelingNodeTemplateData,
+        source: string,
+        target: string
     };
 }
 

@@ -51,6 +51,8 @@ export const INITIAL_WINERY_STATE: WineryState = {
         maxInstances: 1,
         properties: '',
         liveModelingNoteTemplateData: null,
+        source: '',
+        target: ''
     },
     currentJsonTopology: new TTopologyTemplate,
     currentNodeData: {
