@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-import { AfterViewInit, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ProgressbarConfig } from 'ngx-bootstrap';
 import { Subscription } from 'rxjs';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { LiveModelingStates } from '../models/enums';
-import { LiveModelingLog, LiveModelingLogTypes } from '../models/liveModelingLog';
+import { LiveModelingLog, LiveModelingLogTypes } from '../models/liveModelingData';
 
 export function getProgressbarConfig(): ProgressbarConfig {
     return Object.assign(new ProgressbarConfig(), { animate: true, striped: true, max: 100 });
@@ -30,14 +30,14 @@ export function getProgressbarConfig(): ProgressbarConfig {
     styleUrls: ['./live-modeling-sidebar.component.css'],
     providers: [{ provide: ProgressbarConfig, useFactory: getProgressbarConfig }]
 })
-export class LiveModelingSidebarComponent implements OnInit, AfterViewInit {
+export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('scrollContainer') private scrollContainer: ElementRef;
     @ViewChildren('logItems') private logItems: QueryList<any>;
 
     showProgressbar: boolean;
 
     readonly SCROLL_THRESHOLD = 50;
-    isNearBottom: boolean = true;
+    isNearBottom = true;
 
     logs: Array<LiveModelingLog> = [];
 
@@ -50,9 +50,13 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit() {
-        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.wineryState.liveModelingLog)
-            .subscribe(log => this.displayLiveModelingLog(log)));
-        this.subscriptions.push(this.ngRedux.select(topologyRendererState => topologyRendererState.topologyRendererState.liveModelingState)
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingData.logs)
+            .subscribe(logs => {
+                if (logs.length > 0) {
+                    this.displayLiveModelingLog(logs[logs.length - 1]);
+                }
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingData.state)
             .subscribe(state => {
                 this.liveModelingState = state;
                 this.updateProgressbar();
@@ -67,10 +71,13 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit {
 
     private updateProgressbar() {
         switch (this.liveModelingState) {
-            case (LiveModelingStates.DISABLED || LiveModelingStates.ENABLED || LiveModelingStates.ERROR):
-                this.showProgressbar = true;
-            default:
+            case LiveModelingStates.DISABLED:
+            case LiveModelingStates.ENABLED:
+            case LiveModelingStates.ERROR:
                 this.showProgressbar = false;
+                break;
+            default:
+                this.showProgressbar = true;
         }
     }
 
@@ -90,7 +97,11 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        this.subscriptions.push(this.logItems.changes.subscribe(_ => this.scrollToBottom()));
+        this.subscriptions.push(this.logItems.changes.subscribe(_ => {
+            if (this.liveModelingState !== LiveModelingStates.DISABLED) {
+                this.scrollToBottom();
+            }
+        }));
     }
 
     private scrolled() {

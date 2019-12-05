@@ -53,9 +53,9 @@ import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/win
 import { PlaceComponentsService } from './services/placement.service';
 import { LiveModelingService } from './services/live-modeling.service';
 import { ContainerService } from './services/container.service';
-import { LiveModelingLoggerService } from './services/live-modeling-logger.service';
 import { LiveModelingSidebarComponent } from './live-modeling-sidebar/live-modeling-sidebar.component';
 import { ProgressbarModule } from 'ngx-bootstrap';
+import { LiveModelingModalComponent } from './live-modeling-modal/live-modeling-modal.component';
 
 @NgModule({
     declarations: [
@@ -66,7 +66,8 @@ import { ProgressbarModule } from 'ngx-bootstrap';
         RefinementSidebarComponent,
         ProblemDetectionComponent,
         EnricherComponent,
-        LiveModelingSidebarComponent
+        LiveModelingSidebarComponent,
+        LiveModelingModalComponent
     ],
     exports: [WineryComponent],
     imports: [
@@ -112,11 +113,11 @@ import { ProgressbarModule } from 'ngx-bootstrap';
         ErrorHandlerService,
         StatefulAnnotationsService,
         PlaceComponentsService,
-        LiveModelingLoggerService,
         ContainerService,
         LiveModelingService
     ],
-    bootstrap: [WineryComponent]
+    bootstrap: [WineryComponent],
+    entryComponents: [LiveModelingModalComponent]
 })
 export class WineryModule {
     constructor(ngRedux: NgRedux<IWineryState>,

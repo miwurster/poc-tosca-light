@@ -13,8 +13,7 @@
  ********************************************************************************/
 
 import { Action } from 'redux';
-import { HighlightNodesAction, LiveModelingStateAction, TopologyRendererActions } from '../actions/topologyRenderer.actions';
-import { LiveModelingStates } from '../../models/enums';
+import { HighlightNodesAction, TopologyRendererActions } from '../actions/topologyRenderer.actions';
 
 export interface TopologyRendererState {
     buttonsState: {
@@ -43,7 +42,6 @@ export interface TopologyRendererState {
         placeComponentsButton?: boolean;
     };
     nodesToSelect?: string[];
-    liveModelingState?: LiveModelingStates;
 }
 
 export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
@@ -71,8 +69,7 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
         determineFreezableComponentsButton: false,
         cleanFreezableComponentsButton: false,
         placeComponentsButton: false,
-    },
-    liveModelingState: LiveModelingStates.DISABLED,
+    }
 };
 /**
  * Reducer for the TopologyRenderer
@@ -284,51 +281,6 @@ export const TopologyRendererReducer =
                         ...lastState.buttonsState,
                         placeComponentsButton: !lastState.buttonsState.placeComponentsButton
                     }
-                };
-            case TopologyRendererActions.SET_LIVE_MODELING_STATE:
-                const newState = (<LiveModelingStateAction>action).newState;
-                let nextState;
-                switch (lastState.liveModelingState) {
-                    case LiveModelingStates.DISABLED:
-                        if (newState === LiveModelingStates.START) {
-                            nextState = newState;
-                        }
-                        break;
-                    case LiveModelingStates.START:
-                        if (newState === LiveModelingStates.ENABLED) {
-                            nextState = newState;
-                        }
-                        break;
-                    case LiveModelingStates.ENABLED:
-                        if (newState === LiveModelingStates.REDEPLOY || newState === LiveModelingStates.UPDATE || newState === LiveModelingStates.TERMINATE) {
-                            nextState = newState;
-                        }
-                        break;
-                    case LiveModelingStates.REDEPLOY:
-                        if (newState === LiveModelingStates.ENABLED) {
-                            nextState = newState;
-                        }
-                        break;
-                    case LiveModelingStates.UPDATE:
-                        if (newState === LiveModelingStates.ENABLED) {
-                            nextState = newState;
-                        }
-                        break;
-                    case LiveModelingStates.TERMINATE:
-                        if (newState === LiveModelingStates.DISABLED) {
-                            nextState = newState;
-                        }
-                        break;
-                    case LiveModelingStates.ERROR: {
-                        nextState = LiveModelingStates.DISABLED;
-                    }
-                }
-                if (!nextState) {
-                    nextState = LiveModelingStates.ERROR;
-                }
-                return {
-                    ...lastState,
-                    liveModelingState: nextState
                 };
         }
         return lastState;

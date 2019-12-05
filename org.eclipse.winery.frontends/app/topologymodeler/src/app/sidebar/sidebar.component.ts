@@ -21,9 +21,10 @@ import { Subject, Subscription } from 'rxjs';
 
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { QName } from '../models/qname';
-import { PropertyDefinitionType, urlElement } from '../models/enums';
+import { NodeTemplateInstanceStates, PropertyDefinitionType, urlElement } from '../models/enums';
 import { BackendService } from '../services/backend.service';
 import { isNullOrUndefined } from 'util';
+import { LiveModelingService } from '../services/live-modeling.service';
 
 /**
  * This is the right sidebar, where attributes of nodes and relationships get displayed.
@@ -62,9 +63,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public nodeMaxInstancesKeyUp: Subject<string> = new Subject<string>();
     subscription: Subscription;
 
+    nodeTemplateInstanceStates = NodeTemplateInstanceStates;
+
     constructor(private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
-                private backendService: BackendService) {
+                private backendService: BackendService,
+                private liveModelingService: LiveModelingService) {
     }
 
     deleteButtonSidebarClicked($event) {
@@ -87,7 +91,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 type: '',
                 minInstances: -1,
                 maxInstances: -1,
-                properties: ''
+                properties: '',
+                liveModelingNodeTemplateData: null
             }
         }));
     }
@@ -134,7 +139,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         // apply changes to the node name <input> field with a debounceTime of 300ms
         this.subscription = this.nodeNameKeyUp.pipe(
             debounceTime(300),
-            distinctUntilChanged(), )
+            distinctUntilChanged())
             .subscribe(data => {
                 if (this.sidebarState.nodeClicked) {
                     this.$ngRedux.dispatch(this.actions.changeNodeName({
@@ -162,7 +167,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         type: this.sidebarState.type,
                         minInstances: Number(this.sidebarState.minInstances),
                         maxInstances: Number(this.sidebarState.maxInstances),
-                        properties: this.sidebarState.properties
+                        properties: this.sidebarState.properties,
+                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
                     }
                 }));
             });
@@ -170,7 +176,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         // minInstances
         const nodeMinInstancesKeyUpObservable = this.nodeMinInstancesKeyUp.pipe(
             debounceTime(300),
-            distinctUntilChanged(), )
+            distinctUntilChanged())
             .subscribe(data => {
                 if (this.sidebarState.nodeClicked) {
                     this.$ngRedux.dispatch(this.actions.changeMinInstances({
@@ -190,14 +196,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         type: this.sidebarState.type,
                         minInstances: Number(data),
                         maxInstances: this.sidebarState.maxInstances,
-                        properties: this.sidebarState.properties
+                        properties: this.sidebarState.properties,
+                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
                     }
                 }));
             });
         // maxInstances
         const nodeMaxInstancesKeyUpObservable = this.nodeMaxInstancesKeyUp.pipe(
             debounceTime(300),
-            distinctUntilChanged(), )
+            distinctUntilChanged())
             .subscribe(data => {
                 if (this.sidebarState.nodeClicked) {
                     this.$ngRedux.dispatch(this.actions.changeMaxInstances({
@@ -217,7 +224,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         type: this.sidebarState.type,
                         minInstances: this.sidebarState.minInstances,
                         maxInstances: Number(data),
-                        properties: this.sidebarState.properties
+                        properties: this.sidebarState.properties,
+                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
                     }
                 }));
             });
@@ -259,7 +267,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 type: this.sidebarState.type,
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
-                properties: this.sidebarState.properties
+                properties: this.sidebarState.properties,
+                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
             }
         }));
     }
@@ -319,7 +328,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 type: this.sidebarState.type,
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
-                properties: this.sidebarState.properties
+                properties: this.sidebarState.properties,
+                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData
             }
         }));
     }
@@ -366,6 +376,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 encodeURIComponent(encodeURIComponent(qName.nameSpace)) + qName.localName + urlElement.ReadMe;
         }
         window.open(typeURL, '_blank');
+    }
+
+    startNodeInstance() {
+        this.liveModelingService.startNode(this.sidebarState.id);
+        this.closeSidebar();
+    }
+
+    stopNodeInstance() {
+        this.liveModelingService.stopNode(this.sidebarState.id);
+        this.closeSidebar();
     }
 
     ngOnDestroy() {

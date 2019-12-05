@@ -319,7 +319,6 @@ export class BackendService {
         topologySkeleton.nodeTemplates.map(nodeTemplate => {
             delete nodeTemplate.visuals;
             delete nodeTemplate._state;
-            delete nodeTemplate.liveModelingData;
         });
 
         return topologySkeleton;

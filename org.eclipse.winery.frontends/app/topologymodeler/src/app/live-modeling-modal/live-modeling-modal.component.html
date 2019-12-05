@@ -1,0 +1,51 @@
+<div class="modal-header">
+    <h4 *ngIf="modalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING" class="modal-title pull-left">Enable
+        Live-Modeling</h4>
+    <h4 *ngIf="modalView === liveModelingModalComponentViews.DISABLE_LIVE_MODELING" class="modal-title pull-left">
+        Disable Live-Modeling</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <ng-container *ngIf="modalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING">
+        <p>Caution! This will enable live-modeling.</p>
+        <div class="form-group">
+            <label for="containerUrlInput">Enter OpenTOSCA container Url:</label>
+            <input [(ngModel)]="containerUrl" class="form-control" type="text" id="containerUrlInput"
+                   placeholder="containerUrl">
+        </div>
+
+        <label>(Optional) Select already running instance: </label>
+        <div class="wrapper">
+            <div class="btn-group mr-2 dropdown" dropdown [isDisabled]="!(serviceTemplateInstanceIds && serviceTemplateInstanceIds?.length) > 0">
+                <button id="button-basic" dropdownToggle type="button" class="btn btn-light dropdown-toggle"
+                        aria-controls="dropdown-basic">
+                    Service Template Instance ID: <b>{{selectedServiceTemplateId || '(none)'}}</b> <span class="caret"></span>
+                </button>
+                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu"
+                    role="menu" aria-labelledby="button-basic">
+                    <li *ngFor="let id of serviceTemplateInstanceIds">
+                        <span class="dropdown-item" (click)="selectServiceTemplateId(id)">{{id}}</span>
+                    </li>
+                </ul>
+            </div>
+            <button type="button" class="btn btn-info" (click)="fetchServiceTemplateInstances()"><i
+                class="fa fa-refresh" style="pointer-events: none;"></i></button>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="modalView === liveModelingModalComponentViews.DISABLE_LIVE_MODELING">
+        <input type="checkbox" id="terminateInstance" name="terminateInstance" [(ngModel)]="terminateInstance">
+        <label for="terminateInstance" class="font-weight-normal ml-2">Terminate Service Template Instance</label>
+    </ng-container>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+    <button *ngIf="modalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING" type="button"
+            class="btn btn-primary" (click)="enableLiveModeling()">Enable
+    </button>
+    <button *ngIf="modalView === liveModelingModalComponentViews.DISABLE_LIVE_MODELING" type="button"
+            class="btn btn-danger" (click)="disableLiveModeling()">Disable
+    </button>
+</div>

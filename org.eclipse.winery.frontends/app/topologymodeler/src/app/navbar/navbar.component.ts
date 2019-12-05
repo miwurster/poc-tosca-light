@@ -28,6 +28,7 @@ import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureT
 import { LiveModelingStates } from '../models/enums';
 import { LiveModelingService } from '../services/live-modeling.service';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap';
+import { LiveModelingModalComponent, LiveModelingModalComponentViews } from '../live-modeling-modal/live-modeling-modal.component';
 
 /**
  * The navbar of the topologymodeler.
@@ -55,15 +56,15 @@ export class NavbarComponent implements OnDestroy {
 
     @ViewChild('exportCsarButton')
     private exportCsarButtonRef: ElementRef;
-    
+
     @ViewChild('enableLiveModelingModalTemplate')
     private enableLiveModelingModalRef: TemplateRef<any>;
 
     @ViewChild('disableLiveModelingModalTemplate')
     private disableLiveModelingModalRef: TemplateRef<any>;
 
-
     navbarButtonsState: TopologyRendererState;
+    liveModelingState: LiveModelingStates;
     unformattedTopologyTemplate;
     subscriptions: Array<Subscription> = [];
     exportCsarUrl: string;
@@ -71,9 +72,7 @@ export class NavbarComponent implements OnDestroy {
     matchingOngoing: boolean;
     placingOngoing: boolean;
     configEnum = FeatureEnum;
-    liveModelingState = LiveModelingStates;
-    containerUrl: string;
-    modalRef: BsModalRef;
+    liveModelingStates = LiveModelingStates;
 
     constructor(private alert: ToastrService,
                 private ngRedux: NgRedux<IWineryState>,
@@ -83,7 +82,7 @@ export class NavbarComponent implements OnDestroy {
                 private statefulService: StatefulAnnotationsService,
                 private hotkeysService: HotkeysService,
                 private liveModelingService: LiveModelingService,
-                private modalService: BsModalService,) {
+                private modalService: BsModalService) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
@@ -99,7 +98,11 @@ export class NavbarComponent implements OnDestroy {
             return false; // Prevent bubbling
         }, undefined, 'Apply the layout directive to the Node Templates'));
         this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
-        this.containerUrl = 'http://' + window.location.hostname + ':1337';
+        this.subscriptions.push(ngRedux.select(state => state.wineryState.liveModelingData.state).subscribe(
+            state => {
+                this.liveModelingState = state;
+            }
+        ));
     }
 
     /**
@@ -245,39 +248,30 @@ export class NavbarComponent implements OnDestroy {
                 this.placingOngoing = true;
                 break;
             case 'liveModeling':
-                if (this.navbarButtonsState.liveModelingState == LiveModelingStates.DISABLED) {
-                    this.modalRef = this.modalService.show(this.enableLiveModelingModalRef, { ignoreBackdropClick: true });
-                } else if (this.navbarButtonsState.liveModelingState == LiveModelingStates.ENABLED) {
-                    this.modalRef = this.modalService.show(this.disableLiveModelingModalRef, { ignoreBackdropClick: true });
+                if (this.liveModelingState === LiveModelingStates.DISABLED) {
+                    const initialState = {
+                        modalView: LiveModelingModalComponentViews.ENABLE_LIVE_MODELING
+                    };
+                    this.modalService.show(LiveModelingModalComponent, { initialState, ignoreBackdropClick: true });
+                } else if (this.liveModelingState === LiveModelingStates.ENABLED) {
+                    const initialState = {
+                        modalView: LiveModelingModalComponentViews.DISABLE_LIVE_MODELING
+                    };
+                    this.modalService.show(LiveModelingModalComponent, { initialState, ignoreBackdropClick: true });
                 }
                 break;
             case 'liveModeling-redeployButton':
-                this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.REDEPLOY));
+                this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.REDEPLOY));
                 break;
             case 'liveModeling-update':
-                this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.UPDATE));
+                this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
                 break;
             case 'liveModeling-test':
                 this.liveModelingService.test();
                 break;
         }
     }
-    
-    enableLiveModeling() {
-        this.liveModelingService.configureContainerUrl(this.containerUrl);
-        this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.START));
-        this.dismissModal();
-    }
 
-    disableLiveModeling() {
-        this.ngRedux.dispatch(this.actions.setLiveModelingState(LiveModelingStates.TERMINATE));
-        this.dismissModal();
-    }
-
-    dismissModal() {
-        this.modalRef.hide();
-    }
-    
     /**
      * Calls the BackendService's saveTopologyTemplate method and displays a success message if successful.
      */

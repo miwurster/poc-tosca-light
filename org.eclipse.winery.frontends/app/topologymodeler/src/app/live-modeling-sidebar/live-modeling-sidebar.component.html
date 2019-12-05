@@ -12,7 +12,7 @@
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-<div *ngIf="liveModelingState === liveModelingStates.DISABLED" class="container">
+<div *ngIf="liveModelingState !== liveModelingStates.DISABLED" class="container">
     <div #scrollContainer (scroll)="scrolled()" class="scroll-container">
         <div #logItems *ngFor="let log of logs; let last = last" class="log">
             <span class="log-timestamp">{{log.timestamp}}</span>

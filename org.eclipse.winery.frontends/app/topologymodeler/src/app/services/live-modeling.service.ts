@@ -16,16 +16,14 @@ import { Injectable } from '@angular/core';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { TopologyRendererActions } from '../redux/actions/topologyRenderer.actions';
-import { LiveModelingStates, ServiceTemplateInstanceStates } from '../models/enums';
+import { LiveModelingStates, NodeTemplateInstanceStates, ServiceTemplateInstanceStates } from '../models/enums';
 import { BackendService } from './backend.service';
 import { CsarUpload } from '../models/container/csar-upload.model';
 import { ContainerService } from './container.service';
 import { ErrorHandlerService } from './error-handler.service';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { TTopologyTemplate } from '../models/ttopology-template';
-import { LiveModelingData } from '../models/liveModelingData';
-import { LiveModelingLoggerService } from './live-modeling-logger.service';
-import { LiveModelingLog, LiveModelingLogTypes } from '../models/liveModelingLog';
+import { LiveModelingLog, LiveModelingLogTypes, LiveModelingNodeTemplateData } from '../models/liveModelingData';
 
 @Injectable()
 export class LiveModelingService {
@@ -45,19 +43,29 @@ export class LiveModelingService {
         private topologyRendererActions: TopologyRendererActions,
         private containerService: ContainerService,
         private backendService: BackendService,
-        private errorHandler: ErrorHandlerService,
-        private liveModelingLoggerService: LiveModelingLoggerService) {
+        private errorHandler: ErrorHandlerService) {
 
-        this.currentCsarId = this.normalizeCsarId(this.backendService.configuration.id);
+        this.ngRedux.dispatch(wineryActions.setCurrentCsarId(this.normalizeCsarId(this.backendService.configuration.id)));
+
         this.pollInterval = 1000;
         this.pollTimeout = 60000;
 
-        this.ngRedux.select(state => state.topologyRendererState.liveModelingState)
+        this.ngRedux.select(state => state.wineryState.liveModelingData.state)
             .subscribe(state => this.performAction(state));
 
         this.ngRedux.select(state => state.wineryState.currentJsonTopology)
             .subscribe(topologyTemplate => {
                 this.currentTopologyTemplate = topologyTemplate;
+            });
+
+        this.ngRedux.select(state => state.wineryState.liveModelingData.currentServiceTemplateInstanceId)
+            .subscribe(serviceTemplateInstanceId => {
+                this.currentServiceTemplateInstanceId = serviceTemplateInstanceId;
+            });
+
+        this.ngRedux.select(state => state.wineryState.liveModelingData.currentCsarId)
+            .subscribe(csarId => {
+                this.currentCsarId = csarId;
             });
     }
 
@@ -77,13 +85,10 @@ export class LiveModelingService {
         return csarId.endsWith(this.csarEnding) ? csarId.slice(0, -this.csarEnding.length) : csarId;
     }
 
-    public configureContainerUrl(containerUrl: string) {
-        this.containerService.containerUrl = containerUrl;
-    }
-
     private performAction(state: LiveModelingStates) {
         switch (state) {
             case LiveModelingStates.DISABLED:
+                this.disable();
                 break;
             case LiveModelingStates.START:
                 this.start();
@@ -106,16 +111,24 @@ export class LiveModelingService {
         }
     }
 
+    private disable() {
+        if (this.currentTopologyTemplate) {
+            this.deleteNodeTemplateData();
+        }
+    }
+
     private async start() {
         try {
             await this.installCsarIfNeeded(this.currentCsarId);
-            const newInstanceId = await this.deployServiceTemplateInstanceOfGivenCsar(this.currentCsarId);
-            this.currentServiceTemplateInstanceId = newInstanceId;
+            if (!this.currentServiceTemplateInstanceId) {
+                const newServiceTemplateInstanceId = await this.deployServiceTemplateInstanceOfGivenCsar(this.currentCsarId);
+                this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(newServiceTemplateInstanceId));
+            }
             this.initiateNodeTemplateData();
-            this.ngRedux.dispatch(this.topologyRendererActions.setLiveModelingState(LiveModelingStates.ENABLED));
+            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
         } catch (error) {
             this.errorHandler.handleError(error);
-            this.ngRedux.dispatch(this.topologyRendererActions.setLiveModelingState(LiveModelingStates.ERROR));
+            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ERROR));
         }
     }
 
@@ -123,39 +136,46 @@ export class LiveModelingService {
         const appInstalled = await this.containerService.isApplicationInstalled(csarId).toPromise();
 
         if (!appInstalled) {
-            console.log('App not found, installing...');
-            let uploadPayload = new CsarUpload(this.getCsarResourceUrl(csarId), csarId, 'false');
+            this.logWarning('App not found, installing now...');
+            const uploadPayload = new CsarUpload(this.getCsarResourceUrl(csarId), csarId, 'false');
             await this.containerService.installApplication(uploadPayload).toPromise();
         } else {
-            console.log('App is already installed');
+            this.logInfo('App found. Skipping installation.');
         }
     }
 
     private async deployServiceTemplateInstanceOfGivenCsar(csarId: string): Promise<string> {
-        console.log('Deploying service template instance...');
+        this.logInfo('Deploying service template instance...');
 
         const correlationId = await this.containerService.deployServiceTemplateInstance(csarId).toPromise();
 
-        console.log('Executing build plan with correlation id ' + correlationId);
+        this.logInfo('Executing build plan with correlation id ' + correlationId);
 
-        const instanceId = await this.containerService.waitForServiceTemplateInstanceIdAfterDeployment(csarId, correlationId, this.pollInterval, this.pollTimeout).toPromise();
+        const instanceId = await this.containerService.waitForServiceTemplateInstanceIdAfterDeployment(
+            csarId,
+            correlationId,
+            this.pollInterval,
+            this.pollTimeout
+        ).toPromise();
 
-        console.log('Waiting for deployment of service template instance with id ' + instanceId);
+        this.logInfo('Waiting for deployment of service template instance with id ' + instanceId);
 
-        await this.containerService.waitForServiceTemplateInstanceInState(csarId, instanceId, ServiceTemplateInstanceStates.CREATED, this.pollInterval, this.pollTimeout).toPromise();
+        await this.containerService.waitForServiceTemplateInstanceInState(
+            csarId,
+            instanceId,
+            ServiceTemplateInstanceStates.CREATED,
+            this.pollInterval,
+            this.pollTimeout
+        ).toPromise();
 
-        console.log('Successfully deployed instance with Id ' + instanceId);
+        this.logSuccess('Successfully deployed instance with Id ' + instanceId);
 
         return instanceId;
     }
 
     private initiateNodeTemplateData() {
-        for (let nodeTemplate of this.currentTopologyTemplate.nodeTemplates) {
-            const actionObject = {
-                nodeId: nodeTemplate.id,
-                liveModelingData: new LiveModelingData()
-            };
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingData(actionObject));
+        for (const nodeTemplate of this.currentTopologyTemplate.nodeTemplates) {
+            this.ngRedux.dispatch(this.wineryActions.setNodeLiveModelingData(LiveModelingNodeTemplateData.initial(nodeTemplate.id)));
         }
     }
 
@@ -163,36 +183,35 @@ export class LiveModelingService {
         try {
             if (this.currentServiceTemplateInstanceId) {
                 await this.terminateServiceTemplateInstance(this.currentCsarId, this.currentServiceTemplateInstanceId);
-                this.deleteNodeTemplateData();
-                this.currentServiceTemplateInstanceId = null;
+                this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(null));
             }
-            // this.ngRedux.dispatch(this.topologyRendererActions.setLiveModelingState(LiveModelingStates.DISABLED));
+            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.DISABLED));
         } catch (error) {
             this.errorHandler.handleError(error);
-            this.ngRedux.dispatch(this.topologyRendererActions.setLiveModelingState(LiveModelingStates.ERROR));
+            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ERROR));
         }
     }
 
     private deleteNodeTemplateData() {
-        for (let nodeTemplate of this.currentTopologyTemplate.nodeTemplates) {
-            const actionObject = {
-                nodeId: nodeTemplate.id,
-                liveModelingData: null
-            };
-            this.ngRedux.dispatch(this.wineryActions.setLiveModelingData(actionObject));
-        }
+        this.ngRedux.dispatch(this.wineryActions.deleteNodeLiveModelingData);
     }
 
-    private async terminateServiceTemplateInstance(csarId: string, instanceId: string) {
-        console.log('Terminating service template instance ' + instanceId);
+    private async terminateServiceTemplateInstance(csarId: string, serviceTemplateInstanceId: string) {
+        this.logInfo('Terminating service template instance ' + serviceTemplateInstanceId);
 
-        await this.containerService.terminateServiceTemplateInstance(csarId, instanceId).toPromise();
+        await this.containerService.terminateServiceTemplateInstance(csarId, serviceTemplateInstanceId).toPromise();
 
-        console.log('Waiting for deletion of instance with instance id ' + instanceId);
+        this.logInfo('Waiting for deletion of instance with instance id ' + serviceTemplateInstanceId);
 
-        await this.containerService.waitForServiceTemplateInstanceInState(csarId, instanceId, ServiceTemplateInstanceStates.DELETED, this.pollInterval, this.pollTimeout).toPromise();
+        await this.containerService.waitForServiceTemplateInstanceInState(
+            csarId,
+            serviceTemplateInstanceId,
+            ServiceTemplateInstanceStates.DELETED,
+            this.pollInterval,
+            this.pollTimeout
+        ).toPromise();
 
-        console.log('Instance has been successfully deleted');
+        this.logSuccess('Instance has been successfully deleted');
     }
 
     private async redeploy() {
@@ -212,10 +231,10 @@ export class LiveModelingService {
             // ---------------- TEMPORARY ------------------- //
 
             await this.terminateServiceTemplateInstance(this.currentCsarId, this.currentServiceTemplateInstanceId);
-            this.currentCsarId = newCsarId;
+            this.ngRedux.dispatch(this.wineryActions.setCurrentCsarId(newCsarId));
 
-            const newInstanceId = await this.deployServiceTemplateInstanceOfGivenCsar(newCsarId);
-            this.currentServiceTemplateInstanceId = newInstanceId;
+            const newServiceTemplateInstanceId = await this.deployServiceTemplateInstanceOfGivenCsar(newCsarId);
+            this.ngRedux.dispatch(this.wineryActions.setCurrentServiceTemplateInstanceId(newServiceTemplateInstanceId));
 
             // ---------------------------------------------- //
 
@@ -245,27 +264,27 @@ export class LiveModelingService {
             //
             // console.log('Found new instance id: ' + this.instanceId);
 
-            this.ngRedux.dispatch(this.topologyRendererActions.setLiveModelingState(LiveModelingStates.ENABLED));
+            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ENABLED));
         } catch (error) {
             this.errorHandler.handleError(error);
-            this.ngRedux.dispatch(this.topologyRendererActions.setLiveModelingState(LiveModelingStates.ERROR));
+            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ERROR));
         }
     }
 
     private isCurrentTopologyInvalid(): boolean {
-        //TODO
+        // TODO
         return false;
     }
 
     private didTopologyChange(): boolean {
-        //TODO
+        // TODO
         return false;
     }
 
     private async createTemporaryServiceTemplate(): Promise<string> {
-        console.log('Creating temporary service template...');
-        const serviceTemplateId = await this.backendService.createTemporaryServiceTemplate(this.currentTopologyTemplate).toPromise();
-        return serviceTemplateId.xmlId.decoded;
+        this.logInfo('Creating temporary service template...');
+        const temporaryServiceTemplateId = await this.backendService.createTemporaryServiceTemplate(this.currentTopologyTemplate).toPromise();
+        return temporaryServiceTemplateId.xmlId.decoded;
     }
 
     public async update() {
@@ -274,24 +293,64 @@ export class LiveModelingService {
         } catch (error) {
             this.errorHandler.handleError(error);
         } finally {
-            this.ngRedux.dispatch(this.topologyRendererActions.setLiveModelingState(LiveModelingStates.ENABLED));
+            this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.ENABLED));
         }
     }
 
     private async updateNodeTemplateData() {
-        for (let nodeTemplate of this.currentTopologyTemplate.nodeTemplates) {
-            const state = await this.containerService.getNodeTemplateInstanceState(this.currentCsarId, this.currentServiceTemplateInstanceId, nodeTemplate.id).toPromise();
-            for (let nodeTemplate of this.currentTopologyTemplate.nodeTemplates) {
-                const actionObject = {
-                    nodeId: nodeTemplate.id,
-                    liveModelingData: Object.assign(nodeTemplate.liveModelingData, {state: state})
-                };
-                this.ngRedux.dispatch(this.wineryActions.setLiveModelingData(actionObject));
-            }
+        for (const nodeTemplate of this.currentTopologyTemplate.nodeTemplates) {
+            this.logInfo('Fetching data for node ' + nodeTemplate.id);
+            const state = await this.containerService.getNodeTemplateInstanceState(
+                this.currentCsarId,
+                this.currentServiceTemplateInstanceId,
+                nodeTemplate.id
+            ).toPromise();
+            this.ngRedux.dispatch(this.wineryActions.setNodeLiveModelingData(new LiveModelingNodeTemplateData(nodeTemplate.id, state)));
         }
     }
 
     public async test() {
-        this.liveModelingLoggerService.logSuccess('SUCCESS');
+        await this.containerService.updateNodeTemplateInstanceState(
+            this.currentCsarId,
+            this.currentServiceTemplateInstanceId,
+            'MyTinyToDoDockerContainer',
+            NodeTemplateInstanceStates.STOPPED
+        ).toPromise();
+    }
+
+    public async startNode(nodeTemplateId: string) {
+        await this.containerService.updateNodeTemplateInstanceState(
+            this.currentCsarId,
+            this.currentServiceTemplateInstanceId,
+            nodeTemplateId,
+            NodeTemplateInstanceStates.STARTED
+        ).toPromise();
+        this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
+    }
+
+    public async stopNode(nodeTemplateId: string) {
+        await this.containerService.updateNodeTemplateInstanceState(
+            this.currentCsarId,
+            this.currentServiceTemplateInstanceId,
+            nodeTemplateId,
+            NodeTemplateInstanceStates.STOPPED
+        ).toPromise();
+        this.ngRedux.dispatch(this.wineryActions.setLiveModelingState(LiveModelingStates.UPDATE));
+    }
+
+    private logInfo(message: string) {
+        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.INFO)));
+    }
+
+    private logSuccess(message: string) {
+        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.SUCCESS)));
+    }
+
+    private logWarning(message: string) {
+        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.WARNING)));
+    }
+
+    private logError(message: string) {
+        this.ngRedux.dispatch(this.wineryActions.sendLiveModelingLog(new LiveModelingLog(message, LiveModelingLogTypes.DANGER)));
     }
 }

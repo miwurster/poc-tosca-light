@@ -16,14 +16,17 @@ import { Action } from 'redux';
 import {
     DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
     DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
-    SaveRelationshipAction, SendCurrentNodeIdAction, SendLiveModelingLog, SendPaletteOpenedAction, SetCababilityAction,
-    SetDeploymentArtifactAction, SetNodeLiveModelingData, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
+    SaveRelationshipAction, SendCurrentNodeIdAction, SendLiveModelingLog, SendPaletteOpenedAction, SetCababilityAction, SetContainerUrl, SetCurrentCsarId,
+    SetCurrentServiceTemplateInstanceId,
+    SetDeploymentArtifactAction, SetLiveModelingState, SetNodeLiveModelingData, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
     UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
 } from '../actions/winery.actions';
 import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 import { Visuals } from '../../models/visuals';
+import { LiveModelingData, LiveModelingNodeTemplateData } from '../../models/liveModelingData';
+import { LiveModelingStates } from '../../models/enums';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;
@@ -32,7 +35,7 @@ export interface WineryState {
     currentJsonTopology: TTopologyTemplate;
     currentNodeData: any;
     nodeVisuals: Visuals[];
-    liveModelingLog: any;
+    liveModelingData: LiveModelingData;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -46,7 +49,8 @@ export const INITIAL_WINERY_STATE: WineryState = {
         type: '',
         minInstances: 1,
         maxInstances: 1,
-        properties: ''
+        properties: '',
+        liveModelingNoteTemplateData: null,
     },
     currentJsonTopology: new TTopologyTemplate,
     currentNodeData: {
@@ -54,7 +58,7 @@ export const INITIAL_WINERY_STATE: WineryState = {
         focus: false
     },
     nodeVisuals: null,
-    liveModelingLog: {},
+    liveModelingData: LiveModelingData.initial()
 };
 
 /**
@@ -458,34 +462,131 @@ export const WineryReducer =
                     currentNodeData: currentNodeData
                 };
             case WineryActions.SET_NODE_VISUALS:
-                const visuals: Visuals[] = (<SetNodeVisuals> action).visuals;
+                const visuals: Visuals[] = (<SetNodeVisuals>action).visuals;
 
                 return {
                     ...lastState,
                     nodeVisuals: visuals
                 };
-            case WineryActions.SET_LIVE_MODELING_DATA:
-                const newLiveModelingData = (<SetNodeLiveModelingData>action).liveModelingData;
+            case WineryActions.SET_LIVE_MODELING_STATE:
+                const newState = (<SetLiveModelingState>action).newState;
+                let nextState;
+                switch (lastState.liveModelingData.state) {
+                    case LiveModelingStates.DISABLED:
+                        if (newState === LiveModelingStates.START) {
+                            nextState = newState;
+                        }
+                        break;
+                    case LiveModelingStates.START:
+                        if (newState === LiveModelingStates.UPDATE) {
+                            nextState = newState;
+                        }
+                        break;
+                    case LiveModelingStates.ENABLED:
+                        if (newState === LiveModelingStates.REDEPLOY ||
+                            newState === LiveModelingStates.UPDATE ||
+                            newState === LiveModelingStates.TERMINATE ||
+                            newState === LiveModelingStates.DISABLED
+                        ) {
+                            nextState = newState;
+                        }
+                        break;
+                    case LiveModelingStates.REDEPLOY:
+                        if (newState === LiveModelingStates.ENABLED) {
+                            nextState = newState;
+                        }
+                        break;
+                    case LiveModelingStates.UPDATE:
+                        if (newState === LiveModelingStates.ENABLED) {
+                            nextState = newState;
+                        }
+                        break;
+                    case LiveModelingStates.TERMINATE:
+                        if (newState === LiveModelingStates.DISABLED) {
+                            nextState = newState;
+                        }
+                        break;
+                    case LiveModelingStates.ERROR: {
+                        nextState = LiveModelingStates.DISABLED;
+                    }
+                }
+                if (!nextState) {
+                    nextState = LiveModelingStates.ERROR;
+                }
+                return {
+                    ...lastState,
+                    liveModelingData: {
+                        ...lastState.liveModelingData,
+                        state: nextState
+                    }
+                };
+            case WineryActions.SET_NODE_LIVE_MODELING_DATA:
+                const newLiveModelingNodeTemplateData = (<SetNodeLiveModelingData>action).liveModelingNodeTemplateData;
+
+                const nodeTemplateDataExists = lastState.liveModelingData.nodeTemplatesData.findIndex(el => el.id === newLiveModelingNodeTemplateData.id) > -1;
+                const newNodeTemplatesData = lastState.liveModelingData.nodeTemplatesData.slice();
+                if (nodeTemplateDataExists) {
+                    newNodeTemplatesData[newNodeTemplatesData.findIndex(el => el.id === newLiveModelingNodeTemplateData.id)] = newLiveModelingNodeTemplateData;
+                } else {
+                    newNodeTemplatesData.push(newLiveModelingNodeTemplateData);
+                }
 
                 return <WineryState>{
                     ...lastState,
-                    currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
-                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
-                            .map(nodeTemplate => nodeTemplate.id === newLiveModelingData.nodeId ?
-                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('liveModelingData', newLiveModelingData.liveModelingData)
-                                : nodeTemplate
-                            )
+                    liveModelingData: {
+                        ...lastState.liveModelingData,
+                        nodeTemplatesData: newNodeTemplatesData
                     }
                 };
             case WineryActions.SEND_LIVE_MODELING_LOG:
-                const liveModelingLog = (<SendLiveModelingLog>action).liveModelingLog;
+                const log = (<SendLiveModelingLog>action).liveModelingLog;
 
                 return <WineryState>{
                     ...lastState,
-                    liveModelingLog: liveModelingLog
+                    liveModelingData: {
+                        ...lastState.liveModelingData,
+                        logs: [...lastState.liveModelingData.logs, log]
+                    }
+                };
+            case WineryActions.SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID:
+                const serviceTemplateInstanceId = (<SetCurrentServiceTemplateInstanceId>action).serviceTemplateInstanceId;
+
+                return <WineryState>{
+                    ...lastState,
+                    liveModelingData: {
+                        ...lastState.liveModelingData,
+                        currentServiceTemplateInstanceId: serviceTemplateInstanceId
+                    }
+                };
+            case WineryActions.SET_CURRENT_CSAR_ID:
+                const csarId = (<SetCurrentCsarId>action).csarId;
+
+                return <WineryState>{
+                    ...lastState,
+                    liveModelingData: {
+                        ...lastState.liveModelingData,
+                        currentCsarId: csarId
+                    }
+                };
+            case WineryActions.SET_CONTAINER_URL:
+                const containerUrl = (<SetContainerUrl>action).containerUrl;
+
+                return <WineryState>{
+                    ...lastState,
+                    liveModelingData: {
+                        ...lastState.liveModelingData,
+                        containerUrl: containerUrl
+                    }
+                };
+            case WineryActions.DELETE_NODE_LIVE_MODELING_DATA:
+                return <WineryState>{
+                    ...lastState,
+                    liveModelingData: {
+                        ...lastState.liveModelingData,
+                        nodeTemplatesData: <LiveModelingNodeTemplateData[]>[]
+                    }
                 };
             default:
-                return <WineryState> lastState;
+                return <WineryState>lastState;
         }
     };

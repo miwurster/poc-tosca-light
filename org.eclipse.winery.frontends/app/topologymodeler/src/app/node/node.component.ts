@@ -34,6 +34,7 @@ import { VersionElement } from '../models/versionElement';
 import { VersionsComponent } from './versions/versions.component';
 import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { LiveModelingNodeTemplateData } from '../models/liveModelingData';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -73,6 +74,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     propertyDefinitionType: string;
     policyIcons: string[];
     configEnum = FeatureEnum;
+    liveModelingNodeTemplateData: LiveModelingNodeTemplateData;
 
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
@@ -390,7 +392,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                     nameTextFieldValue: '',
                     type: '',
                     minInstances: -1,
-                    maxInstances: -1
+                    maxInstances: -1,
+                    liveModelingNodeTemplateData: null
                 }
             }));
         } else {
@@ -402,7 +405,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                     nameTextFieldValue: this.nodeTemplate.name,
                     type: this.nodeTemplate.type,
                     minInstances: this.nodeTemplate.minInstances,
-                    maxInstances: this.nodeTemplate.maxInstances
+                    maxInstances: this.nodeTemplate.maxInstances,
+                    liveModelingNodeTemplateData: this.liveModelingNodeTemplateData
                 }
             }));
         }

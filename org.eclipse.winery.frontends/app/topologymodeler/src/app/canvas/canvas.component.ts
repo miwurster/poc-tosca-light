@@ -54,6 +54,7 @@ import { ThreatModelingModalData } from '../models/threatModelingModalData';
 import { ThreatCreation } from '../models/threatCreation';
 import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 import { TPolicy } from '../models/policiesModalData';
+import { LiveModelingNodeTemplateData } from '../models/liveModelingData';
 
 @Component({
     selector: 'winery-canvas',
@@ -175,6 +176,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.gridTemplate = new GridTemplate(100, false, false, 30);
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened)));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingData.nodeTemplatesData)
+            .subscribe(currentLiveModelingNodeTemplatesData => this.updateNodesLiveModelingData(currentLiveModelingNodeTemplatesData)));
         this.hotkeysService.add(new Hotkey('mod+a', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             this.allNodeTemplates.forEach(node => this.enhanceDragSelection(node.id));
@@ -1478,7 +1481,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 id: '',
                 nameTextFieldValue: '',
                 type: '',
-                properties: ''
+                properties: '',
+                liveModelingNodeTemplateData: null
             }
         }));
     }
@@ -1814,9 +1818,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 } else if (nodeTemplate.otherAttributes !== node.otherAttributes) {
                     nodeTemplate.otherAttributes = node.otherAttributes;
                     return true;
-                } else if (nodeTemplate.liveModelingData !== node.liveModelingData) {
-                    nodeTemplate.liveModelingData = node.liveModelingData;
-                    return true;
                 }
             }
         });
@@ -1854,7 +1855,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     id: currentRel.id,
                     nameTextFieldValue: currentRel.name,
                     type: currentRel.type,
-                    properties: currentRel.properties
+                    properties: currentRel.properties,
+                    liveModelingNodeTemplateData: null
                 }
             }));
             conn.addType('marked');
@@ -2061,5 +2063,18 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     private layoutTopology() {
         this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
         this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
+    }
+
+    private updateNodesLiveModelingData(currentLiveModelingNodeTemplatesData: LiveModelingNodeTemplateData[]) {
+        this.allNodeTemplates.forEach(nodeTemplate => {
+            const liveModelingData = currentLiveModelingNodeTemplatesData.find(el => el.id === nodeTemplate.id);
+            if (liveModelingData) {
+                const nodeId = this.nodeChildrenIdArray.indexOf(nodeTemplate.id);
+                this.nodeChildrenArray[nodeId].liveModelingNodeTemplateData = liveModelingData;
+            } else if (!liveModelingData && this.nodeChildrenArray) {
+                const nodeId = this.nodeChildrenIdArray.indexOf(nodeTemplate.id);
+                this.nodeChildrenArray[nodeId].liveModelingNodeTemplateData = null;
+            }
+        });
     }
 }
