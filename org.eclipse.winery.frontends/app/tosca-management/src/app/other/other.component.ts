@@ -13,6 +13,7 @@
  *******************************************************************************/
 import { Component } from '@angular/core';
 import { FeatureEnum } from '../wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 @Component({
     templateUrl: './other.component.html',
@@ -20,4 +21,11 @@ import { FeatureEnum } from '../wineryFeatureToggleModule/wineryRepository.featu
 })
 export class OtherComponent {
     configEnum = FeatureEnum;
+
+    constructor(private configurationService: WineryRepositoryConfigurationService) {
+    }
+
+    isYaml(): boolean {
+        return this.configurationService.configuration.features.yaml;
+    }
 }

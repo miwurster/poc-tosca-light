@@ -14,20 +14,32 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tCapabilityType")
 public class TCapabilityType extends TEntityType {
+    @XmlTransient
+    private List<QName> validNodeTypes;
+
+    public List<QName> getValidNodeTypes() {
+        return validNodeTypes;
+    }
+
     public TCapabilityType() {
     }
 
     public TCapabilityType(Builder builder) {
         super(builder);
+        this.validNodeTypes = builder.validSourceTypes;
     }
 
     @Override
@@ -36,12 +48,20 @@ public class TCapabilityType extends TEntityType {
     }
 
     public static class Builder extends TEntityType.Builder<Builder> {
+        private List<QName> validSourceTypes;
+
         public Builder(String name) {
             super(name);
         }
 
-        public Builder(TEntityType entityType) {
+        public Builder(TCapabilityType entityType) {
             super(entityType);
+            this.validSourceTypes = entityType.validNodeTypes;
+        }
+
+        public Builder setValidSourceTypes(List<QName> validSourceTypes) {
+            this.validSourceTypes = validSourceTypes;
+            return self();
         }
 
         @Override

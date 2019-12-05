@@ -53,6 +53,7 @@ export class WineryRepositoryConfigurationService {
      * Is the style below the method better/is it applicable?
      */
     getConfigurationFromBackend(backendUrl?: string): Observable<boolean> {
+        console.debug('getConfigurtionFromBackend was invoked');
         const subject = new Subject<boolean>();
         const baseUrl = backendUrl ? backendUrl : backendBaseURL;
         this.http.get<WineryConfiguration>(baseUrl + '/admin' + '/config')

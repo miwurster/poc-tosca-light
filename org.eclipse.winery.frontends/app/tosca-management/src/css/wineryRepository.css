@@ -1312,3 +1312,11 @@ div.policiesContainer > div.content > div.policy > textarea.policy_xml {
 .active-row {
     background-color: #ccc !important;
 }
+
+.left-margin-10 {
+    margin-left: 10px;
+}
+
+.right-margin-10 {
+    margin-right: 10px;
+}

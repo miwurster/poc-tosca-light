@@ -70,7 +70,11 @@ export class InstanceService {
                 subMenu = ['README', 'LICENSE', 'Required Capability Type', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.CapabilityType:
-                subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                if (this.configurationService.configuration.features.yaml) {
+                    subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Constraints', 'Documentation'];
+                } else {
+                    subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                }
                 break;
             case ToscaTypes.NodeTypeImplementation:
                 subMenu = ['README', 'LICENSE', 'Implementation Artifacts', 'Deployment Artifacts', 'Inheritance', 'Documentation', 'XML'];
@@ -107,9 +111,11 @@ export class InstanceService {
                     subMenu.push('1 to 1 EDMM Mappings', 'EDMM Type Mappings');
                 }
         }
+
         if (this.configurationService.configuration.features.yaml) {
             subMenu = subMenu.filter(item => item !== 'XML');
         }
+        
         return subMenu;
     }
 
