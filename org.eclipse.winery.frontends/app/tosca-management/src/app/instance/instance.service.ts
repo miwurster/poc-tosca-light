@@ -107,6 +107,9 @@ export class InstanceService {
                     subMenu.push('1 to 1 EDMM Mappings', 'EDMM Type Mappings');
                 }
         }
+        if (this.configurationService.configuration.features.yaml) {
+            subMenu = subMenu.filter(item => item !== 'XML');
+        }
         return subMenu;
     }
 

@@ -134,7 +134,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
             LOGGER.debug("data file exists");
             this.load();
         } else {
-            LOGGER.debug("Data file does not exist. Creating a new one.");
+            LOGGER.debug("Data file {} does not exist. Creating a new one.", this.ref.toString());
             this.createNew();
         }
     }
