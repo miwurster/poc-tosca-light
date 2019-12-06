@@ -29,19 +29,26 @@ export class ValidSourceTypesService {
         this.path = this.instanceService.path;
     }
 
-    getValidSourceTypes(): Observable<ValidSourceTypesApiData[]> {
+    getValidSourceTypes(): Observable<ValidSourceTypesApiData> {
         return this.http
-            .get<ValidSourceTypesApiData[]>(
+            .get<ValidSourceTypesApiData>(
                 backendBaseURL + this.path + '/constraints'
             );
     }
 
     getAvailableValidSourceTypes(): Observable<SelectData[]> {
         const url = backendBaseURL + '/' + ToscaTypes.NodeType + '?grouped=angularSelect&dev=true/';
-        console.info('requesting nodetypes from: ' + url);
+
         return this.http
             .get<SelectData[]>(
                 url
             );
+    }
+
+    saveValidSourceTypes(v: ValidSourceTypesApiData): Observable<any> {
+        return this.http.put<any>(
+            backendBaseURL + this.path + '/constraints',
+            v
+        );
     }
 }

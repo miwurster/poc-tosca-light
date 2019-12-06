@@ -688,18 +688,10 @@ public class Y2XConverter {
     private TCapabilityType convert(org.eclipse.winery.model.tosca.yaml.TCapabilityType node, String id) {
         if (Objects.isNull(node)) return null;
         return convert(node, new TCapabilityType.Builder(id))
-            .addTags(convertValidSourceTypes(node.getValidSourceTypes()))
+            .setValidSourceTypes(node.getValidSourceTypes())
             .build();
     }
-
-    private TTag convertValidSourceTypes(@NonNull List<QName> node) {
-        if (node.isEmpty()) return null;
-        return new TTag.Builder()
-            .setName("valid_source_types")
-            .setValue("[" + node.stream().map(QName::toString).collect(Collectors.joining(",")) + "]")
-            .build();
-    }
-
+    
     /**
      * Converts TOSCA YAML CapabilityDefinitions to TOSCA XML CapabilityDefinitions Additional TOSCA YAML elements
      * properties, attributes and valid_source_types are not converted

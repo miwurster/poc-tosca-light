@@ -14,21 +14,37 @@
 
 package org.eclipse.winery.repository.rest.resources.apiData;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.namespace.QName;
+import java.util.stream.Collectors;
 
 import org.eclipse.winery.model.tosca.TCapabilityType;
 
 public class ValidSourceTypesApiData {
-    private List<QName> nodes;
+    private List<QNameApiData> nodes;
+
+    public List<QNameApiData> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(List<QNameApiData> nodes) {
+        this.nodes = nodes;
+    }
 
     public ValidSourceTypesApiData() {
 
     }
 
     public ValidSourceTypesApiData(TCapabilityType capabilityType) {
-        this.nodes = capabilityType.getValidNodeTypes();
+        if (capabilityType.getValidNodeTypes() != null) {
+            this.nodes = capabilityType
+                .getValidNodeTypes()
+                .stream()
+                .map(QNameApiData::fromQName)
+                .collect(Collectors.toList());
+        } else {
+            this.nodes = new ArrayList<>();
+        }
     }
 
     public String toString() {

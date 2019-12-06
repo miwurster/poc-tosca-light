@@ -621,7 +621,7 @@ public class Y2XConverter {
             .setValidSourceTypes(node.getValidSourceTypes())
             .build();
     }
-    
+
     /**
      * Converts TOSCA YAML CapabilityDefinitions to TOSCA XML CapabilityDefinitions Additional TOSCA YAML elements
      * properties, attributes and valid_source_types are not converted

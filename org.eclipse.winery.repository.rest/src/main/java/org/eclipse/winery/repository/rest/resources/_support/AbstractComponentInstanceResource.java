@@ -100,7 +100,7 @@ import org.xml.sax.SAXException;
  * <p>
  * Additional setters and getters are added if it comes to Winery's extensions such as the color of a relationship type
  */
-public abstract class AbstractComponentInstanceResource implements Comparable<AbstractComponentInstanceResource>, IPersistable {
+public abstract class  AbstractComponentInstanceResource implements Comparable<AbstractComponentInstanceResource>, IPersistable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractComponentInstanceResource.class);
 

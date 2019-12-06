@@ -23,6 +23,8 @@ import { ValidSourceTypesApiData } from './validSourceTypesApiData';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BsModalRef, BsModalService, ModalDirective } from 'ngx-bootstrap';
 import { QName } from '../../../model/qName';
+import { forkJoin } from 'rxjs';
+import { QNameApiData } from '../../../model/qNameApiData';
 
 @Component({
     templateUrl: 'validSourceTypes.component.html',
@@ -34,16 +36,15 @@ import { QName } from '../../../model/qName';
     ]
 })
 export class ValidSourceTypesComponent implements OnInit {
-    enableOpenNodeTypeButton: boolean;
     loading: boolean;
     nodeTypes: SelectData[];
     initialActiveItem: Array<SelectData>;
-    currentSelectedItem: QName;
+    currentSelectedItem: QNameApiData;
     validSourceTypes: ValidSourceTypesApiData = new ValidSourceTypesApiData();
     @ViewChild('addModal') addModal: ModalDirective;
     addModalRef: BsModalRef;
     columns: Array<WineryTableColumn> = [
-        { title: 'Name', name: 'localPart', sort: true },
+        { title: 'Name', name: 'localname', sort: true },
         { title: 'Namespace', name: 'namespace', sort: true }
     ];
 
@@ -54,20 +55,30 @@ export class ValidSourceTypesComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.service
-            .getAvailableValidSourceTypes()
-            .subscribe(
-                data => this.handleNodeTypesData(data),
-                error => this.handleError(error)
-            )
-        ;
+        this.loading = true;
+        forkJoin(
+            this.service.getAvailableValidSourceTypes(),
+            this.service.getValidSourceTypes()
+        ).subscribe(
+            ([available, current]) => {
+                this.loading = false;
+                this.handleNodeTypesData(available);
+                this.handleValidSourceTypesData(current);
+            },
+            error => this.handleError(error)
+        );
     }
 
     saveToServer() {
-
+        this.loading = true;
+        this.service
+            .saveValidSourceTypes(this.validSourceTypes)
+            .subscribe(() => this.loading = false,
+                error => this.handleError(error));
     }
 
     onAddValidSourceType() {
+        console.debug(this.currentSelectedItem);
         this.validSourceTypes.nodes.push(this.currentSelectedItem);
     }
 
@@ -75,12 +86,11 @@ export class ValidSourceTypesComponent implements OnInit {
         this.addModalRef = this.modalService.show(this.addModal);
     }
 
-    onSelectedValueChanged(value: SelectItem) {
+    onSelectedValueChanged(value: SelectData) {
         if (value.id !== null && value.id !== undefined) {
-            this.enableOpenNodeTypeButton = true;
-            this.currentSelectedItem = QName.stringToQName(value.id);
+            console.debug(value);
+            this.currentSelectedItem = QNameApiData.fromQName(QName.stringToQName(value.id));
         } else {
-            this.enableOpenNodeTypeButton = false;
             this.currentSelectedItem = null;
         }
     }
@@ -90,7 +100,16 @@ export class ValidSourceTypesComponent implements OnInit {
 
         if (nodeTypes !== null && nodeTypes !== undefined && nodeTypes.length > 0 && nodeTypes[0].children.length > 0) {
             this.initialActiveItem = [nodeTypes[0].children[0]];
+            this.onSelectedValueChanged(this.initialActiveItem[0]);
         }
+    }
+
+    handleValidSourceTypesData(data: ValidSourceTypesApiData) {
+        if (data.nodes === null || data.nodes === undefined) {
+            data.nodes = [];
+        }
+
+        this.validSourceTypes = data;
     }
 
     private handleError(error: HttpErrorResponse): void {

@@ -382,6 +382,7 @@ public class X2YConverter {
         return Collections.singletonMap(
             node.getName(),
             convert(node, new TCapabilityType.Builder(), org.eclipse.winery.model.tosca.TCapabilityType.class)
+                .addValidSourceTypes(node.getValidNodeTypes())
                 .build()
         );
     }

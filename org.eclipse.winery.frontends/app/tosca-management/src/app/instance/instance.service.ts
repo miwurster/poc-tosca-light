@@ -115,7 +115,7 @@ export class InstanceService {
         if (this.configurationService.configuration.features.yaml) {
             subMenu = subMenu.filter(item => item !== 'XML');
         }
-        
+
         return subMenu;
     }
 

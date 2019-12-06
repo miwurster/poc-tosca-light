@@ -733,6 +733,7 @@ public class BackendUtils {
         BackendUtils.persist(definitions, ref, MediaTypes.MEDIATYPE_TOSCA_DEFINITIONS);
     }
 
+    // todo this should not depend on JAXB !
     /**
      * @throws IOException           if content could not be updated in the repository
      * @throws IllegalStateException if an JAXBException occurred. This should never happen.

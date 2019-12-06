@@ -11,8 +11,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { QNameApiData } from '../../../model/qNameApiData';
+import { QName } from './qName';
 
-export class ValidSourceTypesApiData {
-    nodes: QNameApiData[] = [];
+export class QNameApiData {
+
+    static fromQName(qName: QName) {
+        return new QNameApiData(qName.localPart, qName.namespace);
+    }
+
+    constructor(public localname: string, public namespace: string) {
+    }
+
+    equals(item: QNameApiData) {
+        return this.localname === item.localname && this.namespace === item.namespace;
+    }
 }
