@@ -18,7 +18,6 @@ import { WineryTableColumn } from '../../../wineryTableModule/wineryTable.compon
 import { InstanceService } from '../../instance.service';
 import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
 import { SelectData } from '../../../model/selectData';
-import { SelectItem } from 'ng2-select';
 import { ValidSourceTypesApiData } from './validSourceTypesApiData';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BsModalRef, BsModalService, ModalDirective } from 'ngx-bootstrap';
@@ -37,7 +36,8 @@ import { QNameApiData } from '../../../model/qNameApiData';
 })
 export class ValidSourceTypesComponent implements OnInit {
     loading: boolean;
-    nodeTypes: SelectData[];
+    currentNodeTypes: SelectData[];
+    allNodeTypes: SelectData[];
     initialActiveItem: Array<SelectData>;
     currentSelectedItem: QNameApiData;
     validSourceTypes: ValidSourceTypesApiData = new ValidSourceTypesApiData();
@@ -73,43 +73,77 @@ export class ValidSourceTypesComponent implements OnInit {
         this.loading = true;
         this.service
             .saveValidSourceTypes(this.validSourceTypes)
-            .subscribe(() => this.loading = false,
+            .subscribe(() => {
+                    this.loading = false;
+                    this.notify.success('Saved changes.');
+                },
                 error => this.handleError(error));
     }
 
     onAddValidSourceType() {
-        console.debug(this.currentSelectedItem);
         this.validSourceTypes.nodes.push(this.currentSelectedItem);
+        this.handleValidSourceTypesChanged();
     }
 
     onAddClick() {
         this.addModalRef = this.modalService.show(this.addModal);
     }
 
+    onRemoveClicked(selected: QNameApiData) {
+        if (selected) {
+            this.validSourceTypes.nodes = this.validSourceTypes.nodes.filter(item => item !== selected);
+            this.handleValidSourceTypesChanged();
+        }
+    }
+
     onSelectedValueChanged(value: SelectData) {
         if (value.id !== null && value.id !== undefined) {
-            console.debug(value);
             this.currentSelectedItem = QNameApiData.fromQName(QName.stringToQName(value.id));
         } else {
             this.currentSelectedItem = null;
         }
     }
 
-    handleNodeTypesData(nodeTypes: SelectData[]) {
-        this.nodeTypes = nodeTypes;
+    handleValidSourceTypesChanged() {
+        if (this.allNodeTypes) {
+            this.currentNodeTypes = this.allNodeTypes
+                .map(parentNode => {
+                    if (parentNode.children) {
+                        const children = parentNode.children.filter(node => {
+                            const asQName = QName.stringToQName(node.id);
+                            const existing: QNameApiData = this.validSourceTypes.nodes.find(qname => qname.localname === asQName.localPart
+                                && qname.namespace === asQName.namespace);
+                            return existing === null || existing === undefined;
+                        });
 
-        if (nodeTypes !== null && nodeTypes !== undefined && nodeTypes.length > 0 && nodeTypes[0].children.length > 0) {
-            this.initialActiveItem = [nodeTypes[0].children[0]];
-            this.onSelectedValueChanged(this.initialActiveItem[0]);
+                        return { id: parentNode.id, text: parentNode.text, children: children };
+                    }
+
+                    return null;
+                })
+                .filter(item => item !== null);
+
+            if (this.currentNodeTypes !== null
+                && this.currentNodeTypes !== undefined
+                && this.currentNodeTypes.length > 0
+                && this.currentNodeTypes[0].children.length > 0) {
+                this.initialActiveItem = [this.currentNodeTypes[0].children[0]];
+                this.onSelectedValueChanged(this.initialActiveItem[0]);
+            }
         }
+    }
+
+    handleNodeTypesData(nodeTypes: SelectData[]) {
+        this.allNodeTypes = nodeTypes;
+        this.currentNodeTypes = this.allNodeTypes;
     }
 
     handleValidSourceTypesData(data: ValidSourceTypesApiData) {
         if (data.nodes === null || data.nodes === undefined) {
             data.nodes = [];
         }
-
         this.validSourceTypes = data;
+        this.handleValidSourceTypesChanged();
     }
 
     private handleError(error: HttpErrorResponse): void {

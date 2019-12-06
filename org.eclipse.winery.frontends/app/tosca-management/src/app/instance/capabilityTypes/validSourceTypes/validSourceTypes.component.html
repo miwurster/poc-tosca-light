@@ -25,7 +25,8 @@
     <winery-table title="Valid Source Types"
                   [columns]="columns"
                   [data]="validSourceTypes?.nodes"
-                  (addBtnClicked)="onAddClick()">
+                  (addBtnClicked)="onAddClick()"
+                  (removeBtnClicked)="onRemoveClicked($event)">
     </winery-table>
 
 </div>
@@ -40,7 +41,7 @@
                 <label for="validNodeTypes" class="control-label">Node Types</label>
                 <ng-select id="validNodeTypes"
                            [disabled]="!sharedData?.currentVersion?.editable"
-                           [items]="nodeTypes"
+                           [items]="currentNodeTypes"
                            (selected)="onSelectedValueChanged($event)"
                            [active]="initialActiveItem"
                 >
