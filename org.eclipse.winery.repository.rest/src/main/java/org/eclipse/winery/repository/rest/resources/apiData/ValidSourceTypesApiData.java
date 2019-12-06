@@ -23,16 +23,7 @@ import org.eclipse.winery.model.tosca.TCapabilityType;
 public class ValidSourceTypesApiData {
     private List<QNameApiData> nodes;
 
-    public List<QNameApiData> getNodes() {
-        return nodes;
-    }
-
-    public void setNodes(List<QNameApiData> nodes) {
-        this.nodes = nodes;
-    }
-
     public ValidSourceTypesApiData() {
-
     }
 
     public ValidSourceTypesApiData(TCapabilityType capabilityType) {
@@ -45,6 +36,14 @@ public class ValidSourceTypesApiData {
         } else {
             this.nodes = new ArrayList<>();
         }
+    }
+
+    public List<QNameApiData> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(List<QNameApiData> nodes) {
+        this.nodes = nodes;
     }
 
     public String toString() {

@@ -31,20 +31,20 @@ public class TCapabilityType extends TEntityType {
     // java.lang.Object, org.eclipse.winery.common.RepositoryFileReference, org.apache.tika.mime.MediaType)
     private List<QName> validNodeTypes;
 
-    public List<QName> getValidNodeTypes() {
-        return validNodeTypes;
-    }
-
-    public void setValidNodeTypes(List<QName> validNodeTypes) {
-        this.validNodeTypes = validNodeTypes;
-    }
-
     public TCapabilityType() {
     }
 
     public TCapabilityType(Builder builder) {
         super(builder);
         this.validNodeTypes = builder.validSourceTypes;
+    }
+
+    public List<QName> getValidNodeTypes() {
+        return validNodeTypes;
+    }
+
+    public void setValidNodeTypes(List<QName> validNodeTypes) {
+        this.validNodeTypes = validNodeTypes;
     }
 
     @Override
