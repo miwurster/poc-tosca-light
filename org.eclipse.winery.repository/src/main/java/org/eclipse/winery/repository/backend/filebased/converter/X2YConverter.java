@@ -158,11 +158,12 @@ public class X2YConverter {
                 .build();
             tMapImportDefinition.put(importDefinition.getKey().getQName().getLocalPart(), tImportDefinition);
         }
-        imports.add(tMapImportDefinition);
-        if (imports.isEmpty()) {
+        if (!tMapImportDefinition.isEmpty()) {
+            imports.add(tMapImportDefinition);
+            return imports;
+        } else {
             return null;
         }
-        return imports;
     }
 
     public Map<String, TPropertyAssignment> convert(TEntityTemplate tEntityTemplate, TEntityTemplate.Properties node) {
@@ -204,7 +205,8 @@ public class X2YConverter {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList())
             ))
-            .setSubstitutionMappings(convert(boundary))
+            // TODO substitution mappings are currently not converted
+            //.setSubstitutionMappings(convert(boundary))
             .build();
     }
 
@@ -304,9 +306,15 @@ public class X2YConverter {
 
     public Map<String, TNodeType> convert(org.eclipse.winery.model.tosca.TNodeType node) {
         if (Objects.isNull(node)) return null;
-//        TNodeTypeImplementation impl = getNodeTypeImplementation(new QName(node.getTargetNamespace(), node.getName()));
+        // TNodeTypeImplementation impl = getNodeTypeImplementation(new QName(node.getTargetNamespace(), node.getName()));
+
+        String nodeFullName = node.getIdFromIdOrNameField();
+        if (node.getTargetNamespace() != null) {
+            nodeFullName = node.getTargetNamespace().concat(".").concat(node.getIdFromIdOrNameField());
+        }
+
         return Collections.singletonMap(
-            node.getIdFromIdOrNameField(),
+            nodeFullName,
             convert(node, new TNodeType.Builder(), org.eclipse.winery.model.tosca.TNodeType.class)
                 .setRequirements(convert(node.getRequirementDefinitions()))
                 .setCapabilities(convert(node.getCapabilityDefinitions()))
