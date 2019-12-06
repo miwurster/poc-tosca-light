@@ -150,7 +150,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         groupedNodeTypes.some(nameSpace => {
             nameSpace.children.some(nodeTypeVar => {
                 if (nodeTypeVar.id === type) {
-                    let node = nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0];
+                    const node = nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0];
                     // if PropertiesDefinition doesn't exist then it must be of type NONE
                     if (!node.propertiesDefinition && node.derivedFrom) {
                         // check all parents; property definition types
@@ -183,7 +183,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         this.entityTypes.unGroupedNodeTypes.forEach(entry => {
             if (entry.qName === parentType) {
                 parentFound = true;
-                let node = entry.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0];
+                const node = entry.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0];
                 if (!node.propertiesDefinition && node.derivedFrom) {
                     this.checkParentPropertyDefinitions(node.derivedFrom.typeRef);
                 } else if (!node.propertiesDefinition) {

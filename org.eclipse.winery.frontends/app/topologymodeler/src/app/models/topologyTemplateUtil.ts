@@ -150,9 +150,7 @@ export class TopologyTemplateUtil {
                     return {
                         any: element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element
                     };
-                }
-                // otherwise KV properties or no properties at all
-                else {
+                } else { // otherwise KV properties or no properties at all
                     let inheritedProperties = {};
                     if (this.hasParentType(element)) {
                         let parent = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.typeRef;
@@ -186,7 +184,7 @@ export class TopologyTemplateUtil {
                         typeProperties = TopologyTemplateUtil.setKVProperties(element);
                     }
 
-                    let mergedProperties = { ...inheritedProperties, ...typeProperties };
+                    const mergedProperties = { ...inheritedProperties, ...typeProperties };
 
                     return {
                         kvproperties: { ...mergedProperties }
@@ -217,7 +215,7 @@ export class TopologyTemplateUtil {
      * @returns newKVProperties: KV Properties as Object
      */
     static setKVProperties(type: any): any {
-        let newKVProperies = {};
+        const newKVProperies = {};
         const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
         for (const obj of kvProperties) {
             const key = obj.key;
