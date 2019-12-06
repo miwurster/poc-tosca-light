@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactType;
 import org.eclipse.winery.model.tosca.yaml.TAttributeAssignment;
@@ -85,7 +86,6 @@ import org.eclipse.winery.model.tosca.yaml.tosca.datatypes.Credential;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Namespaces;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.InvalidToscaSyntax;
 import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
-import org.eclipse.winery.repository.backend.filebased.converter.support.exception.UndefinedPrefix;
 import org.eclipse.winery.repository.backend.filebased.converter.support.validator.FieldValidator;
 
 import org.eclipse.collections.api.tuple.Pair;
@@ -291,33 +291,22 @@ public class Builder {
 
     @Nullable
     private QName buildQName(String name) {
-        if (Objects.isNull(name)) return null;
-        if (name.matches("\\{.+}.+")) {
-            String namespace = name.substring(name.indexOf("{") + 1, name.lastIndexOf("}"));
-            String localPart = name.substring(name.lastIndexOf("}") + 1);
-            return new QName(namespace, localPart);
-        } else if (name.contains(":")) {
-            Integer pos = name.indexOf(":");
-            String prefix = name.substring(0, pos);
-            String localPart = name.substring(pos + 1, name.length());
-            if (!prefix2Namespace.containsKey(prefix)) {
-                this.exception.add(new UndefinedPrefix(
-                        "Prefix '{}' for name '{}' is undefined",
-                        prefix,
-                        localPart
-                    )
-                );
-            }
-            return new QName(prefix2Namespace.get(prefix), localPart, prefix);
-        } else if (org.eclipse.winery.repository.backend.filebased.converter.support.Defaults.TOSCA_NORMATIVE_NAMES.contains(name) || org.eclipse.winery.repository.backend.filebased.converter.support.Defaults.TOSCA_NONNORMATIVE_NAMES.contains(name)) {
-            return new QName(Namespaces.TOSCA_NS, name, "tosca");
-        } else if (org.eclipse.winery.repository.backend.filebased.converter.support.Defaults.YAML_TYPES.contains(name)) {
-            return new QName(Namespaces.YAML_NS, name, "yaml");
-        } else if (org.eclipse.winery.repository.backend.filebased.converter.support.Defaults.TOSCA_TYPES.contains(name)) {
-            return new QName(Namespaces.TOSCA_NS, name, "tosca");
-        } else {
-            return new QName(namespace, name, "");
+        if (Objects.isNull(name)) {
+            return null;
         }
+        // TODO decide on namespace rules w.r.t Simple Profile spec
+        // current solution: use dotted notation for namespaces as in RADON particles
+        
+        // ignore version when splitting the full name
+        String n = VersionUtils.getNameWithoutVersion(name);
+        int separatorPos = n.lastIndexOf(".");
+        if (separatorPos != -1) {
+            String namespace = name.substring(0, separatorPos);
+            String localPart = name.substring(separatorPos + 1);
+            return new QName(namespace, localPart);
+        }
+
+        return new QName(namespace, name);
     }
 
     @Nullable

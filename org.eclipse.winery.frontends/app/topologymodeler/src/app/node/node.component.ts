@@ -23,7 +23,6 @@ import { EntityType, TNodeTemplate } from '../models/ttopology-template';
 import { QName } from '../models/qname';
 import { PropertyDefinitionType, urlElement } from '../models/enums';
 import { BackendService } from '../services/backend.service';
-import { isNullOrUndefined } from 'util';
 import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
 import { EntityTypesModel } from '../models/entityTypesModel';
 import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reducer';
@@ -151,13 +150,17 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         groupedNodeTypes.some(nameSpace => {
             nameSpace.children.some(nodeTypeVar => {
                 if (nodeTypeVar.id === type) {
+                    const node = nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0];
                     // if PropertiesDefinition doesn't exist then it must be of type NONE
-                    if (isNullOrUndefined(nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition)) {
+                    if (!node.propertiesDefinition && node.derivedFrom) {
+                        // check all parents; property definition types
+                        propertyDefinitionTypeAssigned = this.checkParentPropertyDefinitions(node.derivedFrom.typeRef);
+                    } else if (!node.propertiesDefinition) {
                         this.propertyDefinitionType = PropertyDefinitionType.NONE;
                         propertyDefinitionTypeAssigned = true;
                     } else {
                         // if no XML element inside PropertiesDefinition then it must be of type Key Value
-                        if (!nodeTypeVar.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
+                        if (!node.propertiesDefinition.element) {
                             this.propertyDefinitionType = PropertyDefinitionType.KV;
                             propertyDefinitionTypeAssigned = true;
                         } else {
@@ -173,6 +176,36 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                 return true;
             }
         });
+    }
+
+    checkParentPropertyDefinitions(parentType: string): boolean {
+        let parentFound = false;
+        this.entityTypes.unGroupedNodeTypes.forEach(entry => {
+            if (entry.qName === parentType) {
+                parentFound = true;
+                const node = entry.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0];
+                if (!node.propertiesDefinition && node.derivedFrom) {
+                    this.checkParentPropertyDefinitions(node.derivedFrom.typeRef);
+                } else if (!node.propertiesDefinition) {
+                    this.propertyDefinitionType = PropertyDefinitionType.NONE;
+                    return true;
+                } else {
+                    if (!node.propertiesDefinition.element) {
+                        this.propertyDefinitionType = PropertyDefinitionType.KV;
+                    } else {
+                        this.propertyDefinitionType = PropertyDefinitionType.XML;
+                    }
+                    return true;
+                }
+            }
+        });
+
+        if (!parentFound) {
+            this.propertyDefinitionType = PropertyDefinitionType.NONE;
+            return true;
+        }
+
+        return true;
     }
 
     /**
