@@ -22,6 +22,6 @@ import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModu
 export class OtherComponent {
     configEnum = FeatureEnum;
 
-    constructor(private configurationService: WineryRepositoryConfigurationService) {
+    constructor(public configurationService: WineryRepositoryConfigurationService) {
     }
 }
