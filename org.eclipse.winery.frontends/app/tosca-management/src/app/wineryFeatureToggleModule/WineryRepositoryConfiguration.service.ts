@@ -67,4 +67,8 @@ export class WineryRepositoryConfigurationService {
             );
         return subject.asObservable();
     }
+
+    isYaml(): boolean {
+        return this.configuration.features.yaml;
+    }
 }

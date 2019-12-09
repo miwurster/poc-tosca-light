@@ -24,8 +24,4 @@ export class OtherComponent {
 
     constructor(private configurationService: WineryRepositoryConfigurationService) {
     }
-
-    isYaml(): boolean {
-        return this.configurationService.configuration.features.yaml;
-    }
 }

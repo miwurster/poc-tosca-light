@@ -70,7 +70,7 @@ export class InstanceService {
                 subMenu = ['README', 'LICENSE', 'Required Capability Type', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.CapabilityType:
-                if (this.configurationService.configuration.features.yaml) {
+                if (this.configurationService.isYaml()) {
                     subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Constraints', 'Documentation'];
                 } else {
                     subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
@@ -112,7 +112,7 @@ export class InstanceService {
                 }
         }
 
-        if (this.configurationService.configuration.features.yaml) {
+        if (this.configurationService.isYaml()) {
             subMenu = subMenu.filter(item => item !== 'XML');
         }
 
