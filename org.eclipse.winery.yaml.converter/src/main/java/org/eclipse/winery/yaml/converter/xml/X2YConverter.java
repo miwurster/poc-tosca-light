@@ -376,7 +376,9 @@ public class X2YConverter {
         if (Objects.isNull(node)) return new LinkedHashMap<>();
         return Collections.singletonMap(
             node.getName(),
+            // convert the regular stuff
             convert(node, new TCapabilityType.Builder(), org.eclipse.winery.model.tosca.TCapabilityType.class)
+                .addValidSourceTypes(node.getValidNodeTypes())
                 .build()
         );
     }
