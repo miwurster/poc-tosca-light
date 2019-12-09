@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.crawler.chefcookbooks.chefcookbook;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,12 +22,20 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.common.configuration.Environments;
+import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
+import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.common.version.WineryVersion;
-import org.eclipse.winery.model.tosca.*;
+import org.eclipse.winery.model.tosca.TCapabilityDefinition;
+import org.eclipse.winery.model.tosca.TNodeType;
+import org.eclipse.winery.model.tosca.TRequirementDefinition;
+import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 
 public class CookbookConfigurationToscaConverter {
+
+    private final IRepository repository = RepositoryFactory.getRepository(new File(Environments.getRepositoryConfig().getRepositoryRoot()).toPath());
 
     public List<TNodeType> convertCookbookConfigurationToToscaNode(ChefCookbookConfiguration cookbookConfiguration, int counter) {
         List<TNodeType> nodeTypes = new ArrayList<>();
@@ -43,21 +52,22 @@ public class CookbookConfigurationToscaConverter {
 
         TCapabilityDefinition installedPackage;
         List<TCapabilityDefinition> installedPackages = convertInstalledPackagesToCapabilities(cookbookConfiguration.getInstalledPackages(), namespace);
-        for (int i = 0; i < installedPackages.size(); i++) {
-            installedPackage = installedPackages.get(i);
+        for (TCapabilityDefinition aPackage : installedPackages) {
+            installedPackage = aPackage;
             configurationNodeType.addCapabilityDefinitions(installedPackage);
         }
 
         TRequirementDefinition requiredPackage;
         List<TRequirementDefinition> requiredPackages = convertRequiredPackagesToRequirements(cookbookConfiguration.getRequiredPackages(), namespace);
-        for (int i = 0; i < requiredPackages.size(); i++) {
-            requiredPackage = requiredPackages.get(i);
+
+        for (TRequirementDefinition aPackage : requiredPackages) {
+            requiredPackage = aPackage;
             configurationNodeType.addRequirementDefinitions(requiredPackage);
         }
 
         TNodeType tNodeType = new TNodeType(configurationNodeType);
 
-        TNodeType platformNodeType = convertPlatformToNodeType(cookbookConfiguration.getSupports(), namespace);
+        TNodeType platformNodeType = convertPlatformToNodeType(cookbookConfiguration.getSupports());
 
         nodeTypes.add(tNodeType);
         nodeTypes.add(platformNodeType);
@@ -66,22 +76,40 @@ public class CookbookConfigurationToscaConverter {
 
     public void saveToscaNodeType(TNodeType tNodeType) {
         try {
-            RepositoryFactory.getRepository().setElement(
+            repository.setElement(
                 new NodeTypeId(tNodeType.getTargetNamespace(), tNodeType.getName(), false),
                 tNodeType);
+            if (tNodeType.getCapabilityDefinitions() != null) {
+                for (TCapabilityDefinition capability : tNodeType.getCapabilityDefinitions().getCapabilityDefinition()) {
+                    QName capabilityType = capability.getCapabilityType();
+                    repository.setElement(
+                        new CapabilityTypeId(capabilityType),
+                        capability
+                    );
+                }
+            }
+            if (tNodeType.getRequirementDefinitions() != null) {
+                for (TRequirementDefinition requirementDefinition : tNodeType.getRequirementDefinitions().getRequirementDefinition()) {
+                    QName requirementType = requirementDefinition.getRequirementType();
+                    repository.setElement(
+                        new RequirementTypeId(requirementType),
+                        requirementDefinition
+                    );
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private List<TCapabilityDefinition> convertInstalledPackagesToCapabilities(LinkedHashMap<String, ChefPackage> installedPackages, String namespace) {
-        List<TCapabilityDefinition> packageCapabilieties = new ArrayList<>();
+        List<TCapabilityDefinition> packageCapabilities = new ArrayList<>();
         ChefPackage chefPackage;
         for (int i = 0; i < installedPackages.size(); i++) {
             chefPackage = ChefCookbookConfiguration.getPackageByIndex(installedPackages, i);
-            packageCapabilieties.add(convertPackageToCapability(chefPackage, namespace, i + 1));
+            packageCapabilities.add(convertPackageToCapability(chefPackage, namespace, i + 1));
         }
-        return packageCapabilieties;
+        return packageCapabilities;
     }
 
     private List<TRequirementDefinition> convertRequiredPackagesToRequirements(LinkedHashMap<String, ChefPackage> requiredPackages, String namespace) {
@@ -135,14 +163,13 @@ public class CookbookConfigurationToscaConverter {
         return "https://supermarket.chef.io/api/v1/platforms/";
     }
 
-    private TNodeType convertPlatformToNodeType(Platform platform, String namespace) {
-        namespace = buildNamespaceForPlatforms();
+    private TNodeType convertPlatformToNodeType(Platform platform) {
+        String namespace = buildNamespaceForPlatforms();
         TNodeType.Builder configurationNodeType = new TNodeType.Builder(platform.getName() + "-" + platform.getVersion() + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1");
         configurationNodeType.setTargetNamespace(namespace);
 
         configurationNodeType.addCapabilityDefinitions(convertPlatformToCapability(platform, namespace));
 
-        TNodeType tNodeType = new TNodeType(configurationNodeType);
-        return tNodeType;
+        return new TNodeType(configurationNodeType);
     }
 }

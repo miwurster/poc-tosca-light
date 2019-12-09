@@ -43,13 +43,25 @@ public class StmtVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
 
         if (ctx.getChildCount() > 7) {
             CollectionVisitor collectionVisitor = new CollectionVisitor(cookbookConfigs);
-            values = ctx.call().function().primary().accept(collectionVisitor);
-            String identifier = ctx.block_var().getText();
-            CompstmtVisitor compstmtVisitor = new CompstmtVisitor(cookbookConfigs);
-            for (int count = 0; count < values.size(); count++) {
-                CookbookVisitor.variables.put(identifier, values.get(count));
-                cookbookConfigs = ctx.inner_comptstmt().accept(compstmtVisitor);
-                CookbookVisitor.variables.remove(identifier);
+            ChefDSLParser.FunctionContext function = ctx.call()
+                .function();
+
+            if (function != null) {
+                ChefDSLParser.PrimaryContext primary = function
+                    .primary();
+                if (primary != null) {
+                    values = primary
+                        .accept(collectionVisitor);
+                    String identifier = ctx.block_var().getText();
+                    CompstmtVisitor compstmtVisitor = new CompstmtVisitor(cookbookConfigs);
+                    if (values != null) {
+                        for (String value : values) {
+                            CookbookVisitor.variables.put(identifier, value);
+                            cookbookConfigs = ctx.inner_comptstmt().accept(compstmtVisitor);
+                            CookbookVisitor.variables.remove(identifier);
+                        }
+                    }
+                }
             }
         }
 

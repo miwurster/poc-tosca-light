@@ -15,7 +15,6 @@
 package org.eclipse.winery.crawler.chefcookbooks.chefcookbookcrawler;
 
 import java.io.BufferedReader;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,20 +23,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.winery.crawler.chefcookbooks.constants.Defaults;
 import org.eclipse.winery.crawler.chefcookbooks.helper.Version;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,11 +50,15 @@ public class ChefSupermarketCrawler {
 
     private static final int BUFFER_SIZE = 4096;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChefSupermarketCrawler.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChefSupermarketCrawler.class);
 
     private String tempDirectory;
 
     private String cookbookDirectory;
+
+    public ChefSupermarketCrawler() {
+        this(Defaults.COOKBOOK_PATH, Defaults.TEMP_FOLDER_PATH);
+    }
 
     public ChefSupermarketCrawler(String cookbookDirectory, String tempDirectory) {
         this.cookbookDirectory = cookbookDirectory;
@@ -96,11 +98,11 @@ public class ChefSupermarketCrawler {
                 crawlCookbookRunnableList.add(crawlCookbook);
             }
             // Wait for threads
-            for (int i = 0; i < crawlCookbookRunnableList.size(); i++) {
+            for (CrawlCookbookRunnable crawlCookbookRunnable : crawlCookbookRunnableList) {
                 try {
-                    crawlCookbookRunnableList.get(i).join();
+                    crawlCookbookRunnable.join();
                 } catch (InterruptedException e) {
-                    LOGGER.info("Crawling process of cookbook" + crawlCookbookRunnableList.get(i).getThreadName() + " interrupted");
+                    LOGGER.info("Crawling process of cookbook" + crawlCookbookRunnable.getThreadName() + " interrupted");
                 }
             }
             crawlCookbookRunnableList.clear();
@@ -197,7 +199,7 @@ public class ChefSupermarketCrawler {
      * @throws Exception on processing Error.
      */
     private boolean processCookbook(JSONObject cookbookJSONObject) throws Exception {
-        boolean cookbookDeprecated = false;
+        boolean cookbookDeprecated;
 
         cookbookDeprecated = cookbookJSONObject.getBoolean("deprecated");
         if (!cookbookDeprecated) {
@@ -230,7 +232,7 @@ public class ChefSupermarketCrawler {
      * @throws Exception on processing Error.
      */
     private boolean processCookbook(JSONObject cookbookJSONObject, String cookbookName, String versionRestriction) throws Exception {
-        boolean cookbookDeprecated = false;
+        boolean cookbookDeprecated;
         String extractedVersion;
 
         cookbookDeprecated = cookbookJSONObject.getBoolean("deprecated");
@@ -289,7 +291,7 @@ public class ChefSupermarketCrawler {
 
         switch (operator) {
             case ">":
-                if (cookbookAvailableVersion.compareTo(cookbookDependencie) == 1) {
+                if (cookbookAvailableVersion.compareTo(cookbookDependencie) > 0) {
                     versionOk = true;
                 }
                 break;
@@ -309,7 +311,7 @@ public class ChefSupermarketCrawler {
                 }
                 break;
             case "<":
-                if (cookbookAvailableVersion.compareTo(cookbookDependencie) == -1) {
+                if (cookbookAvailableVersion.compareTo(cookbookDependencie) < 0) {
                     versionOk = true;
                 }
                 break;
@@ -326,10 +328,9 @@ public class ChefSupermarketCrawler {
      */
     private static JSONObject getJsonFromUrl(String url) throws IOException, JSONException {
         try (InputStream is = new URL(url).openStream()) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 String jsonText = readAll(reader);
-                JSONObject json = new JSONObject(jsonText);
-                return json;
+                return new JSONObject(jsonText);
             }
         }
     }
@@ -342,13 +343,13 @@ public class ChefSupermarketCrawler {
      * @throws IOException on reading failure
      */
     private static String readAll(BufferedReader br) throws IOException {
-        String responseString = "";
+        StringBuilder responseString = new StringBuilder();
         String output;
 
         while ((output = br.readLine()) != null) {
-            responseString = responseString + output;
+            responseString.append(output);
         }
-        return responseString;
+        return responseString.toString();
     }
 
     /**

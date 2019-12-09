@@ -39,21 +39,21 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
     }
 
     @Override
-    public List visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
-        List attributeValue = null;
+    public List<String> visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
+        List<String> attributeValue = null;
         PrimaryBaseVisitor argPrimaryVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
         attributeValue = ctx.primary().accept(argPrimaryVisitor);
 
         if (attributeValue == null) {
-            attributeValue = new ArrayList();
+            attributeValue = new ArrayList<>();
         }
 
         return attributeValue;
     }
 
     @Override
-    public List visitVarname(ChefDSLParser.VarnameContext ctx) {
-        List attributeValue = new ArrayList();
+    public List<String> visitVarname(ChefDSLParser.VarnameContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
         String varName = ctx.getText();
         String varValue;
         try {
@@ -68,10 +68,10 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
     }
 
     @Override
-    public List visitString(ChefDSLParser.StringContext ctx) {
-        List<String> attributeValue = new ArrayList();
+    public List<String> visitString(ChefDSLParser.StringContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
         String literal = ctx.getChild(0).getText();
-        Integer stringLength = literal.length();
+        int stringLength = literal.length();
         literal = literal.substring(1, stringLength - 1);
         if (ChefDslHelper.hasChefAttributeInString(literal)) {
             literal = ChefDslHelper.resolveRubyStringWithCode(extractedCookbookConfigs, literal);
@@ -81,27 +81,27 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
     }
 
     @Override
-    public List visitLitSymbol(ChefDSLParser.LitSymbolContext ctx) {
-        List<String> attributeValue = new ArrayList();
+    public List<String> visitLitSymbol(ChefDSLParser.LitSymbolContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
         String literal = ctx.getChild(0).getText();
         attributeValue.add(literal);
         return attributeValue;
     }
 
     @Override
-    public List visitCaseStatement(ChefDSLParser.CaseStatementContext ctx) {
-        List<String> attributeValue = new ArrayList();
+    public List<String> visitCaseStatement(ChefDSLParser.CaseStatementContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
 
         WhenArgsVisitor whenArgsVisitor;
 
         CaseConditionVisitor caseConditionVisitor;
 
-        List caseConditionList;
+        List<String> caseConditionList;
         String caseCondition;
 
         List<String> whenArgs = new ArrayList<>();
 
-        Boolean elseActive = false;
+        boolean elseActive = false;
 
         caseConditionVisitor = new CaseConditionVisitor(extractedCookbookConfigs);
         caseConditionList = ctx.inner_comptstmt(0).accept(caseConditionVisitor);
@@ -141,31 +141,31 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
     }
 
     @Override
-    public List visitPrimInt(ChefDSLParser.PrimIntContext ctx) {
-        List<String> attributeValue = new ArrayList();
+    public List<String> visitPrimInt(ChefDSLParser.PrimIntContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
         String value = ctx.getText();
         attributeValue.add(value);
         return attributeValue;
     }
 
     @Override
-    public List visitPrimFloat(ChefDSLParser.PrimFloatContext ctx) {
-        List<String> attributeValue = new ArrayList();
+    public List<String> visitPrimFloat(ChefDSLParser.PrimFloatContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
         String value = ctx.getText();
         attributeValue.add(value);
         return attributeValue;
     }
 
     @Override
-    public List visitPrimBoolean(ChefDSLParser.PrimBooleanContext ctx) {
-        List<String> attributeValue = new ArrayList();
+    public List<String> visitPrimBoolean(ChefDSLParser.PrimBooleanContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
         String value = ctx.getText();
         attributeValue.add(value);
         return attributeValue;
     }
 
     @Override
-    public List visitPrim11(ChefDSLParser.Prim11Context ctx) {
+    public List<String> visitPrim11(ChefDSLParser.Prim11Context ctx) {
         if (ctx.getText().startsWith("node")) {
             return extractedCookbookConfigs.getAllConfigsAsList().get(0).getAttribute(ctx.getText().substring(4));
         } else
@@ -173,8 +173,8 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
     }
 
     @Override
-    public List visitPrimOhaiFunc(ChefDSLParser.PrimOhaiFuncContext ctx) {
-        List<String> attributeValue = new ArrayList();
+    public List<String> visitPrimOhaiFunc(ChefDSLParser.PrimOhaiFuncContext ctx) {
+        List<String> attributeValue = new ArrayList<>();
         String literal;
         int stringLength;
         HashSet<String> arguments = new HashSet<>();
@@ -212,36 +212,31 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
     }
 
     @Override
-    public List visitPrimCompstmtInBrackets(ChefDSLParser.PrimCompstmtInBracketsContext ctx) {
-        List attributeValue;
+    public List<String> visitPrimCompstmtInBrackets(ChefDSLParser.PrimCompstmtInBracketsContext ctx) {
+        List<String> attributeValue;
         PrimaryBaseVisitor primaryBaseVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
         attributeValue = ctx.inner_comptstmt().accept(primaryBaseVisitor);
         return attributeValue;
     }
 
     @Override
-    public List visitPrimFuncCall(ChefDSLParser.PrimFuncCallContext ctx) {
-        List primaryValue;
-        List convertedValueList = new ArrayList();
+    public List<String> visitPrimFuncCall(ChefDSLParser.PrimFuncCallContext ctx) {
+        List<String> primaryValue;
+        List<String> convertedValueList = new ArrayList<>();
         String functionName;
         PrimaryBaseVisitor booleanExprVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
         primaryValue = ctx.primary().accept(booleanExprVisitor);
 
         if (primaryValue != null && ctx.function().getChildCount() == 1) {
             functionName = ctx.function().getText();
-            switch (functionName) {
-                case "to_i":
-                    Integer convertedValue;
-                    for (int i = 0; i < primaryValue.size(); i++) {
-                        convertedValue = RubyFunctionHelper.stringToInt((String) primaryValue.get(i));
-                        if (convertedValue != null) {
-                            convertedValueList.add(convertedValue.toString());
-                        }
+            if ("to_i".equals(functionName)) {
+                Integer convertedValue;
+                for (String s : primaryValue) {
+                    convertedValue = RubyFunctionHelper.stringToInt((String) s);
+                    if (convertedValue != null) {
+                        convertedValueList.add(convertedValue.toString());
                     }
-                    break;
-
-                default:
-                    break;
+                }
             }
         } else {
             convertedValueList = null;
@@ -254,15 +249,14 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
      * This visit method should only be called in the evaluation of the ternary operator.
      */
     @Override
-    public List visitArgAssign(ChefDSLParser.ArgAssignContext ctx) {
-        List exprResult;
+    public List<String> visitArgAssign(ChefDSLParser.ArgAssignContext ctx) {
+        List<String> exprResult;
         PrimaryBaseVisitor primaryBaseVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
         exprResult = ctx.arg().accept(primaryBaseVisitor);
         return exprResult;
     }
 
-    @Override
-    public List aggregateResult(List aggregate, List nextResult) {
+    public List<String> aggregateResult(List<String> aggregate, List<String> nextResult) {
         if (aggregate == null) {
             return nextResult;
         }
@@ -271,7 +265,7 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
             return aggregate;
         }
 
-        aggregate.add(nextResult);
+        aggregate.addAll(nextResult);
 
         return aggregate;
     }

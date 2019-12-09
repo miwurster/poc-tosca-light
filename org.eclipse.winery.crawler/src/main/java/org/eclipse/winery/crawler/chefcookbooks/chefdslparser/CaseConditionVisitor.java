@@ -18,9 +18,9 @@ import java.util.List;
 
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 
-public class CaseConditionVisitor extends ChefDSLBaseVisitor<List> {
+public class CaseConditionVisitor extends ChefDSLBaseVisitor<List<String>> {
 
-    private List result;
+    private List<String> result;
 
     private CookbookParseResult extractedCookbookConfigs;
 
@@ -29,7 +29,7 @@ public class CaseConditionVisitor extends ChefDSLBaseVisitor<List> {
     }
 
     @Override
-    public List visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
+    public List<String> visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
 
         PrimaryBaseVisitor argPrimaryVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
         result = ctx.primary().accept(argPrimaryVisitor);
@@ -38,7 +38,7 @@ public class CaseConditionVisitor extends ChefDSLBaseVisitor<List> {
     }
 
     @Override
-    public List aggregateResult(List aggregate, List nextResult) {
+    public List<String> aggregateResult(List aggregate, List nextResult) {
         return result;
     }
 }

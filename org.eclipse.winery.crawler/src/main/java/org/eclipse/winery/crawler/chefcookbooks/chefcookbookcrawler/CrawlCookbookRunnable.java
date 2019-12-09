@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
  * of the cookbook.
  */
 public class CrawlCookbookRunnable implements Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CrawlCookbookRunnable.class.getName());
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrawlCookbookRunnable.class);
+
     private Thread thread;
     private String threadName;
     private String cookbookDirectory;

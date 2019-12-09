@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 
-public class ArgVisitor extends ChefDSLBaseVisitor<List> {
+public class ArgVisitor extends ChefDSLBaseVisitor<List<String>> {
 
     private CookbookParseResult extractedCookbookConfigs;
 
@@ -27,8 +27,8 @@ public class ArgVisitor extends ChefDSLBaseVisitor<List> {
     }
 
     @Override
-    public List visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
-        List arg;
+    public List<String> visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
+        List<String> arg;
         PrimaryBaseVisitor baseVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
         arg = ctx.primary().accept(baseVisitor);
         return arg;

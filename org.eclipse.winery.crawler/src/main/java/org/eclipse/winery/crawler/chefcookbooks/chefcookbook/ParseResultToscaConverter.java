@@ -32,8 +32,8 @@ public class ParseResultToscaConverter {
     }
 
     public void saveToscaNodeTypes(List<TNodeType> nodeTypes) {
-        for (int i = 0; i < nodeTypes.size(); i++) {
-            new CookbookConfigurationToscaConverter().saveToscaNodeType(nodeTypes.get(i));
+        for (TNodeType nodeType : nodeTypes) {
+            new CookbookConfigurationToscaConverter().saveToscaNodeType(nodeType);
         }
     }
 }

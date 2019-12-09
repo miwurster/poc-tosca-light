@@ -19,12 +19,12 @@ import java.util.List;
 
 import org.eclipse.winery.crawler.chefcookbooks.ChefCookbookAnalyzer;
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ChefAttribute;
+import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ChefCookbookConfiguration;
+import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ChefPackage;
+import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.Platform;
 import org.eclipse.winery.crawler.chefcookbooks.constants.ChefDslConstants;
 import org.eclipse.winery.crawler.chefcookbooks.constants.Defaults;
-import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ChefPackage;
-import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
-import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ChefCookbookConfiguration;
 import org.eclipse.winery.crawler.chefcookbooks.helper.ChefDslHelper;
 
 import org.slf4j.Logger;
@@ -220,12 +220,15 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
         List callArgs = ctx.call_args().accept(callArgsVisitor);
 
         List<ChefCookbookConfiguration> cookbookConfigs;
-        String description = callArgs.get(0).toString();
-        cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
-        for (int count = 0; count < cookbookConfigs.size(); count++) {
-            cookbookConfigs.get(count).setDescription(description);
+
+        if (callArgs != null && callArgs.get(0) != null) {
+            String description = callArgs.get(0).toString();
+            cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
+            for (ChefCookbookConfiguration cookbookConfig : cookbookConfigs) {
+                cookbookConfig.setDescription(description);
+            }
+            extractedCookbookConfigs.putCookbookConfigsAsList(cookbookConfigs);
         }
-        extractedCookbookConfigs.putCookbookConfigsAsList(cookbookConfigs);
     }
 
     /**
@@ -258,7 +261,7 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
      * configurations.
      *
      * @param ctx Rule context of the command.
-     * @see <a href="https://docs.chef.io/config_rb_metadata.html">/a>
+     * @see <a href="https://docs.chef.io/config_rb_metadata.html">Chef docs</a>
      */
     private void processCookbookVersion(ChefDSLParser.OperationCallArgsContext ctx) {
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(extractedCookbookConfigs);
@@ -267,8 +270,8 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
         List<ChefCookbookConfiguration> cookbookConfigs;
         String version = callArgs.get(0).toString();
         cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
-        for (int count = 0; count < cookbookConfigs.size(); count++) {
-            cookbookConfigs.get(count).setVersion(version);
+        for (ChefCookbookConfiguration cookbookConfig : cookbookConfigs) {
+            cookbookConfig.setVersion(version);
         }
         extractedCookbookConfigs.putCookbookConfigsAsList(cookbookConfigs);
     }
@@ -285,9 +288,9 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
 
         List<ChefCookbookConfiguration> processedCookbookConfigs = new LinkedList<>();
 
-        for (int countConfigs = 0; countConfigs < parseResultList.size(); countConfigs++) {
+        for (CookbookParseResult cookbookParseResult : parseResultList) {
             // Process one cookbook configuration per iteration wrapped in a cookbook parse result. 
-            filteredParseResult = parseResultList.get(countConfigs);
+            filteredParseResult = cookbookParseResult;
 
             AssignAttributeVisitor assignAttributeVisitor = new AssignAttributeVisitor(filteredParseResult);
             ChefAttribute chefAttribute = ctx.call_args().accept(assignAttributeVisitor);

@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 
-public class CollectionVisitor extends ChefDSLBaseVisitor<List> {
+public class CollectionVisitor extends ChefDSLBaseVisitor<List<String>> {
 
     private CookbookParseResult extractedCookbookConfigs;
 
@@ -28,14 +28,14 @@ public class CollectionVisitor extends ChefDSLBaseVisitor<List> {
     }
 
     @Override
-    public List visitPrimCollection(ChefDSLParser.PrimCollectionContext ctx) {
+    public List<String> visitPrimCollection(ChefDSLParser.PrimCollectionContext ctx) {
         CollectionVisitor collectionVisitor = new CollectionVisitor(extractedCookbookConfigs);
-        return (List) ctx.collection().accept(collectionVisitor);
+        return ctx.collection().accept(collectionVisitor);
     }
 
     @Override
-    public List visitWArray(ChefDSLParser.WArrayContext ctx) {
-        List stringArray = new ArrayList<String>();
+    public List<String> visitWArray(ChefDSLParser.WArrayContext ctx) {
+        List<String> stringArray = new ArrayList<>();
         for (int count = 0; count < ctx.getChildCount() - 3; count++) {
             stringArray.add(ctx.getChild(2 + count).getText());
         }
@@ -43,8 +43,8 @@ public class CollectionVisitor extends ChefDSLBaseVisitor<List> {
     }
 
     @Override
-    public List visitPrim12(ChefDSLParser.Prim12Context ctx) {
-        List args = new ArrayList();
+    public List<String> visitPrim12(ChefDSLParser.Prim12Context ctx) {
+        List<String> args = new ArrayList<>();
         if (ctx.args() != null) {
             ArgsVisitor argsVisitor = new ArgsVisitor(extractedCookbookConfigs);
             args = ctx.args().accept(argsVisitor);

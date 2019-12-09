@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 
-public class ArgsVisitor extends ChefDSLBaseVisitor<List> {
+public class ArgsVisitor extends ChefDSLBaseVisitor<List<String>> {
 
     private CookbookParseResult extractedCookbookConfigs;
 
@@ -28,13 +28,13 @@ public class ArgsVisitor extends ChefDSLBaseVisitor<List> {
     }
 
     @Override
-    public List visitArgs(ChefDSLParser.ArgsContext ctx) {
+    public List<String> visitArgs(ChefDSLParser.ArgsContext ctx) {
         ArgVisitor argVisitor = new ArgVisitor(extractedCookbookConfigs);
-        List args = new ArrayList();
+        List<String> args = new ArrayList<>();
 
         for (int count = 0; count < ctx.getChildCount(); count++) {
             if (!ctx.getChild(count).getText().equals(",")) {
-                List argsNew = ctx.getChild(count).accept(argVisitor);
+                List<String> argsNew = ctx.getChild(count).accept(argVisitor);
                 if (argsNew != null) {
                     args.addAll(argsNew);
                 } else {

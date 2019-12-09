@@ -18,18 +18,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
-
 import org.yaml.snakeyaml.representer.Representer;
 
 public class ChefKitchenYmlParser {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChefKitchenYmlParser.class);
 
     private Map<String, Object> kitchenYml;
     private String cookbookName;
@@ -55,7 +57,7 @@ public class ChefKitchenYmlParser {
             try {
                 inputStream = new FileInputStream(this.cookbookPath + "/.kitchen.yml");
             } catch (FileNotFoundException e2) {
-                System.err.printf("Cookbook \" " + cookbookName + "\"" + " has no kitchen.yml file");
+                LOGGER.error("Cookbook \" " + cookbookName + "\"" + " has no kitchen.yml file");
                 return null;
             }
         }
@@ -64,7 +66,7 @@ public class ChefKitchenYmlParser {
         try {
             inputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Could not close InputStream!", e);
         }
         return kitchenYml;
     }
