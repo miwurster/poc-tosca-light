@@ -1,16 +1,7 @@
 FROM maven:3-jdk-8 as builder
-
-RUN rm /dev/random && ln -s /dev/urandom /dev/random \
-    && apt-get update -qq && apt-get install -qqy \
-        unzip \
-        git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && echo '{ "allow_root": true }' > /root/.bowerrc
-
 COPY . /tmp/winery
 WORKDIR /tmp/winery
-RUN mvn package -DskipTests
+RUN mvn package -DskipTests -Dmaven.javadoc.skip=true -B -V -q
 
 
 FROM tomcat:8.5.31
@@ -18,18 +9,29 @@ LABEL maintainer = "Oliver Kopp <kopp.dev@gmail.com>, Michael Wurster <miwurster
 
 ARG DOCKERIZE_VERSION=v0.3.0
 
+ENV WINERY_HOSTNAME localhost
+ENV WINERY_PORT 8080
+ENV WINERY_REPOSITORY_PROVIDER xml
+ENV WINERY_REPOSITORY_PATH "/repository"
 ENV WINERY_REPOSITORY_URL ""
 ENV WINERY_HEAP_MAX 2048m
 ENV WINERY_JMX_ENABLED ""
-ENV CONTAINER_HOSTNAME localhost
-ENV CONTAINER_PORT 1337
 ENV WORKFLOWMODELER_HOSTNAME localhost
 ENV WORKFLOWMODELER_PORT 8080
 ENV TOPOLOGYMODELER_HOSTNAME localhost
 ENV TOPOLOGYMODELER_PORT 8080
-ENV WINERY_REPOSITORY_PATH "/var/opentosca/repository"
-ENV WINERY_HOSTNAME localhost
-ENV WINERY_PORT 8080
+ENV CONTAINER_HOSTNAME localhost
+ENV CONTAINER_PORT 1337
+ENV WINERY_FEATURE_ACCOUNTABILITY false
+ENV WINERY_FEATURE_TEST_COMPLETION false
+ENV WINERY_FEATURE_TEST_COMPLIANCE false
+ENV WINERY_FEATURE_FREEZE_DEFROST false
+ENV WINERY_FEATURE_MANAGEMENT_ENRICHMENT false
+ENV WINERY_FEATURE_NFV false
+ENV WINERY_FEATURE_PATTERN_REFINEMENT false
+ENV WINERY_FEATURE_PROBLEM_DETECTION false
+ENV WINERY_FEATURE_SPLITTING false
+ENV WINERY_FEATURE_TEST_REFINEMENT false
 
 RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
