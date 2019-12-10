@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -81,6 +81,7 @@ import org.eclipse.winery.model.tosca.yaml.TPolicyType;
 import org.eclipse.winery.model.tosca.yaml.TPropertyAssignment;
 import org.eclipse.winery.model.tosca.yaml.TPropertyAssignmentOrDefinition;
 import org.eclipse.winery.model.tosca.yaml.TPropertyDefinition;
+import org.eclipse.winery.model.tosca.yaml.TRelationshipDefinition;
 import org.eclipse.winery.model.tosca.yaml.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.yaml.TRelationshipType;
 import org.eclipse.winery.model.tosca.yaml.TRequirementAssignment;
@@ -805,22 +806,23 @@ public class X2YConverter {
     }
 
     public TMapRequirementDefinition convert(org.eclipse.winery.model.tosca.TRequirementDefinition node) {
-        if (Objects.isNull(node)) return null;
-        QName type = node.getRequirementType();
-        if (Objects.isNull(type)) return null;
-        TRequirementType requirementType = repository.getElement(new RequirementTypeId(type));
-        if (Objects.isNull(requirementType)
-            || Objects.isNull(requirementType.getRequiredCapabilityType())) return null;
+        if (Objects.isNull(node))
+            return null;
+        TRequirementDefinition.Builder builder = new TRequirementDefinition.Builder(node.getCapability())
+            .setDescription(convertDocumentation(node.getDocumentation()))
+            .setOccurrences(node.getLowerBound(), node.getUpperBound())
+            .setNode(node.getNode());
+
+        if (node.getRelationship() != null) {
+            TRelationshipDefinition.Builder relationshipDefBuilder = new TRelationshipDefinition.Builder(node.getRelationship());
+            builder = builder.setRelationship(relationshipDefBuilder.build());
+        }
 
         return new TMapRequirementDefinition().setMap(
             Collections.singletonMap(
                 node.getName(),
-                new TRequirementDefinition.Builder(convert(requirementType))
-                    .setDescription(convertDocumentation(node.getDocumentation()))
-                    .setOccurrences(node.getLowerBound(), node.getUpperBound())
-                    .build()
-            )
-        );
+                builder.build()
+            )) ;
     }
 
     public QName convert(@NonNull TRequirementType node) {

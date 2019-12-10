@@ -347,7 +347,8 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
                 return BackendUtils.getDefinitionsHavingCorrectImports(repository, this.id);
             }
         } catch (Exception e) {
-            throw new WebApplicationException(e);
+            throw 
+                new WebApplicationException(e);
         }
     }
 

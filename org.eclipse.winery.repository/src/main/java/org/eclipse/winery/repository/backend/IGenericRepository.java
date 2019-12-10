@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.RepositoryFileReference;
+import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.Namespace;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
@@ -436,13 +437,15 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
 
         final TNodeType nodeType = this.getElement(id);
 
-        // add all referenced requirement types
-        TNodeType.RequirementDefinitions reqDefsContainer = nodeType.getRequirementDefinitions();
-        if (reqDefsContainer != null) {
-            List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
-            for (TRequirementDefinition reqDef : reqDefs) {
-                RequirementTypeId reqTypeId = new RequirementTypeId(reqDef.getRequirementType());
-                ids.add(reqTypeId);
+        // add all referenced requirement types, but only in XML mode. YAML does not have requirement types
+        if (!Environments.getUiConfig().getFeatures().get("yaml")) {
+            TNodeType.RequirementDefinitions reqDefsContainer = nodeType.getRequirementDefinitions();
+            if (reqDefsContainer != null) {
+                List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
+                for (TRequirementDefinition reqDef : reqDefs) {
+                    RequirementTypeId reqTypeId = new RequirementTypeId(reqDef.getRequirementType());
+                    ids.add(reqTypeId);
+                }
             }
         }
 
