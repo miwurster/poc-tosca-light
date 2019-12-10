@@ -86,7 +86,6 @@ export class YamlRequirementDefinitionsComponent implements OnInit {
             this.allCapabilityTypes = this.noneElement.concat(result[1]);
             this.allRelationshipTypes = this.noneElement.concat(result[2]);
             this.handleRequirementDefinitions(result[3]);
-            console.debug(this.allCapabilityTypes);
 
         }, error => this.handleError(error));
     }
@@ -141,7 +140,6 @@ export class YamlRequirementDefinitionsComponent implements OnInit {
         } else {
             this.reqDefToBeAdded.upperBound = this.upperBound.toString(10);
         }
-        console.debug(this.reqDefToBeAdded);
 
         this.service.saveRequirementDefinition(this.reqDefToBeAdded)
             .flatMap(() => this.service.getAllRequirementDefinitions())

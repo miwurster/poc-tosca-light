@@ -54,7 +54,6 @@ export class YamlRequirementDefinitionsService {
 
     saveRequirementDefinition(reqDef: YamlRequirementDefinitionApiData): Observable<any> {
         const postData = YamlRequirementDefinitionPostApiData.fromData(reqDef);
-        console.debug(postData);
         const url = backendBaseURL + this.path;
         return this.http.post<any>(url, postData);
     }
