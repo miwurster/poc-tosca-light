@@ -17,7 +17,6 @@ package org.eclipse.winery.common.configuration;
 import java.io.File;
 
 import org.eclipse.winery.common.Constants;
-import org.eclipse.winery.common.Enums;
 
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.io.FileUtils;
@@ -39,10 +38,10 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
         this.configuration = configuration;
         this.setGitConfiguration(Environments.getGitConfig());
         String provider = Environment.getConfiguration().getString(key + "provider");
-        if (provider == null || provider.isEmpty()) {
-            this.setProvider(RepositoryProvider.FILE);
+        if (provider.equalsIgnoreCase(RepositoryProvider.YAML.name())) {
+            this.setProvider(RepositoryProvider.YAML);
         } else {
-            this.setProvider(Enums.valueOf(RepositoryConfigurationObject.RepositoryProvider.class, provider));
+            this.setProvider(RepositoryProvider.FILE);
         }
     }
 
@@ -55,7 +54,7 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
     }
 
     /**
-     * Returns the path to the repositiory saved in the configuration file.
+     * Returns the path to the repository saved in the configuration file.
      *
      * @return path to configuration
      */

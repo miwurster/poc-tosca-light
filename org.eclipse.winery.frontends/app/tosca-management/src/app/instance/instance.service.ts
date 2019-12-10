@@ -44,13 +44,17 @@ export class InstanceService {
 
         switch (this.toscaComponent.toscaType) {
             case ToscaTypes.NodeType:
-                subMenu = ['README', 'LICENSE', 'Appearance', 'Instance States', 'Interfaces', 'Implementations', 'Tags',
-                    'Requirement Definitions', 'Capability Definitions', 'Properties Definition',
-                    'Inheritance', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Appearance', 'Instance States', 'Interfaces', 'Implementations',
+                    'Requirement Definitions', 'Capability Definitions', 'Properties Definition', 'Inheritance'];
+                if (!this.configurationService.configuration.features.yaml) {
+                    subMenu.push('Tags', 'Documentation', 'XML');
+                }
                 break;
             case ToscaTypes.ServiceTemplate:
-                subMenu = ['README', 'LICENSE', 'Topology Template', 'Plans', 'Selfservice Portal',
-                    'Boundary Definitions', 'Tags', 'Constraint Checking', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Topology Template'];
+                if (!this.configurationService.configuration.features.yaml) {
+                    subMenu.push('Plans', 'Selfservice Portal', 'Boundary Definitions', 'Tags', 'Constraint Checking', 'Documentation', 'XML');
+                }
                 if (this.configurationService.configuration.features.nfv) {
                     subMenu.push('Threat Modeling');
                 }
