@@ -15,8 +15,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { InstanceService } from '../../instance.service';
 import { PropertiesDefinitionService } from './propertiesDefinition.service';
 import {
-    PropertiesDefinition, PropertiesDefinitionEnum, PropertiesDefinitionKVElement, PropertiesDefinitionsResourceApiData,
-    WinerysPropertiesDefinition
+    PropertiesDefinition, PropertiesDefinitionEnum, PropertiesDefinitionKVElement, PropertiesDefinitionsResourceApiData, WinerysPropertiesDefinition
 } from './propertiesDefinitionsResourceApiData';
 import { SelectData } from '../../../model/selectData';
 import { isNullOrUndefined } from 'util';
@@ -25,6 +24,8 @@ import { WineryValidatorObject } from '../../../wineryValidators/wineryDuplicate
 import { WineryRowData, WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
 import { ModalDirective } from 'ngx-bootstrap';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { WineryRepositoryConfigurationService } from '../../../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { FeatureEnum } from '../../../wineryFeatureToggleModule/wineryRepository.feature.direct';
 
 @Component({
     templateUrl: 'propertiesDefinition.component.html',
@@ -48,11 +49,12 @@ export class PropertiesDefinitionComponent implements OnInit {
     columns: Array<WineryTableColumn> = [
         { title: 'Name', name: 'key', sort: true },
         { title: 'Type', name: 'type', sort: true },
-        { title: 'Is Required', name: 'required' },
+        { title: 'Required', name: 'required' },
         { title: 'Default Value', name: 'defaultValue' },
-        { title: 'Description', name: 'description'}
+        { title: 'Description', name: 'description' },
     ];
     newProperty: PropertiesDefinitionKVElement = new PropertiesDefinitionKVElement();
+    configEnum = FeatureEnum;
 
     validatorObject: WineryValidatorObject;
     @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
@@ -60,7 +62,7 @@ export class PropertiesDefinitionComponent implements OnInit {
     @ViewChild('nameInputForm') nameInputForm: ElementRef;
 
     constructor(public sharedData: InstanceService, private service: PropertiesDefinitionService,
-                private notify: WineryNotificationService) {
+                private notify: WineryNotificationService, private configurationService: WineryRepositoryConfigurationService) {
     }
 
     // region ########## Angular Callbacks ##########
@@ -328,7 +330,11 @@ export class PropertiesDefinitionComponent implements OnInit {
                 this.onCustomKeyValuePairSelected();
                 break;
             default:
-                this.resourceApiData.selectedValue = PropertiesDefinitionEnum.None;
+                if (this.configurationService.configuration.features.yaml) {
+                    this.onCustomKeyValuePairSelected();
+                } else {
+                    this.resourceApiData.selectedValue = PropertiesDefinitionEnum.None;
+                }
         }
 
         this.handleSuccess(data);

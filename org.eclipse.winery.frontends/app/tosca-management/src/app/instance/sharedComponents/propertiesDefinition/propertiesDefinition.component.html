@@ -16,7 +16,7 @@
 </div>
 <div *ngIf="!loading">
     <div class="radioWrapper">
-        <div class="left">
+        <div class="left" *wineryRepositoryHideOnFeature="configEnum.Yaml">
             <input id="nopropdef" type="radio" name="kind" (click)="onNoneSelected()"
                    [disabled]="!sharedData?.currentVersion?.editable"
                    [checked]="resourceApiData.selectedValue === propertiesEnum.None">
@@ -61,7 +61,7 @@
                         (addBtnClicked)="onAddClick();">
                     </winery-table>
                 </tab>
-                <tab heading="Wrapper">
+                <tab heading="Wrapper" *wineryRepositoryHideOnFeature="configEnum.Yaml">
                     <div class="wrapperTab">
                         <label for="wrapperName">Name of Wrapper Element</label><br>
                         <input id="wrapperName"
