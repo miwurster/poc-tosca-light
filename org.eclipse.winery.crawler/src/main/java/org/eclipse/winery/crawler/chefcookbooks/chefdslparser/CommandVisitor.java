@@ -245,18 +245,20 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(extractedCookbookConfigs);
         List<String> callArgs = ctx.call_args().accept(callArgsVisitor);
 
-        String name = callArgs.get(0).toString();
-        if (extractedCookbookConfigs.getAllConfigsAsList().size() == 0) {
-            ChefCookbookConfiguration componentType = new ChefCookbookConfiguration();
-            componentType.setName(name);
-            extractedCookbookConfigs.putCookbookConfig(componentType);
-        } else {
-            List<ChefCookbookConfiguration> cookbookConfigs;
-            cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
-            for (ChefCookbookConfiguration cookbookConfig : cookbookConfigs) {
-                cookbookConfig.setVersion(name);
+        if (callArgs != null && !callArgs.isEmpty() && callArgs.get(0) != null) {
+            String name = callArgs.get(0);
+            if (extractedCookbookConfigs.getAllConfigsAsList().size() == 0) {
+                ChefCookbookConfiguration componentType = new ChefCookbookConfiguration();
+                componentType.setName(name);
+                extractedCookbookConfigs.putCookbookConfig(componentType);
+            } else {
+                List<ChefCookbookConfiguration> cookbookConfigs;
+                cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
+                for (ChefCookbookConfiguration cookbookConfig : cookbookConfigs) {
+                    cookbookConfig.setVersion(name);
+                }
+                extractedCookbookConfigs.replaceCookbookConfigs(cookbookConfigs);
             }
-            extractedCookbookConfigs.replaceCookbookConfigs(cookbookConfigs);
         }
     }
 

@@ -57,27 +57,32 @@ public class ChefCookbookAnalyzer {
         String[] availableCookbooks;
         String cookbookName;
         CookbookParseResult extractedCookbookConfigs;
-        String lastCookbook = "";
 
         HashSet<String> alreadyProcessedCookbooks = new HashSet<>();
 
-        while (CrawledCookbooks.getDirectories(Defaults.COOKBOOK_PATH).length > 0) {
-            availableCookbooks = CrawledCookbooks.getDirectories(Defaults.COOKBOOK_PATH);
-            int count = 0;
-            do {
-                cookbookName = availableCookbooks[count++];
-            } while (alreadyProcessedCookbooks.contains(cookbookName));
+        try {
+            while (CrawledCookbooks.getDirectories(Defaults.COOKBOOK_PATH).length > 0) {
+                availableCookbooks = CrawledCookbooks.getDirectories(Defaults.COOKBOOK_PATH);
+                int count = 0;
+                do {
+                    cookbookName = availableCookbooks[count++];
+                } while (alreadyProcessedCookbooks.contains(cookbookName));
 
-            extractedCookbookConfigs = new CookbookParseResult(cookbookName);
-            extractedCookbookConfigs.setCookbookPath(Defaults.COOKBOOK_PATH + "/" + cookbookName);
+                extractedCookbookConfigs = new CookbookParseResult(cookbookName);
+                extractedCookbookConfigs.setCookbookPath(Defaults.COOKBOOK_PATH + "/" + cookbookName);
 
-            extractedCookbookConfigs = compileCookbook(extractedCookbookConfigs, true);
+                extractedCookbookConfigs = compileCookbook(extractedCookbookConfigs, true);
 
-            CrawledCookbooks.deleteFile(extractedCookbookConfigs.getCookbookPath());
-            extractedCookbookConfigs.clear();
+                CrawledCookbooks.deleteFile(extractedCookbookConfigs.getCookbookPath());
+                extractedCookbookConfigs.clear();
 
-            alreadyProcessedCookbooks.add(cookbookName);
+                alreadyProcessedCookbooks.add(cookbookName);
+            }
+        } catch (Exception e) {
+            LOGGER.debug("Error while analyzing...", e);
         }
+
+        LOGGER.info("Processed cookbooks: \n\t\t{}", alreadyProcessedCookbooks);
     }
 
     /**
