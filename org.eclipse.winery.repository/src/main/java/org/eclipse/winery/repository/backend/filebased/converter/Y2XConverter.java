@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -624,14 +624,17 @@ public class Y2XConverter {
         if (Objects.isNull(node)) return null;
         // TOSCA YAML does not have RequirementTypes:
         // * construct TOSCA XML RequirementType from TOSCA YAML Requirement Definition	
-        return new TRequirementDefinition.Builder(id,
-            convertRequirementDefinition(
-                node,
-                getRequirementTypeName(node.getCapability(), id)
-            ))
+        TRequirementDefinition.Builder builder = new TRequirementDefinition.Builder(id)
             .setLowerBound(node.getLowerBound())
             .setUpperBound(node.getUpperBound())
-            .build();
+            .setCapability(node.getCapability())
+            .setNode(node.getNode());
+        
+        if (node.getRelationship() != null) {
+            builder = builder.setRelationship(node.getRelationship().getType());
+        }
+
+        return builder.build();
     }
 
     /**
@@ -692,7 +695,7 @@ public class Y2XConverter {
             .setValidSourceTypes(node.getValidSourceTypes())
             .build();
     }
-    
+
     /**
      * Converts TOSCA YAML CapabilityDefinitions to TOSCA XML CapabilityDefinitions Additional TOSCA YAML elements
      * properties, attributes and valid_source_types are not converted

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,12 +14,16 @@
 
 package org.eclipse.winery.repository.rest.resources.apiData;
 
-public class CapabilityDefinitionPostData {
+public class RequirementOrCapabilityDefinitionPostData {
     public String name;
     public String type;
     public String upperBound;
     public String lowerBound;
+    // the following fields support YAML mode
+    public String capability;
+    public String node;
+    public String relationship;
 
-    CapabilityDefinitionPostData() {
+    RequirementOrCapabilityDefinitionPostData() {
     }
 }
