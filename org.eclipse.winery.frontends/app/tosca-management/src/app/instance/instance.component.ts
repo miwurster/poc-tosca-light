@@ -93,7 +93,7 @@ export class InstanceComponent implements OnDestroy {
 
                     this.availableTabs = this.service.getSubMenuByResource();
                     this.availableTabsLinks = this.availableTabs.map(item => {
-                        let link = `./${item.toLowerCase().replace(' ', '')}`;
+                        let link = `./${item.toLowerCase().replace(/ /g, '')}`;
 
                         if (link === './requirementdefinitions' && configurationService.isYaml()) {
                             link += 'yaml';
@@ -101,6 +101,8 @@ export class InstanceComponent implements OnDestroy {
 
                         return link;
                     });
+
+                    console.debug(this.availableTabsLinks);
                 },
                 error => this.handleError(error)
             );
