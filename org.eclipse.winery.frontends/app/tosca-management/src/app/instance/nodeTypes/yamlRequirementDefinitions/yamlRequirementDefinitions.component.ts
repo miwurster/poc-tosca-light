@@ -38,6 +38,10 @@ export class YamlRequirementDefinitionsComponent implements OnInit {
     readonly noneElement: SelectData[] = [
         { text: 'None', id: 'none', children: [{ text: '(none)', id: '(none)' }] }
     ];
+
+    readonly anyElement: SelectData[] = [
+        { text: 'Any', id: 'any', children: [{ text: '(any)', id: '(any)' }] }
+    ];
     columns: Array<WineryTableColumn> = [
         { title: 'Name', name: 'name' },
         { title: 'Capability Type', name: 'capability' },
@@ -48,11 +52,11 @@ export class YamlRequirementDefinitionsComponent implements OnInit {
     ];
 
     allNodeTypes: SelectData[] = [];
-    initialNodeType = this.noneElement;
+    initialNodeType = this.anyElement;
     allCapabilityTypes: SelectData[] = [];
     initialCapabilityType = this.noneElement;
     allRelationshipTypes: SelectData[] = [];
-    initialRelationshipType = this.noneElement;
+    initialRelationshipType = this.anyElement;
     requirementDefinitions: YamlRequirementDefinitionApiData[] = [];
     tableData: YamlRequirementDefinitionTableData[] = [];
     reqDefToBeAdded: YamlRequirementDefinitionApiData;
@@ -99,13 +103,18 @@ export class YamlRequirementDefinitionsComponent implements OnInit {
         this.requirementDefinitions = defs;
 
         if (this.requirementDefinitions) {
-            this.tableData = this.requirementDefinitions.map(def => new YamlRequirementDefinitionTableData(
-                def.name,
-                this.typeToHref(QName.stringToQName(def.capability), 'capabilitytypes'),
-                def.lowerBound,
-                def.upperBound,
-                this.typeToHref(QName.stringToQName(def.node), 'nodetypes'),
-                this.typeToHref(QName.stringToQName(def.relationship), 'relationshiptypes')));
+            this.tableData = this.requirementDefinitions.map(def => {
+                    const nodeHref = def.node ? this.typeToHref(QName.stringToQName(def.node), 'nodetypes') : 'ANY';
+                    const relationshipHref = def.relationship ? this.typeToHref(QName.stringToQName(def.relationship), 'relationshiptypes') : 'ANY';
+                    return new YamlRequirementDefinitionTableData(
+                        def.name,
+                        this.typeToHref(QName.stringToQName(def.capability), 'capabilitytypes'),
+                        def.lowerBound,
+                        def.upperBound,
+                        nodeHref,
+                        relationshipHref);
+                }
+            );
         } else {
             this.tableData = [];
         }
@@ -164,11 +173,11 @@ export class YamlRequirementDefinitionsComponent implements OnInit {
     }
 
     onSelectedNodeTypeChanged(value: SelectItem) {
-        this.reqDefToBeAdded.node = value.id === '(none)' ? undefined : value.id;
+        this.reqDefToBeAdded.node = value.id === '(any)' ? undefined : value.id;
     }
 
     onSelectedRelTypeChanged(value: SelectItem) {
-        this.reqDefToBeAdded.relationship = value.id === '(none)' ? undefined : value.id;
+        this.reqDefToBeAdded.relationship = value.id === '(any)' ? undefined : value.id;
     }
 
     unboundedToggle() {
