@@ -54,7 +54,7 @@ public class RequirementDefinitionsResource extends RequirementOrCapabilityDefin
     public Response performPost(RequirementOrCapabilityDefinitionPostData postData) {
         // if we are in XML mode, we delegate to the parent
         if (!Environments.getUiConfig().getFeatures().get("yaml")) {
-            return super.onPost(postData);
+            return super.performPost(postData);
         }
 
         // otherwise, we do it the YAML way!!
