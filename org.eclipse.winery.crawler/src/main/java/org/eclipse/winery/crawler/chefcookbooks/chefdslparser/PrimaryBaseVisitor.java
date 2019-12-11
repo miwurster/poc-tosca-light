@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 import org.eclipse.winery.crawler.chefcookbooks.helper.ChefDslHelper;
@@ -222,25 +223,21 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
 
     @Override
     public List<String> visitPrimFuncCall(ChefDSLParser.PrimFuncCallContext ctx) {
-        List<String> primaryValue;
         List<String> convertedValueList = new ArrayList<>();
-        String functionName;
         PrimaryBaseVisitor booleanExprVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
-        primaryValue = ctx.primary().accept(booleanExprVisitor);
+        List<String> primaryValue = ctx.primary().accept(booleanExprVisitor);
 
         if (primaryValue != null && ctx.function().getChildCount() == 1) {
-            functionName = ctx.function().getText();
+            String functionName = ctx.function().getText();
             if ("to_i".equals(functionName)) {
-                Integer convertedValue;
-                for (String s : primaryValue) {
-                    convertedValue = RubyFunctionHelper.stringToInt((String) s);
-                    if (convertedValue != null) {
-                        convertedValueList.add(convertedValue.toString());
-                    }
-                }
+                primaryValue.stream().filter(Objects::nonNull)
+                    .forEach(s -> {
+                        Integer convertedValue = RubyFunctionHelper.stringToInt(s);
+                        if (convertedValue != null) {
+                            convertedValueList.add(convertedValue.toString());
+                        }
+                    });
             }
-        } else {
-            convertedValueList = null;
         }
 
         return convertedValueList;

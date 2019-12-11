@@ -335,7 +335,6 @@ public class ChefCookbookAnalyzer {
      * @return Returns parse result with added information.
      */
     private CookbookParseResult addPlatformVersionInformationFromKitchen(CookbookParseResult cookbookConfigs) {
-
         List<ChefCookbookConfiguration> cookbookConfigurationList = cookbookConfigs.getAllConfigsAsList();
         List<String> platformNames;
         ChefKitchenYmlParser ymlParser = new ChefKitchenYmlParser(cookbookConfigs);

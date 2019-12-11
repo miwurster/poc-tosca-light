@@ -82,8 +82,8 @@ public class StmtVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
 
             List<ChefCookbookConfiguration> processedCookbookConfigs = new LinkedList<>();
 
-            for (int countConfigs = 0; countConfigs < parseResultList.size(); countConfigs++) {
-                filteredParseResult = parseResultList.get(countConfigs);
+            for (CookbookParseResult cookbookParseResult : parseResultList) {
+                filteredParseResult = cookbookParseResult;
                 CommandVisitor commandVisitor = new CommandVisitor(filteredParseResult);
                 filteredParseResult = ctx.call().accept(commandVisitor);
                 if (ctx.stmt() != null) {
@@ -99,7 +99,9 @@ public class StmtVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
                     }
                 }
                 filteredParseResult.clearNotatedPackage();
-                processedCookbookConfigs.add(filteredParseResult.getAllConfigsAsList().get(0));
+                if (filteredParseResult.getAllConfigsAsList() != null && !filteredParseResult.getAllConfigsAsList().isEmpty()) {
+                    processedCookbookConfigs.add(filteredParseResult.getAllConfigsAsList().get(0));
+                }
                 filteredParseResult.clearConfigurations();
             }
             cookbookConfigs.replaceCookbookConfigs(processedCookbookConfigs);

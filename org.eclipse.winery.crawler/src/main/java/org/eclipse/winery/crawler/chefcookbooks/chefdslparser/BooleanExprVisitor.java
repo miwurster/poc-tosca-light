@@ -114,7 +114,8 @@ public class BooleanExprVisitor extends ChefDSLBaseVisitor<Boolean> {
         if (firstArgList != null && secondArgList != null && firstArgList.size() == 1 && secondArgList.size() == 1) {
             String firstArgument = firstArgList.get(0);
             String secondArgument = secondArgList.get(0);
-            return Double.parseDouble(firstArgument) < Double.parseDouble(secondArgument);
+            return !firstArgument.isEmpty() && !secondArgument.isEmpty()
+                && Double.parseDouble(firstArgument) < Double.parseDouble(secondArgument);
         } else {
             LOGGER.info("One of the compared Arguments is an array or null. This is not implemented yet. \n" +
                 firstArgList + " is compared to: " + secondArgList);

@@ -274,12 +274,14 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
         List<String> callArgs = ctx.call_args().accept(callArgsVisitor);
 
         List<ChefCookbookConfiguration> cookbookConfigs;
-        String version = callArgs.get(0).toString();
-        cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
-        for (ChefCookbookConfiguration cookbookConfig : cookbookConfigs) {
-            cookbookConfig.setVersion(version);
+        if (callArgs != null && !callArgs.isEmpty()) {
+            String version = callArgs.get(0);
+            cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
+            for (ChefCookbookConfiguration cookbookConfig : cookbookConfigs) {
+                cookbookConfig.setVersion(version);
+            }
+            extractedCookbookConfigs.putCookbookConfigsAsList(cookbookConfigs);
         }
-        extractedCookbookConfigs.putCookbookConfigsAsList(cookbookConfigs);
     }
 
     /**
