@@ -17,26 +17,27 @@ package org.eclipse.winery.crawler.chefcookbooks;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ChefCookbookConfiguration;
+import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ParseResultToscaConverter;
+import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.Platform;
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbookcrawler.CrawlCookbookRunnable;
 import org.eclipse.winery.crawler.chefcookbooks.chefcookbookcrawler.CrawledCookbooks;
+import org.eclipse.winery.crawler.chefcookbooks.chefdslparser.ChefDSLLexer;
+import org.eclipse.winery.crawler.chefcookbooks.chefdslparser.ChefDSLParser;
+import org.eclipse.winery.crawler.chefcookbooks.chefdslparser.CookbookVisitor;
 import org.eclipse.winery.crawler.chefcookbooks.chefdslparser.MetadataJsonVisitor;
 import org.eclipse.winery.crawler.chefcookbooks.constants.ChefDslConstants;
 import org.eclipse.winery.crawler.chefcookbooks.constants.Defaults;
-import org.eclipse.winery.crawler.chefcookbooks.chefdslparser.CookbookVisitor;
-import org.eclipse.winery.crawler.chefcookbooks.chefdslparser.ChefDSLLexer;
-import org.eclipse.winery.crawler.chefcookbooks.chefdslparser.ChefDSLParser;
 import org.eclipse.winery.crawler.chefcookbooks.helper.RubyCodeHelper;
 import org.eclipse.winery.crawler.chefcookbooks.kitchenparser.ChefKitchenYmlParser;
 import org.eclipse.winery.crawler.chefcookbooks.kitchenparser.KitchenUtilities;
-import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.CookbookParseResult;
-import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.ChefCookbookConfiguration;
-import org.eclipse.winery.crawler.chefcookbooks.chefcookbook.Platform;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -57,48 +58,52 @@ public class ChefCookbookAnalyzer {
         String cookbookName;
         CookbookParseResult extractedCookbookConfigs;
         String lastCookbook = "";
-        
+
+        HashSet<String> alreadyProcessedCookbooks = new HashSet<>();
+
         while (CrawledCookbooks.getDirectories(Defaults.COOKBOOK_PATH).length > 0) {
             availableCookbooks = CrawledCookbooks.getDirectories(Defaults.COOKBOOK_PATH);
-            cookbookName = availableCookbooks[0];
-            if (!lastCookbook.equals(cookbookName)) {
-                extractedCookbookConfigs = new CookbookParseResult(cookbookName);
-                extractedCookbookConfigs.setCookbookPath(Defaults.COOKBOOK_PATH + "/" + cookbookName);
+            int count = 0;
+            do {
+                cookbookName = availableCookbooks[count++];
+            } while (alreadyProcessedCookbooks.contains(cookbookName));
 
-                extractedCookbookConfigs = compileCookbook(extractedCookbookConfigs, true);
+            extractedCookbookConfigs = new CookbookParseResult(cookbookName);
+            extractedCookbookConfigs.setCookbookPath(Defaults.COOKBOOK_PATH + "/" + cookbookName);
 
-                CrawledCookbooks.deleteFile(extractedCookbookConfigs.getCookbookPath());
-                extractedCookbookConfigs.clear();
-                
-                lastCookbook = cookbookName;
-            }
+            extractedCookbookConfigs = compileCookbook(extractedCookbookConfigs, true);
+
+            CrawledCookbooks.deleteFile(extractedCookbookConfigs.getCookbookPath());
+            extractedCookbookConfigs.clear();
+
+            alreadyProcessedCookbooks.add(cookbookName);
         }
     }
 
     /**
-     * Method compiles a cookbook.
-     * All information about used versions of softwares and platfroms are extracted and mapped to cookbook 
-     * configuration in the parse result.
-     * Method crawls depenencies and analyzes them too.
+     * Method compiles a cookbook. All information about used versions of softwares and platfroms are extracted and
+     * mapped to cookbook configuration in the parse result. Method crawls depenencies and analyzes them too.
+     *
      * @param cookbookParseResult Initialized parse result. Must store the path of the cookbook.
      * @return Returns the compiled cookbook in the parse result.
      */
     public CookbookParseResult compileCookbook(CookbookParseResult cookbookParseResult, boolean saveToToscaRepo) {
-        
+
         CookbookParseResult oldParseResult = new CookbookParseResult(cookbookParseResult);
         List<CrawlCookbookRunnable> crawlCookbookRunnableList = new ArrayList<>();
-        
+
         //Compile metadata.
         cookbookParseResult = returnComponentTypesFromMetadata(cookbookParseResult);
 
         // cookbookParseResult is null when cookbook has no metadata.rb or metadata.json file.
-        if ( cookbookParseResult == null) {
+        if (cookbookParseResult == null) {
             return oldParseResult;
         }
 
         //Crawl dependent cookbooks in threads.
-        if (cookbookParseResult.getAllConfigsAsList().size() > 0) {
-            LinkedHashMap<String,String> dependencies = cookbookParseResult.getAllConfigsAsList().get(0).getDepends();
+        List<ChefCookbookConfiguration> allConfigsAsList = cookbookParseResult.getAllConfigsAsList();
+        if (!allConfigsAsList.isEmpty()) {
+            LinkedHashMap<String, String> dependencies = allConfigsAsList.get(0).getDepends();
             String pathDependencies = cookbookParseResult.getCookbookPath() + Defaults.DEPENDENCIE_FOLDER;
             for (String key : dependencies.keySet()) {
                 String versionRestriciton = dependencies.get(key);
@@ -109,16 +114,16 @@ public class ChefCookbookAnalyzer {
         }
 
         // Compile kitchen.yml
-        if (cookbookParseResult.isInRecursiveTransformation() == false ) {
-            cookbookParseResult = addPlatformVersionInformationFromKitchen(cookbookParseResult);
+        if (!cookbookParseResult.isInRecursiveTransformation()) {
+            addPlatformVersionInformationFromKitchen(cookbookParseResult);
         }
 
         // Wait for the dependencies to download.
-        for (int i = 0; i < crawlCookbookRunnableList.size(); i++) {
+        for (CrawlCookbookRunnable crawlCookbookRunnable : crawlCookbookRunnableList) {
             try {
-                crawlCookbookRunnableList.get(i).join();
+                crawlCookbookRunnable.join();
             } catch (InterruptedException e) {
-                LOGGER.info("Crawling process of dependent cookbook " + crawlCookbookRunnableList.get(i).getThreadName() + " interrupted");
+                LOGGER.info("Crawling process of dependent cookbook " + crawlCookbookRunnable.getThreadName() + " interrupted");
             }
         }
 
@@ -129,23 +134,24 @@ public class ChefCookbookAnalyzer {
         cookbookParseResult = returnComponentTypesFromRecipes(cookbookParseResult);
 
         // Resolve dependencies
-        for (Map.Entry<String,String> entry : cookbookParseResult.getAllConfigsAsList().get(0).getDepends().entrySet()) {
-            String key = entry.getKey();
-            LOGGER.info("Cookbook: " + key + " is resolved now");
-            CookbookParseResult dependentParseResult = new CookbookParseResult(cookbookParseResult);
-            dependentParseResult.prepareForDependencie(key);
-            if (dependentParseResult.getAllConfigsAsList().size() > 0) {
-                compileCookbook(dependentParseResult, saveToToscaRepo);
+        if (!allConfigsAsList.isEmpty()) {
+            for (Map.Entry<String, String> entry : allConfigsAsList.get(0).getDepends().entrySet()) {
+                String key = entry.getKey();
+                LOGGER.info("Cookbook: " + key + " is resolved now");
+                CookbookParseResult dependentParseResult = new CookbookParseResult(cookbookParseResult);
+                dependentParseResult.prepareForDependencie(key);
+                if (dependentParseResult.getAllConfigsAsList().size() > 0) {
+                    compileCookbook(dependentParseResult, saveToToscaRepo);
+                }
             }
         }
 
         // Print information about cookbooks for debugging
-        List<ChefCookbookConfiguration> cookbookConfigsList = cookbookParseResult.getAllConfigsAsList();
-        for (int count = 0; count < cookbookConfigsList.size(); count++) {
-            cookbookConfigsList.get(count).printConfiguration();
+        for (ChefCookbookConfiguration chefCookbookConfiguration : allConfigsAsList) {
+            chefCookbookConfiguration.printConfiguration();
         }
 
-        /**
+        /*
          * Convert extacted configuations to TOSCA node types.
          * Extracted platforms are also converted to TOSCA node types.
          * Saves the extracted Node types to repository.
@@ -153,14 +159,16 @@ public class ChefCookbookAnalyzer {
         if (saveToToscaRepo) {
             new ParseResultToscaConverter().saveToscaNodeTypes(new ParseResultToscaConverter().convertCookbookConfigurationToToscaNode(cookbookParseResult));
         }
-        
+
         LOGGER.info("Finished parsing");
         return cookbookParseResult;
     }
 
     /**
-     * Method compiles ruby files of a cookbook and adds the extracted information to an existing parse result of a cookbook.
-     * @param input The Ruby file to compile as an input stream.
+     * Method compiles ruby files of a cookbook and adds the extracted information to an existing parse result of a
+     * cookbook.
+     *
+     * @param input           The Ruby file to compile as an input stream.
      * @param cookbookConfigs existing parse result of cookbook.
      * @return Returns the parse result with new extracted information
      */
@@ -169,15 +177,15 @@ public class ChefCookbookAnalyzer {
         ChefDSLLexer chefDSLLexer = new ChefDSLLexer(input);
         CommonTokenStream commonTokenStream = new CommonTokenStream(chefDSLLexer);
         ChefDSLParser chefDSLParser = new ChefDSLParser(commonTokenStream);
-        
+
         CookbookVisitor cookbookVisitor = new CookbookVisitor(cookbookConfigs);
         extractedCookbookConfigs = cookbookVisitor.visit(chefDSLParser.program());
         return extractedCookbookConfigs;
-        
     }
 
     /**
      * Parse metadata.rb of a Chef cookbook and return all configurations.
+     *
      * @param cookbookConfigs Initialized parse result of a cookbook, containing the path to the coobook.
      * @return Returns parse result of cookbook with information found metadata.rb file.
      */
@@ -196,6 +204,7 @@ public class ChefCookbookAnalyzer {
 
     /**
      * Parse metadata.rb of a Chef cookbook and return all configurations.
+     *
      * @param cookbookConfigs The parse result of a cookbook, containing information from metadata.rb and kitchen.yml.
      * @return Returns parse result of cookbook with information found in file.
      */
@@ -205,7 +214,7 @@ public class ChefCookbookAnalyzer {
         File[] files;
         String attributePath;
         String defaultAttributesPath;
-        
+
         //  Compile Attributes from cookbook which is analyzed
         if (!cookbookConfigs.isInRecursiveTransformation()) {
             attributePath = cookbookConfigs.getCookbookPath() + ChefDslConstants.ATTRIBUTES_PATH;
@@ -225,20 +234,23 @@ public class ChefCookbookAnalyzer {
         }
 
         // Compile Attributes from dependent cookbooks
-        for (Map.Entry<String, String> entry : cookbookConfigs.getAllConfigsAsList().get(0).getDepends().entrySet()) {
-            String key = entry.getKey();
+        List<ChefCookbookConfiguration> allConfigsAsList = cookbookConfigs.getAllConfigsAsList();
+        if (allConfigsAsList != null && !allConfigsAsList.isEmpty()) {
+            for (Map.Entry<String, String> entry : allConfigsAsList.get(0).getDepends().entrySet()) {
+                String key = entry.getKey();
 
-            attributePath = cookbookConfigs.getCookbookPath() + Defaults.DEPENDENCIE_FOLDER + "/" + key + ChefDslConstants.ATTRIBUTES_PATH;
-            defaultAttributesPath = attributePath + ChefDslConstants.DEFAULT_RB_PATH;
-            cookbookConfigs = getParseResultFromFile(cookbookConfigs, defaultAttributesPath);
+                attributePath = cookbookConfigs.getCookbookPath() + Defaults.DEPENDENCIE_FOLDER + "/" + key + ChefDslConstants.ATTRIBUTES_PATH;
+                defaultAttributesPath = attributePath + ChefDslConstants.DEFAULT_RB_PATH;
+                cookbookConfigs = getParseResultFromFile(cookbookConfigs, defaultAttributesPath);
 
-            folder = new File(attributePath);
-            files = folder.listFiles();
+                folder = new File(attributePath);
+                files = folder.listFiles();
 
-            if (files != null) {
-                for (File attributeFile : files) {
-                    if (!attributeFile.getName().equals(ChefDslConstants.DEFAULT_RUBYFILE)) {
-                        cookbookConfigs = getParseResultFromFile(cookbookConfigs, attributeFile.getAbsolutePath().replace("\\", "/"));
+                if (files != null) {
+                    for (File attributeFile : files) {
+                        if (!attributeFile.getName().equals(ChefDslConstants.DEFAULT_RUBYFILE)) {
+                            cookbookConfigs = getParseResultFromFile(cookbookConfigs, attributeFile.getAbsolutePath().replace("\\", "/"));
+                        }
                     }
                 }
             }
@@ -248,8 +260,9 @@ public class ChefCookbookAnalyzer {
 
     /**
      * Parse recipes of a Chef cookbook.
-     * @param cookbookConfigs Parse result of a cookbook, containing information from metadata.rb 
-     *                        and all attribute files from cookbooks and dependent cookbooks.
+     *
+     * @param cookbookConfigs Parse result of a cookbook, containing information from metadata.rb and all attribute
+     *                        files from cookbooks and dependent cookbooks.
      * @return Returns parse result with added information about installed and required packages.
      */
     private CookbookParseResult returnComponentTypesFromRecipes(CookbookParseResult cookbookConfigs) {
@@ -267,7 +280,7 @@ public class ChefCookbookAnalyzer {
             // If parse result have multiple cookbook configurations, the AST is visited for each configuration.
             for (CookbookParseResult cookbookParseResult : parseResultList) {
                 filteredParseResult = cookbookParseResult;
-                for (String s : filteredParseResult.getAllConfigsAsList().get(0).getRunlist()) {
+                for (String s : filteredParseResult.getAllConfigsAsList().get(0).getRunList()) {
                     String RecipePath = cookbookConfigs.getCookbookPath() + ChefDslConstants.RECIPES_PATH + "/" + s;
                     LOGGER.info("Parsing Recipes: {}...", s);
                     filteredParseResult = getParseResultFromFile(filteredParseResult, RecipePath);
@@ -277,16 +290,16 @@ public class ChefCookbookAnalyzer {
                 filteredParseResult.clearConfigurations();
             }
             cookbookConfigs.replaceCookbookConfigs(processedCookbookConfigs);
-            
+
             return cookbookConfigs;
         }
-        
     }
 
     /**
      * This method parses ruby files from chef cookbooks for deployment architecture information.
+     *
      * @param cookbookConfigs Present parsing result where new information are added.
-     * @param rbFilePath Path to file that should be parsed.
+     * @param rbFilePath      Path to file that should be parsed.
      * @return New deployment architecture information from the parsed file.
      */
     public static CookbookParseResult getParseResultFromFile(CookbookParseResult cookbookConfigs, String rbFilePath) {
@@ -312,11 +325,12 @@ public class ChefCookbookAnalyzer {
 
     /**
      * Parse kitchen.yml and add Platform information to existing configurations
+     *
      * @param cookbookConfigs Parse result of a cookbook, containing information from metadata.rb.
      * @return Returns parse result with added information.
      */
     private CookbookParseResult addPlatformVersionInformationFromKitchen(CookbookParseResult cookbookConfigs) {
-        
+
         List<ChefCookbookConfiguration> cookbookConfigurationList = cookbookConfigs.getAllConfigsAsList();
         List<String> platformNames;
         ChefKitchenYmlParser ymlParser = new ChefKitchenYmlParser(cookbookConfigs);
@@ -325,11 +339,11 @@ public class ChefCookbookAnalyzer {
         String newPlatformVersion;
         String newPlatformName;
         int index;
-        
+
         int offsetForMinus;
 
         boolean platformFound;
-        
+
         platformNames = ymlParser.getPlatformNames();
 
         if (platformNames == null) return cookbookConfigs;
@@ -337,7 +351,7 @@ public class ChefCookbookAnalyzer {
         for (int countPlatformNames = 0; countPlatformNames < platformNames.size(); countPlatformNames++) {
             platformFound = false;
             platformNames.set(countPlatformNames, KitchenUtilities.correctPlatformName(platformNames.get(countPlatformNames)));
-            
+
             for (int countChefCookbookConfigurations = 0; countChefCookbookConfigurations < cookbookConfigurationList.size(); countChefCookbookConfigurations++) {
                 // Name of platform in existing cookbook configurations
                 platformName = cookbookConfigurationList.get(countChefCookbookConfigurations).getSupports().getName();
@@ -345,26 +359,26 @@ public class ChefCookbookAnalyzer {
                 existingPlatformVersion = cookbookConfigurationList.get(countChefCookbookConfigurations).getSupports().getVersion();
                 // Check if platform names start with a platform name of existing 
                 index = platformNames.get(countPlatformNames).indexOf(platformName);
-                
+
                 if (KitchenUtilities.skipPlatform(platformName, platformNames.get(countPlatformNames))) continue;
-                                   
+
                 switch (index) {
                     case 0:
-                        
+
                         if (platformNames.get(countPlatformNames).contains("-")) offsetForMinus = 1;
                         else offsetForMinus = 0;
-                        
+
                         newPlatformVersion = platformNames.get(countPlatformNames).substring(platformName.length() + offsetForMinus);
                         // Platform name is in an existing configuration and has no specified version
                         if (existingPlatformVersion.equals(ChefDslConstants.SUPPORTSALLPLATFORMVERSIONS) && platformName.length() != platformNames.get(countPlatformNames).length()) {
                             cookbookConfigurationList.get(countChefCookbookConfigurations).setSupports(new Platform(platformName, newPlatformVersion));
                         } else { //Platform name is in an existing configuration but version is already specified
-                            cookbookConfigurationList.add(countChefCookbookConfigurations + 1 , new ChefCookbookConfiguration(cookbookConfigurationList.get(countChefCookbookConfigurations)));
+                            cookbookConfigurationList.add(countChefCookbookConfigurations + 1, new ChefCookbookConfiguration(cookbookConfigurationList.get(countChefCookbookConfigurations)));
                             cookbookConfigurationList.get(countChefCookbookConfigurations + 1).setSupports(new Platform(platformName, newPlatformVersion));
                         }
                         platformFound = true;
                         break;
-                        
+
                     case -1:
                         if (countChefCookbookConfigurations == cookbookConfigurationList.size() - 1) {
                             index = platformNames.get(countPlatformNames).indexOf("-");
@@ -375,21 +389,21 @@ public class ChefCookbookAnalyzer {
                                 newPlatformName = platformNames.get(countPlatformNames).substring(0, index);
                                 newPlatformVersion = platformNames.get(countPlatformNames).substring(index + 1);
                             }
-                            
+
                             if (!cookbookConfigurationList.get(cookbookConfigurationList.size() - 1).getSupports().getName().equals(Defaults.COOKBOOKCONFIG_SUPPORTS_NO_PLATFORM)) {
                                 cookbookConfigurationList.add(new ChefCookbookConfiguration(cookbookConfigurationList.get(countChefCookbookConfigurations)));
                             }
-                            
+
                             cookbookConfigurationList.get(cookbookConfigurationList.size() - 1).setSupports(new Platform(newPlatformName, newPlatformVersion));
-                            
+
                             platformFound = true;
                         }
                         break;
-                        
+
                     default:
                         break;
                 }
-                
+
                 if (platformFound) break;
             }
         }

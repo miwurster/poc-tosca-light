@@ -39,16 +39,19 @@ public class CookbookVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
         List<ChefCookbookConfiguration> processedCookbookConfigs = new LinkedList<>();
 
         // If parse result have multiple cookbook configurations, the AST is visited for each configuration.
-        for (int countConfigs = 0; countConfigs < parseResultList.size(); countConfigs++) {
-            filteredParseResult = parseResultList.get(countConfigs);
+        for (CookbookParseResult cookbookParseResult : parseResultList) {
+            filteredParseResult = cookbookParseResult;
 
             for (int count = 0; count < ctx.compstmt().size(); count++) {
                 CompstmtVisitor compstmtVisitor = new CompstmtVisitor(filteredParseResult);
                 filteredParseResult = ctx.compstmt(count).accept(compstmtVisitor);
             }
 
-            processedCookbookConfigs.add(filteredParseResult.getAllConfigsAsList().get(0));
-            filteredParseResult.clearConfigurations();
+            List<ChefCookbookConfiguration> allConfigsAsList = filteredParseResult.getAllConfigsAsList();
+            if (allConfigsAsList != null && !allConfigsAsList.isEmpty()) {
+                processedCookbookConfigs.add(allConfigsAsList.get(0));
+                filteredParseResult.clearConfigurations();
+            }
         }
 
         // If parseresult have no cookbook configurations, the AST is walked a single time

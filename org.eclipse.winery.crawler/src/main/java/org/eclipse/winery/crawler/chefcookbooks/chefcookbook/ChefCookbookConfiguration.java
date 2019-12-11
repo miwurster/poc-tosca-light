@@ -14,7 +14,8 @@
 
 package org.eclipse.winery.crawler.chefcookbooks.chefcookbook;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -44,7 +45,7 @@ public class ChefCookbookConfiguration {
 
     private String description;
 
-    private HashMap<String, List> attributes;
+    private HashMap<String, List<String>> attributes;
 
     private LinkedHashMap<String, ChefPackage> installedPackages;
 
@@ -53,7 +54,7 @@ public class ChefCookbookConfiguration {
     private HashMap<String, List<String>> dependentRecipes;
 
     // List of recipes to run
-    private List<String> runlist;
+    private List<String> runList;
 
     public ChefCookbookConfiguration(ChefCookbookConfiguration componentType) {
         this.name = componentType.name;
@@ -63,9 +64,9 @@ public class ChefCookbookConfiguration {
         this.description = componentType.description;
         this.installedPackages = (LinkedHashMap<String, ChefPackage>) componentType.installedPackages.clone();
         this.requiredPackages = (LinkedHashMap<String, ChefPackage>) componentType.requiredPackages.clone();
-        this.attributes = (HashMap<String, List>) componentType.attributes.clone();
+        this.attributes = (HashMap<String, List<String>>) componentType.attributes.clone();
         this.dependentRecipes = (HashMap<String, List<String>>) componentType.dependentRecipes.clone();
-        this.runlist = componentType.runlist;
+        this.runList = componentType.runList;
     }
 
     public ChefCookbookConfiguration() {
@@ -78,7 +79,7 @@ public class ChefCookbookConfiguration {
         this.requiredPackages = new LinkedHashMap<>();
         this.attributes = new HashMap<>();
         this.dependentRecipes = new HashMap<>();
-        this.runlist = new LinkedList<>();
+        this.runList = new LinkedList<>();
     }
 
     public String getName() {
@@ -111,7 +112,7 @@ public class ChefCookbookConfiguration {
         return depends;
     }
 
-    public void setDepends(LinkedHashMap depends) {
+    public void setDepends(LinkedHashMap<String, String> depends) {
         this.depends = depends;
     }
 
@@ -167,15 +168,15 @@ public class ChefCookbookConfiguration {
         return installedPackages;
     }
 
-    public List getAttribute(String key) {
+    public List<String> getAttribute(String key) {
         return attributes.get(key);
     }
 
-    public void putAttribute(String key, List value) {
+    public void putAttribute(String key, List<String> value) {
         this.attributes.put(key, value);
     }
 
-    public HashMap<String, List> getAttributes() {
+    public HashMap<String, List<String>> getAttributes() {
         return attributes;
     }
 
@@ -204,8 +205,9 @@ public class ChefCookbookConfiguration {
      * @param platformName The name of the platform.
      */
     public void setOhaiPlatformAttributes(String platformName) {
-        this.putAttribute(OhaiFunctions.OHAI_PLATFORM_ATTRIBUTE_NAME, Collections.singletonList(platformName));
-        this.putAttribute(OhaiFunctions.OHAI_PLATFORMFAMILY_ATTRIBUTE_NAME, Collections.singletonList(OhaiFunctions.getPlatformFamilyFromPlatform(platformName)));
+        // SingletonList must not be used, as this list may be extended.
+        this.putAttribute(OhaiFunctions.OHAI_PLATFORM_ATTRIBUTE_NAME, new ArrayList<>(Arrays.asList(platformName)));
+        this.putAttribute(OhaiFunctions.OHAI_PLATFORMFAMILY_ATTRIBUTE_NAME, new ArrayList<>(Arrays.asList(OhaiFunctions.getPlatformFamilyFromPlatform(platformName))));
     }
 
     /**
@@ -214,7 +216,8 @@ public class ChefCookbookConfiguration {
      * @param platformVersion The name of the platform.
      */
     public void setOhaiPlatformVersionAttribute(String platformVersion) {
-        this.putAttribute(OhaiFunctions.OHAI_PLATFORMVERSION_ATTRIBUTE_NAME, Collections.singletonList(platformVersion));
+        // SingletonList must not be used, as this list may be extended.
+        this.putAttribute(OhaiFunctions.OHAI_PLATFORMVERSION_ATTRIBUTE_NAME, new ArrayList<>(Arrays.asList(platformVersion)));
     }
 
     /**
@@ -222,9 +225,12 @@ public class ChefCookbookConfiguration {
      *
      * @return Returns true if configuration has one of the passed platforms.
      */
-    public boolean hasPlatform(HashSet platforms) {
-        String platformName = (String) attributes.get(OhaiFunctions.OHAI_PLATFORM_ATTRIBUTE_NAME).get(0);
-        return (platforms.contains(platformName));
+    public boolean hasPlatform(HashSet<String> platforms) {
+        List<String> platformNames = attributes.get(OhaiFunctions.OHAI_PLATFORM_ATTRIBUTE_NAME);
+        if (platformNames != null) {
+            return platforms.contains(platformNames.get(0));
+        }
+        return false;
     }
 
     /**
@@ -233,9 +239,13 @@ public class ChefCookbookConfiguration {
      * @param platformFamilies Set of the passed platform families.
      * @return Returns true if configuration has one of the passed platforms.
      */
-    public boolean hasPlatformFamily(HashSet platformFamilies) {
-        String platformName = (String) attributes.get(OhaiFunctions.OHAI_PLATFORMFAMILY_ATTRIBUTE_NAME).get(0);
-        return (platformFamilies.contains(platformName));
+    public boolean hasPlatformFamily(HashSet<String> platformFamilies) {
+        List<String> availableFamilies = attributes.get(OhaiFunctions.OHAI_PLATFORMFAMILY_ATTRIBUTE_NAME);
+        if (availableFamilies != null) {
+            String platformName = availableFamilies.get(0);
+            return (platformFamilies.contains(platformName));
+        }
+        return false;
     }
 
     public static ChefPackage getPackageByIndex(LinkedHashMap<String, ChefPackage> hMap, int index) {
@@ -246,12 +256,12 @@ public class ChefCookbookConfiguration {
         return dependentRecipes.get(cookbook);
     }
 
-    public List<String> getRunlist() {
-        return runlist;
+    public List<String> getRunList() {
+        return runList;
     }
 
-    public void setRunlist(List<String> runlist) {
-        this.runlist = runlist;
+    public void setRunList(List<String> runList) {
+        this.runList = runList;
     }
 
     public void addDependentRecipes(String cookbook, String recipe) {
@@ -270,7 +280,7 @@ public class ChefCookbookConfiguration {
         this.description = null;
         this.installedPackages = new LinkedHashMap<>();
         this.requiredPackages = new LinkedHashMap<>();
-        this.runlist = this.getDependentRecipes(cookbook);
+        this.runList = this.getDependentRecipes(cookbook);
         this.dependentRecipes = new HashMap<>();
     }
 }

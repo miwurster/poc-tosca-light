@@ -117,7 +117,7 @@ public class ChefDslHelper {
     public static String[] resolveRecipeCall(String recipeCall) {
         String[] parts = new String[2];
 
-        if (recipeCall.contains("::")) {
+        if (recipeCall.split("(::)").length > 1) {
             parts = recipeCall.split("(::)");
             parts[1] = parts[1] + ".rb";
         } else if (!recipeCall.isEmpty()) {
@@ -155,38 +155,41 @@ public class ChefDslHelper {
         containsRubyCode = processString.contains("#{");
         while (containsRubyCode) {
             codeBegin = processString.indexOf("#{");
-            codeEnd = codeBegin;
 
             resultStringBuilder.append(processString.substring(0, codeBegin));
             processString = processString.substring(codeBegin);
 
             codeEnd = processString.indexOf("}");
-            rubyCode = processString.substring(2, codeEnd);
+            if (codeEnd >= 0) {
+                rubyCode = processString.substring(2, codeEnd);
 
-            ChefDSLParser chefDSLParser = null;
-            try {
-                File file = File.createTempFile("tempcodeinstringfile", ".tmp");
-                BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-                bw.write(rubyCode + "\n");
-                bw.close();
-                CharStream input = fromFileName(file.getAbsolutePath().replace("\\", "/"));
-                ChefDSLLexer chefDSLLexer = new ChefDSLLexer(input);
-                CommonTokenStream commonTokenStream = new CommonTokenStream(chefDSLLexer);
-                chefDSLParser = new ChefDSLParser(commonTokenStream);
-                file.delete();
-                CodeInStringVisitor cookbookVisitor = new CodeInStringVisitor(parseResult);
-                resolvedRubyCode = cookbookVisitor.visit(chefDSLParser.program());
-            } catch (IOException e) {
-                e.printStackTrace();
-                resolvedRubyCode = "";
-            }
+                ChefDSLParser chefDSLParser = null;
+                try {
+                    File file = File.createTempFile("tempcodeinstringfile", ".tmp");
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+                    bw.write(rubyCode + "\n");
+                    bw.close();
+                    CharStream input = fromFileName(file.getAbsolutePath().replace("\\", "/"));
+                    ChefDSLLexer chefDSLLexer = new ChefDSLLexer(input);
+                    CommonTokenStream commonTokenStream = new CommonTokenStream(chefDSLLexer);
+                    chefDSLParser = new ChefDSLParser(commonTokenStream);
+                    file.delete();
+                    CodeInStringVisitor cookbookVisitor = new CodeInStringVisitor(parseResult);
+                    resolvedRubyCode = cookbookVisitor.visit(chefDSLParser.program());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    resolvedRubyCode = "";
+                }
 
-            resultStringBuilder.append(resolvedRubyCode);
-            processString = processString.substring(codeEnd + 1);
+                resultStringBuilder.append(resolvedRubyCode);
+                processString = processString.substring(codeEnd + 1);
 
-            containsRubyCode = processString.contains("#{");
-            if (!containsRubyCode) {
-                resultStringBuilder.append(processString);
+                containsRubyCode = processString.contains("#{");
+                if (!containsRubyCode) {
+                    resultStringBuilder.append(processString);
+                }
+            } else {
+                containsRubyCode = false;
             }
         }
 

@@ -34,199 +34,126 @@ public class BooleanExprVisitor extends ChefDSLBaseVisitor<Boolean> {
 
     @Override
     public Boolean visitExprAnd(ChefDSLParser.ExprAndContext ctx) {
-        Boolean firstExpr = null;
-        Boolean secondExpr = null;
-
         BooleanExprVisitor booleanExprVisitor = new BooleanExprVisitor(parseResult);
-        firstExpr = ctx.expr(0).accept(booleanExprVisitor);
-        secondExpr = ctx.expr(1).accept(booleanExprVisitor);
 
-        firstExpr = resolveNullArgument(firstExpr);
-        secondExpr = resolveNullArgument(secondExpr);
-
-        return (firstExpr && secondExpr);
+        return ctx.expr(0).accept(booleanExprVisitor)
+            && ctx.expr(1).accept(booleanExprVisitor);
     }
 
     @Override
     public Boolean visitExprOr(ChefDSLParser.ExprOrContext ctx) {
-        Boolean firstExpr = null;
-        Boolean secondExpr = null;
-
         BooleanExprVisitor booleanExprVisitor = new BooleanExprVisitor(parseResult);
-        firstExpr = ctx.expr(0).accept(booleanExprVisitor);
-        secondExpr = ctx.expr(1).accept(booleanExprVisitor);
 
-        firstExpr = resolveNullArgument(firstExpr);
-        secondExpr = resolveNullArgument(secondExpr);
-
-        return (firstExpr || secondExpr);
+        return ctx.expr(0).accept(booleanExprVisitor)
+            || ctx.expr(1).accept(booleanExprVisitor);
     }
 
     @Override
     public Boolean visitArgAnd(ChefDSLParser.ArgAndContext ctx) {
-        Boolean firstExpr = null;
-        Boolean secondExpr = null;
-
         BooleanExprVisitor booleanExprVisitor = new BooleanExprVisitor(parseResult);
-        firstExpr = ctx.arg(0).accept(booleanExprVisitor);
-        secondExpr = ctx.arg(1).accept(booleanExprVisitor);
 
-        firstExpr = resolveNullArgument(firstExpr);
-        secondExpr = resolveNullArgument(secondExpr);
-
-        return (firstExpr && secondExpr);
+        return ctx.arg(0).accept(booleanExprVisitor)
+            && ctx.arg(1).accept(booleanExprVisitor);
     }
 
     @Override
     public Boolean visitArgOr(ChefDSLParser.ArgOrContext ctx) {
-        Boolean firstExpr = null;
-        Boolean secondExpr = null;
-
         BooleanExprVisitor booleanExprVisitor = new BooleanExprVisitor(parseResult);
-        firstExpr = ctx.arg(0).accept(booleanExprVisitor);
-        secondExpr = ctx.arg(1).accept(booleanExprVisitor);
 
-        firstExpr = resolveNullArgument(firstExpr);
-        secondExpr = resolveNullArgument(secondExpr);
-
-        return (firstExpr || secondExpr);
+        return ctx.arg(0).accept(booleanExprVisitor)
+            || ctx.arg(1).accept(booleanExprVisitor);
     }
 
     @Override
     public Boolean visitExprArg(ChefDSLParser.ExprArgContext ctx) {
-        Boolean exprResult;
-        String arg = null;
         BooleanExprVisitor booleanExprVisitor = new BooleanExprVisitor(parseResult);
-
-        exprResult = ctx.arg().accept(booleanExprVisitor);
-
-        exprResult = resolveNullArgument(exprResult);
-        return exprResult;
+        return ctx.arg().accept(booleanExprVisitor);
     }
 
     @Override
     public Boolean visitArgGreater(ChefDSLParser.ArgGreaterContext ctx) {
-        String firstArgument;
-        String secondArgument;
-        Boolean exprResult;
         PrimaryBaseVisitor primaryVisitor = new PrimaryBaseVisitor(parseResult);
-        List<String> firstArgList;
-        List<String> secondArgList;
-
-        firstArgList = ctx.arg(0).accept(primaryVisitor);
-        secondArgList = ctx.arg(1).accept(primaryVisitor);
+        List<String> firstArgList = ctx.arg(0).accept(primaryVisitor);
+        List<String> secondArgList = ctx.arg(1).accept(primaryVisitor);
 
         if (firstArgList != null && secondArgList != null && firstArgList.size() == 1 && secondArgList.size() == 1) {
-            firstArgument = firstArgList.get(0);
-            secondArgument = secondArgList.get(0);
-            exprResult = Double.parseDouble(firstArgument) > Double.parseDouble(secondArgument);
+            String firstArgument = firstArgList.get(0);
+            String secondArgument = secondArgList.get(0);
+            return Double.parseDouble(firstArgument) > Double.parseDouble(secondArgument);
         } else {
             LOGGER.info("One of the compared Arguments is an array or null. This is not implemented yet. \n" +
                 firstArgList + " is compared to: " + secondArgList);
-            exprResult = false;
+            return false;
         }
-
-        return exprResult;
     }
 
     @Override
     public Boolean visitArgGreaterEqual(ChefDSLParser.ArgGreaterEqualContext ctx) {
-        String firstArgument;
-        String secondArgument;
-        Boolean exprResult;
         PrimaryBaseVisitor primaryVisitor = new PrimaryBaseVisitor(parseResult);
-        List<String> firstArgList;
-        List<String> secondArgList;
-
-        firstArgList = ctx.arg(0).accept(primaryVisitor);
-        secondArgList = ctx.arg(1).accept(primaryVisitor);
+        List<String> firstArgList = ctx.arg(0).accept(primaryVisitor);
+        List<String> secondArgList = ctx.arg(1).accept(primaryVisitor);
 
         if (firstArgList != null && secondArgList != null && firstArgList.size() == 1 && secondArgList.size() == 1) {
-            firstArgument = firstArgList.get(0);
-            secondArgument = secondArgList.get(0);
-            exprResult = Double.parseDouble(firstArgument) >= Double.parseDouble(secondArgument);
+            String firstArgument = firstArgList.get(0);
+            String secondArgument = secondArgList.get(0);
+            return firstArgument != null && secondArgument != null
+                && (Double.parseDouble(firstArgument) >= Double.parseDouble(secondArgument));
         } else {
             LOGGER.info("One of the compared Arguments is an array or null. This is not implemented yet. \n" +
                 firstArgList + " is compared to: " + secondArgList);
-            exprResult = false;
+            return false;
         }
-
-        return exprResult;
     }
 
     @Override
     public Boolean visitArgLess(ChefDSLParser.ArgLessContext ctx) {
-        String firstArgument;
-        String secondArgument;
-        Boolean exprResult;
         PrimaryBaseVisitor primaryVisitor = new PrimaryBaseVisitor(parseResult);
-        List<String> firstArgList;
-        List<String> secondArgList;
-
-        firstArgList = ctx.arg(0).accept(primaryVisitor);
-        secondArgList = ctx.arg(1).accept(primaryVisitor);
+        List<String> firstArgList = ctx.arg(0).accept(primaryVisitor);
+        List<String> secondArgList = ctx.arg(1).accept(primaryVisitor);
 
         if (firstArgList != null && secondArgList != null && firstArgList.size() == 1 && secondArgList.size() == 1) {
-            firstArgument = firstArgList.get(0);
-            secondArgument = secondArgList.get(0);
-            exprResult = Double.parseDouble(firstArgument) < Double.parseDouble(secondArgument);
+            String firstArgument = firstArgList.get(0);
+            String secondArgument = secondArgList.get(0);
+            return Double.parseDouble(firstArgument) < Double.parseDouble(secondArgument);
         } else {
             LOGGER.info("One of the compared Arguments is an array or null. This is not implemented yet. \n" +
                 firstArgList + " is compared to: " + secondArgList);
-            exprResult = false;
+            return false;
         }
-
-        return exprResult;
     }
 
     @Override
     public Boolean visitArgLessEqual(ChefDSLParser.ArgLessEqualContext ctx) {
-        String firstArgument;
-        String secondArgument;
-        Boolean exprResult;
         PrimaryBaseVisitor primaryVisitor = new PrimaryBaseVisitor(parseResult);
-        List<String> firstArgList;
-        List<String> secondArgList;
-
-        firstArgList = ctx.arg(0).accept(primaryVisitor);
-        secondArgList = ctx.arg(1).accept(primaryVisitor);
+        List<String> firstArgList = ctx.arg(0).accept(primaryVisitor);
+        List<String> secondArgList = ctx.arg(1).accept(primaryVisitor);
 
         if (firstArgList != null && secondArgList != null && firstArgList.size() == 1 && secondArgList.size() == 1) {
-            firstArgument = firstArgList.get(0);
-            secondArgument = secondArgList.get(0);
-            exprResult = Double.parseDouble(firstArgument) <= Double.parseDouble(secondArgument);
+            String firstArgument = firstArgList.get(0);
+            String secondArgument = secondArgList.get(0);
+            return Double.parseDouble(firstArgument) <= Double.parseDouble(secondArgument);
         } else {
             LOGGER.info("One of the compared Arguments is an array or null. This is not implemented yet. \n" +
                 firstArgList + " is compared to: " + secondArgList);
-            exprResult = false;
+            return false;
         }
-
-        return exprResult;
     }
 
     @Override
     public Boolean visitArgEqual(ChefDSLParser.ArgEqualContext ctx) {
-        String firstArgument;
-        String secondArgument;
-        Boolean exprResult;
         PrimaryBaseVisitor primaryVisitor = new PrimaryBaseVisitor(parseResult);
-        List<String> firstArgList;
-        List<String> secondArgList;
-
-        firstArgList = ctx.arg(0).accept(primaryVisitor);
-        secondArgList = ctx.arg(1).accept(primaryVisitor);
+        List<String> firstArgList = ctx.arg(0).accept(primaryVisitor);
+        List<String> secondArgList = ctx.arg(1).accept(primaryVisitor);
 
         if (firstArgList != null && secondArgList != null && firstArgList.size() == 1 && secondArgList.size() == 1) {
-            firstArgument = firstArgList.get(0);
-            secondArgument = secondArgList.get(0);
-            exprResult = firstArgument.equals(secondArgument);
+            String firstArgument = firstArgList.get(0);
+            String secondArgument = secondArgList.get(0);
+            return (firstArgument == null && secondArgument == null) || (firstArgument != null && firstArgument.equals(secondArgument));
         } else {
             LOGGER.info("One of the compared Arguments is an array or null. This is not implemented yet. \n" +
                 firstArgList + " is compared to: " + secondArgList);
-            exprResult = false;
+            return false;
         }
-
-        return exprResult;
     }
 
     @Override
@@ -239,117 +166,87 @@ public class BooleanExprVisitor extends ChefDSLBaseVisitor<Boolean> {
 
     @Override
     public Boolean visitOperationPrimary(ChefDSLParser.OperationPrimaryContext ctx) {
-        String argument;
-        String operation;
         List<String> argumentList;
         List<String> callArguments = null;
-        Boolean exprResult = false;
 
         PrimaryBaseVisitor primaryVisitor = new PrimaryBaseVisitor(parseResult);
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(parseResult);
         argumentList = ctx.primary().accept(primaryVisitor);
 
         if (argumentList != null && argumentList.size() == 1) {
-            argument = argumentList.get(0);
+            String argument = argumentList.get(0);
             if (ctx.operation() != null && ctx.call_args() != null) {
-                operation = ctx.operation().getText();
-                switch (operation) {
-                    case "start_with?":
-                        callArguments = ctx.call_args().accept(callArgsVisitor);
-                        for (int i = 0; i < callArguments.size(); i++) {
-                            if (argument.startsWith(callArguments.get(i))) {
-                                exprResult = true;
-                                break;
-                            }
+                String operation = ctx.operation().getText();
+                if ("start_with?".equals(operation)) {
+                    callArguments = ctx.call_args().accept(callArgsVisitor);
+                    for (String callArgument : callArguments) {
+                        if (argument.startsWith(callArgument)) {
+                            return true;
                         }
-                        break;
-
-                    default:
-                        LOGGER.info("Operation \"" + argumentList + "is not implemented in" + this.getClass());
-                        break;
+                    }
+                } else {
+                    LOGGER.info("Operation \"" + argumentList + "is not implemented in" + this.getClass());
                 }
             }
         } else {
             LOGGER.info("Argument is an array. This is not implemented. \n" +
                 "Argument" + argumentList);
-            exprResult = false;
         }
 
-        return exprResult;
+        return false;
     }
 
     @Override
     public Boolean visitPrimFuncCall(ChefDSLParser.PrimFuncCallContext ctx) {
-        String argument;
-        String operation;
-        List<String> argumentList;
-        List<String> callArguments = null;
-        Boolean exprResult = false;
-
         PrimaryBaseVisitor primaryVisitor = new PrimaryBaseVisitor(parseResult);
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(parseResult);
-        argumentList = ctx.primary().accept(primaryVisitor);
+        List<String> argumentList = ctx.primary().accept(primaryVisitor);
 
         argumentList = new ArrayList<>();
         argumentList.add("das müsste false sein");
-        if (argumentList != null && argumentList.size() == 1) {
-            argument = argumentList.get(0);
+        if (argumentList.size() == 1) {
+            String argument = argumentList.get(0);
             if (ctx.function() != null && ctx.function().call_args() != null) {
-                operation = ctx.function().operation().getText();
-                switch (operation) {
-                    case "start_with?":
-                        callArguments = ctx.function().call_args().accept(callArgsVisitor);
-                        for (int i = 0; i < callArguments.size(); i++) {
-                            if (argument.startsWith(callArguments.get(i))) {
-                                exprResult = true;
-                                break;
-                            }
+                String operation = ctx.function().operation().getText();
+                if ("start_with?".equals(operation)) {
+                    List<String> callArguments = ctx.function().call_args().accept(callArgsVisitor);
+                    for (String callArgument : callArguments) {
+                        if (argument.startsWith(callArgument)) {
+                            return true;
                         }
-                        break;
-
-                    default:
-                        LOGGER.info("Operation \"" + argumentList + "is not implemented in" + this.getClass());
-                        break;
+                    }
+                } else {
+                    LOGGER.info("Operation \"" + argumentList + "is not implemented in" + this.getClass());
                 }
             }
         } else {
             LOGGER.info("Argument is an array. This is not implemented. \n" +
                 "Argument" + argumentList);
-            exprResult = false;
         }
 
-        return exprResult;
+        return false;
     }
 
     @Override
     public Boolean visitPrimCompstmtInBrackets(ChefDSLParser.PrimCompstmtInBracketsContext ctx) {
-        Boolean exprResult;
         BooleanExprVisitor booleanExprVisitor = new BooleanExprVisitor(parseResult);
-        exprResult = ctx.inner_comptstmt().accept(booleanExprVisitor);
-        exprResult = resolveNullArgument(exprResult);
-        return exprResult;
+        return ctx.inner_comptstmt().accept(booleanExprVisitor);
     }
 
     @Override
     public Boolean visitArgIndexOf(ChefDSLParser.ArgIndexOfContext ctx) {
-        Boolean exprResult = null;
-        String leftArgument = null;
-        String rightArgument = null;
-        List<String> argList;
         PrimaryBaseVisitor argPrimaryVisitor = new PrimaryBaseVisitor(parseResult);
-        argList = ctx.arg(0).accept(argPrimaryVisitor);
+        List<String> argList = ctx.arg(0).accept(argPrimaryVisitor);
         if (argList != null && argList.size() == 1) {
-            leftArgument = argList.get(0);
+            String leftArgument = argList.get(0);
             argList = ctx.arg(0).accept(argPrimaryVisitor);
             if (argList != null && argList.size() == 1) {
-                rightArgument = argList.get(0);
-                rightArgument = regexToString(rightArgument);
-                exprResult = leftArgument.contains(rightArgument);
+                String rightArgument = regexToString(argList.get(0));
+                return leftArgument.contains(rightArgument);
             }
         }
 
-        exprResult = resolveNullArgument(exprResult);
-        return exprResult;
+        return false;
     }
 
     public String regexToString(String rightArgument) {
@@ -361,7 +258,7 @@ public class BooleanExprVisitor extends ChefDSLBaseVisitor<Boolean> {
 
     @Override
     public Boolean visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
-        Boolean exprResult = null;
+        Boolean exprResult = false;
         String arg = null;
         if (ctx.primary().getClass() == ChefDSLParser.PrimCompstmtInBracketsContext.class) {
             BooleanExprVisitor booleanExprVisitor = new BooleanExprVisitor(parseResult);
@@ -378,18 +275,16 @@ public class BooleanExprVisitor extends ChefDSLBaseVisitor<Boolean> {
                 arg = argList.get(0);
             }
             if ("false".equals(arg)) {
-                exprResult = false;
+                return false;
             } else if ("true".equals(arg)) {
-                exprResult = true;
+                return true;
             } else {
-                exprResult = null;
                 LOGGER.error("Argument is not an expected boolean. If argument is null, " +
                     "Primary Visitor is not implemented. \n" +
                     "Argument is:" + ctx.primary().getText());
             }
         }
-        exprResult = resolveNullArgument(exprResult);
-        return exprResult;
+        return resolveNullArgument(exprResult);
     }
 
     /**

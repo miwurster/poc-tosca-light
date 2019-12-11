@@ -22,20 +22,21 @@ public class ChefAttribute {
 
     private String name;
 
-    private ArrayList<String> values;
+    private List<String> values;
 
     public ChefAttribute(String name) {
         this.name = name;
         this.values = new ArrayList<>();
     }
 
-    public ChefAttribute(String name, ArrayList<String> values) {
+    public ChefAttribute(String name, List<String> values) {
         this.name = name;
-        this.values = (ArrayList<String>) values.clone();
+        this.values = values;
     }
 
     public ChefAttribute(String name, String value) {
         this.name = name;
+        // SingletonList must not be used, as this list may be extended.
         this.values = new ArrayList<>(Arrays.asList(value));
     }
 
@@ -51,7 +52,7 @@ public class ChefAttribute {
         return name;
     }
 
-    public List getValues() {
+    public List<String> getValues() {
         return values;
     }
 

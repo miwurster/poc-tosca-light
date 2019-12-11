@@ -15,7 +15,7 @@
 package org.eclipse.winery.crawler.chefcookbooks.chefdslparser;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -168,8 +168,9 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
     public List<String> visitPrim11(ChefDSLParser.Prim11Context ctx) {
         if (ctx.getText().startsWith("node")) {
             return extractedCookbookConfigs.getAllConfigsAsList().get(0).getAttribute(ctx.getText().substring(4));
-        } else
-            return Collections.singletonList(ctx.getText());
+        }
+        // Do not use SingletonList here
+        return Arrays.asList(ctx.getText());
     }
 
     @Override
@@ -260,13 +261,10 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
         if (aggregate == null) {
             return nextResult;
         }
-
         if (nextResult == null) {
             return aggregate;
         }
-
         aggregate.addAll(nextResult);
-
         return aggregate;
     }
 }

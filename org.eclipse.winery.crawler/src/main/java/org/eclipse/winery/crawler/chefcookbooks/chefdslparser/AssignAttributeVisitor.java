@@ -32,22 +32,24 @@ public class AssignAttributeVisitor extends ChefDSLBaseVisitor<ChefAttribute> {
     @Override
     public ChefAttribute visitArgAssign(ChefDSLParser.ArgAssignContext ctx) {
         String attributeName = ctx.lhs().getText();
-        ChefAttribute attribute = null;
-        ArrayList attributeValue;
 
-        if (ctx.arg().getClass() == ChefDSLParser.ArgPrimaryContext.class) {
-            PrimaryBaseVisitor argPrimaryVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
-            attributeValue = (ArrayList) ctx.arg().accept(argPrimaryVisitor);
+        if (attributeName != null) {
+            if (ctx.arg().getClass() == ChefDSLParser.ArgPrimaryContext.class) {
+                PrimaryBaseVisitor argPrimaryVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
+                List<String> attributeValue = ctx.arg().accept(argPrimaryVisitor);
 
-            if (attributeName != null && attributeValue != null) {
-                attribute = new ChefAttribute(attributeName, attributeValue);
+                if (attributeValue != null) {
+                    chefAttribute = new ChefAttribute(attributeName, attributeValue);
+                }
+            } else {
+                ArgVisitor argVisitor = new ArgVisitor(extractedCookbookConfigs);
+                List<String> accept = ctx.arg().accept(argVisitor);
+                if (accept != null) {
+                    chefAttribute = new ChefAttribute(attributeName, accept);
+                }
             }
-        } else {
-            ArgVisitor argVisitor = new ArgVisitor(extractedCookbookConfigs);
-            attribute = (ChefAttribute) ctx.arg().accept(argVisitor);
         }
 
-        chefAttribute = attribute;
         return chefAttribute;
     }
 

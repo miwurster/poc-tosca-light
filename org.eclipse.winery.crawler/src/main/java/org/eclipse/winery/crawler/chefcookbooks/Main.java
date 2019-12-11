@@ -28,7 +28,7 @@ public class Main {
 
         long start = System.currentTimeMillis();
         LOGGER.info("Starting to download cookbooks");
-        chefSupermarketCrawler.getAvailableCookbooksFast();
+//        chefSupermarketCrawler.getAvailableCookbooksFast();
         long end = System.currentTimeMillis();
         LOGGER.info("Done downloading...");
         LOGGER.info("Time needed: {} hours {} minutes and {} seconds", (int) ((end - start) / 1000 / 60 / 60), (int) ((end - start) / 1000 / 60) % 60, (int) ((end - start) / 1000) % 60);

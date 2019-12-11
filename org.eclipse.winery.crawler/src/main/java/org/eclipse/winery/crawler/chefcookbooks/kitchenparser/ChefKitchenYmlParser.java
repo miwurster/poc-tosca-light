@@ -49,61 +49,43 @@ public class ChefKitchenYmlParser {
         Representer representer = new Representer();
         representer.getPropertyUtils().setSkipMissingProperties(true);
 
-        Yaml yaml = new Yaml();
-        InputStream inputStream = null;
-        try {
-            inputStream = new FileInputStream(this.cookbookPath + "/kitchen.yml");
+        try (InputStream inputStream = new FileInputStream(this.cookbookPath + "/kitchen.yml")) {
+            return new Yaml().load(inputStream);
         } catch (FileNotFoundException e1) {
-            try {
-                inputStream = new FileInputStream(this.cookbookPath + "/.kitchen.yml");
-            } catch (FileNotFoundException e2) {
-                LOGGER.error("Cookbook \" " + cookbookName + "\"" + " has no kitchen.yml file");
-                return null;
+            try (InputStream inputStream = new FileInputStream(this.cookbookPath + "/.kitchen.yml")) {
+                return new Yaml().load(inputStream);
+            } catch (IOException e2) {
+                LOGGER.error("Cookbook \"" + cookbookName + "\"" + " has no .kitchen.yml file");
             }
+        } catch (IOException e) {
+            LOGGER.error("Cookbook \"" + cookbookName + "\"" + " has no kitchen.yml file", e);
         }
 
-        Map<String, Object> kitchenYml = yaml.load(inputStream);
-        try {
-            inputStream.close();
-        } catch (IOException e) {
-            LOGGER.error("Could not close InputStream!", e);
-        }
-        return kitchenYml;
+        return null;
     }
 
     /**
      * @return List with all platform configurations from kitchen.yml each List item is a Map with a platform
      * configuration
      */
-    public List getPlatforms() {
+    public List<Map<String, String>> getPlatforms() {
 
         if (this.kitchenYml != null) {
-            List<Map> platformConfig = (List) kitchenYml.get("platforms");
-            return platformConfig;
+            return (List<Map<String, String>>) kitchenYml.get("platforms");
         } else return null;
     }
 
     /**
      * @return List with all platform names from kitchen.yml Platform name includes the platform version
      */
-    public List getPlatformNames() {
-        List<Map> platformConfig = this.getPlatforms();
+    public List<String> getPlatformNames() {
+        List<Map<String, String>> platformConfig = this.getPlatforms();
         if (platformConfig != null) {
-            List platformNames = new ArrayList();
-            for (int count = 0; count < platformConfig.size(); count++) {
-                platformNames.add(platformConfig.get(count).get("name"));
+            List<String> platformNames = new ArrayList<>();
+            for (Map<String, String> stringStringMap : platformConfig) {
+                platformNames.add(stringStringMap.get("name"));
             }
             return platformNames;
-        } else return null;
-    }
-
-    /**
-     * @return List with all test suites. Each test suite contains a Map with test configurations
-     */
-    public List getSuites() {
-        if (this.kitchenYml != null) {
-            List<Map> platformConfig = (List) kitchenYml.get("suites");
-            return platformConfig;
         } else return null;
     }
 }

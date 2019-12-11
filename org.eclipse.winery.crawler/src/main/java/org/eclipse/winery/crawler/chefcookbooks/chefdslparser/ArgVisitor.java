@@ -28,9 +28,7 @@ public class ArgVisitor extends ChefDSLBaseVisitor<List<String>> {
 
     @Override
     public List<String> visitArgPrimary(ChefDSLParser.ArgPrimaryContext ctx) {
-        List<String> arg;
         PrimaryBaseVisitor baseVisitor = new PrimaryBaseVisitor(extractedCookbookConfigs);
-        arg = ctx.primary().accept(baseVisitor);
-        return arg;
+        return ctx.primary().accept(baseVisitor);
     }
 }

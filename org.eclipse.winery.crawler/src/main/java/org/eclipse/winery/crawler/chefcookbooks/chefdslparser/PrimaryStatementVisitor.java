@@ -44,7 +44,7 @@ public class PrimaryStatementVisitor extends ChefDSLBaseVisitor<CookbookParseRes
 
         CaseConditionVisitor caseConditionVisitor;
 
-        List caseConditionList;
+        List<String> caseConditionList;
 
         String caseCondition;
 
@@ -56,16 +56,16 @@ public class PrimaryStatementVisitor extends ChefDSLBaseVisitor<CookbookParseRes
 
         List<ChefCookbookConfiguration> processedCookbookConfigs = new LinkedList<>();
 
-        Boolean elseActive = false;
+        boolean elseActive = false;
 
-        for (int countConfigs = 0; countConfigs < parseResultList.size(); countConfigs++) {
-            filteredParseResult = parseResultList.get(countConfigs);
+        for (CookbookParseResult cookbookParseResult : parseResultList) {
+            filteredParseResult = cookbookParseResult;
 
             caseConditionVisitor = new CaseConditionVisitor(filteredParseResult);
             caseConditionList = ctx.inner_comptstmt(0).accept(caseConditionVisitor);
 
-            if (caseConditionList.size() == 1) {
-                caseCondition = (String) caseConditionList.get(0);
+            if (caseConditionList != null && caseConditionList.size() == 1) {
+                caseCondition = caseConditionList.get(0);
             } else {
                 LOGGER.info("Case condition list has more than one argument. This case is not implemented yet! \n + " +
                     "Cookbook name: " + extractedCookbookConfigs.getCookbookName() + "\n" +
@@ -111,7 +111,7 @@ public class PrimaryStatementVisitor extends ChefDSLBaseVisitor<CookbookParseRes
 
     @Override
     public CookbookParseResult visitIf_statement(ChefDSLParser.If_statementContext ctx) {
-        Boolean expr = false;
+        boolean expr = false;
         BooleanExprVisitor booleanExprVisitor;
 
         List<CookbookParseResult> parseResultList = extractedCookbookConfigs.getListOfConfigsInOwnParseresult();
@@ -120,10 +120,10 @@ public class PrimaryStatementVisitor extends ChefDSLBaseVisitor<CookbookParseRes
 
         List<ChefCookbookConfiguration> processedCookbookConfigs = new LinkedList<>();
 
-        Boolean elseActive = false;
+        boolean elseActive = false;
 
-        for (int countConfigs = 0; countConfigs < parseResultList.size(); countConfigs++) {
-            filteredParseResult = parseResultList.get(countConfigs);
+        for (CookbookParseResult cookbookParseResult : parseResultList) {
+            filteredParseResult = cookbookParseResult;
 
             booleanExprVisitor = new BooleanExprVisitor(filteredParseResult);
 
@@ -131,11 +131,11 @@ public class PrimaryStatementVisitor extends ChefDSLBaseVisitor<CookbookParseRes
 
                 ParseTree child = ctx.getChild(iterChild);
                 if (child instanceof ChefDSLParser.ExprContext) {
-                    expr = ctx.expr(0).accept(booleanExprVisitor);
+                    expr = ctx.expr(0).accept(booleanExprVisitor) != null;
                 } else if ("else".equals(child.getText())) {
                     elseActive = true;
                 } else if (child instanceof ChefDSLParser.Inner_comptstmtContext) {
-                    if (expr == true || elseActive) {
+                    if (expr || elseActive) {
                         CompstmtVisitor compstmtVisitor = new CompstmtVisitor(filteredParseResult);
                         filteredParseResult = child.accept(compstmtVisitor);
 
@@ -147,8 +147,11 @@ public class PrimaryStatementVisitor extends ChefDSLBaseVisitor<CookbookParseRes
                 }
             }
 
-            processedCookbookConfigs.add(filteredParseResult.getAllConfigsAsList().get(0));
-            filteredParseResult.clearConfigurations();
+            List<ChefCookbookConfiguration> allConfigsAsList = filteredParseResult.getAllConfigsAsList();
+            if (allConfigsAsList != null && !allConfigsAsList.isEmpty()) {
+                processedCookbookConfigs.add(allConfigsAsList.get(0));
+                filteredParseResult.clearConfigurations();
+            }
             elseActive = false;
         }
         extractedCookbookConfigs.replaceCookbookConfigs(processedCookbookConfigs);
