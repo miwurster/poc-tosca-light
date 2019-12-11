@@ -27,7 +27,8 @@ export class YamlRequirementDefinitionsService {
 
     constructor(private http: HttpClient,
                 private route: Router) {
-        this.path = this.route.url;
+        // we have the same path in the backend for both xml and yaml
+        this.path = this.route.url.replace('yaml', '');
     }
 
     getAllRequirementDefinitions(): Observable<YamlRequirementDefinitionApiData[]> {
