@@ -98,13 +98,17 @@ public class PrimaryStatementVisitor extends ChefDSLBaseVisitor<CookbookParseRes
                 }
             }
 
-            processedCookbookConfigs.add(filteredParseResult.getAllConfigsAsList().get(0));
+            if (filteredParseResult.getAllConfigsAsList() != null && !filteredParseResult.getAllConfigsAsList().isEmpty()) {
+                processedCookbookConfigs.add(filteredParseResult.getAllConfigsAsList().get(0));
+            }
             // Reset
             filteredParseResult.clearConfigurations();
             elseActive = false;
         }
 
-        extractedCookbookConfigs.replaceCookbookConfigs(processedCookbookConfigs);
+        if (!processedCookbookConfigs.isEmpty()) {
+            extractedCookbookConfigs.replaceCookbookConfigs(processedCookbookConfigs);
+        }
 
         return extractedCookbookConfigs;
     }

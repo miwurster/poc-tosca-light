@@ -127,22 +127,25 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
             callArgsVisitor = new CallArgsVisitor(cookbookParseResult);
             installedPackages = ctx.call_args().accept(callArgsVisitor);
 
-            installedPackages.stream()
-                .filter(Objects::nonNull)
-                .forEach(installedPackage -> {
-                    if (parentClass == ChefDSLParser.ExprCommandContext.class) {
-                        if (extractedCookbookConfigs.isInDependentRecipe()) {
-                            cookbookParseResult.getAllConfigsAsList().get(0).addRequiredPackage(new ChefPackage(installedPackage));
-                        } else {
-                            cookbookParseResult.getAllConfigsAsList().get(0).addInstalledPackage(new ChefPackage(installedPackage));
+            List<ChefCookbookConfiguration> allConfigsAsList = cookbookParseResult.getAllConfigsAsList();
+            if (allConfigsAsList != null && !allConfigsAsList.isEmpty()) {
+                installedPackages.stream()
+                    .filter(Objects::nonNull)
+                    .forEach(installedPackage -> {
+                        if (parentClass == ChefDSLParser.ExprCommandContext.class) {
+                            if (extractedCookbookConfigs.isInDependentRecipe()) {
+                                allConfigsAsList.get(0).addRequiredPackage(new ChefPackage(installedPackage));
+                            } else {
+                                allConfigsAsList.get(0).addInstalledPackage(new ChefPackage(installedPackage));
+                            }
+                        } else if (parentClass == ChefDSLParser.CallContext.class) {
+                            extractedCookbookConfigs.addNotatedPackage(new ChefPackage(installedPackage));
                         }
-                    } else if (parentClass == ChefDSLParser.CallContext.class) {
-                        extractedCookbookConfigs.addNotatedPackage(new ChefPackage(installedPackage));
-                    }
-                });
+                    });
 
-            processedCookbookConfigs.add(cookbookParseResult.getAllConfigsAsList().get(0));
-            cookbookParseResult.clearConfigurations();
+                processedCookbookConfigs.add(allConfigsAsList.get(0));
+                cookbookParseResult.clearConfigurations();
+            }
         }
         extractedCookbookConfigs.replaceCookbookConfigs(processedCookbookConfigs);
     }
@@ -183,29 +186,30 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
      */
     private void processSupportsCommand(ChefDSLParser.OperationCallArgsContext ctx) {
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(extractedCookbookConfigs);
-        List callArgs = ctx.call_args().accept(callArgsVisitor);
+        List<String> callArgs = ctx.call_args().accept(callArgsVisitor);
 
-        List<ChefCookbookConfiguration> cookbookConfigs;
-        String supports = callArgs.get(0).toString();
+        String supports = callArgs.get(0);
         String version;
-        cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
+        List<ChefCookbookConfiguration> cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
 
         if (callArgs.size() > 1) {
-            version = callArgs.get(1).toString();
+            version = callArgs.get(1);
         } else {
             version = ChefDslConstants.SUPPORTSALLPLATFORMVERSIONS;
         }
 
-        if (cookbookConfigs.get(0).getSupports().getName().equals(Defaults.COOKBOOKCONFIG_SUPPORTS_NO_PLATFORM)) {
-            cookbookConfigs.get(0).setSupports(new Platform(supports, version));
-            extractedCookbookConfigs.clearConfigurations();
-        } else {
-            ChefCookbookConfiguration newConfig = new ChefCookbookConfiguration(cookbookConfigs.get(0));
-            newConfig.setSupports(new Platform(supports, version));
-            cookbookConfigs.add(newConfig);
-            extractedCookbookConfigs.clearConfigurations();
+        if (cookbookConfigs != null && !cookbookConfigs.isEmpty()) {
+            if (cookbookConfigs.get(0).getSupports().getName().equals(Defaults.COOKBOOKCONFIG_SUPPORTS_NO_PLATFORM)) {
+                cookbookConfigs.get(0).setSupports(new Platform(supports, version));
+                extractedCookbookConfigs.clearConfigurations();
+            } else {
+                ChefCookbookConfiguration newConfig = new ChefCookbookConfiguration(cookbookConfigs.get(0));
+                newConfig.setSupports(new Platform(supports, version));
+                cookbookConfigs.add(newConfig);
+                extractedCookbookConfigs.clearConfigurations();
+            }
+            extractedCookbookConfigs.putCookbookConfigsAsList(cookbookConfigs);
         }
-        extractedCookbookConfigs.putCookbookConfigsAsList(cookbookConfigs);
     }
 
     /**
@@ -217,7 +221,7 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
      */
     private void processCookbookDescription(ChefDSLParser.OperationCallArgsContext ctx) {
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(extractedCookbookConfigs);
-        List callArgs = ctx.call_args().accept(callArgsVisitor);
+        List<String> callArgs = ctx.call_args().accept(callArgsVisitor);
 
         List<ChefCookbookConfiguration> cookbookConfigs;
 
@@ -239,7 +243,7 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
      */
     private void processCookbookName(ChefDSLParser.OperationCallArgsContext ctx) {
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(extractedCookbookConfigs);
-        List callArgs = ctx.call_args().accept(callArgsVisitor);
+        List<String> callArgs = ctx.call_args().accept(callArgsVisitor);
 
         String name = callArgs.get(0).toString();
         if (extractedCookbookConfigs.getAllConfigsAsList().size() == 0) {
@@ -249,8 +253,8 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
         } else {
             List<ChefCookbookConfiguration> cookbookConfigs;
             cookbookConfigs = extractedCookbookConfigs.getAllConfigsAsList();
-            for (int count = 0; count < cookbookConfigs.size(); count++) {
-                cookbookConfigs.get(count).setVersion(name);
+            for (ChefCookbookConfiguration cookbookConfig : cookbookConfigs) {
+                cookbookConfig.setVersion(name);
             }
             extractedCookbookConfigs.replaceCookbookConfigs(cookbookConfigs);
         }
@@ -265,7 +269,7 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
      */
     private void processCookbookVersion(ChefDSLParser.OperationCallArgsContext ctx) {
         CallArgsVisitor callArgsVisitor = new CallArgsVisitor(extractedCookbookConfigs);
-        List callArgs = ctx.call_args().accept(callArgsVisitor);
+        List<String> callArgs = ctx.call_args().accept(callArgsVisitor);
 
         List<ChefCookbookConfiguration> cookbookConfigs;
         String version = callArgs.get(0).toString();
@@ -320,9 +324,9 @@ public class CommandVisitor extends ChefDSLBaseVisitor<CookbookParseResult> {
 
         List<ChefCookbookConfiguration> processedCookbookConfigs = new LinkedList<>();
 
-        for (int countConfigs = 0; countConfigs < parseResultList.size(); countConfigs++) {
+        for (CookbookParseResult cookbookParseResult : parseResultList) {
             // Process one cookbook configuration per iteration wrapped in a cookbook parse result. 
-            filteredParseResult = parseResultList.get(countConfigs);
+            filteredParseResult = cookbookParseResult;
 
             AssignAttributeVisitor assignAttributeVisitor = new AssignAttributeVisitor(filteredParseResult);
             ChefAttribute chefAttribute = ctx.call_args().accept(assignAttributeVisitor);

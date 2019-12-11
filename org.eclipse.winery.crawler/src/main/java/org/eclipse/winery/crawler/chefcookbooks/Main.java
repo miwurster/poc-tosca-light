@@ -23,22 +23,36 @@ public class Main {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         ChefSupermarketCrawler chefSupermarketCrawler = new ChefSupermarketCrawler();
 
         long start = System.currentTimeMillis();
         LOGGER.info("Starting to download cookbooks");
-//        chefSupermarketCrawler.getAvailableCookbooksFast();
-        long end = System.currentTimeMillis();
-        LOGGER.info("Done downloading...");
-        LOGGER.info("Time needed: {} hours {} minutes and {} seconds", (int) ((end - start) / 1000 / 60 / 60), (int) ((end - start) / 1000 / 60) % 60, (int) ((end - start) / 1000) % 60);
+        try {
+            chefSupermarketCrawler.getAvailableCookbooksFast();
+            LOGGER.info("Done downloading...");
+        } catch (Exception e) {
+            LOGGER.error("Error while downloading...", e);
+            logTime(start);
+            System.exit(0);
+        }
+
+        logTime(start);
 
         start = System.currentTimeMillis();
         LOGGER.info("Starting to analyze data...");
         ChefCookbookAnalyzer chefCookbookAnalyzer = new ChefCookbookAnalyzer();
-        chefCookbookAnalyzer.main();
-        end = System.currentTimeMillis();
-        LOGGER.info("Done analyzing...");
+        try {
+            chefCookbookAnalyzer.main();
+            LOGGER.info("Done analyzing...");
+        } catch (Exception e) {
+            LOGGER.error("Error while analyzing...", e);
+        }
+        logTime(start);
+    }
+
+    private static void logTime(long start) {
+        long end = System.currentTimeMillis();
         LOGGER.info("Time needed: {} hours {} minutes and {} seconds", (int) ((end - start) / 1000 / 60 / 60), (int) ((end - start) / 1000 / 60) % 60, (int) ((end - start) / 1000) % 60);
     }
 }

@@ -166,11 +166,11 @@ public class PrimaryBaseVisitor extends CollectionVisitor {
 
     @Override
     public List<String> visitPrim11(ChefDSLParser.Prim11Context ctx) {
-        if (ctx.getText().startsWith("node")) {
+        if (ctx.getText().startsWith("node") && !extractedCookbookConfigs.getAllConfigsAsList().isEmpty()) {
             return extractedCookbookConfigs.getAllConfigsAsList().get(0).getAttribute(ctx.getText().substring(4));
         }
         // Do not use SingletonList here
-        return Arrays.asList(ctx.getText());
+        return new ArrayList<>(Arrays.asList(ctx.getText()));
     }
 
     @Override
