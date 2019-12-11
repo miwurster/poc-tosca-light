@@ -36,18 +36,13 @@ public class Main {
             logTime(start);
             System.exit(0);
         }
-
         logTime(start);
 
         start = System.currentTimeMillis();
         LOGGER.info("Starting to analyze data...");
         ChefCookbookAnalyzer chefCookbookAnalyzer = new ChefCookbookAnalyzer();
-        try {
-            chefCookbookAnalyzer.main();
-            LOGGER.info("Done analyzing...");
-        } catch (Exception e) {
-            LOGGER.error("Error while analyzing...", e);
-        }
+        chefCookbookAnalyzer.main();
+        LOGGER.info("Done analyzing...");
         logTime(start);
     }
 
