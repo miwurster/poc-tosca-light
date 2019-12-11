@@ -102,7 +102,6 @@ export class InstanceComponent implements OnDestroy {
                         return link;
                     });
 
-                    console.debug(this.availableTabsLinks);
                 },
                 error => this.handleError(error)
             );
