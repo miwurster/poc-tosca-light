@@ -18,40 +18,14 @@ export class MultiParticipantsService {
         this.httpHeaders = new HttpHeaders().set('Content-Type', 'application/json');
     }
 
-    postNewVersion(): Observable<any> {
+    postNewVersion(endpoint: string): Observable<any> {
         const url = this.configuration.repositoryURL
             + '/servicetemplates/'
             + encodeURIComponent(encodeURIComponent(this.configuration.ns))
             + '/'
             + encodeURIComponent(this.configuration.id)
-            + '/createplaceholderversion';
-
-        return this.httpClient.post(
-            url,
-            { headers: this.httpHeaders, observe: 'response', responseType: 'text' });
-    }
-
-    postParticipantsVersion(): Observable<any> {
-        const url = this.configuration.repositoryURL
-            + '/servicetemplates/'
-            + encodeURIComponent(encodeURIComponent(this.configuration.ns))
             + '/'
-            + encodeURIComponent(this.configuration.id)
-            + '/createparticipantsversion';
-        return this.httpClient.post(
-            url,
-            { headers: this.httpHeaders, observe: 'response', responseType: 'json' }
-        );
-    }
-
-    postSubstituteVersion(): Observable<any> {
-        const url = this.configuration.repositoryURL
-            + '/servicetemplates/'
-            + encodeURIComponent(encodeURIComponent(this.configuration.ns))
-            + '/'
-            + encodeURIComponent(this.configuration.id)
-            + '/placeholdersubstitution';
-        console.log(url);
+            + endpoint;
         return this.httpClient.post(
             url,
             { headers: this.httpHeaders, observe: 'response', responseType: 'json' }

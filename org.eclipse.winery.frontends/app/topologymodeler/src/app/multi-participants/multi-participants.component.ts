@@ -44,7 +44,7 @@ export class MultiParticipantsComponent implements OnInit {
     private checkButtonsState(currentButtonsState: TopologyRendererState) {
         // check if Generate Placeholder Button is clicked
         if (currentButtonsState.buttonsState.generateGDM) {
-            this.multiParticipantsService.postNewVersion().subscribe(
+            this.multiParticipantsService.postNewVersion('createplaceholderversion').subscribe(
                 newVersion => {
                     this.alert.success('Successfully created placeholders for tolopgy template');
                     this.ngRedux.dispatch(this.actions.generatePlaceholder());
@@ -70,7 +70,7 @@ export class MultiParticipantsComponent implements OnInit {
             );
         } else if (currentButtonsState.buttonsState.extractLDM) {
             // create version for each participant
-            this.multiParticipantsService.postParticipantsVersion().subscribe(
+            this.multiParticipantsService.postNewVersion('createparticipantsversion').subscribe(
                 participantVersions => {
                     this.ngRedux.dispatch(this.actions.extractLDM());
                     this.alert.success('Successfully extracted partner LDM');
@@ -89,7 +89,7 @@ export class MultiParticipantsComponent implements OnInit {
             );
         } else if (currentButtonsState.buttonsState.generatePlaceholderSubs) {
             // create version with substitution stack for partner placeholder
-            this.multiParticipantsService.postSubstituteVersion().subscribe(
+            this.multiParticipantsService.postNewVersion('placeholdersubstitution').subscribe(
                 placeholderSubstitution => {
                     this.ngRedux.dispatch(this.actions.generatePlaceholderSubs());
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
