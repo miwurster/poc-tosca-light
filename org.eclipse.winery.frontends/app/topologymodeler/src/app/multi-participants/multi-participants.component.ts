@@ -48,11 +48,13 @@ export class MultiParticipantsComponent implements OnInit {
                 newVersion => {
                     this.alert.success('Successfully created placeholders for tolopgy template');
                     this.ngRedux.dispatch(this.actions.generatePlaceholder());
+                    // build config for new version
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
                         + '&ns=' + newVersion.namespace
                         + '&id=' + newVersion.localname;
                     this.editorConfiguration = editorConfig;
+                    // add placeholders for participants to newly created version
                     this.multiParticipantsService.postPlaceholders(newVersion.localname).subscribe(
                         placeholderResponse => {
                             window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
@@ -66,7 +68,27 @@ export class MultiParticipantsComponent implements OnInit {
                     this.errorHandlerService.handleError(error);
                 }
             );
+        } else if (currentButtonsState.buttonsState.extractLDM) {
+            // create version for each participant
+            this.multiParticipantsService.postParticipantsVersion().subscribe(
+                participantVersions => {
+                    this.ngRedux.dispatch(this.actions.extractLDM());
+                    this.alert.success('Successfully extracted partner LDM');
+                    // open each version in a separate tab
+                    for (const participantVersion of participantVersions) {
+                        const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
+                            + '&uiURL=' + encodeURIComponent(backendBaseURL)
+                            + '&ns=' + participantVersion.entity.namespace
+                            + '&id=' + participantVersion.entity.localname;
+                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfiguration);
+                    }
+                },
+                error => {
+                    this.errorHandlerService.handleError(error);
+                }
+            );
         } else if (currentButtonsState.buttonsState.generatePlaceholderSubs) {
+            // create version with substitution stack for partner placeholder
             this.multiParticipantsService.postSubstituteVersion().subscribe(
                 placeholderSubstitution => {
                     this.ngRedux.dispatch(this.actions.generatePlaceholderSubs());
@@ -76,23 +98,6 @@ export class MultiParticipantsComponent implements OnInit {
                         + '&id=' + placeholderSubstitution.localname;
                     this.alert.success('Successfully substituted placeholder for topology');
                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
-                },
-                error => {
-                    this.errorHandlerService.handleError(error);
-                }
-            );
-        } else if (currentButtonsState.buttonsState.extractLDM) {
-            this.multiParticipantsService.postParticipantsVersion().subscribe(
-                participantVersions => {
-                    this.ngRedux.dispatch(this.actions.extractLDM());
-                    this.alert.success('Successfully extracted partner LDM');
-                    for (const participantVersion of participantVersions) {
-                        const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
-                            + '&uiURL=' + encodeURIComponent(backendBaseURL)
-                            + '&ns=' + participantVersion.entity.namespace
-                            + '&id=' + participantVersion.entity.localname;
-                        window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfiguration);
-                    }
                 },
                 error => {
                     this.errorHandlerService.handleError(error);
