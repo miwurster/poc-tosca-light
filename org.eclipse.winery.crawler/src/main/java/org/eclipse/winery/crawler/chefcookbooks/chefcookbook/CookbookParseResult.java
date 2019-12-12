@@ -25,18 +25,12 @@ import org.eclipse.winery.crawler.chefcookbooks.constants.Defaults;
 public class CookbookParseResult {
 
     private String cookbookName;
-
     private String cookbookPath;
-
     // Boolean to mark that compiler is in an dependent cookbook recipe
     private boolean isInDependentRecipe;
-
     private HashMap<String, HashMap<String, ChefCookbookConfiguration>> cookbookConfigs;
-
     private HashMap<String, String> attributes;
-
     private boolean isInRecursiveTransformation;
-
     // saves packages until all information are extracted
     private ArrayList<ChefPackage> notatedPackages;
 

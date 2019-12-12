@@ -19,9 +19,9 @@ import org.eclipse.winery.crawler.chefcookbooks.chefcookbookcrawler.ChefSupermar
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Main {
+public class ChefRun {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChefRun.class);
 
     public static void main(String[] args) {
         ChefSupermarketCrawler chefSupermarketCrawler = new ChefSupermarketCrawler();

@@ -40,7 +40,7 @@ public class CookbookConfigurationToscaConverter {
     public List<TNodeType> convertCookbookConfigurationToToscaNode(ChefCookbookConfiguration cookbookConfiguration, int counter) {
         List<TNodeType> nodeTypes = new ArrayList<>();
         String cookbookName = cookbookConfiguration.getName();
-        String version = cookbookConfiguration.getVersion();
+        String version = getVersion(cookbookConfiguration);
 
         String namespace = buildNamespaceForCookbookConfigs(cookbookName, version);
 
@@ -125,7 +125,10 @@ public class CookbookConfigurationToscaConverter {
     private TCapabilityDefinition convertPackageToCapability(ChefPackage chefPackage, String namespace, int counter) {
         TCapabilityDefinition.Builder builder;
         if (chefPackage.getVersion() != null) {
-            builder = new TCapabilityDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName() + "-" + chefPackage.getVersion()));
+            builder = new TCapabilityDefinition.Builder(
+                "package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter,
+                new QName(namespace, chefPackage.getPackageName() + "-" + getVersion(chefPackage))
+            );
         } else {
             builder = new TCapabilityDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName()));
         }
@@ -135,7 +138,7 @@ public class CookbookConfigurationToscaConverter {
     private TRequirementDefinition convertPackageToRequirement(ChefPackage chefPackage, String namespace, int counter) {
         TRequirementDefinition.Builder builder;
         if (chefPackage.getVersion() != null) {
-            builder = new TRequirementDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName() + "-" + chefPackage.getVersion()));
+            builder = new TRequirementDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName() + "-" + getVersion(chefPackage)));
         } else {
             builder = new TRequirementDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName()));
         }
@@ -143,12 +146,12 @@ public class CookbookConfigurationToscaConverter {
     }
 
     private TRequirementDefinition convertPlatformToRequirement(Platform platform, String namespace) {
-        TRequirementDefinition.Builder builder = new TRequirementDefinition.Builder("supported plattform", new QName(namespace, platform.getName() + "_" + platform.getVersion() + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"));
+        TRequirementDefinition.Builder builder = new TRequirementDefinition.Builder("supported plattform", new QName(namespace, platform.getName() + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + getVersion(platform) + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"));
         return new TRequirementDefinition(builder);
     }
 
     private TCapabilityDefinition convertPlatformToCapability(Platform platform, String namespace) {
-        TCapabilityDefinition.Builder builder = new TCapabilityDefinition.Builder("platform", new QName(namespace, platform.getName() + "_" + platform.getVersion() + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"));
+        TCapabilityDefinition.Builder builder = new TCapabilityDefinition.Builder("platform", new QName(namespace, platform.getName() + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + getVersion(platform) + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"));
         return new TCapabilityDefinition(builder);
     }
 
@@ -165,11 +168,15 @@ public class CookbookConfigurationToscaConverter {
 
     private TNodeType convertPlatformToNodeType(Platform platform) {
         String namespace = buildNamespaceForPlatforms();
-        TNodeType.Builder configurationNodeType = new TNodeType.Builder(platform.getName() + "-" + platform.getVersion() + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1");
+        TNodeType.Builder configurationNodeType = new TNodeType.Builder(platform.getName() + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + getVersion(platform) + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1");
         configurationNodeType.setTargetNamespace(namespace);
 
         configurationNodeType.addCapabilityDefinitions(convertPlatformToCapability(platform, namespace));
 
         return new TNodeType(configurationNodeType);
+    }
+
+    private String getVersion(VersionedChefElement element) {
+        return element.getVersion() != null ? element.getVersion().replaceAll("/g|<|>|~|=|/", "").replaceAll(" ", "") : "";
     }
 }

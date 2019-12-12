@@ -14,17 +14,20 @@
 
 package org.eclipse.winery.crawler.chefcookbooks.chefcookbook;
 
-public class Platform extends VersionedChefElement {
+public abstract class VersionedChefElement extends NamedChefElement {
 
-    public Platform(String name) {
-        super(name, null);
+    protected String version;
+
+    public VersionedChefElement(String name, String version) {
+        super(name);
+        this.version = version;
     }
 
-    public Platform(String name, String version) {
-        super(name, version);
+    public String getVersion() {
+        return version;
     }
 
-    public Platform(Platform platform) {
-        super(platform.name, platform.version);
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

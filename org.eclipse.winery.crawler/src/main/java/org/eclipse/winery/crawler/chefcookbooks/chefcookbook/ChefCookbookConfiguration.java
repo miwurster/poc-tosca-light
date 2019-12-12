@@ -28,13 +28,9 @@ import org.eclipse.winery.crawler.chefcookbooks.constants.OhaiFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ChefCookbookConfiguration {
+public class ChefCookbookConfiguration extends VersionedChefElement {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChefCookbookConfiguration.class.getName());
-
-    private String name;
-
-    private String version;
 
     private Platform supports;
 
@@ -42,23 +38,17 @@ public class ChefCookbookConfiguration {
      * The dependencies to other cookbooks. First String is name of dependency. Second String is version constraint.
      */
     private LinkedHashMap<String, String> depends;
-
     private String description;
-
     private HashMap<String, List<String>> attributes;
-
     private LinkedHashMap<String, ChefPackage> installedPackages;
-
     private LinkedHashMap<String, ChefPackage> requiredPackages;
-
     private HashMap<String, List<String>> dependentRecipes;
 
     // List of recipes to run
     private List<String> runList;
 
     public ChefCookbookConfiguration(ChefCookbookConfiguration componentType) {
-        this.name = componentType.name;
-        this.version = componentType.version;
+        super(componentType.name, componentType.version);
         this.supports = new Platform(componentType.supports);
         this.depends = (LinkedHashMap<String, String>) componentType.depends.clone();
         this.description = componentType.description;
@@ -70,8 +60,7 @@ public class ChefCookbookConfiguration {
     }
 
     public ChefCookbookConfiguration() {
-        this.name = null;
-        this.version = null;
+        super(null, null);
         this.supports = new Platform(Defaults.COOKBOOKCONFIG_SUPPORTS_NO_PLATFORM);
         this.depends = new LinkedHashMap<>();
         this.description = null;
@@ -80,22 +69,6 @@ public class ChefCookbookConfiguration {
         this.attributes = new HashMap<>();
         this.dependentRecipes = new HashMap<>();
         this.runList = new LinkedList<>();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public Platform getSupports() {

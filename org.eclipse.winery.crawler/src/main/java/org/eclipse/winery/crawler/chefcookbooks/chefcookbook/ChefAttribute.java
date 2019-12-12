@@ -18,26 +18,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ChefAttribute {
-
-    private String name;
+public class ChefAttribute extends NamedChefElement {
 
     private List<String> values;
 
     public ChefAttribute(String name) {
-        this.name = name;
-        this.values = new ArrayList<>();
+        this(name, new ArrayList<>());
     }
 
     public ChefAttribute(String name, List<String> values) {
-        this.name = name;
+        super(name);
         this.values = values;
     }
 
     public ChefAttribute(String name, String value) {
-        this.name = name;
-        // SingletonList must not be used, as this list may be extended.
-        this.values = new ArrayList<>(Arrays.asList(value));
+        this(name, new ArrayList<>(Arrays.asList(value)));
     }
 
     public void addAttribute(String value) {
@@ -46,10 +41,6 @@ public class ChefAttribute {
 
     public void addAttribute(ArrayList<String> value) {
         this.values.addAll(value);
-    }
-
-    public String getName() {
-        return name;
     }
 
     public List<String> getValues() {
