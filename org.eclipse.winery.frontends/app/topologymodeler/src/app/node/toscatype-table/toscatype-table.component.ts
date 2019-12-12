@@ -64,7 +64,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
         }
     }
 
-    isEllipsisActive(cell) {
+    isEllipsisActive(cell): boolean {
         return (cell.offsetWidth < cell.scrollWidth);
     }
 
@@ -173,18 +173,31 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
             clickedDefinition = definitionType.CapabilityDefinitions;
         }
 
-        if (this.toscaType === this.toscaTypes.RequirementType && this.configurationService.isYaml()) {
-            url = this.backendService.configuration.uiURL
-                + urlElement.NodeTypeURL
-                + this.getNamespace(this.currentNodeData.nodeTemplate.type)
-                + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type)
-                + '/requirementdefinitionsyaml/';
-        } else {
-            url = this.backendService.configuration.uiURL
-                + urlElement.NodeTypeURL
-                + encodeURIComponent(encodeURIComponent(this.getNamespace(this.currentNodeData.nodeTemplate.type)))
-                + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type) + clickedDefinition;
-        }
+        url = this.backendService.configuration.uiURL
+            + urlElement.NodeTypeURL
+            + encodeURIComponent(encodeURIComponent(this.getNamespace(this.currentNodeData.nodeTemplate.type)))
+            + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type) + clickedDefinition;
+
+        window.open(url, '_blank');
+    }
+
+    clickYamlReqRef(): void {
+        const url = this.backendService.configuration.uiURL
+            + urlElement.NodeTypeURL
+            + this.getNamespace(this.currentNodeData.nodeTemplate.type)
+            + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type)
+            + '/requirementdefinitionsyaml/';
+
+        window.open(url, '_blank');
+    }
+
+    clickYamlCapRef(): void {
+        const url = this.backendService.configuration.uiURL
+            + urlElement.NodeTypeURL
+            + this.getNamespace(this.currentNodeData.nodeTemplate.type)
+            + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type)
+            + definitionType.CapabilityDefinitions;
+
         window.open(url, '_blank');
     }
 
@@ -201,7 +214,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
             clickedType = urlElement.CapabilityTypeURL;
         }
         const url = this.backendService.configuration.uiURL
-            + '#' + clickedType
+            + clickedType
             + encodeURIComponent(encodeURIComponent(this.getNamespace(reqOrCapType)))
             + '/' + this.getLocalName(reqOrCapType);
         window.open(url, '_blank');
