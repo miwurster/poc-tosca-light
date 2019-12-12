@@ -14,8 +14,7 @@ import { ErrorHandlerService } from '../services/error-handler.service';
 
 @Component({
     selector: 'winery-multi-participants',
-    templateUrl: './multi-participants.component.html',
-    styleUrls: ['./multi-participants.component.css']
+    templateUrl: './multi-participants.component.html'
 })
 export class MultiParticipantsComponent implements OnInit {
 
