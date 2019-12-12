@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -571,7 +571,7 @@ public class YamlRepository extends FilebasedRepository {
      **/
     private TServiceTemplate readServiceTemplate(Path targetPath) throws IOException, MultiException {
         InputStream in = newInputStream(targetPath);
-        return Reader.getReader().parse(in);
+        return new Reader().parse(in);
     }
 
     /**
@@ -583,7 +583,7 @@ public class YamlRepository extends FilebasedRepository {
     private TServiceTemplate readServiceTemplate(RepositoryFileReference ref) throws IOException, MultiException {
         Path targetPath = ref2AbsolutePath(ref);
         InputStream in = newInputStream(targetPath);
-        return Reader.getReader().parse(in);
+        return new Reader().parse(in);
     }
 
     /**
