@@ -55,6 +55,7 @@ import { ThreatCreation } from '../models/threatCreation';
 import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 import { ReqCapRelationshipService } from '../services/req-cap-relationship.service';
 import { TPolicy } from '../models/policiesModalData';
+import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 @Component({
     selector: 'winery-canvas',
@@ -163,7 +164,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 private reqCapService: ReqCapService,
                 private errorHandler: ErrorHandlerService,
                 private reqCapRelationshipService: ReqCapRelationshipService,
-                private notify: ToastrService) {
+                private notify: ToastrService,
+                private configuration: WineryRepositoryConfigurationService) {
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
 
@@ -1803,6 +1805,19 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 return true;
             }
         });
+
+        // if in YAML mode, automatically add all requirement and capability definitions to the node template!
+        if (this.configuration.isYaml()) {
+            this.reqCapService.requestRequirementDefinitionsOfNodeType(this.newNode.type).subscribe(data => {
+                this.newNode.requirements = { requirement: [] };
+                data.forEach(def => this.newNode.requirements.requirement.push(RequirementModel.fromRequirementDefinition(def)));
+            });
+
+            this.reqCapService.requestCapabilityDefinitionsOfNodeType(this.newNode.type).subscribe(data => {
+                this.newNode.capabilities = { capability: [] };
+                data.forEach(def => this.newNode.capabilities.capability.push(CapabilityModel.fromCapabilityDefinitionModel(def)));
+            });
+        }
     }
 
     /**

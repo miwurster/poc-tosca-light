@@ -18,6 +18,8 @@ import { QName } from '../models/qname';
 import { Observable } from 'rxjs/Rx';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BackendService } from './backend.service';
+import { RequirementDefinitionModel } from '../models/requirementDefinitonModel';
+import { CapabilityDefinitionModel } from '../models/capabilityDefinitionModel';
 
 @Injectable()
 export class ReqCapService {
@@ -36,14 +38,14 @@ export class ReqCapService {
      * @param   nodeType - the node type of the node template
      * @returns
      */
-    requestRequirementDefinitionsOfNodeType(nodeType: string): Observable<any> {
+    requestRequirementDefinitionsOfNodeType(nodeType: string): Observable<RequirementDefinitionModel[]> {
         const qName = new QName(nodeType);
         const url = this.backendService.configuration.repositoryURL
             + urlElement.NodeTypeURL
             + encodeURIComponent(encodeURIComponent(qName.nameSpace))
             + '/' + qName.localName
             + definitionType.RequirementDefinitions;
-        return this.http.get(url, this.options);
+        return this.http.get<RequirementDefinitionModel[]>(url, this.options);
     }
 
     /**
@@ -51,13 +53,13 @@ export class ReqCapService {
      * @param   nodeType - the node type of the node template
      * @returns
      */
-    requestCapabilityDefinitionsOfNodeType(nodeType: string): Observable<any> {
+    requestCapabilityDefinitionsOfNodeType(nodeType: string): Observable<CapabilityDefinitionModel[]> {
         const qName = new QName(nodeType);
         const url = this.backendService.configuration.repositoryURL
             + urlElement.NodeTypeURL
             + encodeURIComponent(encodeURIComponent(qName.nameSpace)) + '/'
             + qName.localName
             + definitionType.CapabilityDefinitions;
-        return this.http.get(url, this.options);
+        return this.http.get<CapabilityDefinitionModel[]>(url, this.options);
     }
 }
