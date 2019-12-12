@@ -43,7 +43,6 @@ import { align, toggleModalType } from '../models/enums';
 import { QName } from '../models/qname';
 import { ImportTopologyModalData } from '../models/importTopologyModalData';
 import { ImportTopologyService } from '../services/import-topology.service';
-import { ReqCapService } from '../services/req-cap.service';
 import { SplitMatchTopologyService } from '../services/split-match-topology.service';
 import { PlaceComponentsService } from '../services/placement.service';
 import { DifferenceStates, VersionUtils } from '../models/ToscaDiff';
@@ -56,6 +55,8 @@ import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 import { ReqCapRelationshipService } from '../services/req-cap-relationship.service';
 import { TPolicy } from '../models/policiesModalData';
 import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { RequirementDefinitionModel } from '../models/requirementDefinitonModel';
+import { CapabilityDefinitionModel } from '../models/capabilityDefinitionModel';
 
 @Component({
     selector: 'winery-canvas',
@@ -161,7 +162,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 private existsService: ExistsService,
                 private splitMatchService: SplitMatchTopologyService,
                 private placementService: PlaceComponentsService,
-                private reqCapService: ReqCapService,
                 private errorHandler: ErrorHandlerService,
                 private reqCapRelationshipService: ReqCapRelationshipService,
                 private notify: ToastrService,
@@ -372,14 +372,14 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     try {
                         // request all valid requirement types for that node type for display as name select options in
                         // the modal
-                        this.reqCapService.requestRequirementDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
-                            this.requirements.reqDefinitionNames = [];
-                            this.requirements.reqDefinitionName = '';
-                            for (const reqType of data) {
-                                const qNameOfType = new QName(reqType.requirementType);
-                                this.requirements.reqDefinitionNames.push(qNameOfType.localName);
-                            }
-                        });
+                        const data = this.getRequirementDefinitionsOfNodeType(currentNodeData.type);
+                        this.requirements.reqDefinitionNames = [];
+                        this.requirements.reqDefinitionName = '';
+
+                        for (const reqType of data) {
+                            const qNameOfType = new QName(reqType.requirementType);
+                            this.requirements.reqDefinitionNames.push(qNameOfType.localName);
+                        }
                     } catch (e) {
                         this.requirements.requirements = '';
                     }
@@ -454,14 +454,15 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     try {
                         // request all valid capability types for that node type for display as name select options in
                         // the modal
-                        this.reqCapService.requestCapabilityDefinitionsOfNodeType(currentNodeData.type).subscribe(data => {
-                            this.capabilities.capDefinitionNames = [];
-                            this.capabilities.capDefinitionName = '';
-                            for (const capType of data) {
-                                const qNameOfType = new QName(capType.capabilityType);
-                                this.capabilities.capDefinitionNames.push(qNameOfType.localName);
-                            }
-                        });
+                        const data = this.getCapabilityDefinitionsOfNodeType(currentNodeData.type);
+                        console.debug(currentNodeData);
+                        this.capabilities.capDefinitionNames = [];
+                        this.capabilities.capDefinitionName = '';
+                        for (const capType of data) {
+                            const qNameOfType = new QName(capType.capabilityType);
+                            this.capabilities.capDefinitionNames.push(qNameOfType.localName);
+                        }
+
                     } catch (e) {
                         this.capabilities.capabilities = '';
                     }
@@ -469,6 +470,45 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.capabilitiesModal.show();
                 break;
         }
+    }
+
+    getCapabilityDefinitionsOfNodeType(nodeType: string): CapabilityDefinitionModel[] {
+        const match = this.entityTypes.unGroupedNodeTypes
+            .filter(nt => nt.qName === nodeType)
+            .filter(nt =>
+                nt.full &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation.length > 0 &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition.length > 0
+            );
+
+        if (match && match.length > 0) {
+            return match[0].full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition;
+        }
+
+        return [];
+    }
+
+    getRequirementDefinitionsOfNodeType(nodeType: string): RequirementDefinitionModel[] {
+        const match = this.entityTypes.unGroupedNodeTypes
+            .filter(nt => nt.qName === nodeType)
+            .filter(nt =>
+                nt.full &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation.length > 0 &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition.length > 0
+            );
+
+        if (match && match.length > 0) {
+            return match[0].full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition;
+        }
+
+        return [];
+
     }
 
     /**
@@ -1808,15 +1848,16 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
 
         // if in YAML mode, automatically add all requirement and capability definitions to the node template!
         if (this.configuration.isYaml()) {
-            this.reqCapService.requestRequirementDefinitionsOfNodeType(this.newNode.type).subscribe(data => {
-                this.newNode.requirements = { requirement: [] };
-                data.forEach(def => this.newNode.requirements.requirement.push(RequirementModel.fromRequirementDefinition(def)));
-            });
-
-            this.reqCapService.requestCapabilityDefinitionsOfNodeType(this.newNode.type).subscribe(data => {
-                this.newNode.capabilities = { capability: [] };
-                data.forEach(def => this.newNode.capabilities.capability.push(CapabilityModel.fromCapabilityDefinitionModel(def)));
-            });
+            this.newNode.requirements = { requirement: [] };
+            this.newNode.capabilities = { capability: [] };
+            const reqData = this.getRequirementDefinitionsOfNodeType(this.newNode.type);
+            if (reqData) {
+                reqData.forEach(reqDef => this.newNode.requirements.requirement.push(RequirementModel.fromRequirementDefinition(reqDef)));
+            }
+            const capData = this.getCapabilityDefinitionsOfNodeType(this.newNode.type);
+            if (capData) {
+                capData.forEach(capDef => this.newNode.capabilities.capability.push(CapabilityModel.fromCapabilityDefinitionModel(capDef)));
+            }
         }
     }
 

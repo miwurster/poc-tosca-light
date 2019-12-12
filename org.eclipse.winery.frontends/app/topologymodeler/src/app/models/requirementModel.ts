@@ -28,6 +28,9 @@ export class RequirementModel {
     public capability?: string;
     public node?: string;
     public relationship?: string;
+    public capabilityType?: string;
+    public relationshipType?: string;
+    public nodeType?: string;
 
     static fromRequirementDefinition(def: RequirementDefinitionModel): RequirementModel {
         const result = new RequirementModel();
@@ -36,9 +39,9 @@ export class RequirementModel {
         result.name = def.name;
         result.otherAttributes = def.otherAttributes;
         result.type = def.requirementType;
-        result.capability = def.capability;
-        result.node = def.node;
-        result.relationship = def.relationship;
+        result.capabilityType = def.capability;
+        result.nodeType = def.node;
+        result.relationshipType = def.relationship;
 
         return result;
     }
