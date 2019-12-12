@@ -251,8 +251,6 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
     @POST
     @Path("placeholder/generator")
-    @Consumes( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
-    @Produces( {MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
     public Response generatePlaceholdersWithCapability() {
         Splitting splitting = new Splitting();
         TTopologyTemplate topologyTemplate = this.getServiceTemplate().getTopologyTemplate();
@@ -367,7 +365,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
             RestUtils.persist(this);
             LOGGER.debug("PERSISTED");
             String responseId = this.getServiceTemplate().getId();
-            return Response.ok().entity(responseId).build();
+            return Response.ok().build();
         } catch (
             Exception e) {
             LOGGER.error("Could not fetch requirements and capabilities", e);

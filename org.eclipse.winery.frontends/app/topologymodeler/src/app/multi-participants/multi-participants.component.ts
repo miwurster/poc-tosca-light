@@ -60,7 +60,7 @@ export class MultiParticipantsComponent implements OnInit {
                             window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
                         },
                         error => {
-                            window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + this.editorConfiguration);
+                            this.errorHandlerService.handleError(error);
                         }
                     );
                 },

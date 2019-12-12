@@ -41,6 +41,6 @@ export class MultiParticipantsService {
             + '/placeholder/generator';
         return this.httpClient.post(
             url,
-            { headers: this.httpHeaders, observe: 'response', responseType: 'string' });
+            { headers: this.httpHeaders, observe: 'response' });
     }
 }
