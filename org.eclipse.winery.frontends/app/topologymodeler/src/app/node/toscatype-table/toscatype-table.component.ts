@@ -21,6 +21,7 @@ import { BackendService } from '../../services/backend.service';
 import { EntityTypesModel } from '../../models/entityTypesModel';
 import { ReqCapRelationshipService } from '../../services/req-cap-relationship.service';
 import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
+import { WineryRepositoryConfigurationService } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 @Component({
     selector: 'winery-toscatype-table',
@@ -46,7 +47,8 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
 
     constructor(private entitiesModalService: EntitiesModalService,
                 private backendService: BackendService,
-                private reqCapRelationshipService: ReqCapRelationshipService) {
+                private reqCapRelationshipService: ReqCapRelationshipService,
+                private configurationService: WineryRepositoryConfigurationService) {
         this.showClickedReqOrCapModal = new EventEmitter();
     }
 
@@ -164,15 +166,25 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
      */
     clickReqOrCapRef(reqOrCapRef: string) {
         let clickedDefinition;
+        let url;
         if (this.toscaType === this.toscaTypes.RequirementType) {
             clickedDefinition = definitionType.RequirementDefinitions;
         } else {
             clickedDefinition = definitionType.CapabilityDefinitions;
         }
-        const url = this.backendService.configuration.uiURL
-            + urlElement.NodeTypeURL
-            + encodeURIComponent(encodeURIComponent(this.getNamespace(this.currentNodeData.nodeTemplate.type)))
-            + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type) + clickedDefinition;
+
+        if (this.toscaType === this.toscaTypes.RequirementType && this.configurationService.isYaml()) {
+            url = this.backendService.configuration.uiURL
+                + urlElement.NodeTypeURL
+                + this.getNamespace(this.currentNodeData.nodeTemplate.type)
+                + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type)
+                + '/requirementdefinitionsyaml/';
+        } else {
+            url = this.backendService.configuration.uiURL
+                + urlElement.NodeTypeURL
+                + encodeURIComponent(encodeURIComponent(this.getNamespace(this.currentNodeData.nodeTemplate.type)))
+                + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type) + clickedDefinition;
+        }
         window.open(url, '_blank');
     }
 
