@@ -22,6 +22,7 @@ import { EntityTypesModel } from '../../models/entityTypesModel';
 import { ReqCapRelationshipService } from '../../services/req-cap-relationship.service';
 import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
 import { WineryRepositoryConfigurationService } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { ReqCapModalType, ShowReqCapModalEventData } from './showReqCapModalEventData';
 
 @Component({
     selector: 'winery-toscatype-table',
@@ -30,6 +31,8 @@ import { WineryRepositoryConfigurationService } from '../../../../../tosca-manag
 })
 export class ToscatypeTableComponent implements OnInit, OnChanges {
 
+    readonly editOperation = ReqCapModalType.Edit;
+    readonly newOperation = ReqCapModalType.AddNew;
     readonly toscaTypes = ToscaTypes;
     readonly tableType = TableType;
 
@@ -39,7 +42,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     @Input() entityTypes: EntityTypesModel;
 
     // Event emitter for showing the modal of a clicked capability or requirement id
-    @Output() showClickedReqOrCapModal: EventEmitter<any>;
+    @Output() showClickedReqOrCapModal: EventEmitter<ShowReqCapModalEventData>;
 
     currentToscaTypeData;
     currentToscaType;
@@ -152,11 +155,12 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
 
     /**
      * This modal handler gets triggered upon clicking on a capability or requirement id in the table
-     * @param clickEvent - this holds the information about the click event, needed for determining which element was
-     *     clicked
+     * @param id - the id of the rea/cap that was clicked.
+     * @param operation the type of the requested operation.
      */
-    showExistingReqOrCapModal(clickEvent: any): void {
-        this.showClickedReqOrCapModal.emit(clickEvent);
+    showExistingReqOrCapModal(id: string, operation: ReqCapModalType): void {
+        const event = new ShowReqCapModalEventData(id, operation);
+        this.showClickedReqOrCapModal.emit(event);
     }
 
     /**

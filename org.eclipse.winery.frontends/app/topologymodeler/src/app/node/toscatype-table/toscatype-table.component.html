@@ -98,7 +98,8 @@
             </td>
             <td class="toscatype-table-td"
                 [class.cell-with-comment]="isEllipsisActive(reqOrCapName)">
-                <div #reqOrCapName (click)="showExistingReqOrCapModal($event)">{{ reqOrCap.id }}</div>
+                <div #reqOrCapName
+                     (click)="showExistingReqOrCapModal(reqOrCap.id, editOperation)">{{ reqOrCap.id }}</div>
                 <span class="cell-comment">{{ reqOrCap.name }}</span>
             </td>
             <td class="toscatype-table-td"
@@ -109,7 +110,7 @@
             <td *ngIf="toscaType === toscaTypes.RequirementType" class="toscatype-table-td">
                 <div (mousedown)="passCurrentType($event);
             reqCapRelationshipService.createSourceInfo(this.currentNodeData, reqOrCap);">
-                    <div class="btn-group-vertical center-block" role="group" id={{dragSource}}>
+                    <div class="btn-group-vertical center-block" role="group" id={{dragSource}} style="width: 100%;">
                         <button *ngFor="let rel of entityTypes.relationshipTypes"
                                 type="button" class="reqCap-button btn btn-sm btn-outline-secondary btn-block"
                                 style="font-size: xx-small;">{{rel.id}}
@@ -127,7 +128,7 @@
             <thead>
             <tr>
                 <th>Name</th>
-                <th>Fulfilled by Relationship</th>
+                <th>Current Relationship</th>
                 <th *ngIf="toscaType === toscaTypes.RequirementType">Possible Relationships</th>
             </tr>
             </thead>
@@ -136,13 +137,19 @@
                 <td class="toscatype-table-td"
                     [class.cell-with-comment]="isEllipsisActive(reqRef)">
                     <div #reqRef (click)="clickYamlReqRef()">{{ req.name }}</div>
+                    <span class="cell-comment">{{ req.name }}</span>
                 </td>
-                <td class="toscatype-table-td" *ngIf="req.relationship"> {{req.relationship}}</td>
+                <td class="toscatype-table-td" *ngIf="req.relationship"
+                    [class.cell-with-comment]="isEllipsisActive(reqRelationship)">
+                    <div #reqRelationship>{{req.relationship}}</div>
+                    <span class="cell-comment">{{ req.relationship }}</span>
+                </td>
                 <td class="toscatype-table-td" *ngIf="!req.relationship"> N/A</td>
                 <td *ngIf="toscaType === toscaTypes.RequirementType" class="toscatype-table-td">
                     <div (mousedown)="passCurrentType($event);
             reqCapRelationshipService.createSourceInfo(this.currentNodeData, req);">
-                        <div class="btn-group-vertical center-block" role="group" id={{dragSource}}>
+                        <div class="btn-group-vertical center-block" role="group" id={{dragSource}}
+                             style="width: 100%;">
                             <button *ngFor="let rel of entityTypes.relationshipTypes"
                                     type="button" class="reqCap-button btn btn-sm btn-outline-secondary btn-block"
                                     style="font-size: xx-small;">{{rel.id}}
@@ -165,7 +172,6 @@
             </tr>
             </thead>
             <tbody>
-
             <tr *ngFor="let cap of currentToscaTypeData">
                 <td class="toscatype-table-td">
                     <button type="button" class="reqCap-button btn btn-sm btn-outline-secondary btn-block"
@@ -173,15 +179,24 @@
                         <i class="fa fa-dot-circle-o" aria-hidden="true"></i> {{''}}
                     </button>
                 </td>
-                <td class="toscatype-table-td">
-                    <div (click)="clickYamlCapRef()">{{ cap.name }}</div>
+                <td class="toscatype-table-td" [class.cell-with-comment]="isEllipsisActive(capName)">
+                    <div #capName (click)="clickYamlCapRef()">{{ cap.name }}</div>
+                    <span class="cell-comment">{{ cap.name }}</span>
                 </td>
                 <td class="toscatype-table-td"
                     [class.cell-with-comment]="isEllipsisActive(capType)">
                     <div #capType (click)="clickReqOrCapType(cap.type)">{{ cap.type | localname }}</div>
                     <span class="cell-comment">{{ cap.type }}</span>
                 </td>
-                <td class="toscatype-table-td"> Action </td>
+                <td class="toscatype-table-td">
+                    <div class="btn-group-vertical center-block" role="group" style="width: 100%"
+                         (click)="showExistingReqOrCapModal(cap.name, editOperation)">
+                        <button type="button" class="reqCap-button btn btn-sm btn-outline-secondary btn-block"
+                                style="font-size: xx-small;">
+                            Edit
+                        </button>
+                    </div>
+                </td>
             </tr>
             </tbody>
         </table>

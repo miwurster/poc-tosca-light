@@ -387,6 +387,11 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.requirementsModal.show();
                 break;
             case toggleModalType.Capabilities:
+                console.debug('New Round!!');
+                console.debug('capabilities: ');
+                console.debug(this.capabilities);
+                console.debug('curent node data: ');
+                console.debug(currentNodeData);
                 this.modalData.modalVariant = ModalVariant.Other;
                 this.modalData.modalVisible = false;
                 this.resetCapabilities();
@@ -394,6 +399,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.capabilities.nodeId = currentNodeData.id;
                 // if a capability in the table is clicked show the data in the modal
                 if (!isNullOrUndefined(currentNodeData.currentCapability)) {
+                    console.debug('currentCapability exists!');
                     this.showCurrentCapability = true;
                     this.capabilities.capId = currentNodeData.currentCapability.id;
                     this.capabilities.oldCapId = currentNodeData.currentCapability.id;
@@ -404,26 +410,33 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     // from the repository
                     this.entityTypes.capabilityTypes.some(capType => {
                         if (currentNodeData.currentCapability.type === capType.qName) {
+                            console.debug('qName found');
                             // if any is defined with at least one element it's a KV property, sets default values if
                             // there aren't any in the node template
                             if (capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
+                                console.debug('it is a KV property');
                                 this.capabilities.propertyType = 'KV';
                                 if (currentNodeData.currentCapability.properties) {
+                                    console.debug('There are values for the current capability');
                                     if (currentNodeData.currentCapability.properties.kvproperties) {
+                                        console.debug('There are REALLY values for the current capability');
                                         this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
                                         return true;
                                     } else {
+                                        console.debug('Should never be here!');
                                         this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
                                         this.setDefaultCapKVProperties();
                                         return true;
                                     }
                                 } else {
+                                    console.debug('There are no values for the current capability');
                                     this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
                                     this.setDefaultCapKVProperties();
                                     return true;
                                 }
                                 // if propertiesDefinition is defined it's a XML property
                             } else if (capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
+                                console.debug('It is an xml property');
                                 if (capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
                                     this.capabilities.propertyType = 'XML';
                                     const defaultXML = capType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element;
@@ -443,6 +456,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                     }
                                 }
                             } else {
+                                console.debug('There are no properties');
                                 // else no properties
                                 this.capabilities.propertyType = '';
                                 return true;
@@ -450,6 +464,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                         }
                     });
                 } else {
+                    console.debug('There is no current capability!');
                     this.showCurrentCapability = false;
                     try {
                         // request all valid capability types for that node type for display as name select options in

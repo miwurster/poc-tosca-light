@@ -230,6 +230,8 @@ export class TopologyTemplateUtil {
             }
             newKVProperies[key] = value;
         }
+        console.debug('newKVProperies');
+        console.debug(newKVProperies);
         return newKVProperies;
     }
 
