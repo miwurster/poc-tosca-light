@@ -36,6 +36,7 @@ import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.version.VersionUtils;
+import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TCapabilityType;
 import org.eclipse.winery.model.tosca.TEntityTemplate;
@@ -375,6 +376,18 @@ public class Splitting {
         }
 
         return relationshipTemplatesToBeRemoved;
+    }
+
+    public WineryVersion createVersionForMultiParticipants(ServiceTemplateId id, String versionName) {
+        WineryVersion version = VersionUtils.getVersion(id);
+
+        WineryVersion newVersion = new WineryVersion(
+            versionName + version.toString(),
+            1,
+            0
+        );
+        
+        return newVersion;
     }
 
     public Map<Map<String, TNodeTemplate>, List<TNodeTemplate>> getNodeTemplatesToBeRemovedForPlaceholderSubstitution(String participantId, TTopologyTemplate originTopologyTemplate) {
