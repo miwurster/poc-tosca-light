@@ -38,6 +38,7 @@ import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TCapabilityType;
+import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TInterface;
 import org.eclipse.winery.model.tosca.TInterfaces;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -50,9 +51,13 @@ import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementType;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
+import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
+import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.IRepository;
+import org.eclipse.winery.repository.backend.NamespaceManager;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.driverspecificationandinjection.DASpecification;
 import org.eclipse.winery.repository.driverspecificationandinjection.DriverInjection;
@@ -66,7 +71,7 @@ public class Splitting {
     // counter for relationships starts at 100 because all TRelationshipTemplate should have a 3 digit number in their id
     private static int newRelationshipIdCounter = 100;
     private static int IdCounter = 1;
-    private static int newcapabilityCounter = 1;
+    private static int newCapabilityCounter = 1;
 
     // Required variables for the following computation of the transitive closure of a given topology
     private Map<TNodeTemplate, Set<TNodeTemplate>> initDirectSuccessors = new HashMap<>();
@@ -226,16 +231,98 @@ public class Splitting {
                 && Objects.nonNull(node.getOtherAttributes().get(ModelUtilities.QNAME_LOCATION)));
     }
 
-    public TNodeType createPlaceholderNodeType(String nameOfNodeTemplateGettingPlaceholder) {
+    private boolean getInputParamsForPlaceholderProperties(PropertyDefinitionKV inputParamKV,
+                                                           PropertyDefinitionKVList propertyDefinitionKVList,
+                                                           TNodeType sourceNodeType) {
+        return sourceNodeType.getWinerysPropertiesDefinition() != null &&
+            !sourceNodeType.getWinerysPropertiesDefinition().getPropertyDefinitionKVList().getPropertyDefinitionKVs().contains(inputParamKV)
+            && !propertyDefinitionKVList.getPropertyDefinitionKVs().contains(inputParamKV);
+    }
+
+    public Map<LinkedHashMap<String, String>, PropertyDefinitionKVList> getPlaceholderPropertiesAndWineryPropDefinition(Map.Entry<TRequirement, TNodeTemplate> requirementNodeTemplateEntry, TTopologyTemplate topologyTemplate) {
+        IRepository repo = RepositoryFactory.getRepository();
+
+        PropertyDefinitionKVList propertyDefinitionKVList = new PropertyDefinitionKVList();
+        LinkedHashMap<String, String> placeholderNodeTemplateProperties = new LinkedHashMap<>();
+
+        // current node template with open requirements
+        TNodeTemplate nodeTemplateWithOpenReq = requirementNodeTemplateEntry.getValue();
+        // get type of node template with open requirements
+        NodeTypeId id = new NodeTypeId(nodeTemplateWithOpenReq.getType());
+        TNodeType sourceNodeType = repo.getElement(id);
+
+        TInterfaces sourceNodeTypeInterfaces = sourceNodeType.getInterfaces();
+        if (sourceNodeTypeInterfaces != null) {
+            for (TInterface tInterface : sourceNodeTypeInterfaces.getInterface()) {
+                if (!tInterface.getOperation().isEmpty() && tInterface.getOperation() != null) {
+                    for (TOperation tOperation : tInterface.getOperation()) {
+                        TOperation.InputParameters inputParameters = tOperation.getInputParameters();
+                        if (inputParameters != null) {
+                            for (TParameter inputParameter : inputParameters.getInputParameter()) {
+                                PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
+                                if (getInputParamsForPlaceholderProperties(inputParamKV, propertyDefinitionKVList, sourceNodeType)) {
+                                    propertyDefinitionKVList.getPropertyDefinitionKVs().add(inputParamKV);
+                                    placeholderNodeTemplateProperties.put(inputParameter.getName(), "get_input: " + inputParameter.getName());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        List<TRelationshipTemplate> incomingRelationshipTemplates = ModelUtilities.getIncomingRelationshipTemplates(topologyTemplate, nodeTemplateWithOpenReq);
+        List<TParameter> inputParameters = getInputParamListOfIncomingRelationshipTemplates(topologyTemplate, incomingRelationshipTemplates);
+        for (TParameter inputParameter : inputParameters) {
+            String prefixTARGET = "TARGET_";
+            String prefixSOURCE = "SOURCE_";
+            String inputParamName = inputParameter.getName();
+            if (inputParamName.contains(prefixTARGET)) {
+                inputParamName = inputParamName.replaceAll(prefixTARGET, "");
+            }
+            if (inputParamName.contains(prefixSOURCE)) {
+                inputParamName = inputParamName.replaceAll(prefixSOURCE, "");
+            }
+            inputParameter.setName(inputParamName);
+
+            PropertyDefinitionKV inputParamKV = new PropertyDefinitionKV(inputParameter.getName(), inputParameter.getType());
+            if (getInputParamsForPlaceholderProperties(inputParamKV, propertyDefinitionKVList, sourceNodeType)) {
+                propertyDefinitionKVList.getPropertyDefinitionKVs().add(inputParamKV);
+                placeholderNodeTemplateProperties.put(inputParameter.getName(), "get_input: " + inputParameter.getName());
+            }
+        }
+        Map<LinkedHashMap<String, String>, PropertyDefinitionKVList> resultMap = new LinkedHashMap<>();
+        resultMap.put(placeholderNodeTemplateProperties, propertyDefinitionKVList);
+
+        return resultMap;
+    }
+
+    public TNodeType createPlaceholderNodeType(PropertyDefinitionKVList propertyDefinitionKVList, TNodeType sourceNodeType, String nameOfNodeTemplateGettingPlaceholder) {
         TNodeType placeholderNodeType = new TNodeType();
         placeholderNodeType.setName(nameOfNodeTemplateGettingPlaceholder + "_placeholder");
         placeholderNodeType.setId(nameOfNodeTemplateGettingPlaceholder + "_placeholder");
         placeholderNodeType.setTargetNamespace("http://www.example.org/tosca/placeholdertypes");
 
+        WinerysPropertiesDefinition winerysPropertiesDefinition = sourceNodeType.getWinerysPropertiesDefinition();
+        // add properties definition
+        placeholderNodeType.setPropertiesDefinition(null);
+        if (winerysPropertiesDefinition != null) {
+            winerysPropertiesDefinition.setPropertyDefinitionKVList(propertyDefinitionKVList);
+            ModelUtilities.replaceWinerysPropertiesDefinition(placeholderNodeType, winerysPropertiesDefinition);
+            String namespace = placeholderNodeType.getWinerysPropertiesDefinition().getNamespace();
+            NamespaceManager namespaceManager = RepositoryFactory.getRepository().getNamespaceManager();
+            if (!namespaceManager.hasPermanentProperties(namespace)) {
+                namespaceManager.addPermanentNamespace(namespace);
+            }
+        }
+
         return placeholderNodeType;
     }
 
-    public TNodeTemplate createPlaceholderNodeTemplate(TTopologyTemplate topologyTemplate, String nameOfNodeTemplateGettingPlaceholder, QName placeholderQName) {
+    public TNodeTemplate createPlaceholderNodeTemplate(TNodeTemplate sourceNodeTemplate,
+                                                       LinkedHashMap<String, String> placeholderNodeTemplateProperties,
+                                                       TTopologyTemplate topologyTemplate, String nameOfNodeTemplateGettingPlaceholder,
+                                                       QName placeholderQName, QName capabilityType) {
         TNodeTemplate placeholderNodeTemplate = new TNodeTemplate();
         String id;
         List<String> ids = new ArrayList<>();
@@ -257,10 +344,23 @@ public class Splitting {
         placeholderNodeTemplate.setName(id);
         placeholderNodeTemplate.setType(placeholderQName);
 
+        // create capability of placeholder node template
+        TCapability capability = createPlaceholderCapability(topologyTemplate, capabilityType);
+
+        TEntityTemplate.Properties properties = new TEntityTemplate.Properties();
+        properties.setKVProperties(placeholderNodeTemplateProperties);
+        placeholderNodeTemplate.setCapabilities(new TNodeTemplate.Capabilities());
+        placeholderNodeTemplate.getCapabilities().getCapability().add(capability);
+        placeholderNodeTemplate.setProperties(properties);
+
+        for (Map.Entry<QName, String> targetLocation : sourceNodeTemplate.getOtherAttributes().entrySet()) {
+            placeholderNodeTemplate.getOtherAttributes().put(targetLocation.getKey(), targetLocation.getValue());
+        }
+
         return placeholderNodeTemplate;
     }
 
-    public List<TParameter> getInputParamListofIncomingRelationshipTemplates(TTopologyTemplate topologyTemplate, List<TRelationshipTemplate> listOfIncomingRelationshipTemplates) {
+    public List<TParameter> getInputParamListOfIncomingRelationshipTemplates(TTopologyTemplate topologyTemplate, List<TRelationshipTemplate> listOfIncomingRelationshipTemplates) {
         List<TParameter> listOfInputs = new ArrayList<>();
         IRepository repo = RepositoryFactory.getRepository();
         for (TRelationshipTemplate incomingRelationshipTemplate : listOfIncomingRelationshipTemplates) {
@@ -269,7 +369,6 @@ public class Splitting {
             TNodeType incomingNodeType = repo.getElement(incomingNodeTypeId);
             TInterfaces incomingNodeTypeInterfaces = incomingNodeType.getInterfaces();
             RelationshipTypeId incomingRelationshipTypeId = new RelationshipTypeId(incomingRelationshipTemplate.getType());
-            TRelationshipType incomingRelationshipType = repo.getElement(incomingRelationshipTypeId);
             TInterface relevantInterface = new TInterface();
 
             if (!incomingNodeTypeInterfaces.getInterface().isEmpty()) {
@@ -313,12 +412,12 @@ public class Splitting {
         boolean uniqueID = false;
         id = "0";
         while (!uniqueID) {
-            if (!ids.contains("cap" + newcapabilityCounter)) {
-                id = "cap_" + newcapabilityCounter;
-                newcapabilityCounter++;
+            if (!ids.contains("cap" + newCapabilityCounter)) {
+                id = "cap_" + newCapabilityCounter;
+                newCapabilityCounter++;
                 uniqueID = true;
             } else {
-                newcapabilityCounter++;
+                newCapabilityCounter++;
             }
         }
         capa.setId(id);
