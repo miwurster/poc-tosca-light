@@ -368,7 +368,6 @@ public class Splitting {
             NodeTypeId incomingNodeTypeId = new NodeTypeId(incomingNodetemplate.getType());
             TNodeType incomingNodeType = repo.getElement(incomingNodeTypeId);
             TInterfaces incomingNodeTypeInterfaces = incomingNodeType.getInterfaces();
-            RelationshipTypeId incomingRelationshipTypeId = new RelationshipTypeId(incomingRelationshipTemplate.getType());
             TInterface relevantInterface = new TInterface();
 
             if (!incomingNodeTypeInterfaces.getInterface().isEmpty()) {
