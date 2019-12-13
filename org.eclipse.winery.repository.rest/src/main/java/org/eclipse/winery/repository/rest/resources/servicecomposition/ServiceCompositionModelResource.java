@@ -14,42 +14,19 @@
 
 package org.eclipse.winery.repository.rest.resources.servicecomposition;
 
-import java.io.IOException;
-
 import javax.ws.rs.Path;
 
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
-import org.eclipse.winery.model.tosca.TExtensibleElements;
-import org.eclipse.winery.model.tosca.TServiceCompositions;
-import org.eclipse.winery.model.tosca.TTopologyTemplate;
-import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResourceContainingATopology;
 import org.eclipse.winery.repository.rest.resources._support.AbstractRefinementModelResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.topologytemplates.TopologyTemplateResource;
 
 
 
-public class ServiceCompositionModelResource extends AbstractRefinementModelResource {
+public class ServiceCompositionModelResource {
     
-    public ServiceCompositionModelResource(DefinitionsChildId id){
-        super(id);
-    }
 
 
 
     
-     @Override
-    public TServiceCompositions getTRefinementModel() {
-        return (TServiceCompositions) this.getElement();
-    }
-
-    @Override
-    protected TServiceCompositions createNewElement() {
-        return new TServiceCompositions();
-    }
-
-    @Path("servicefragment")
-    public TopologyTemplateResource getRefinementTopology() {
-        return new TopologyTemplateResource(this, this.getTRefinementModel().getRefinementTopology(), REFINEMENT_TOPOLOGY);
-    }
      
 }

@@ -19,10 +19,9 @@ import javax.ws.rs.PathParam;
 
 import org.eclipse.winery.repository.rest.resources._support.AbstractComponentsWithoutTypeReferenceResource;
 
-public class ServiceCompositionModelsResource extends AbstractComponentsWithoutTypeReferenceResource<ServiceCompositionModelResource> {
-    @Override
+public class ServiceCompositionModelsResource  {
     @Path("{namespace}/{id}/")
     public ServiceCompositionModelResource getComponentInstanceResource(@PathParam("namespace") String namespace, @PathParam("id") String id) {
-        return this.getComponentInstanceResource(namespace, id, true);
+        return this.getComponentInstanceResource(namespace, id);
     }
 }
