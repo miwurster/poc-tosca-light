@@ -256,7 +256,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 // get required placeholder node template properties and placeholder node type winery properties definition
                 Map<LinkedHashMap<String, String>, PropertyDefinitionKVList> propertiesAndWineryPropDefinition = splitting.getPlaceholderPropertiesAndWineryPropDefinition(entry, topologyTemplate);
                 LinkedHashMap<String, String> placeholderNodeTemplateProperties = propertiesAndWineryPropDefinition.keySet().stream().findFirst().get();
-                PropertyDefinitionKVList propertyDefinitionKVList = propertiesAndWineryPropDefinition.entrySet().stream().findFirst().get().getValue();
+                PropertyDefinitionKVList propertyDefinitionKVList = propertiesAndWineryPropDefinition.get(placeholderNodeTemplateProperties);
 
                 // current node template with open requirements
                 TNodeTemplate nodeTemplateWithOpenReq = entry.getValue();

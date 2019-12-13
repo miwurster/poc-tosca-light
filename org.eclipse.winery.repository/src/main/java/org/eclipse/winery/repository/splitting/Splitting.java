@@ -1172,24 +1172,12 @@ public class Splitting {
 
         for (TNodeTemplate nodeTemplate : nodeTemplates) {
             if (nodeTemplate.getRequirements() != null) {
-                List<TRequirement> containedRequirements = nodeTemplate.getRequirements().getRequirement();
-                List<TNodeTemplate> successorsOfNodeTemplate = new ArrayList<>();
-                List<TRelationshipTemplate> outgoingRelationships = ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate);
-                if (outgoingRelationships != null && !outgoingRelationships.isEmpty()) {
-                    for (TRelationshipTemplate relationshipTemplate : outgoingRelationships) {
-                        if (relationshipTemplate.getSourceElement().getRef() instanceof TNodeTemplate) {
-                            successorsOfNodeTemplate.add((TNodeTemplate) relationshipTemplate.getTargetElement().getRef());
-                        } else {
-                            TCapability targetElement = (TCapability) relationshipTemplate.getTargetElement().getRef();
-                            successorsOfNodeTemplate.add(nodeTemplates.stream()
-                                .filter(nt -> nt.getCapabilities() != null)
-                                .filter(nt -> nt.getCapabilities().getCapability().stream().anyMatch(c -> c.getId().equals(targetElement.getId()))).findAny().get());
-                        }
-                    }
-                }
+                Map<List<TRequirement>, List<TNodeTemplate>> openReqsAndSuccessors = getOpenRequirementsAndSuccessorNodeTemplates(topologyTemplate, nodeTemplate);
+                List<TRequirement> containedRequirements = openReqsAndSuccessors.keySet().stream().findFirst().get();
+                List<TNodeTemplate> successorsOfNodeTemplate = openReqsAndSuccessors.get(containedRequirements);
+                
                 for (TRequirement requirement : containedRequirements) {
                     QName requiredCapabilityTypeQName = getRequiredCapabilityTypeQNameOfRequirement(requirement);
-
                     if (!successorsOfNodeTemplate.isEmpty()) {
                         boolean existingCap = successorsOfNodeTemplate.stream()
                             .filter(x -> x.getCapabilities() != null)
@@ -1534,6 +1522,30 @@ public class Splitting {
         return openRequirementsAndMatchingBaseCapability;
     }
 
+    private Map<List<TRequirement>, List<TNodeTemplate>> getOpenRequirementsAndSuccessorNodeTemplates(TTopologyTemplate topologyTemplate, TNodeTemplate nodeTemplate) {
+        List<TNodeTemplate> nodeTemplates = topologyTemplate.getNodeTemplates();
+
+        List<TRequirement> containedRequirements = nodeTemplate.getRequirements().getRequirement();
+        List<TNodeTemplate> successorsOfNodeTemplate = new ArrayList<>();
+        List<TRelationshipTemplate> outgoingRelationships = ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate);
+        if (outgoingRelationships != null && !outgoingRelationships.isEmpty()) {
+            for (TRelationshipTemplate relationshipTemplate : outgoingRelationships) {
+                if (relationshipTemplate.getSourceElement().getRef() instanceof TNodeTemplate) {
+                    successorsOfNodeTemplate.add((TNodeTemplate) relationshipTemplate.getTargetElement().getRef());
+                } else {
+                    TCapability targetElement = (TCapability) relationshipTemplate.getTargetElement().getRef();
+                    successorsOfNodeTemplate.add(nodeTemplates.stream()
+                        .filter(nt -> nt.getCapabilities() != null)
+                        .filter(nt -> nt.getCapabilities().getCapability().stream().anyMatch(c -> c.getId().equals(targetElement.getId()))).findAny().get());
+                }
+            }
+        }
+        Map<List<TRequirement>, List<TNodeTemplate>> resultMap = new LinkedHashMap<>();
+        resultMap.put(containedRequirements, successorsOfNodeTemplate);
+
+        return resultMap;
+    }
+
     /**
      *
      */
@@ -1543,21 +1555,10 @@ public class Splitting {
 
         for (TNodeTemplate nodeTemplate : nodeTemplates) {
             if (nodeTemplate.getRequirements() != null) {
-                List<TRequirement> containedRequirements = nodeTemplate.getRequirements().getRequirement();
-                List<TNodeTemplate> successorsOfNodeTemplate = new ArrayList<>();
-                List<TRelationshipTemplate> outgoingRelationships = ModelUtilities.getOutgoingRelationshipTemplates(topologyTemplate, nodeTemplate);
-                if (outgoingRelationships != null && !outgoingRelationships.isEmpty()) {
-                    for (TRelationshipTemplate relationshipTemplate : outgoingRelationships) {
-                        if (relationshipTemplate.getSourceElement().getRef() instanceof TNodeTemplate) {
-                            successorsOfNodeTemplate.add((TNodeTemplate) relationshipTemplate.getTargetElement().getRef());
-                        } else {
-                            TCapability targetElement = (TCapability) relationshipTemplate.getTargetElement().getRef();
-                            successorsOfNodeTemplate.add(nodeTemplates.stream()
-                                .filter(nt -> nt.getCapabilities() != null)
-                                .filter(nt -> nt.getCapabilities().getCapability().stream().anyMatch(c -> c.getId().equals(targetElement.getId()))).findAny().get());
-                        }
-                    }
-                }
+                Map<List<TRequirement>, List<TNodeTemplate>> openReqsAndSuccessors = getOpenRequirementsAndSuccessorNodeTemplates(topologyTemplate, nodeTemplate);
+                List<TRequirement> containedRequirements = openReqsAndSuccessors.keySet().stream().findFirst().get();
+                List<TNodeTemplate> successorsOfNodeTemplate = openReqsAndSuccessors.get(containedRequirements);
+
                 for (TRequirement requirement : containedRequirements) {
                     QName requiredCapabilityTypeQName = getRequiredCapabilityTypeQNameOfRequirement(requirement);
 
