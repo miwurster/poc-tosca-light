@@ -72,8 +72,8 @@ export class MultiParticipantsComponent implements OnInit {
             // create version for each participant
             this.multiParticipantsService.postNewVersion('createparticipantsversion').subscribe(
                 participantVersions => {
-                    this.ngRedux.dispatch(this.actions.extractLDM());
                     this.alert.success('Successfully extracted partner LDM');
+                    this.ngRedux.dispatch(this.actions.extractLDM());
                     // open each version in a separate tab
                     for (const participantVersion of participantVersions) {
                         const editorConfiguration = '?repositoryURL=' + this.configuration.repositoryURL
@@ -91,12 +91,12 @@ export class MultiParticipantsComponent implements OnInit {
             // create version with substitution stack for partner placeholder
             this.multiParticipantsService.postNewVersion('placeholdersubstitution').subscribe(
                 placeholderSubstitution => {
+                    this.alert.success('Successfully substituted placeholder');
                     this.ngRedux.dispatch(this.actions.generatePlaceholderSubs());
                     const editorConfig = '?repositoryURL=' + this.configuration.repositoryURL
                         + '&uiURL=' + encodeURIComponent(backendBaseURL)
                         + '&ns=' + placeholderSubstitution.namespace
                         + '&id=' + placeholderSubstitution.localname;
-                    this.alert.success('Successfully substituted placeholder for topology');
                     window.open(this.wineryConfigurationService.configuration.endpoints.topologymodeler + editorConfig);
                 },
                 error => {
