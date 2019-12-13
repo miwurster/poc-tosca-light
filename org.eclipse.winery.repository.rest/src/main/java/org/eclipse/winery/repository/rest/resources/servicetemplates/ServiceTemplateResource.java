@@ -395,46 +395,19 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     @POST()
     @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response createPlaceholderSubstituteVersion() throws IOException, SplittingException {
+        Splitting splitting = new Splitting();
         TTopologyTemplate originTopologyTemplate = this.getServiceTemplate().getTopologyTemplate();
         TTags tagsOfServiceTemplate = this.getServiceTemplate().getTags();
-        Map<String, TNodeTemplate> nodeTemplateIdAndPlaceholderMap = new LinkedHashMap<>();
 
-        String participantId = "";
-        TTags newTagList = new TTags();
-        for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
-            if (tagOfServiceTemplate.getName().equals("participant")) {
-                participantId = tagOfServiceTemplate.getValue();
-                newTagList.getTag().add(tagOfServiceTemplate);
-            } else if (!tagOfServiceTemplate.getName().equals("choreography")) {
-                newTagList.getTag().add(tagOfServiceTemplate);
-            }
-        }
-        final String finalParticipantId = participantId;
+        Map<String, TTags> participantIdAndTagList = splitting.getParticipantIdFromTags(tagsOfServiceTemplate);
+        String participantId = participantIdAndTagList.keySet().stream().findFirst().get();
+        TTags newTagList = participantIdAndTagList.get(participantId);
 
-        List<TNodeTemplate> nodeTemplatesToBeRemoved = new ArrayList<>();
-
-        for (TNodeTemplate tNodeTemplate : originTopologyTemplate.getNodeTemplates()) {
-            if (ModelUtilities.getTargetLabel(tNodeTemplate).isPresent()) {
-                if (tNodeTemplate.getTypeAsQName().getNamespaceURI().equals("http://www.example.org/tosca/placeholdertypes")
-                    && ModelUtilities.getTargetLabel(tNodeTemplate).get().equals(finalParticipantId.toLowerCase())) {
-                    nodeTemplatesToBeRemoved.add(tNodeTemplate);
-                    for (TRelationshipTemplate tRelationshipTemplate : ModelUtilities.getIncomingRelationshipTemplates(originTopologyTemplate, tNodeTemplate)) {
-                        nodeTemplateIdAndPlaceholderMap.put(ModelUtilities.getSourceNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate).getId(), tNodeTemplate);
-                    }
-                }
-            }
-        }
-
-        List<TRelationshipTemplate> relationshipTemplatesToBeRemoved = new ArrayList<>();
-
-        for (TRelationshipTemplate tRelationshipTemplate : originTopologyTemplate.getRelationshipTemplates()) {
-            if (ModelUtilities.getTargetLabel(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate)).isPresent()) {
-                if (tRelationshipTemplate.getTargetElement().getRef().getTypeAsQName().getNamespaceURI().equals("http://www.example.org/tosca/placeholdertypes")
-                    && ModelUtilities.getTargetLabel(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate)).get().equals(finalParticipantId.toLowerCase())) {
-                    relationshipTemplatesToBeRemoved.add(tRelationshipTemplate);
-                }
-            }
-        }
+        Map<Map<String, TNodeTemplate>, List<TNodeTemplate>> nodeTemplatesToBeRemovedAndPlaceholderIdMap
+            = splitting.getNodeTemplatesToBeRemovedForPlaceholderSubstitution(participantId, originTopologyTemplate);
+        Map<String, TNodeTemplate> nodeTemplateIdAndPlaceholderMap = nodeTemplatesToBeRemovedAndPlaceholderIdMap.keySet().stream().findFirst().get();
+        List<TNodeTemplate> nodeTemplatesToBeRemoved = nodeTemplatesToBeRemovedAndPlaceholderIdMap.get(nodeTemplateIdAndPlaceholderMap);
+        List<TRelationshipTemplate> relationshipTemplatesToBeRemoved = splitting.getRelationshipTemplatesToBeRemovedForSubstitution(originTopologyTemplate, participantId);
 
         for (TNodeTemplate nodeTemplateToBeRemoved : nodeTemplatesToBeRemoved) {
             originTopologyTemplate.getNodeTemplateOrRelationshipTemplate().remove(nodeTemplateToBeRemoved);
@@ -466,8 +439,6 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         TServiceTemplate newServiceTemplate = repo.getElement(newId);
         newServiceTemplate.setTopologyTemplate(originTopologyTemplate);
 
-        Splitting splitting = new Splitting();
-
         Map<String, List<TTopologyTemplate>> resultList = splitting.getHostingInjectionOptions(newServiceTemplate.getTopologyTemplate());
         for (Map.Entry<String, List<TTopologyTemplate>> entry : resultList.entrySet()) {
             List<TTopologyTemplate> toBeRemovedTopologyTemplates = new ArrayList<>();
@@ -497,7 +468,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 choiceTopologyTemplate.put(entry.getKey(), entry.getValue().get(0));
                 splitting.injectNodeTemplates(originTopologyTemplate, choiceTopologyTemplate, InjectRemoval.REMOVE_NOTHING);
                 for (TNodeTemplate injectNodeTemplate : choiceTopologyTemplate.get(entry.getKey()).getNodeTemplates()) {
-                    injectNodeTemplate.getOtherAttributes().put(QNAME_LOCATION, finalParticipantId);
+                    injectNodeTemplate.getOtherAttributes().put(QNAME_LOCATION, participantId);
                 }
             }
         }

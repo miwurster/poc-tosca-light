@@ -50,6 +50,8 @@ import org.eclipse.winery.model.tosca.TRelationshipType;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementType;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.model.tosca.TTag;
+import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
@@ -358,6 +360,59 @@ public class Splitting {
         }
 
         return placeholderNodeTemplate;
+    }
+
+    public List<TRelationshipTemplate> getRelationshipTemplatesToBeRemovedForSubstitution(TTopologyTemplate originTopologyTemplate, String participantId) {
+        List<TRelationshipTemplate> relationshipTemplatesToBeRemoved = new ArrayList<>();
+
+        for (TRelationshipTemplate tRelationshipTemplate : originTopologyTemplate.getRelationshipTemplates()) {
+            if (ModelUtilities.getTargetLabel(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate)).isPresent()) {
+                if (tRelationshipTemplate.getTargetElement().getRef().getTypeAsQName().getNamespaceURI().equals("http://www.example.org/tosca/placeholdertypes")
+                    && ModelUtilities.getTargetLabel(ModelUtilities.getTargetNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate)).get().equals(participantId.toLowerCase())) {
+                    relationshipTemplatesToBeRemoved.add(tRelationshipTemplate);
+                }
+            }
+        }
+
+        return relationshipTemplatesToBeRemoved;
+    }
+
+    public Map<Map<String, TNodeTemplate>, List<TNodeTemplate>> getNodeTemplatesToBeRemovedForPlaceholderSubstitution(String participantId, TTopologyTemplate originTopologyTemplate) {
+        Map<String, TNodeTemplate> nodeTemplateIdAndPlaceholderMap = new LinkedHashMap<>();
+        List<TNodeTemplate> nodeTemplatesToBeRemoved = new ArrayList<>();
+
+        for (TNodeTemplate tNodeTemplate : originTopologyTemplate.getNodeTemplates()) {
+            if (ModelUtilities.getTargetLabel(tNodeTemplate).isPresent()) {
+                if (tNodeTemplate.getTypeAsQName().getNamespaceURI().equals("http://www.example.org/tosca/placeholdertypes")
+                    && ModelUtilities.getTargetLabel(tNodeTemplate).get().equals(participantId.toLowerCase())) {
+                    nodeTemplatesToBeRemoved.add(tNodeTemplate);
+                    for (TRelationshipTemplate tRelationshipTemplate : ModelUtilities.getIncomingRelationshipTemplates(originTopologyTemplate, tNodeTemplate)) {
+                        nodeTemplateIdAndPlaceholderMap.put(ModelUtilities.getSourceNodeTemplateOfRelationshipTemplate(originTopologyTemplate, tRelationshipTemplate).getId(), tNodeTemplate);
+                    }
+                }
+            }
+        }
+        Map<Map<String, TNodeTemplate>, List<TNodeTemplate>> resultMap = new LinkedHashMap<>();
+        resultMap.put(nodeTemplateIdAndPlaceholderMap, nodeTemplatesToBeRemoved);
+
+        return resultMap;
+    }
+
+    public Map<String, TTags> getParticipantIdFromTags(TTags tagsOfServiceTemplate) {
+        String participantId = "";
+        TTags newTagList = new TTags();
+        for (TTag tagOfServiceTemplate : tagsOfServiceTemplate.getTag()) {
+            if (tagOfServiceTemplate.getName().equals("participant")) {
+                participantId = tagOfServiceTemplate.getValue();
+                newTagList.getTag().add(tagOfServiceTemplate);
+            } else if (!tagOfServiceTemplate.getName().equals("choreography")) {
+                newTagList.getTag().add(tagOfServiceTemplate);
+            }
+        }
+        Map<String, TTags> resultMap = new LinkedHashMap<>();
+        resultMap.put(participantId, newTagList);
+
+        return resultMap;
     }
 
     public List<TParameter> getInputParamListOfIncomingRelationshipTemplates(TTopologyTemplate topologyTemplate, List<TRelationshipTemplate> listOfIncomingRelationshipTemplates) {
@@ -1175,7 +1230,7 @@ public class Splitting {
                 Map<List<TRequirement>, List<TNodeTemplate>> openReqsAndSuccessors = getOpenRequirementsAndSuccessorNodeTemplates(topologyTemplate, nodeTemplate);
                 List<TRequirement> containedRequirements = openReqsAndSuccessors.keySet().stream().findFirst().get();
                 List<TNodeTemplate> successorsOfNodeTemplate = openReqsAndSuccessors.get(containedRequirements);
-                
+
                 for (TRequirement requirement : containedRequirements) {
                     QName requiredCapabilityTypeQName = getRequiredCapabilityTypeQNameOfRequirement(requirement);
                     if (!successorsOfNodeTemplate.isEmpty()) {
