@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,6 +32,7 @@ import org.eclipse.winery.model.tosca.TArtifactReference;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
 import org.eclipse.winery.model.tosca.TArtifactType;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
+import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TCapabilityDefinition;
 import org.eclipse.winery.model.tosca.TCapabilityType;
 import org.eclipse.winery.model.tosca.TDeploymentArtifact;
@@ -65,6 +65,7 @@ import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TAttributeDefinition;
+import org.eclipse.winery.model.tosca.yaml.TCapabilityAssignment;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
@@ -91,6 +92,8 @@ import org.slf4j.LoggerFactory;
 
 public class Y2XConverter {
     public final static Logger LOGGER = LoggerFactory.getLogger(Y2XConverter.class);
+    private org.eclipse.winery.model.tosca.yaml.TServiceTemplate root;
+    private org.eclipse.winery.model.tosca.yaml.TNodeTemplate currentNodeTemplate;
     private String namespace;
     private List<TNodeTypeImplementation> nodeTypeImplementations;
     private List<TRelationshipTypeImplementation> relationshipTypeImplementations;
@@ -115,11 +118,10 @@ public class Y2XConverter {
         this.policyTemplates = new ArrayList<>();
         this.requirementTypes = new ArrayList<>();
         this.imports = new ArrayList<>();
-
         this.policies = new LinkedHashMap<>();
         this.relationshipSTMap = new LinkedHashMap<>();
         this.nodeTemplateMap = new LinkedHashMap<>();
-
+        this.currentNodeTemplate = null;
         this.interfaceTypes = new LinkedHashMap<>();
     }
 
@@ -141,6 +143,7 @@ public class Y2XConverter {
     public Definitions convert(org.eclipse.winery.model.tosca.yaml.TServiceTemplate node, String id, String target_namespace) {
         if (node == null) return new Definitions();
         LOGGER.debug("Converting TServiceTemplate");
+        this.root = node;
 
         // Reset
         this.reset();
@@ -559,7 +562,7 @@ public class Y2XConverter {
         if (Objects.isNull(node)) {
             return null;
         }
-
+        this.currentNodeTemplate = node;
         TNodeTemplate.Builder builder = new TNodeTemplate.Builder(id, node.getType())
             .addDocumentation(node.getDescription())
             .addDocumentation(node.getMetadata())
@@ -629,35 +632,12 @@ public class Y2XConverter {
             .setUpperBound(node.getUpperBound())
             .setCapability(node.getCapability())
             .setNode(node.getNode());
-        
+
         if (node.getRelationship() != null) {
             builder = builder.setRelationship(node.getRelationship().getType());
         }
 
         return builder.build();
-    }
-
-    /**
-     * Convert TOSCA YAML RequirementDefinition to TOSCA XML RequirementType
-     *
-     * @param node TOSCA YAML RequirementDefinition
-     * @param id   with name of the TRequirementType
-     * @return QName of the TOSCA XML RequirementType
-     */
-    private QName convertRequirementDefinition(org.eclipse.winery.model.tosca.yaml.TRequirementDefinition node, String id) {
-        if (node == null) return null;
-        String namespace = Optional.ofNullable(node.getCapability()).map(QName::getNamespaceURI).orElse(this.namespace);
-        TRequirementType result = new TRequirementType.Builder(id)
-            .setRequiredCapabilityType(node.getCapability())
-            .setTargetNamespace(namespace)
-            .build();
-        requirementTypes.add(result);
-        return new QName(namespace, result.getName());
-    }
-
-    private String getRequirementTypeName(QName capability, String id) {
-        if (Objects.isNull(capability)) return id.concat("Type");
-        return "Req".concat(capability.getLocalPart());
     }
 
     /**
@@ -669,18 +649,46 @@ public class Y2XConverter {
      */
     private TRequirement convert(TRequirementAssignment node, String id) {
         if (Objects.isNull(node)) return null;
-        // Skip requirement if it only the field node is set
-        if (Objects.nonNull(node.getNode())
-            && Objects.isNull(node.getCapability())
-            && Objects.isNull(node.getNodeFilter())
-            && node.getOccurrences().isEmpty()
-            && Objects.isNull(node.getRelationship())) return null;
 
-        return new TRequirement.Builder(id, new QName(
-            Optional.ofNullable(node.getCapability()).map(QName::getNamespaceURI).orElse(this.namespace),
-            getRequirementTypeName(node.getCapability(), id)
-        ))
-            .build();
+        TRequirement.Builder builder = new TRequirement.Builder(id, null);
+
+        if (node.getCapability() != null) {
+            builder = builder.setCapability(node.getCapability());
+        } else {
+            // when exporting, this must be caught, but while developing, it is tolerated
+            // todo check if this is the case during export!
+            LOGGER.error("TRequirementAssignment has no capability!");
+        }
+
+        if (node.getRelationship() != null && node.getRelationship().getType() != null) {
+            builder = builder.setRelationship(node.getRelationship().getType());
+        }
+
+        if (node.getNode() != null) {
+            builder = builder.setNode(node.getNode());
+        }
+
+        return builder.build();
+    }
+
+    private TCapability convert(TCapabilityAssignment node, String id) {
+        if (Objects.isNull(node)) return null;
+
+        TCapability.Builder builder = new TCapability.Builder(id, null, id);
+
+        if (node.getProperties().entrySet().size() > 0) {
+            Map<String, String> properties = node.getProperties()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> Objects.requireNonNull(entry.getValue().getValue()).toString()));
+            TEntityTemplate.Properties toscaProperties = new TEntityTemplate.Properties();
+            toscaProperties.setKVProperties(properties);
+            return builder.setProperties(toscaProperties).build();
+        }
+
+        return builder.build();
     }
 
     /**
@@ -705,11 +713,13 @@ public class Y2XConverter {
      */
     private TCapabilityDefinition convert(org.eclipse.winery.model.tosca.yaml.TCapabilityDefinition node, String id) {
         if (Objects.isNull(node)) return null;
-        return new TCapabilityDefinition.Builder(id, node.getType())
+        TCapabilityDefinition result = new TCapabilityDefinition.Builder(id, node.getType())
             .addDocumentation(node.getDescription())
             .setLowerBound(node.getLowerBound())
             .setUpperBound(node.getUpperBound())
             .build();
+
+        return result;
     }
 
     /**
@@ -1151,6 +1161,8 @@ public class Y2XConverter {
                     return convert((TImportDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TPolicyType) {
                     return convert((org.eclipse.winery.model.tosca.yaml.TPolicyType) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TCapabilityAssignment) {
+                    return convert((TCapabilityAssignment) entry.getValue(), entry.getKey());
                 } else {
                     V v = entry.getValue();
                     System.err.println(v);
@@ -1160,6 +1172,7 @@ public class Y2XConverter {
                         v instanceof TArtifactDefinition ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TCapabilityType ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TCapabilityDefinition ||
+                        v instanceof TCapabilityAssignment ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TPolicyType ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TRequirementDefinition ||
                         v instanceof TInterfaceType ||

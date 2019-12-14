@@ -720,7 +720,7 @@ public class YamlRepository extends FilebasedRepository {
                 Writer writer = new Writer();
                 return writer.writeToInputStream(serviceTemplate);
             } catch (Exception e) {
-                LOGGER.error("Error converting service template: {}", e.getMessage(), e);
+                LOGGER.error("Error converting service template. Reason: {}", e.getMessage(), e);
             }
             return null;
         } else {

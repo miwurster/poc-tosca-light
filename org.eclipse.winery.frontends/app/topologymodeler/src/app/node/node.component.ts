@@ -268,8 +268,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
      */
     sendToggleAction(nodeData: any): void {
         const currentNodeData = { ...this.nodeTemplate, ...nodeData };
-        console.debug('currentNodeData');
-        console.debug(currentNodeData);
         this.sendNodeData.emit(currentNodeData);
     }
 

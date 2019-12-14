@@ -81,6 +81,7 @@ import org.eclipse.winery.model.tosca.yaml.TPolicyType;
 import org.eclipse.winery.model.tosca.yaml.TPropertyAssignment;
 import org.eclipse.winery.model.tosca.yaml.TPropertyAssignmentOrDefinition;
 import org.eclipse.winery.model.tosca.yaml.TPropertyDefinition;
+import org.eclipse.winery.model.tosca.yaml.TRelationshipAssignment;
 import org.eclipse.winery.model.tosca.yaml.TRelationshipDefinition;
 import org.eclipse.winery.model.tosca.yaml.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.yaml.TRelationshipType;
@@ -822,7 +823,7 @@ public class X2YConverter {
             Collections.singletonMap(
                 node.getName(),
                 builder.build()
-            )) ;
+            ));
     }
 
     public QName convert(@NonNull TRequirementType node) {
@@ -933,6 +934,12 @@ public class X2YConverter {
 
     public Map<String, TCapabilityAssignment> convert(TCapability node) {
         if (Objects.isNull(node)) return null;
+
+        // skip empty capability assignments
+        if (node.getProperties() == null || node.getProperties().getKVProperties() == null || node.getProperties().getKVProperties().size() == 0) {
+            return null;
+        }
+        
         return Collections.singletonMap(
             node.getName(),
             new TCapabilityAssignment.Builder()
@@ -946,16 +953,34 @@ public class X2YConverter {
         return node.getRequirement().stream()
             .filter(Objects::nonNull)
             .map(this::convert)
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
 
     public TMapRequirementAssignment convert(TRequirement node) {
         if (Objects.isNull(node)) return null;
+        TRequirementAssignment.Builder builder = new TRequirementAssignment.Builder();
+        // here we assume the assignment to include template names only (no types!)
+        // todo make s more generic TRequirement conversion
+        // todo allow changing occurrences in TRequirement in topology modeler
+        // todo allow passing relationship assignment parameters
+
+        if (node.getCapability() != null) {
+            builder = builder.setCapability(node.getCapability());
+        }
+
+        if (node.getNode() != null) {
+            builder = builder.setNode(node.getNode());
+        }
+
+        if (node.getRelationship() != null) {
+            builder = builder.setRelationship(new TRelationshipAssignment.Builder(node.getRelationship()).build());
+        }
+        
+
         return new TMapRequirementAssignment().setMap(Collections.singletonMap(
             node.getName(),
-            new TRequirementAssignment.Builder()
-                .setCapability(convert(repository.getElement(new RequirementTypeId(node.getType()))))
-                .build()
+            builder.build()
         ));
     }
 

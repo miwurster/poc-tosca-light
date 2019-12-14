@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,9 +28,7 @@ export class RequirementModel {
     public capability?: string;
     public node?: string;
     public relationship?: string;
-    public capabilityType?: string;
-    public relationshipType?: string;
-    public nodeType?: string;
+
 
     static fromRequirementDefinition(def: RequirementDefinitionModel): RequirementModel {
         const result = new RequirementModel();
@@ -39,9 +37,9 @@ export class RequirementModel {
         result.name = def.name;
         result.otherAttributes = def.otherAttributes;
         result.type = def.requirementType;
-        result.capabilityType = def.capability;
-        result.nodeType = def.node;
-        result.relationshipType = def.relationship;
+        result.capability = def.capability;
+        result.node = def.node;
+        result.relationship = def.relationship;
 
         return result;
     }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,17 +14,18 @@
 
 package org.eclipse.winery.model.tosca;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.eclipse.jdt.annotation.NonNull;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-import java.util.Objects;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.eclipse.jdt.annotation.NonNull;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tRequirement")
@@ -38,26 +39,41 @@ public class TRequirement extends RelationshipSourceOrTarget {
     @XmlAttribute(name = "name", required = true)
     protected String name;
 
+    @XmlAttribute(name = "capability")
+    protected QName capability;
+
+    @XmlAttribute(name = "node")
+    protected QName node;
+
+    @XmlAttribute(name = "relationship")
+    protected QName relationship;
+
     public TRequirement() {
     }
 
     public TRequirement(Builder builder) {
         super(builder);
         this.name = builder.name;
+        this.capability = builder.capability;
+        this.node = builder.node;
+        this.relationship = builder.relationship;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TRequirement)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         TRequirement that = (TRequirement) o;
-        return Objects.equals(name, that.name);
+        return name.equals(that.name) &&
+            Objects.equals(capability, that.capability) &&
+            Objects.equals(node, that.node) &&
+            Objects.equals(relationship, that.relationship);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), name);
+        return Objects.hash(super.hashCode(), name, capability, node, relationship);
     }
 
     /**
@@ -79,6 +95,30 @@ public class TRequirement extends RelationshipSourceOrTarget {
         this.name = value;
     }
 
+    public QName getCapability() {
+        return capability;
+    }
+
+    public void setCapability(QName capability) {
+        this.capability = capability;
+    }
+
+    public QName getNode() {
+        return node;
+    }
+
+    public void setNode(QName node) {
+        this.node = node;
+    }
+
+    public QName getRelationship() {
+        return relationship;
+    }
+
+    public void setRelationship(QName relationship) {
+        this.relationship = relationship;
+    }
+
     @Override
     @NonNull
     public String getFakeJacksonType() {
@@ -91,6 +131,9 @@ public class TRequirement extends RelationshipSourceOrTarget {
 
     public static class Builder extends RelationshipSourceOrTarget.Builder<Builder> {
         private final String name;
+        private QName capability;
+        private QName relationship;
+        private QName node;
 
         public Builder(String id, QName type) {
             super(id, type);
@@ -100,6 +143,21 @@ public class TRequirement extends RelationshipSourceOrTarget {
         public Builder(String id, String name, QName type) {
             super(id, type);
             this.name = name;
+        }
+
+        public Builder setCapability(QName capability) {
+            this.capability = capability;
+            return self();
+        }
+
+        public Builder setRelationship(QName relationship) {
+            this.relationship = relationship;
+            return self();
+        }
+
+        public Builder setNode(QName node) {
+            this.node = node;
+            return self();
         }
 
         @Override

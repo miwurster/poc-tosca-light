@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -83,7 +83,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
 
         if (this.capabilities) {
             this.capabilities.some(cap => {
-                if ((!this.configuration.isYaml() && cap.id === event.id) || (this.configuration.isYaml() && cap.name === event.id)) {
+                if (cap.id === event.id) {
                     this.currentCapability = cap;
                     return true;
                 }
@@ -97,7 +97,7 @@ export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
         } else {
             this.currentNodeData.currentCapability = this.currentCapability;
         }
-        
+
         this.toggleModalHandler.emit(this.currentNodeData);
     }
 

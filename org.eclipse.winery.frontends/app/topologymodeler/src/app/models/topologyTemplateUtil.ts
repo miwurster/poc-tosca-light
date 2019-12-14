@@ -18,13 +18,17 @@ import { Visuals } from './visuals';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
 import { WineryActions } from '../redux/actions/winery.actions';
+import { CapabilityDefinitionModel } from './capabilityDefinitionModel';
+import { EntityTypesModel } from './entityTypesModel';
+import { CapabilityModel } from './capabilityModel';
 
 export class TopologyTemplateUtil {
 
     static HORIZONTAL_OFFSET_FOR_NODES_WITHOUT_COORDINATES = 350;
     static VERTICAL_OFFSET_FOR_NODES_WITHOUT_COORDINATES = 200;
 
-    static createTNodeTemplateFromObject(node: TNodeTemplate, nodeVisuals: Visuals[], state?: DifferenceStates): TNodeTemplate {
+    static createTNodeTemplateFromObject(node: TNodeTemplate, nodeVisuals: Visuals[],
+                                         isYaml: boolean, types: EntityTypesModel, state?: DifferenceStates): TNodeTemplate {
         const nodeVisualsObject = this.getNodeVisualsForNodeTemplate(node.type, nodeVisuals, state);
         let properties;
         if (node.properties) {
@@ -62,6 +66,40 @@ export class TopologyTemplateUtil {
             }
         }
 
+        // for Yaml, we add missing capabilities, find their types, and fix their ids, we also fix requirement ids (to avoid duplicates)
+        if (isYaml) {
+            if (!types) {
+                // todo ensure entity types model is always available. See TopologyTemplateUtil.updateTopologyTemplate
+                console.error('The required entity types model is not available! Unexpected behavior');
+            }
+            // look for missing capabilities and add them
+            const capDefs = this.getCapabilityDefinitionsOfNodeType(node.type, types);
+
+            if (!node.capabilities || !node.capabilities.capability) {
+                node.capabilities = { capability: [] };
+            }
+            capDefs.forEach(def => {
+                const found = node.capabilities.capability.some(cap => {
+                    // if the capability already exists, we fill its type (not provided by the backed)
+                    // we also ensure the id is unique
+                    if (cap.name === def.name) {
+                        cap.type = def.capabilityType;
+                        cap.id = `${node.id}_${cap.name}`;
+                        return true;
+                    }
+                });
+                if (!found) {
+                    const capModel = CapabilityModel.fromCapabilityDefinitionModel(def);
+                    capModel.id = `${node.id}_${capModel.name}`;
+                    node.capabilities.capability.push(capModel);
+                }
+            });
+
+            if (node.requirements && node.requirements.requirement) {
+                node.requirements.requirement.forEach(req => req.id = `${node.id}_${req.name}`);
+            }
+        }
+
         return new TNodeTemplate(
             properties ? properties : {},
             node.id,
@@ -81,6 +119,27 @@ export class TopologyTemplateUtil {
             node.policies ? node.policies : {},
             state
         );
+    }
+
+    static getCapabilityDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): CapabilityDefinitionModel[] {
+        const allNodeTypes = [];
+        entityTypes.groupedNodeTypes.forEach(group => group.children.forEach(nt => allNodeTypes.push(nt)));
+        const match = allNodeTypes
+            .filter(nt => nt.id === nodeType)
+            .filter(nt =>
+                nt.full &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation.length > 0 &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition &&
+                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition.length > 0
+            );
+
+        if (match && match.length > 0) {
+            return match[0].full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition;
+        }
+
+        return [];
     }
 
     static createTRelationshipTemplateFromObject(relationship: TRelationshipTemplate, state?: DifferenceStates) {
@@ -115,7 +174,7 @@ export class TopologyTemplateUtil {
         }
     }
 
-    static initNodeTemplates(nodeTemplateArray: Array<TNodeTemplate>, nodeVisuals: Visuals[],
+    static initNodeTemplates(nodeTemplateArray: Array<TNodeTemplate>, nodeVisuals: Visuals[], isYaml: boolean, types: EntityTypesModel,
                              topologyDifferences?: [ToscaDiff, TTopologyTemplate]): Array<TNodeTemplate> {
         const nodeTemplates: TNodeTemplate[] = [];
         if (nodeTemplateArray.length > 0) {
@@ -127,7 +186,7 @@ export class TopologyTemplateUtil {
                 }
                 const state = topologyDifferences ? DifferenceStates.UNCHANGED : null;
                 nodeTemplates.push(
-                    TopologyTemplateUtil.createTNodeTemplateFromObject(node, nodeVisuals, state)
+                    TopologyTemplateUtil.createTNodeTemplateFromObject(node, nodeVisuals, isYaml, types, state)
                 );
             });
         }
@@ -230,8 +289,6 @@ export class TopologyTemplateUtil {
             }
             newKVProperies[key] = value;
         }
-        console.debug('newKVProperies');
-        console.debug(newKVProperies);
         return newKVProperies;
     }
 
@@ -250,7 +307,7 @@ export class TopologyTemplateUtil {
         return relationshipTemplates;
     }
 
-    static updateTopologyTemplate(ngRedux: NgRedux<IWineryState>, wineryActions: WineryActions, topology: TTopologyTemplate) {
+    static updateTopologyTemplate(ngRedux: NgRedux<IWineryState>, wineryActions: WineryActions, topology: TTopologyTemplate, isYaml: boolean) {
         const wineryState = ngRedux.getState().wineryState;
 
         // Required because if the palette is open, the last node inserted will be bound to the mouse movement.
@@ -265,7 +322,7 @@ export class TopologyTemplateUtil {
                 relationship => ngRedux.dispatch(wineryActions.deleteRelationshipTemplate(relationship.id))
             );
 
-        TopologyTemplateUtil.initNodeTemplates(topology.nodeTemplates, wineryState.nodeVisuals)
+        TopologyTemplateUtil.initNodeTemplates(topology.nodeTemplates, wineryState.nodeVisuals, isYaml, null)
             .forEach(
                 node => ngRedux.dispatch(wineryActions.saveNodeTemplate(node))
             );
