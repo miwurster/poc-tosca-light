@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.Util;
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TAppliesTo;
 import org.eclipse.winery.model.tosca.TArtifactReference;
@@ -39,6 +40,7 @@ import org.eclipse.winery.model.tosca.TDeploymentArtifact;
 import org.eclipse.winery.model.tosca.TDeploymentArtifacts;
 import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TEntityType;
+import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.TInterface;
@@ -79,6 +81,7 @@ import org.eclipse.winery.model.tosca.yaml.TRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.TTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementAssignment;
+import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Defaults;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Namespaces;
 import org.eclipse.winery.repository.backend.filebased.converter.support.yaml.AssignmentBuilder;
@@ -673,8 +676,8 @@ public class Y2XConverter {
 
     private TCapability convert(TCapabilityAssignment node, String id) {
         if (Objects.isNull(node)) return null;
-
-        TCapability.Builder builder = new TCapability.Builder(id, null, id);
+        QName capType = this.getCapabilityTypeOfCapabilityAssignment(id);
+        TCapability.Builder builder = new TCapability.Builder(id, capType, id);
 
         if (node.getProperties().entrySet().size() > 0) {
             Map<String, String> properties = node.getProperties()
@@ -689,6 +692,34 @@ public class Y2XConverter {
         }
 
         return builder.build();
+    }
+
+    private QName getCapabilityTypeOfCapabilityAssignment(String capAssignmentId) {
+        if (this.currentNodeTemplate != null) {
+            QName nodeType = this.currentNodeTemplate.getType();
+            Definitions nodeTypes = RepositoryFactory.getRepository().getDefinitions(new NodeTypeId(nodeType));
+            TExtensibleElements theNodeType = nodeTypes
+                .getServiceTemplateOrNodeTypeOrNodeTypeImplementation()
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+            if (theNodeType instanceof TNodeType) {
+                if (((TNodeType) theNodeType).getCapabilityDefinitions() != null) {
+                    QName result = ((TNodeType) theNodeType)
+                        .getCapabilityDefinitions()
+                        .getCapabilityDefinition()
+                        .stream()
+                        .filter(capDef -> capDef.getName().equals(capAssignmentId))
+                        .map(TCapabilityDefinition::getCapabilityType)
+                        .findFirst().orElse(null);
+
+                    return result;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

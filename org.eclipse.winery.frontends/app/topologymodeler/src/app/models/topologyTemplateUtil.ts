@@ -79,20 +79,17 @@ export class TopologyTemplateUtil {
                 node.capabilities = { capability: [] };
             }
             capDefs.forEach(def => {
-                const found = node.capabilities.capability.some(cap => {
-                    // if the capability already exists, we fill its type (not provided by the backed)
-                    // we also ensure the id is unique
-                    if (cap.name === def.name) {
-                        cap.type = def.capabilityType;
-                        cap.id = `${node.id}_${cap.name}`;
-                        return true;
-                    }
-                });
-                if (!found) {
-                    const capModel = CapabilityModel.fromCapabilityDefinitionModel(def);
-                    capModel.id = `${node.id}_${capModel.name}`;
-                    node.capabilities.capability.push(capModel);
+                const capAssignments = node.capabilities.capability.filter(capAssignment => capAssignment.name === def.name);
+                let cap;
+
+                if (capAssignments.length > 0) {
+                    cap = capAssignments[0];
+                } else {
+                    cap = CapabilityModel.fromCapabilityDefinitionModel(def);
+                    node.capabilities.capability.push(cap);
                 }
+
+                cap.id = `${node.id}_${cap.name}`;
             });
 
             if (node.requirements && node.requirements.requirement) {

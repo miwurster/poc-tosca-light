@@ -21,6 +21,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
@@ -1007,5 +1009,10 @@ public class YamlRepository extends FilebasedRepository {
             }
         }
         return res;
+    }
+
+    @Override
+    public void getReferencedRequirementTypeIds(Collection<DefinitionsChildId> ids, TNodeTemplate n) {
+        // Do nothing. In Yaml mode, there are no requirement types!
     }
 }

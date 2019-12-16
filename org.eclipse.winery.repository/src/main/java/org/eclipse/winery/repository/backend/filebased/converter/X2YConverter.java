@@ -947,7 +947,7 @@ public class X2YConverter {
                 .build()
         );
     }
-
+    
     public List<TMapRequirementAssignment> convert(org.eclipse.winery.model.tosca.TNodeTemplate.Requirements node) {
         if (Objects.isNull(node)) return null;
         return node.getRequirement().stream()
