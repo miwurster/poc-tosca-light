@@ -12,9 +12,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-export class InputParameter {
-    name: string;
+export class PlanLogEntry {
+    start_timestamp: string;
+    end_timestamp: string;
+    status: string;
     type: string;
-    required: string;
-    value: string;
+    message: string;
 }

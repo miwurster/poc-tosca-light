@@ -14,3 +14,46 @@
     width: 100%;
     text-align: right;
 }
+
+.dropdown-item {
+    cursor: pointer;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper-check:after {
+    font-family: 'FontAwesome';
+    content: '\f00c';
+    position: absolute;
+    color: green;
+    top: 7px;
+    right: 10px;
+}
+
+.input-wrapper-times:after {
+    font-family: 'FontAwesome';
+    content: '\f00d';
+    position: absolute;
+    color: red;
+    top: 7px;
+    right: 10px;
+}
+
+.is-valid {
+    border: 1px solid green;
+}
+
+.has-error {
+    border: 1px solid red;
+}
+
+.error-text {
+    color: red;
+}
+
+.modal-body.input-parameter {
+    max-height: 500px;
+    overflow-y: auto;
+}

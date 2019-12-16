@@ -11,22 +11,29 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { LiveModelingStates } from '../../models/enums';
+import { LiveModelingStates, ServiceTemplateInstanceStates } from '../../models/enums';
 import { LiveModelingNodeTemplateData } from '../../models/liveModelingNodeTemplateData';
 import { LiveModelingLog } from '../../models/liveModelingLog';
 import { Action } from 'redux';
 import {
-    LiveModelingActions, SendLogAction, SetContainerUrlAction, SetCurrentCsarIdAction, SetCurrentServiceTemplateInstanceIdAction, SetNodeTemplateDataAction,
+    LiveModelingActions, SendLogAction, SetBuildPlanInputParametersAction, SetContainerUrlAction, SetCurrentCsarAction, SetCurrentCsarIdAction,
+    SetCurrentServiceTemplateInstanceIdAction,
+    SetCurrentServiceTemplateInstanceStateAction, SetNodeTemplateDataAction,
     SetStateAction
 } from '../actions/live-modeling.actions';
+import { InputParameter } from '../../models/container/input-parameter.model';
+import { Csar } from '../../models/container/csar.model';
 
 export interface LiveModelingState {
     state: LiveModelingStates;
     logs: LiveModelingLog[];
     containerUrl: string;
     currentCsarId: string;
+    currentCsar: Csar;
     currentServiceTemplateInstanceId: string;
     nodeTemplatesData: LiveModelingNodeTemplateData[];
+    currentServiceTemplateInstanceState: ServiceTemplateInstanceStates;
+    buildPlanInputParameters: InputParameter[];
 }
 
 export const INITIAL_LIVE_MODELING_STATE: LiveModelingState = {
@@ -34,8 +41,11 @@ export const INITIAL_LIVE_MODELING_STATE: LiveModelingState = {
     logs: <LiveModelingLog[]>[],
     containerUrl: null,
     currentCsarId: null,
+    currentCsar: null,
     currentServiceTemplateInstanceId: null,
-    nodeTemplatesData: <LiveModelingNodeTemplateData[]>[]
+    nodeTemplatesData: <LiveModelingNodeTemplateData[]>[],
+    currentServiceTemplateInstanceState: ServiceTemplateInstanceStates.INITIAL,
+    buildPlanInputParameters: <InputParameter[]>[]
 };
 
 export const LiveModelingReducer =
@@ -60,13 +70,14 @@ export const LiveModelingReducer =
                         if (state === LiveModelingStates.REDEPLOY ||
                             state === LiveModelingStates.UPDATE ||
                             state === LiveModelingStates.TERMINATE ||
-                            state === LiveModelingStates.DISABLED
+                            state === LiveModelingStates.DISABLED ||
+                            state === LiveModelingStates.START
                         ) {
                             nextState = state;
                         }
                         break;
                     case LiveModelingStates.REDEPLOY:
-                        if (state === LiveModelingStates.ENABLED) {
+                        if (state === LiveModelingStates.UPDATE) {
                             nextState = state;
                         }
                         break;
@@ -99,6 +110,11 @@ export const LiveModelingReducer =
                     ...lastState,
                     logs: [...lastState.logs, log]
                 };
+            case LiveModelingActions.CLEAR_LOGS:
+                return <LiveModelingState>{
+                    ...lastState,
+                    logs: []
+                };
             case LiveModelingActions.SET_CONTAINER_URL:
                 const containerUrl = (<SetContainerUrlAction>action).containerUrl;
 
@@ -112,6 +128,13 @@ export const LiveModelingReducer =
                 return <LiveModelingState>{
                     ...lastState,
                     currentCsarId: csarId
+                };
+            case LiveModelingActions.SET_CURRENT_CSAR:
+                const csar = (<SetCurrentCsarAction>action).csar;
+
+                return <LiveModelingState>{
+                    ...lastState,
+                    currentCsar: csar
                 };
             case LiveModelingActions.SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID:
                 const serviceTemplateInstanceId = (<SetCurrentServiceTemplateInstanceIdAction>action).serviceTemplateInstanceId;
@@ -139,6 +162,20 @@ export const LiveModelingReducer =
                 return <LiveModelingState>{
                     ...lastState,
                     nodeTemplatesData: <LiveModelingNodeTemplateData[]>[]
+                };
+            case LiveModelingActions.SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE:
+                const serviceTemplateInstanceState = (<SetCurrentServiceTemplateInstanceStateAction>action).serviceTemplateInstanceState;
+
+                return <LiveModelingState>{
+                    ...lastState,
+                    currentServiceTemplateInstanceState: serviceTemplateInstanceState
+                };
+            case LiveModelingActions.SET_BUILD_PLAN_INPUT_PARAMETERS:
+                const inputParameters = (<SetBuildPlanInputParametersAction>action).inputParameters;
+
+                return <LiveModelingState>{
+                    ...lastState,
+                    buildPlanInputParameters: inputParameters
                 };
             default:
                 return <LiveModelingState>lastState;

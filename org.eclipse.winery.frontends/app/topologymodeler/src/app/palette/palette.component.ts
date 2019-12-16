@@ -47,7 +47,7 @@ import { BackendService } from '../services/backend.service';
                 height: '*',
             })),
             transition('shrunk => extended', animate('500ms ease-out')),
-            transition('extended => shrunk', animate('500ms ease-out'))
+            transition('extended => shrunk', animate('50ms ease-out'))
         ]),
         trigger('paletteButtonState', [
             state('left', style({
@@ -74,6 +74,7 @@ import { BackendService } from '../services/backend.service';
 export class PaletteComponent implements OnDestroy {
 
     @Input() entityTypes: EntityTypesModel;
+    @Input() top: number;
 
     paletteRootState = 'extended';
     paletteButtonRootState = 'left';
@@ -113,7 +114,6 @@ export class PaletteComponent implements OnDestroy {
     public toggleRootState(): void {
         if (this.paletteRootState === 'shrunk') {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(true));
-
         } else {
             this.ngRedux.dispatch(this.actions.sendPaletteOpened(false));
         }

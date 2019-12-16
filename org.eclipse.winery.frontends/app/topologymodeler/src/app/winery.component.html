@@ -14,6 +14,13 @@
 <hotkeys-cheatsheet></hotkeys-cheatsheet>
 <router-outlet *ngIf="!readonly"></router-outlet>
 
+<winery-navbar
+    *ngIf="loaded?.loadedData"
+    [readonly]="readonly"
+    [hideNavBarState]="hideNavBarState"
+    (resized)="onNavbarResized($event)">
+</winery-navbar>
+
 <winery-topology-renderer *ngIf="loaded?.loadedData"
                           [readonly]="backendService.configuration.isReadonly"
                           [entityTypes]="entityTypes"
@@ -25,26 +32,34 @@
 </winery-topology-renderer>
 
 <div *ngIf="loaded?.generatedReduxState">
-    <div *ngIf="!hideNavBarState">
-        <winery-palette-component *ngIf="!topologyDifferences && !readonly"
-                                  style="width:300px;float:left;margin-top:50px;"
-                                  [entityTypes]="this.entityTypes">
-        </winery-palette-component>
-    </div>
+    <winery-palette-component *ngIf="!hideNavBarState && !topologyDifferences && !readonly"
+                              [entityTypes]="this.entityTypes"
+                              [top]="this.navbarHeight">
+    </winery-palette-component>
+
+    <winery-live-modeling-sidebar *ngIf="!hideNavBarState && !readonly" [top]="this.navbarHeight">
+    </winery-live-modeling-sidebar>
 
     <winery-refinement *ngIf="refiningType" [refinementType]="refiningType" class="sidebar">
     </winery-refinement>
 
     <winery-problem-detection class="sidebar">
     </winery-problem-detection>
-    
+
     <winery-enricher class="sidebar">
     </winery-enricher>
 
     <winery-sidebar (sidebarDeleteButtonClicked)="sidebarDeleteButtonClicked($event)" class="sidebar">
     </winery-sidebar>
-    
-    <winery-live-modeling-sidebar></winery-live-modeling-sidebar>
+
+    <div *ngIf="topologyDifferences" style="position: fixed; right: 0;" class="sidebar-root">
+        <h5 [style.margin.px]="15">Diff Legend</h5>
+        <ul>
+            <li>Green elements -> added</li>
+            <li>Yellow elements -> changed</li>
+            <li>Red elements -> removed</li>
+        </ul>
+    </div>
 </div>
 <!--
 <app-sidebar style="width : 300px; float:right"></app-sidebar>

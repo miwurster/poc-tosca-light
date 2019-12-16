@@ -14,9 +14,11 @@
 
 import { Injectable } from '@angular/core';
 import { Action } from 'redux';
-import { LiveModelingStates } from '../../models/enums';
+import { LiveModelingStates, ServiceTemplateInstanceStates } from '../../models/enums';
 import { LiveModelingLog } from '../../models/liveModelingLog';
 import { LiveModelingNodeTemplateData } from '../../models/liveModelingNodeTemplateData';
+import { InputParameter } from '../../models/container/input-parameter.model';
+import { Csar } from '../../models/container/csar.model';
 
 export interface SetStateAction extends Action {
     state: LiveModelingStates;
@@ -34,12 +36,24 @@ export interface SetCurrentCsarIdAction extends Action {
     csarId: string;
 }
 
+export interface SetCurrentCsarAction extends Action {
+    csar: Csar;
+}
+
 export interface SetCurrentServiceTemplateInstanceIdAction extends Action {
     serviceTemplateInstanceId: string;
 }
 
 export interface SetNodeTemplateDataAction extends Action {
     nodeTemplateData: LiveModelingNodeTemplateData;
+}
+
+export interface SetCurrentServiceTemplateInstanceStateAction extends Action {
+    serviceTemplateInstanceState: ServiceTemplateInstanceStates;
+}
+
+export interface SetBuildPlanInputParametersAction extends Action {
+    inputParameters: Array<InputParameter>;
 }
 
 /**
@@ -49,11 +63,15 @@ export interface SetNodeTemplateDataAction extends Action {
 export class LiveModelingActions {
     static SET_STATE = 'SET_STATE';
     static SEND_LOG = 'SEND_LOG';
+    static CLEAR_LOGS = 'CLEAR_LOGS';
     static SET_CONTAINER_URL = 'SET_CONTAINER_URL';
     static SET_CURRENT_CSAR_ID = 'SET_CURRENT_CSAR_ID';
+    static SET_CURRENT_CSAR = 'SET_CURRENT_CSAR';
     static SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID = 'SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID';
     static SET_NODE_TEMPLATE_DATA = 'SET_NODE_TEMPLATE_DATA';
     static DELETE_NODE_TEMPLATE_DATA = 'DELETE_NODE_TEMPLATE_DATA';
+    static SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE = 'SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE';
+    static SET_BUILD_PLAN_INPUT_PARAMETERS = 'SET_BUILD_PLAN_INPUT_PARAMETERS';
 
     setState(state: LiveModelingStates): SetStateAction {
         return {
@@ -69,10 +87,23 @@ export class LiveModelingActions {
         };
     }
 
+    clearLogs(): Action {
+        return {
+            type: LiveModelingActions.CLEAR_LOGS
+        };
+    }
+
     setContainerUrl(containerUrl: string): SetContainerUrlAction {
         return {
             type: LiveModelingActions.SET_CONTAINER_URL,
             containerUrl: containerUrl
+        };
+    }
+
+    setCurrentCsar(csar: Csar): SetCurrentCsarAction {
+        return {
+            type: LiveModelingActions.SET_CURRENT_CSAR,
+            csar: csar
         };
     }
 
@@ -98,6 +129,22 @@ export class LiveModelingActions {
     }
 
     deleteNodeTemplateData(): Action {
-        return { type: LiveModelingActions.DELETE_NODE_TEMPLATE_DATA };
+        return {
+            type: LiveModelingActions.DELETE_NODE_TEMPLATE_DATA
+        };
+    }
+
+    setCurrentServiceTemplateInstanceState(serviceTemplateInstanceState: ServiceTemplateInstanceStates): SetCurrentServiceTemplateInstanceStateAction {
+        return {
+            type: LiveModelingActions.SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE,
+            serviceTemplateInstanceState: serviceTemplateInstanceState
+        };
+    }
+
+    setBuildPlanInputParameters(inputParameters: Array<InputParameter>): SetBuildPlanInputParametersAction {
+        return {
+            type: LiveModelingActions.SET_BUILD_PLAN_INPUT_PARAMETERS,
+            inputParameters: inputParameters
+        };
     }
 }

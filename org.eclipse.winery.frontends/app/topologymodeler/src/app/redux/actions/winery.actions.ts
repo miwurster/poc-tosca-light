@@ -189,6 +189,10 @@ export interface SetNodeVisuals extends Action {
     visuals: Visuals[];
 }
 
+export interface SendLiveModelingSidebarOpenedAction extends Action {
+    sidebarOpened: boolean;
+}
+
 /**
  * Winery Actions
  */
@@ -223,6 +227,7 @@ export class WineryActions {
     static DELETE_POLICY = 'DELETE_POLICY';
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
     static SET_NODE_VISUALS = 'SET_NODE_VISUALS';
+    static SEND_LIVE_MODELING_SIDEBAR_OPENED = 'SEND_LIVE_MODELING_SIDEBAR_OPENED';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
@@ -354,5 +359,10 @@ export class WineryActions {
         ((visuals: Visuals[]) => ({
             type: WineryActions.SET_NODE_VISUALS,
             visuals: visuals
+        }));
+    sendLiveModelingSidebarOpened: ActionCreator<SendLiveModelingSidebarOpenedAction> =
+        ((sidebarOpened) => ({
+            type: WineryActions.SEND_LIVE_MODELING_SIDEBAR_OPENED,
+            sidebarOpened: sidebarOpened
         }));
 }

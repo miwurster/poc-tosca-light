@@ -79,7 +79,8 @@ export enum ServiceTemplateInstanceStates {
     DELETED = 'DELETED',
     ERROR = 'ERROR',
     MIGRATING = 'MIGRATING',
-    MIGRATED = 'MIGRATED'
+    MIGRATED = 'MIGRATED',
+    NOT_AVAILABLE = 'NOT_AVAILABLE',
 }
 
 export enum NodeTemplateInstanceStates {
@@ -102,5 +103,6 @@ export enum LiveModelingLogTypes {
     SUCCESS = 'success',
     INFO = 'info',
     WARNING = 'warning',
-    DANGER = 'danger'
+    DANGER = 'danger',
+    CONTAINER = 'container'
 }

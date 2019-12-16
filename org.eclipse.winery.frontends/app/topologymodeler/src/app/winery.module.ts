@@ -54,14 +54,18 @@ import { PlaceComponentsService } from './services/placement.service';
 import { LiveModelingService } from './services/live-modeling.service';
 import { ContainerService } from './services/container.service';
 import { LiveModelingSidebarComponent } from './live-modeling-sidebar/live-modeling-sidebar.component';
-import { ProgressbarModule } from 'ngx-bootstrap';
+import { ProgressbarModule, TooltipModule } from 'ngx-bootstrap';
 import { LiveModelingModalComponent } from './live-modeling-modal/live-modeling-modal.component';
 import { ReqCapRelationshipService } from './services/req-cap-relationship.service';
 import { LiveModelingActions } from './redux/actions/live-modeling.actions';
+import { AngularResizedEventModule } from 'angular-resize-event';
+import { NavbarComponent } from './navbar/navbar.component';
+import { ResizableModule } from 'angular-resizable-element';
 
 @NgModule({
     declarations: [
         WineryComponent,
+        NavbarComponent,
         PaletteComponent,
         SidebarComponent,
         PrintViewComponent,
@@ -97,7 +101,10 @@ import { LiveModelingActions } from './redux/actions/live-modeling.actions';
         PopoverModule.forRoot(),
         PropertiesModule,
         WineryFeatureToggleModule,
-        ProgressbarModule.forRoot()
+        ProgressbarModule.forRoot(),
+        TooltipModule.forRoot(),
+        ResizableModule,
+        AngularResizedEventModule
     ],
     providers: [
         // { provide: ToastOptions, useClass: WineryCustomOption },

@@ -1,51 +1,110 @@
-<div class="modal-header">
-    <h4 *ngIf="modalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING" class="modal-title pull-left">Enable
-        Live-Modeling</h4>
-    <h4 *ngIf="modalView === liveModelingModalComponentViews.DISABLE_LIVE_MODELING" class="modal-title pull-left">
-        Disable Live-Modeling</h4>
-    <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
-<div class="modal-body">
-    <ng-container *ngIf="modalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING">
+<ng-container *ngIf="currentModalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Enable Live-Modeling</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
         <p>Caution! This will enable live-modeling.</p>
         <div class="form-group">
             <label for="containerUrlInput">Enter OpenTOSCA container Url:</label>
-            <input [(ngModel)]="containerUrl" class="form-control" type="text" id="containerUrlInput"
-                   placeholder="containerUrl">
+            <div class="input-wrapper"
+                 [class.input-wrapper-check]="!isContainerUrlInvalid && isContainerUrlInvalid !== undefined"
+                 [class.input-wrapper-times]="isContainerUrlInvalid">
+                <input [(ngModel)]="containerUrl" class="form-control"
+                       [class.is-valid]="!isContainerUrlInvalid && isContainerUrlInvalid !== undefined"
+                       [class.has-error]="isContainerUrlInvalid" type="text" id="containerUrlInput"
+                       placeholder="containerUrl">
+            </div>
+            <span class="error-text" *ngIf="isContainerUrlInvalid">Invalid container URL or service template is not installed yet</span>
         </div>
 
         <label>(Optional) Select already running instance: </label>
         <div class="wrapper">
-            <div class="btn-group mr-2 dropdown" dropdown [isDisabled]="!(serviceTemplateInstanceIds && serviceTemplateInstanceIds?.length) > 0">
+            <div class="btn-group mr-2 dropdown" dropdown
+                 [isDisabled]="!(serviceTemplateInstanceIds && serviceTemplateInstanceIds?.length > 0)">
                 <button id="button-basic" dropdownToggle type="button" class="btn btn-light dropdown-toggle"
                         aria-controls="dropdown-basic">
-                    Service Template Instance ID: <b>{{selectedServiceTemplateId || '(none)'}}</b> <span class="caret"></span>
+                    Service Template Instance ID: <b>{{selectedServiceTemplateInstanceId || '(none)'}}</b>
                 </button>
                 <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu"
                     role="menu" aria-labelledby="button-basic">
-                    <li *ngFor="let id of serviceTemplateInstanceIds">
+                    <li *ngFor="let id of serviceTemplateInstanceIds" role="menuitem">
                         <span class="dropdown-item" (click)="selectServiceTemplateId(id)">{{id}}</span>
                     </li>
+                    <ng-container *ngIf="selectedServiceTemplateInstanceId">
+                        <li class="divider dropdown-divider"></li>
+                        <li role="menuitem"><span class="dropdown-item" (click)="deselectServiceTemplateId()">Deploy New Service Template Instance</span>
+                        </li>
+                    </ng-container>
                 </ul>
             </div>
-            <button type="button" class="btn btn-info" (click)="fetchServiceTemplateInstances()"><i
-                class="fa fa-refresh" style="pointer-events: none;"></i></button>
+            <button type="button" class="btn btn-info" (click)="fetchServiceTemplateInstances()"
+                    [disabled]="fetchingServiceTemplateInstances">
+                <i class="fa fa-refresh" style="pointer-events: none;"
+                   [class.fa-spin]="fetchingServiceTemplateInstances"></i>
+            </button>
         </div>
-    </ng-container>
+        <span class="error-text" *ngIf="noRunningServiceTemplateInstancesFound">No running service template instances found</span>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button"
+                class="btn btn-primary" (click)="enableLiveModeling()" [disabled]="testingContainerUrl">
+            <ng-container *ngIf="!testingContainerUrl">
+                <span *ngIf="selectedServiceTemplateInstanceId">Enable</span>
+                <span *ngIf="!selectedServiceTemplateInstanceId">Next</span>
+            </ng-container>
+            <i *ngIf="testingContainerUrl" class="fas fa-spinner fa-pulse"></i>
+        </button>
+    </div>
+</ng-container>
 
-    <ng-container *ngIf="modalView === liveModelingModalComponentViews.DISABLE_LIVE_MODELING">
+<ng-container *ngIf="currentModalView === liveModelingModalComponentViews.DISABLE_LIVE_MODELING">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Disable Live-Modeling</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
         <input type="checkbox" id="terminateInstance" name="terminateInstance" [(ngModel)]="terminateInstance">
         <label for="terminateInstance" class="font-weight-normal ml-2">Terminate Service Template Instance</label>
-    </ng-container>
-</div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
-    <button *ngIf="modalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING" type="button"
-            class="btn btn-primary" (click)="enableLiveModeling()">Enable
-    </button>
-    <button *ngIf="modalView === liveModelingModalComponentViews.DISABLE_LIVE_MODELING" type="button"
-            class="btn btn-danger" (click)="disableLiveModeling()">Disable
-    </button>
-</div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button" class="btn btn-danger" (click)="disableLiveModeling()">Disable</button>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="currentModalView === liveModelingModalComponentViews.ENTER_BUILD_PLAN_INPUT_PARAMETER">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Enter Build Plan Input Parameters</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body input-parameter">
+        <div *ngIf="fetchingBuildPlanParameters" class="fa-2x text-center">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <div class="px-2" *ngIf="requiredBuildPlanParameters && !fetchingBuildPlanParameters">
+            <div *ngIf="requiredBuildPlanParameters.length === 0">
+                <span>There are no required input parameters. Ready for deployment.</span>
+            </div>
+            <div *ngIf="requiredBuildPlanParameters.length > 0">
+                <div *ngFor="let parameter of requiredBuildPlanParameters" class="pb-2">
+                    <label class="font-weight-normal" [for]="parameter.name">{{parameter.name}}:</label>
+                    <input class="form-control" type="text" [id]="parameter.name"
+                           [placeholder]="parameter.required === 'YES' ? '' : '(optional)'"
+                           [(ngModel)]="parameter.value">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="back()">Back</button>
+        <button type="button" class="btn btn-primary" (click)="enableLiveModeling()">Deploy</button>
+    </div>
+</ng-container>

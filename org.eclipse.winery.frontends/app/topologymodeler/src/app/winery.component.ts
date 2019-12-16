@@ -31,6 +31,7 @@ import { TopologyRendererState } from './redux/reducers/topologyRenderer.reducer
 import { VersionElement } from './models/versionElement';
 import { TopologyRendererActions } from './redux/actions/topologyRenderer.actions';
 import { WineryRepositoryConfigurationService } from '../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { ResizedEvent } from 'angular-resize-event';
 
 /**
  * This is the root component of the topology modeler.
@@ -63,6 +64,8 @@ export class WineryComponent implements OnInit, AfterViewInit {
     public loaded: ILoaded;
     private loadedRelationshipVisuals = 0;
     private requiredRelationshipVisuals: number;
+
+    navbarHeight = 0;
 
     constructor(private loadedService: LoadedService,
                 private appReadyEvent: AppReadyEventService,
@@ -340,5 +343,9 @@ export class WineryComponent implements OnInit, AfterViewInit {
         } else if (!currentButtonsState.buttonsState.refineTopologyWithTestsButton && !currentButtonsState.buttonsState.refineTopologyButton) {
             delete this.refiningType;
         }
+    }
+
+    onNavbarResized(event: ResizedEvent) {
+        this.navbarHeight = event.newHeight;
     }
 }

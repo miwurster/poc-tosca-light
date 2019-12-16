@@ -19,7 +19,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
-import { NavbarComponent } from '../navbar/navbar.component';
 import { NodeComponent } from '../node/node.component';
 import { CanvasComponent } from '../canvas/canvas.component';
 import { LayoutDirective } from '../layout/layout.directive';
@@ -63,7 +62,6 @@ import { WineryFeatureToggleModule } from '../../../../tosca-management/src/app/
         WineryFeatureToggleModule,
     ],
     declarations: [
-        NavbarComponent,
         NodeComponent,
         CanvasComponent,
         LayoutDirective,

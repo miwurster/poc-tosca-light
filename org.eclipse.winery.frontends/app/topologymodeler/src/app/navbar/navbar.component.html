@@ -206,7 +206,7 @@
                 Refine Topology with Tests
             </button>
         </div>
-
+        
         <div *ngIf="!readonly" class="btn-group button-group" dropdown>
             <button dropdownToggle type="button" class="btn btn-sm dark-button-style align-middle dropdown-toggle">
                 Other <span class="caret"></span>
@@ -236,43 +236,6 @@
                 <!--<li role="menuitem"><a class="dropdown-item" (click)="checkCompliance()">Check Compliance</a></li>-->
                 <li role="menuitem"><a class="dropdown-item" href="#">About</a></li>
             </ul>
-        </div>
-        
-        <div class="btn-group button-group"
-             data-toggle="buttons">
-            <button
-                class="btn btn-sm align-middle dark-button-style"
-                type="button"
-                id="liveModeling"
-                (click)="toggleButton($event)"
-                [disabled]="liveModelingState != liveModelingStates.DISABLED && liveModelingState != liveModelingStates.ENABLED"
-                [style.background-color]="getStyle(liveModelingState == liveModelingStates.ENABLED)">
-                Live-Modeling
-            </button>
-
-            <button
-                class="btn btn-sm align-middle dark-button-style"
-                type="button"
-                id="liveModeling-redeployButton"
-                [disabled]="liveModelingState != liveModelingStates.ENABLED"
-                (click)="toggleButton($event)">
-                Redeploy
-            </button>
-            <button
-                class="btn btn-sm align-middle dark-button-style"
-                type="button"
-                id="liveModeling-update"
-                [disabled]="liveModelingState != liveModelingStates.ENABLED"
-                (click)="toggleButton($event)">
-                <i class="fa fa-refresh" style="pointer-events: none;"></i>
-            </button>
-            <button
-                class="btn btn-sm align-middle dark-button-style"
-                type="button"
-                id="liveModeling-test"
-                (click)="toggleButton($event)">
-                Test
-            </button>
         </div>
     </form>
 </nav>

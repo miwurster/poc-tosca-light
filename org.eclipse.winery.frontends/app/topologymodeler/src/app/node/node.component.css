@@ -200,3 +200,14 @@ button.btn.btn-sm.btn-outline-secondary:hover, button.btn.btn-sm.btn-outline-sec
     color: red;
     font-size: 20px;
 }
+
+.live-modeling-column {
+    align-self: start;
+    padding: 0;
+    text-align: center;
+}
+
+.live-modeling-column .status {
+    cursor: pointer;
+    font-size: 10px;
+}

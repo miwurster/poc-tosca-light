@@ -25,11 +25,6 @@ import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reduce
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
-import { LiveModelingStates } from '../models/enums';
-import { LiveModelingService } from '../services/live-modeling.service';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap';
-import { LiveModelingModalComponent, LiveModelingModalComponentViews } from '../live-modeling-modal/live-modeling-modal.component';
-import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
 
 /**
  * The navbar of the topologymodeler.
@@ -65,7 +60,6 @@ export class NavbarComponent implements OnDestroy {
     private disableLiveModelingModalRef: TemplateRef<any>;
 
     navbarButtonsState: TopologyRendererState;
-    liveModelingState: LiveModelingStates;
     unformattedTopologyTemplate;
     subscriptions: Array<Subscription> = [];
     exportCsarUrl: string;
@@ -73,7 +67,6 @@ export class NavbarComponent implements OnDestroy {
     matchingOngoing: boolean;
     placingOngoing: boolean;
     configEnum = FeatureEnum;
-    liveModelingStates = LiveModelingStates;
 
     constructor(private alert: ToastrService,
                 private ngRedux: NgRedux<IWineryState>,
@@ -81,10 +74,7 @@ export class NavbarComponent implements OnDestroy {
                 private wineryActions: WineryActions,
                 private backendService: BackendService,
                 private statefulService: StatefulAnnotationsService,
-                private hotkeysService: HotkeysService,
-                private liveModelingService: LiveModelingService,
-                private modalService: BsModalService,
-                private liveModelingActions: LiveModelingActions) {
+                private hotkeysService: HotkeysService) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
@@ -100,11 +90,6 @@ export class NavbarComponent implements OnDestroy {
             return false; // Prevent bubbling
         }, undefined, 'Apply the layout directive to the Node Templates'));
         this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
-        this.subscriptions.push(ngRedux.select(state => state.liveModelingState.state).subscribe(
-            state => {
-                this.liveModelingState = state;
-            }
-        ));
     }
 
     /**
@@ -248,28 +233,6 @@ export class NavbarComponent implements OnDestroy {
             case 'placement':
                 this.ngRedux.dispatch(this.actions.placeComponents());
                 this.placingOngoing = true;
-                break;
-            case 'liveModeling':
-                if (this.liveModelingState === LiveModelingStates.DISABLED) {
-                    const initialState = {
-                        modalView: LiveModelingModalComponentViews.ENABLE_LIVE_MODELING
-                    };
-                    this.modalService.show(LiveModelingModalComponent, { initialState, ignoreBackdropClick: true });
-                } else if (this.liveModelingState === LiveModelingStates.ENABLED) {
-                    const initialState = {
-                        modalView: LiveModelingModalComponentViews.DISABLE_LIVE_MODELING
-                    };
-                    this.modalService.show(LiveModelingModalComponent, { initialState, ignoreBackdropClick: true });
-                }
-                break;
-            case 'liveModeling-redeployButton':
-                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.REDEPLOY));
-                break;
-            case 'liveModeling-update':
-                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
-                break;
-            case 'liveModeling-test':
-                this.liveModelingService.test();
                 break;
         }
     }

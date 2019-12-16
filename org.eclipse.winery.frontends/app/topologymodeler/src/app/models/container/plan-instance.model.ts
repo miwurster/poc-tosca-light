@@ -14,6 +14,7 @@
 import { ResourceSupport } from './resource-support.model';
 import { InputParameter } from './input-parameter.model';
 import { OutputParameter } from './output-parameter.model';
+import { PlanLogEntry } from './plan-log-entry.model';
 
 export class PlanInstance extends ResourceSupport {
     correlation_id: string;
@@ -22,4 +23,5 @@ export class PlanInstance extends ResourceSupport {
     type: string;
     inputs: Array<InputParameter>;
     outputs: Array<OutputParameter>;
+    logs: Array<PlanLogEntry>;
 }

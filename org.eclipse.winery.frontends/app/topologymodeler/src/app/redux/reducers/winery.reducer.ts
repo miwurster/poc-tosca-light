@@ -16,7 +16,7 @@ import { Action } from 'redux';
 import {
     DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
     DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
-    SaveRelationshipAction, SendCurrentNodeIdAction, SendPaletteOpenedAction, SetCababilityAction,
+    SaveRelationshipAction, SendCurrentNodeIdAction, SendLiveModelingSidebarOpenedAction, SendPaletteOpenedAction, SetCababilityAction,
     SetDeploymentArtifactAction, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
     UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
@@ -32,6 +32,7 @@ export interface WineryState {
     currentJsonTopology: TTopologyTemplate;
     currentNodeData: any;
     nodeVisuals: Visuals[];
+    liveModelingSidebarOpenedState: boolean;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -56,6 +57,7 @@ export const INITIAL_WINERY_STATE: WineryState = {
         focus: false
     },
     nodeVisuals: null,
+    liveModelingSidebarOpenedState: false
 };
 
 /**
@@ -464,6 +466,13 @@ export const WineryReducer =
                 return {
                     ...lastState,
                     nodeVisuals: visuals
+                };
+            case WineryActions.SEND_LIVE_MODELING_SIDEBAR_OPENED:
+                const sidebarOpened: boolean = (<SendLiveModelingSidebarOpenedAction>action).sidebarOpened;
+
+                return <WineryState>{
+                    ...lastState,
+                    liveModelingSidebarOpenedState: sidebarOpened
                 };
             default:
                 return <WineryState>lastState;

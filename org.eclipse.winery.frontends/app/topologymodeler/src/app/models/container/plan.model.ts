@@ -12,8 +12,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 import { ResourceSupport } from './resource-support.model';
+import { InputParameter } from './input-parameter.model';
+import { OutputParameter } from './output-parameter.model';
 
 export class Plan extends ResourceSupport {
     id: string;
     plan_type: string;
+    input_parameters: Array<InputParameter>;
+    output_parameters: Array<OutputParameter>;
 }
