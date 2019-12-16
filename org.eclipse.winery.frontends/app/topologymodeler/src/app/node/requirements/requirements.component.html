@@ -18,6 +18,7 @@
         [currentNodeData]="currentNodeData"
         [toscaTypeData]="requirements"
         [entityTypes]="entityTypes"
+        (relationshipTemplateIdClicked)="onRelationshipTemplateIdClicked($event)"
         (showClickedReqOrCapModal)="toggleModal($event)">
     </winery-toscatype-table>
 </div>

@@ -926,9 +926,31 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const storeRelationshipsLength = currentRelationships.length;
         if (storeRelationshipsLength !== localRelationshipsCopyLength) {
             const difference = storeRelationshipsLength - localRelationshipsCopyLength;
+
             if (difference === 1) {
                 this.handleNewRelationship(currentRelationships);
             } else if (difference > 0 || difference < 0) {
+                if (this.configuration.isYaml() && difference < 0) {
+                    // a relationship is deleted. reset the associated source requirement
+                    const deletedRels = this.allRelationshipTemplates.filter(rel => currentRelationships.every(curRel => curRel.id !== rel.id));
+                    deletedRels.forEach(deletedRel => {
+                        const reqId = deletedRel.sourceElement.ref;
+                        const sourceNodeTemplate = this.allNodeTemplates
+                            .find(nt =>
+                                nt.requirements &&
+                                nt.requirements.requirement
+                                && nt.requirements.requirement.some(req => req.id === reqId));
+                        const requirementModel: RequirementModel = sourceNodeTemplate.requirements.requirement
+                            .find(req => req.id === reqId);
+                        const requirementDefinition: RequirementDefinitionModel = this.getRequirementDefinitionsOfNodeType(sourceNodeTemplate.type)
+                            .find(reqDef => reqDef.name === requirementModel.name);
+                        requirementModel.capability = requirementDefinition.capability;
+                        requirementModel.relationship = requirementDefinition.relationship;
+                        requirementModel.node = requirementDefinition.node;
+
+                    });
+
+                }
                 this.allRelationshipTemplates = currentRelationships;
                 this.allRelationshipTemplates.forEach(relTemplate => this.manageRelationships(relTemplate));
             }
@@ -1654,7 +1676,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     ],
                 });
                 this.dragSourceInfos = dragSourceInfo;
-                this.targetNodes = this.getAllCapabilities();
+                this.targetNodes = this.getAllCapabilityIds();
+
                 if (this.targetNodes.length > 0) {
                     this.newJsPlumbInstance.makeTarget(this.targetNodes);
                     this.newJsPlumbInstance.targetEndpointDefinitions = {};
@@ -1665,7 +1688,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         }
     }
 
-    getAllCapabilities() {
+    getAllCapabilityIds() {
         const capIds: string[] = [];
         this.allNodeTemplates.forEach(node => {
             if (node.capabilities) {
@@ -1936,12 +1959,22 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         });
     }
 
+    onClickRelationshipTemplateName(clickedRelTemplateId: string): void {
+        console.debug('we are in canvas.onClickRelationshipTemplateName');
+        const currentRelTemplate = this.allRelationshipTemplates.find(rel => rel.id === clickedRelTemplateId);
+        const connection = this.newJsPlumbInstance.getAllConnections().find(conn => conn.id === clickedRelTemplateId);
+        this.onClickJsPlumbConnection(connection, currentRelTemplate);
+    }
+
     /**
      * Sets the sidebar up for a new node, makes it visible, sets a type and adds a click listener to this relationship
      * @param conn            The JSPlumb connection
      * @param newRelationship The new relationship internally
      */
     private handleRelSideBar(conn: any, newRelationship: TRelationshipTemplate): void {
+        console.debug('we are in handleRelSideBar');
+        console.debug(conn);
+        console.debug(newRelationship);
         if (conn) {
             conn.id = newRelationship.id;
             conn.setType(newRelationship.type);
@@ -2156,10 +2189,11 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 this.jsPlumbBindConnection = true;
                 if (this.dragSourceInfos) {
                     const sourceNode = info.sourceId;
-                    const sourceElement = this.dragSourceInfos.dragSource.id;
-                    const targetElement = info.targetId.substring(info.targetId.indexOf('.') + 1);
+                    const requirementId = this.dragSourceInfos.dragSource.id;
+                    const capabilityId: string = info.targetId.substring(info.targetId.indexOf('.') + 1);
                     const currentTypeValid = this.entityTypes.relationshipTypes.some(relType => relType.qName === this.selectedRelationshipType.qName);
                     const currentSourceIdValid = this.allNodeTemplates.some(node => node.id === sourceNode);
+
                     if (sourceNode && currentTypeValid && currentSourceIdValid) {
                         const prefix = this.backendService.configuration.relationshipPrefix;
                         const relName = this.selectedRelationshipType.name;
@@ -2169,10 +2203,27 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                         do {
                             relationshipId = prefix + '_' + relName + '_' + relNumber++;
                         } while (this.allRelationshipTemplates.find(value => value.id === relationshipId));
-                        if (this.searchTypeAndCheckForCompatibility(this.getCapability(targetElement))) {
+                        const capModel: CapabilityModel = this.getCapability(capabilityId);
+                        const reqModel: RequirementModel = this.dragSourceInfos.dragSource;
+                        const sourceNodeTypeString: string = this.allNodeTemplates
+                            .filter(nodeTemplate => nodeTemplate.id === this.dragSourceInfos.nodeId)
+                            .map(nodeTemplate => nodeTemplate.type)[0];
+                        const targetNodeTypeString: string = this.allNodeTemplates
+                            .filter(nodeTemplate => nodeTemplate.id === info.targetId.substring(0, info.targetId.indexOf('.')))
+                            .map(nodeTemplate => nodeTemplate.type)[0];
+                        const capDef: CapabilityDefinitionModel = this.getCapabilityDefinitionsOfNodeType(targetNodeTypeString)
+                            .filter(current => current.name === capModel.name)[0];
+                        const reqDef: RequirementDefinitionModel = this.getRequirementDefinitionsOfNodeType(sourceNodeTypeString)
+                            .filter(current => current.name === reqModel.name)[0];
+
+                        if (this.checkReqCapCompatibility(reqDef, capDef, capModel, new QName(sourceNodeTypeString), new QName(targetNodeTypeString))) {
+                            reqModel.capability = capabilityId;
+                            reqModel.relationship = relationshipId;
+                            reqModel.node = info.targetId;
+
                             const newRelationship = new TRelationshipTemplate(
-                                { ref: sourceElement },
-                                { ref: targetElement },
+                                { ref: requirementId },
+                                { ref: capabilityId },
                                 this.selectedRelationshipType.name,
                                 relationshipId,
                                 this.selectedRelationshipType.qName,
@@ -2190,7 +2241,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             }
                         }
                         this.dragSourceActive = false;
-                        this.resetDragSource(sourceElement);
+                        this.resetDragSource(requirementId);
                     }
                     this.unbindConnection();
                     this.revalidateContainer();
@@ -2199,13 +2250,13 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         }
     }
 
-    getCapability(targetElement: string) {
+    getCapability(capabilityId: string): CapabilityModel {
         let capability: any = null;
         this.allNodeTemplates.forEach(node => {
             if (node.capabilities) {
                 if (node.capabilities.capability) {
                     node.capabilities.capability.forEach(cap => {
-                        if (cap.id === targetElement) {
+                        if (cap.id === capabilityId) {
                             capability = cap;
                         }
                     });
@@ -2215,11 +2266,28 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         return capability;
     }
 
+    checkReqCapCompatibility(reqDefinition: RequirementDefinitionModel, capDefinition: CapabilityDefinitionModel, cap: CapabilityModel, sourceNodeType: QName, targetNodeType: QName) {
+        if (this.configuration.isYaml()) {
+            // we assume the relationship type is correct
+            // check the conditions set by the requirement definition
+            if (this.matchType(reqDefinition.node, targetNodeType.qName, this.entityTypes.unGroupedNodeTypes) &&
+                this.matchType(reqDefinition.capability, capDefinition.capabilityType, this.entityTypes.capabilityTypes)) {
+                // todo check for the conditions set by the capability definition/type (valid_source_types)
+                return true;
+            } else {
+                this.notify.warning('The Selected Requirement and Capability are not Compatible');
+                return false;
+            }
+        } else {
+            return this.searchTypeAndCheckForCompatibility(cap);
+        }
+    }
+
     /**
      * check for compatibility of Requirement and Capability
-     * @param dragTargetInfo
+     * @param capability the capability model (assignment) to validate
      */
-    searchTypeAndCheckForCompatibility(capability: any) {
+    searchTypeAndCheckForCompatibility(capability: CapabilityModel) {
         let requiredTargetType = '';
 
         this.entityTypes.requirementTypes.some(req => {
@@ -2228,29 +2296,27 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 return true;
             }
         });
-        return this.checkForCompatibility(requiredTargetType, capability);
+        return this.matchType(requiredTargetType, capability.type, this.entityTypes.capabilityTypes);
     }
 
     /**
-     * check recursive if the target or a parent of its Capability matches
-     * @param requiredTargetType
-     * @param targetOrParent
+     * check recursively if the target entity type (or any of its parents) match the required entity type
+     * @param requiredType
+     * @param targetElementType
+     * @param targetElementTypeSet
      */
-    checkForCompatibility(requiredTargetType: any, targetOrParent: any) {
-        let parentCapType: any;
-        if (requiredTargetType === targetOrParent.type) {
+    matchType(requiredType: string, targetElementType: string, targetElementTypeSet: EntityType[]) {
+        if (requiredType === targetElementType) {
             return true;
         } else {
-            this.entityTypes.capabilityTypes.some(cap => {
-                if (cap.qName === targetOrParent.type) {
-                    parentCapType = cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom;
-                    return true;
-                }
-            });
-            if (parentCapType) {
-                return this.checkForCompatibility(requiredTargetType, parentCapType);
+            const parentType = targetElementTypeSet
+                .filter(type => type.qName === targetElementType)
+                .map(type => type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom);
+
+            if (parentType && parentType.length > 0 && parentType[0]) {
+                return this.matchType(requiredType, parentType[0].type, targetElementTypeSet);
             }
-            this.notify.warning('The selected Requirement and Capability are not Compatible');
+
             return false;
         }
     }

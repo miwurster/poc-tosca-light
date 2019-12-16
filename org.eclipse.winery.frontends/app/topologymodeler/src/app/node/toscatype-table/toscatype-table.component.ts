@@ -23,6 +23,9 @@ import { ReqCapRelationshipService } from '../../services/req-cap-relationship.s
 import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
 import { WineryRepositoryConfigurationService } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { ReqCapModalType, ShowReqCapModalEventData } from './showReqCapModalEventData';
+import { RequirementModel } from '../../models/requirementModel';
+import { RequirementDefinitionModel } from '../../models/requirementDefinitonModel';
+import { VisualEntityType } from '../../models/ttopology-template';
 
 @Component({
     selector: 'winery-toscatype-table',
@@ -43,6 +46,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
 
     // Event emitter for showing the modal of a clicked capability or requirement id
     @Output() showClickedReqOrCapModal: EventEmitter<ShowReqCapModalEventData>;
+    @Output() relationshipTemplateIdClicked: EventEmitter<string>;
 
     currentToscaTypeData;
     currentToscaType;
@@ -53,6 +57,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
                 private reqCapRelationshipService: ReqCapRelationshipService,
                 private configurationService: WineryRepositoryConfigurationService) {
         this.showClickedReqOrCapModal = new EventEmitter();
+        this.relationshipTemplateIdClicked = new EventEmitter<string>();
     }
 
     ngOnInit() {
@@ -203,6 +208,43 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
             + definitionType.CapabilityDefinitions;
 
         window.open(url, '_blank');
+    }
+
+    clickYamlRelationshipTemplateId(id: string, req: RequirementModel) {
+        // the id might not belong to a relationship template if the requirement is not yet fulfilled.
+        if (this.isRequirementFulfilled(req)) {
+            this.relationshipTemplateIdClicked.emit(id);
+        }
+    }
+
+    private getRequirementDefinition(req: RequirementModel): RequirementDefinitionModel {
+        const nodeTypeString = this.currentNodeData.nodeTemplate.type;
+        return this.entityTypes.unGroupedNodeTypes
+            .find(nt => nt.qName === nodeTypeString)
+            .full
+            .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+            .requirementDefinitions
+            .requirementDefinition
+            .find((reqDef: RequirementDefinitionModel) => reqDef.name === req.name);
+    }
+
+    getAllowedRelationshipTypes(req: RequirementModel): VisualEntityType[] {
+        const reqDef: RequirementDefinitionModel = this.getRequirementDefinition(req);
+        // if the requirement definition specifies a requirement type, then it is the only one allowed
+        if (reqDef.relationship) {
+            return this.entityTypes.relationshipTypes.filter(rt => rt.qName === reqDef.relationship);
+        }
+        // otherwise, all types are allowed
+        return this.entityTypes.relationshipTypes;
+    }
+
+    isRequirementFulfilled(req: RequirementModel) {
+        if (req.node) {
+            // if the node value of the requirement model is a node type (rather than a node template), then it is not yet fulfilled.
+            return !this.entityTypes.unGroupedNodeTypes.some(nt => nt.qName === req.node);
+        }
+        // this should never happen..
+        return false;
     }
 
     /**

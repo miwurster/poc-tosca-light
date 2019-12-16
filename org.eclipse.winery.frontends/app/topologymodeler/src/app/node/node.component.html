@@ -191,6 +191,7 @@
             <winery-requirements
                 [readonly]="readonly"
                 (toggleModalHandler)="sendToggleAction($event)"
+                (relationshipTemplateIdClicked)="onRelationshipTemplateIdClicked($event)"
                 [currentNodeData]="{entityTypes: entityTypes,
                                     nodeTemplate: nodeTemplate,
                                     currentNodePart: 'REQUIREMENTS'}">
