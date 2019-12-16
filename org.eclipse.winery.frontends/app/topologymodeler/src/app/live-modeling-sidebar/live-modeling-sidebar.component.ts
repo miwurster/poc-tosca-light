@@ -22,7 +22,7 @@ import { LiveModelingLog } from '../models/liveModelingLog';
 import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
 import { LiveModelingService } from '../services/live-modeling.service';
 import { WineryActions } from '../redux/actions/winery.actions';
-import { animate, keyframes, state, style, transition, trigger } from '@angular/animations';
+import { state, style, trigger } from '@angular/animations';
 import { LiveModelingModalComponent, LiveModelingModalComponentViews } from '../live-modeling-modal/live-modeling-modal.component';
 import { InputParameter } from '../models/container/input-parameter.model';
 import { Csar } from '../models/container/csar.model';
@@ -61,8 +61,7 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
     @ViewChildren('logItems') private logItems: QueryList<any>;
     @Input() top: number;
 
-    readonly SIDEBAR_MIN_WIDTH = 300;
-    sidebarWidth = this.SIDEBAR_MIN_WIDTH;
+    sidebarWidth: number;
     sidebarContentState = 'extended';
     sidebarButtonState = 'right';
 
@@ -257,7 +256,8 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
     }
 
     validateResize(event: ResizeEvent) {
-        return event.rectangle.width >= this.SIDEBAR_MIN_WIDTH;
+        const SIDEBAR_MIN_WIDTH = 300;
+        return event.rectangle.width >= SIDEBAR_MIN_WIDTH;
     }
 
     onResizeEnd(event: ResizeEvent): void {
