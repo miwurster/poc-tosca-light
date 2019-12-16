@@ -12,6 +12,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-package org.eclipse.winery.repository.rest.resources.servicecomposition;
+package org.eclipse.winery.repository.rest.resources.servicecompositionmodels;
 
-public class ServiceCompositionModelResource { }
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
+import org.eclipse.winery.repository.rest.resources._support.AbstractComponentsWithoutTypeReferenceResource;
+
+public class ServiceCompositionModelsResource extends AbstractComponentsWithoutTypeReferenceResource<ServiceCompositionModelResource> {
+    
+    @Path("{namespace}/{id}/")
+    public ServiceCompositionModelResource getComponentInstanceResource(@PathParam("namespace") String namespace, @PathParam("id") String id) {
+        return this.getComponentInstanceResource(namespace, id, true);
+    }
+}

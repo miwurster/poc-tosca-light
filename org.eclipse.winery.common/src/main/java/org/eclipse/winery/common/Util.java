@@ -59,6 +59,7 @@ import org.eclipse.winery.common.ids.definitions.EntityTypeId;
 import org.eclipse.winery.common.ids.definitions.EntityTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.PolicyTemplateId;
+import org.eclipse.winery.common.ids.definitions.ServiceCompositionModelId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.ids.definitions.TestRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.imports.GenericImportId;
@@ -522,6 +523,8 @@ public class Util {
         if (ServiceTemplateId.class.isAssignableFrom(idClass)) {
             return true;
         } else if (ComplianceRuleId.class.isAssignableFrom(idClass)) {
+            return true;
+        } else if (ServiceCompositionModelId.class.isAssignableFrom(idClass)) {
             return true;
         } else if (PatternRefinementModelId.class.isAssignableFrom(idClass)) {
             return true;

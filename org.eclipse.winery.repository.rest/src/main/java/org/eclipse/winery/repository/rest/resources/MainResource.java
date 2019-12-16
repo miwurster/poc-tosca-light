@@ -54,7 +54,7 @@ import org.eclipse.winery.repository.rest.resources.entitytypes.relationshiptype
 import org.eclipse.winery.repository.rest.resources.entitytypes.requirementtypes.RequirementTypesResource;
 import org.eclipse.winery.repository.rest.resources.imports.ImportsResource;
 import org.eclipse.winery.repository.rest.resources.patternrefinementmodels.PatternRefinementModelsResource;
-import org.eclipse.winery.repository.rest.resources.servicecomposition.ServiceCompositionModelsResource;
+import org.eclipse.winery.repository.rest.resources.servicecompositionmodels.ServiceCompositionModelsResource;
 import org.eclipse.winery.repository.rest.resources.servicetemplates.ServiceTemplatesResource;
 import org.eclipse.winery.repository.rest.resources.testrefinementmodels.TestRefinementModelsResource;
 import org.eclipse.winery.repository.rest.resources.threats.ThreatsResource;

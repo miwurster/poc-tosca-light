@@ -37,6 +37,7 @@ import org.eclipse.winery.common.ids.definitions.RefinementId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
+import org.eclipse.winery.common.ids.definitions.ServiceCompositionModelId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.ids.definitions.TestRefinementModelId;
 import org.eclipse.winery.model.tosca.Definitions;
@@ -56,6 +57,7 @@ import org.eclipse.winery.model.tosca.TRefinementModel;
 import org.eclipse.winery.model.tosca.TRelationshipType;
 import org.eclipse.winery.model.tosca.TRelationshipTypeImplementation;
 import org.eclipse.winery.model.tosca.TRequirementType;
+import org.eclipse.winery.model.tosca.TServiceCompositionModel;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTestRefinementModel;
 
@@ -107,6 +109,10 @@ public interface IWineryRepositoryCommon {
 
     default TServiceTemplate getElement(ServiceTemplateId id) {
         return (TServiceTemplate) this.getDefinitions(id).getElement();
+    }
+
+    default TServiceCompositionModel getElement(ServiceCompositionModelId id) {
+        return (TServiceCompositionModel) this.getDefinitions(id).getElement();
     }
 
     default TArtifactTemplate getElement(ArtifactTemplateId id) {

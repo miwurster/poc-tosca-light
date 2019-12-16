@@ -83,6 +83,7 @@ import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
+import org.eclipse.winery.common.ids.definitions.ServiceCompositionModelId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.ids.definitions.TestRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.imports.XSDImportId;
@@ -126,6 +127,7 @@ import org.eclipse.winery.model.tosca.TRelationshipType;
 import org.eclipse.winery.model.tosca.TRelationshipTypeImplementation;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementType;
+import org.eclipse.winery.model.tosca.TServiceCompositionModel;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTestRefinementModel;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
@@ -644,6 +646,8 @@ public class BackendUtils {
             element = new TArtifactTemplate();
         } else if (id instanceof ComplianceRuleId) {
             element = new TComplianceRule();
+        } else if (id instanceof ServiceCompositionModelId) {
+            element = new TServiceCompositionModel();
         } else if (id instanceof PatternRefinementModelId) {
             element = new TPatternRefinementModel();
         } else if (id instanceof TestRefinementModelId) {

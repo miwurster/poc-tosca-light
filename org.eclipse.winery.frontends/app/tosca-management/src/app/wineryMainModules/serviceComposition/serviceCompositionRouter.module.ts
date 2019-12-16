@@ -9,8 +9,6 @@ import { WineryLicenseComponent } from '../../wineryLicenseModule/wineryLicense.
 import { DocumentationComponent } from '../../instance/sharedComponents/documentation/documentation.component';
 import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXML.component';
 import { NgModule } from '@angular/core';
-import { TopologyTemplateComponent } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.component';
-import { RelationMappingsComponent } from '../../instance/refinementModels/relationshipMappings/relationMappings.component';
 
 /*******************************************************************************
  * Copyright (c) 2019 Contributors to the Eclipse Foundation
