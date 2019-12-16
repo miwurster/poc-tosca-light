@@ -74,6 +74,8 @@ export class Utils {
                 return ToscaTypes.Imports;
             case ToscaTypes.ComplianceRule:
                 return ToscaTypes.ComplianceRule;
+            case ToscaTypes.ServiceComposition:
+                return  ToscaTypes.ServiceComposition;
             case ToscaTypes.PatternRefinementModel:
                 return ToscaTypes.PatternRefinementModel;
             case ToscaTypes.TestRefinementModel:
@@ -125,6 +127,9 @@ export class Utils {
                 break;
             case ToscaTypes.ComplianceRule:
                 type = 'Compliance Rule';
+                break;
+            case ToscaTypes.ServiceComposition:
+                type = 'Service Composition';
                 break;
             case ToscaTypes.PatternRefinementModel:
                 type = 'Pattern Refinement Model';

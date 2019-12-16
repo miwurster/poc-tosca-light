@@ -26,6 +26,7 @@ export interface WineryConfiguration {
         nfv: boolean;
         patternRefinement: boolean;
         problemDetection: boolean;
+        serviceComposition: boolean;
         splitting: boolean;
         testRefinement: boolean;
         placement: boolean;

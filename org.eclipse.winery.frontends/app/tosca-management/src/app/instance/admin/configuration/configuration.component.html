@@ -68,6 +68,11 @@
            [checked]="config.features.placement">
     <label for="componentPlacement">Component Placement</label>
     <br>
+    <input type="checkbox" [(ngModel)]="config.features.serviceComposition" id="serviceComposition" 
+           name="serviceComposition"
+           [checked]="config.features.serviceComposition">
+    <label for="componentPlacement">Service Composition</label>
+    <br>
 </div>
 <div>
     <button class="btn btn-primary" (click)="saveChanges()">Save Changes</button>
