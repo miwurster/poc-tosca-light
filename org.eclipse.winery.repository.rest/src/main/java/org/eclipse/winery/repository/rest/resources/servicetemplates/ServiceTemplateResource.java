@@ -467,7 +467,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         IRepository repo = RepositoryFactory.getRepository();
         // create list of responses because we create multiple resources at once
         List<Response> listOfResponses = new ArrayList<>();
-        
+
         LOGGER.debug("Creating new participants version of Service Template {}...", this.getId());
 
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
@@ -499,8 +499,6 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 listOfResponses.add(response.getResponse());
                 // set element to propagate changed tags
                 repo.setElement(newId, tempServiceTempl);
-
-                //newServiceTemplateIdsAndTags.put(newId.getQName(), tTagList);
             }
         }
         return listOfResponses;
