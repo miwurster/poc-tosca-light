@@ -1407,6 +1407,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                         this.hideSidebar();
                     }
                     selectedNodeSideBarVisible = true;
+                    const toDelete = this.newJsPlumbInstance.getConnections().filter(conn => conn.sourceId === node.nodeTemplate.id ||
+                        conn.targetId === node.nodeTemplate.id);
+                    toDelete.forEach(conn => {
+                        this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(conn.id));
+                        this.newJsPlumbInstance.deleteConnection(conn);
+                    });
                     this.newJsPlumbInstance.deleteConnectionsForElement(node.nodeTemplate.id);
                     this.newJsPlumbInstance.removeAllEndpoints(node.nodeTemplate.id);
                     this.newJsPlumbInstance.removeFromAllPosses(node.nodeTemplate.id);
@@ -1960,7 +1966,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     }
 
     onClickRelationshipTemplateName(clickedRelTemplateId: string): void {
-        console.debug('we are in canvas.onClickRelationshipTemplateName');
         const currentRelTemplate = this.allRelationshipTemplates.find(rel => rel.id === clickedRelTemplateId);
         const connection = this.newJsPlumbInstance.getAllConnections().find(conn => conn.id === clickedRelTemplateId);
         this.onClickJsPlumbConnection(connection, currentRelTemplate);
@@ -1972,9 +1977,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * @param newRelationship The new relationship internally
      */
     private handleRelSideBar(conn: any, newRelationship: TRelationshipTemplate): void {
-        console.debug('we are in handleRelSideBar');
-        console.debug(conn);
-        console.debug(newRelationship);
         if (conn) {
             conn.id = newRelationship.id;
             conn.setType(newRelationship.type);
@@ -2217,10 +2219,9 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             .filter(current => current.name === reqModel.name)[0];
 
                         if (this.checkReqCapCompatibility(reqDef, capDef, capModel, new QName(sourceNodeTypeString), new QName(targetNodeTypeString))) {
-                            reqModel.capability = capabilityId;
+                            reqModel.capability = capModel.name;
                             reqModel.relationship = relationshipId;
-                            reqModel.node = info.targetId;
-
+                            reqModel.node = info.targetId.substring(0, info.targetId.indexOf('.'));
                             const newRelationship = new TRelationshipTemplate(
                                 { ref: requirementId },
                                 { ref: capabilityId },
@@ -2266,7 +2267,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         return capability;
     }
 
-    checkReqCapCompatibility(reqDefinition: RequirementDefinitionModel, capDefinition: CapabilityDefinitionModel, cap: CapabilityModel, sourceNodeType: QName, targetNodeType: QName) {
+    checkReqCapCompatibility(reqDefinition: RequirementDefinitionModel, capDefinition: CapabilityDefinitionModel,
+                             cap: CapabilityModel, sourceNodeType: QName, targetNodeType: QName) {
         if (this.configuration.isYaml()) {
             // we assume the relationship type is correct
             // check the conditions set by the requirement definition

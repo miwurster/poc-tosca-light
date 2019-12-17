@@ -241,16 +241,6 @@ public class X2YConverter {
                 .setProperties(convert(node, node.getProperties()))
                 .setMetadata(meta)
                 .setRequirements(convert(node.getRequirements()))
-                .addRequirements(rTs.stream()
-                    .filter(entry -> Objects.nonNull(entry.getSourceElement()) && entry.getSourceElement().getRef().equals(node))
-                    .map(entry -> new LinkedHashMap.SimpleEntry<>(
-                        Optional.ofNullable(entry.getId()).orElse(entry.getName()),
-                        new TRequirementAssignment.Builder()
-                            .setNode(new QName(entry.getTargetElement().getRef().getId()))
-                            .build()
-                    ))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                )
                 .setCapabilities(convert(node.getCapabilities()))
                 .setArtifacts(convert(node.getDeploymentArtifacts()))
                 .build()
@@ -262,11 +252,7 @@ public class X2YConverter {
         if (Objects.isNull(node)) return new LinkedHashMap<>();
         return Collections.singletonMap(
             node.getIdFromIdOrNameField(),
-            new TRelationshipTemplate.Builder(
-                convert(
-                    node.getType(),
-                    new RelationshipTypeId(node.getType())
-                ))
+            new TRelationshipTemplate.Builder(convert(node.getType(), new RelationshipTypeId(node.getType())))
                 .setProperties(convert(node, node.getProperties()))
                 .build()
         );
@@ -939,7 +925,7 @@ public class X2YConverter {
         if (node.getProperties() == null || node.getProperties().getKVProperties() == null || node.getProperties().getKVProperties().size() == 0) {
             return null;
         }
-        
+
         return Collections.singletonMap(
             node.getName(),
             new TCapabilityAssignment.Builder()
@@ -947,7 +933,7 @@ public class X2YConverter {
                 .build()
         );
     }
-    
+
     public List<TMapRequirementAssignment> convert(org.eclipse.winery.model.tosca.TNodeTemplate.Requirements node) {
         if (Objects.isNull(node)) return null;
         return node.getRequirement().stream()
@@ -966,17 +952,16 @@ public class X2YConverter {
         // todo allow passing relationship assignment parameters
 
         if (node.getCapability() != null) {
-            builder = builder.setCapability(node.getCapability());
+            builder = builder.setCapability(QName.valueOf(node.getCapability()));
         }
 
         if (node.getNode() != null) {
-            builder = builder.setNode(node.getNode());
+            builder = builder.setNode(QName.valueOf(node.getNode()));
         }
 
         if (node.getRelationship() != null) {
-            builder = builder.setRelationship(new TRelationshipAssignment.Builder(node.getRelationship()).build());
+            builder = builder.setRelationship(new TRelationshipAssignment.Builder(QName.valueOf(node.getRelationship())).build());
         }
-        
 
         return new TMapRequirementAssignment().setMap(Collections.singletonMap(
             node.getName(),

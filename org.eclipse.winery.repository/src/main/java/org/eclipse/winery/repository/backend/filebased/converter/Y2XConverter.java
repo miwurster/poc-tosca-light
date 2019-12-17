@@ -80,7 +80,6 @@ import org.eclipse.winery.model.tosca.yaml.TPropertyDefinition;
 import org.eclipse.winery.model.tosca.yaml.TRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.TTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
-import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementAssignment;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Defaults;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Namespaces;
@@ -97,6 +96,7 @@ public class Y2XConverter {
     public final static Logger LOGGER = LoggerFactory.getLogger(Y2XConverter.class);
     private org.eclipse.winery.model.tosca.yaml.TServiceTemplate root;
     private org.eclipse.winery.model.tosca.yaml.TNodeTemplate currentNodeTemplate;
+    private String currentNodeTemplateName;
     private String namespace;
     private List<TNodeTypeImplementation> nodeTypeImplementations;
     private List<TRelationshipTypeImplementation> relationshipTypeImplementations;
@@ -125,6 +125,7 @@ public class Y2XConverter {
         this.relationshipSTMap = new LinkedHashMap<>();
         this.nodeTemplateMap = new LinkedHashMap<>();
         this.currentNodeTemplate = null;
+        this.currentNodeTemplateName = null;
         this.interfaceTypes = new LinkedHashMap<>();
     }
 
@@ -145,7 +146,7 @@ public class Y2XConverter {
     @NonNull
     public Definitions convert(org.eclipse.winery.model.tosca.yaml.TServiceTemplate node, String id, String target_namespace) {
         if (node == null) return new Definitions();
-        LOGGER.debug("Converting TServiceTemplate");
+        // LOGGER.debug("Converting TServiceTemplate");
         this.root = node;
 
         // Reset
@@ -327,7 +328,7 @@ public class Y2XConverter {
             );
         }
         if (node.getProperties() != null) {
-            builder.setProperties(convertPropertyAssignments(node.getProperties(), getPropertyTypeName(node.getType())));
+            builder.setProperties(convertPropertyAssignments(node.getProperties()));
         }
         return builder.build();
     }
@@ -566,51 +567,21 @@ public class Y2XConverter {
             return null;
         }
         this.currentNodeTemplate = node;
+        this.currentNodeTemplateName = id;
         TNodeTemplate.Builder builder = new TNodeTemplate.Builder(id, node.getType())
             .addDocumentation(node.getDescription())
             .addDocumentation(node.getMetadata())
             .setName(id)
             .setX(node.getMetadata().getOrDefault(Defaults.X_COORD, "0"))
             .setY(node.getMetadata().getOrDefault(Defaults.Y_COORD, "0"))
-            .setProperties(convertPropertyAssignments(node.getProperties(), getPropertyTypeName(node.getType())))
-            .addRequirements(convert(id, node.getRequirements()))
+            .setProperties(convertPropertyAssignments(node.getProperties()))
+            .addRequirements(convert(node.getRequirements()))
             .addCapabilities(convert(node.getCapabilities()))
             .setDeploymentArtifacts(convertDeploymentArtifacts(node.getArtifacts()));
         TNodeTemplate nodeTemplate = builder.build();
         this.nodeTemplateMap.put(id, nodeTemplate);
 
         return nodeTemplate;
-    }
-
-    private List<TRequirement> convert(String id, List<TMapRequirementAssignment> list) {
-        return list.stream()
-            .flatMap(map -> map.entrySet().stream())
-            .filter(Objects::nonNull)
-            .map(entry -> {
-                // Find candidates for relationship templates with the names entry.getKey() 
-                // and source and target elements (id, ..getNode())
-                if (Objects.nonNull(entry.getValue())
-                    && Objects.nonNull(entry.getValue().getNode())
-                    && Objects.isNull(entry.getValue().getRelationship())
-                    && Objects.isNull(entry.getValue().getCapability())
-                ) {
-                    int num = 0;
-                    String name = entry.getKey();
-                    while (this.relationshipSTMap.containsKey(name)) {
-                        name = entry.getKey() + num++;
-                    }
-                    this.relationshipSTMap.put(
-                        name,
-                        new LinkedHashMap.SimpleEntry<>(
-                            id,
-                            entry.getValue().getNode().getLocalPart()
-                        )
-                    );
-                }
-                return convert(entry.getValue(), entry.getKey());
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
     }
 
     /**
@@ -652,11 +623,11 @@ public class Y2XConverter {
      */
     private TRequirement convert(TRequirementAssignment node, String id) {
         if (Objects.isNull(node)) return null;
-
-        TRequirement.Builder builder = new TRequirement.Builder(id, null);
+        String reqId = this.currentNodeTemplateName + "_" + id;
+        TRequirement.Builder builder = new TRequirement.Builder(reqId, id, null);
 
         if (node.getCapability() != null) {
-            builder = builder.setCapability(node.getCapability());
+            builder = builder.setCapability(node.getCapability().toString());
         } else {
             // when exporting, this must be caught, but while developing, it is tolerated
             // todo check if this is the case during export!
@@ -664,11 +635,11 @@ public class Y2XConverter {
         }
 
         if (node.getRelationship() != null && node.getRelationship().getType() != null) {
-            builder = builder.setRelationship(node.getRelationship().getType());
+            builder = builder.setRelationship(node.getRelationship().getType().toString());
         }
 
         if (node.getNode() != null) {
-            builder = builder.setNode(node.getNode());
+            builder = builder.setNode(node.getNode().toString());
         }
 
         return builder.build();
@@ -676,8 +647,9 @@ public class Y2XConverter {
 
     private TCapability convert(TCapabilityAssignment node, String id) {
         if (Objects.isNull(node)) return null;
-        QName capType = this.getCapabilityTypeOfCapabilityAssignment(id);
-        TCapability.Builder builder = new TCapability.Builder(id, capType, id);
+        String capId = this.currentNodeTemplateName + "_" + id;
+        QName capType = this.getCapabilityTypeOfCapabilityName(id);
+        TCapability.Builder builder = new TCapability.Builder(capId, capType, id);
 
         if (node.getProperties().entrySet().size() > 0) {
             Map<String, String> properties = node.getProperties()
@@ -694,28 +666,41 @@ public class Y2XConverter {
         return builder.build();
     }
 
-    private QName getCapabilityTypeOfCapabilityAssignment(String capAssignmentId) {
+    private TCapabilityDefinition getCapabilityDefinitionOfCapabilityName(String capName, QName nodeType) {
+        // todo this has to search the entire nodeType hierarchy!!
+        Definitions nodeTypes = RepositoryFactory.getRepository().getDefinitions(new NodeTypeId(nodeType));
+        TExtensibleElements theNodeType = nodeTypes
+            .getServiceTemplateOrNodeTypeOrNodeTypeImplementation()
+            .stream()
+            .findFirst()
+            .orElse(null);
+
+        if (theNodeType instanceof TNodeType) {
+            if (((TNodeType) theNodeType).getCapabilityDefinitions() != null) {
+
+                return ((TNodeType) theNodeType)
+                    .getCapabilityDefinitions()
+                    .getCapabilityDefinition()
+                    .stream()
+                    .filter(capDef -> capDef.getName().equals(capName))
+                    .findFirst().orElse(null);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the capability type of a capability identified by its name as present in the capability definition or
+     * capability assignment
+     */
+    private QName getCapabilityTypeOfCapabilityName(String capName) {
         if (this.currentNodeTemplate != null) {
             QName nodeType = this.currentNodeTemplate.getType();
-            Definitions nodeTypes = RepositoryFactory.getRepository().getDefinitions(new NodeTypeId(nodeType));
-            TExtensibleElements theNodeType = nodeTypes
-                .getServiceTemplateOrNodeTypeOrNodeTypeImplementation()
-                .stream()
-                .findFirst()
-                .orElse(null);
+            TCapabilityDefinition capDef = this.getCapabilityDefinitionOfCapabilityName(capName, nodeType);
 
-            if (theNodeType instanceof TNodeType) {
-                if (((TNodeType) theNodeType).getCapabilityDefinitions() != null) {
-                    QName result = ((TNodeType) theNodeType)
-                        .getCapabilityDefinitions()
-                        .getCapabilityDefinition()
-                        .stream()
-                        .filter(capDef -> capDef.getName().equals(capAssignmentId))
-                        .map(TCapabilityDefinition::getCapabilityType)
-                        .findFirst().orElse(null);
-
-                    return result;
-                }
+            if (capDef != null) {
+                return capDef.getCapabilityType();
             }
         }
 
@@ -855,28 +840,97 @@ public class Y2XConverter {
      * @param node TOSCA YAML RelationshipTemplate
      * @return TOSCA XML RelationshipTemplate
      */
-    private List<TRelationshipTemplate> convert(org.eclipse.winery.model.tosca.yaml.TRelationshipTemplate node, String id) {
+    private TRelationshipTemplate convert(org.eclipse.winery.model.tosca.yaml.TRelationshipTemplate node, String id) {
         if (node == null) {
             return null;
         }
-        List<TRelationshipTemplate> relationshipTemplates = new ArrayList<>();
+        // First, we find the source node template
+        TNodeTemplate sourceNT = this.nodeTemplateMap
+            .values()
+            .stream()
+            .filter(nodeTemplate -> nodeTemplate.getRequirements() != null &&
+                nodeTemplate
+                    .getRequirements()
+                    .getRequirement()
+                    .stream()
+                    .anyMatch(req -> req.getRelationship() != null && req.getRelationship().equals(id))
+            )
+            .findFirst()
+            .orElse(null);
+        if (sourceNT != null) {
+            // now we get the source requirement
+            assert sourceNT.getRequirements() != null;
+            TRequirement requirement = sourceNT
+                .getRequirements()
+                .getRequirement()
+                .stream()
+                .filter(req -> req.getRelationship() != null && req.getRelationship().equals(id))
+                .findFirst()
+                .orElse(null);
 
-        int num = 0;
-        String idName = id;
-        while (this.relationshipSTMap.containsKey(idName)) {
-            TRelationshipTemplate.SourceOrTargetElement sourceElement = new TRelationshipTemplate.SourceOrTargetElement();
-            sourceElement.setRef(this.nodeTemplateMap.get(this.relationshipSTMap.get(idName).getKey()));
-            TRelationshipTemplate.SourceOrTargetElement targetElement = new TRelationshipTemplate.SourceOrTargetElement();
-            targetElement.setRef(this.nodeTemplateMap.get(this.relationshipSTMap.get(idName).getValue()));
-            relationshipTemplates.add(
-                new TRelationshipTemplate.Builder(idName, node.getType(), sourceElement, targetElement)
-                    .setName(node.getType().getLocalPart())
-                    .build()
-            );
-            idName = id + num++;
+            if (requirement != null) {
+                // now lets get the target capability
+                if (requirement.getNode() != null && requirement.getCapability() != null) {
+                    if (this.nodeTemplateMap.containsKey(requirement.getNode())) {
+                        TNodeTemplate targetNT = this.nodeTemplateMap.get(requirement.getNode());
+                        TCapability capability;
+
+                        if (targetNT.getCapabilities() != null &&
+                            targetNT.getCapabilities()
+                                .getCapability()
+                                .stream()
+                                .anyMatch(cap -> cap.getName().equals(requirement.getCapability()))) {
+                            capability =
+                                targetNT.getCapabilities()
+                                    .getCapability()
+                                    .stream()
+                                    .filter(cap -> cap.getName().equals(requirement.getCapability()))
+                                    .findFirst()
+                                    .orElse(null);
+                        } else {
+                            // the capability is not present in the node template. We take the default one from the node type!
+                            QName nodeTyp = targetNT.getType();
+                            TCapabilityDefinition capDef = this.getCapabilityDefinitionOfCapabilityName(requirement.getCapability(), nodeTyp);
+
+                            if (capDef != null) {
+                                String capId = targetNT.getName() + "_" + capDef.getName();
+                                capability = new TCapability
+                                    .Builder(capId, capDef.getCapabilityType(), capDef.getName())
+                                    .build();
+                                if (targetNT.getCapabilities() == null) {
+                                    targetNT.setCapabilities(new TNodeTemplate.Capabilities());
+                                }
+                                targetNT.getCapabilities().getCapability().add(capability);
+                            } else {
+                                LOGGER.error("The capability {} referenced by the relationship {} cannot be found!",
+                                    requirement.getCapability(), requirement.getName());
+                                throw new RuntimeException("Unable to convert relationship template: " + id);
+                            }
+                        }
+                        assert capability != null;
+                        TRelationshipTemplate.SourceOrTargetElement sourceElement = new TRelationshipTemplate.SourceOrTargetElement();
+                        sourceElement.setRef(requirement);
+                        TRelationshipTemplate.SourceOrTargetElement targetElement = new TRelationshipTemplate.SourceOrTargetElement();
+                        targetElement.setRef(capability);
+                        return new TRelationshipTemplate.Builder(id, node.getType(), sourceElement, targetElement)
+                            .setName(node.getType().getLocalPart())
+                            .setProperties(convertPropertyAssignments(node.getProperties()))
+                            .build();
+                    } else {
+                        LOGGER.error("the node {} specified by the requirement {} cannot be found!", requirement.getNode().toString(),
+                            requirement.getName());
+                    }
+                } else {
+                    LOGGER.error("requirement {} has no node or capability specified!", requirement.getName());
+                }
+            } else {
+                LOGGER.error("The source requirement for the relationship {} cannot be deteremined.", id);
+            }
+        } else {
+            LOGGER.error("The source node template for the relationship {} cannot be determined.", id);
         }
 
-        return relationshipTemplates;
+        throw new RuntimeException("Unable to convert relationship template: " + id);
     }
 
     /**
@@ -911,7 +965,7 @@ public class Y2XConverter {
 
         TPolicyTemplate.Builder builder = new TPolicyTemplate.Builder(id + "_templ", node.getType());
         builder.setName(id);
-        builder.setProperties(convertPropertyAssignments(node.getProperties(), getPropertyTypeName(node.getType())));
+        builder.setProperties(convertPropertyAssignments(node.getProperties()));
         this.policyTemplates.add(builder.build());
 
         TPolicy.Builder pbuilder = new TPolicy.Builder(node.getType());
@@ -996,11 +1050,10 @@ public class Y2XConverter {
     /**
      * Converts a map of TOSCA YAML PropertyAssignment to TOSCA XML EntityTemplate.Properties
      */
-    private TEntityTemplate.Properties convertPropertyAssignments(Map<String, TPropertyAssignment> propertyMap, QName type) {
+    private TEntityTemplate.Properties convertPropertyAssignments(Map<String, TPropertyAssignment> propertyMap) {
         if (Objects.isNull(propertyMap) || propertyMap.isEmpty()) return null;
-        TEntityTemplate.Properties properties = new TEntityTemplate.Properties();
         //properties.setAny(assignmentBuilder.getAssignment(propertyMap, type));
-        return properties;
+        return new TEntityTemplate.Properties();
     }
 
     /**

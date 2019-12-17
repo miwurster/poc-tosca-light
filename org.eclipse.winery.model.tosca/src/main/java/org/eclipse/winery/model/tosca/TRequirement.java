@@ -40,13 +40,13 @@ public class TRequirement extends RelationshipSourceOrTarget {
     protected String name;
 
     @XmlAttribute(name = "capability")
-    protected QName capability;
+    protected String capability;
 
     @XmlAttribute(name = "node")
-    protected QName node;
+    protected String node;
 
     @XmlAttribute(name = "relationship")
-    protected QName relationship;
+    protected String relationship;
 
     public TRequirement() {
     }
@@ -95,27 +95,27 @@ public class TRequirement extends RelationshipSourceOrTarget {
         this.name = value;
     }
 
-    public QName getCapability() {
+    public String getCapability() {
         return capability;
     }
 
-    public void setCapability(QName capability) {
+    public void setCapability(String capability) {
         this.capability = capability;
     }
 
-    public QName getNode() {
+    public String getNode() {
         return node;
     }
 
-    public void setNode(QName node) {
+    public void setNode(String node) {
         this.node = node;
     }
 
-    public QName getRelationship() {
+    public String getRelationship() {
         return relationship;
     }
 
-    public void setRelationship(QName relationship) {
+    public void setRelationship(String relationship) {
         this.relationship = relationship;
     }
 
@@ -131,9 +131,9 @@ public class TRequirement extends RelationshipSourceOrTarget {
 
     public static class Builder extends RelationshipSourceOrTarget.Builder<Builder> {
         private final String name;
-        private QName capability;
-        private QName relationship;
-        private QName node;
+        private String capability;
+        private String relationship;
+        private String node;
 
         public Builder(String id, QName type) {
             super(id, type);
@@ -145,17 +145,17 @@ public class TRequirement extends RelationshipSourceOrTarget {
             this.name = name;
         }
 
-        public Builder setCapability(QName capability) {
+        public Builder setCapability(String capability) {
             this.capability = capability;
             return self();
         }
 
-        public Builder setRelationship(QName relationship) {
+        public Builder setRelationship(String relationship) {
             this.relationship = relationship;
             return self();
         }
 
-        public Builder setNode(QName node) {
+        public Builder setNode(String node) {
             this.node = node;
             return self();
         }
