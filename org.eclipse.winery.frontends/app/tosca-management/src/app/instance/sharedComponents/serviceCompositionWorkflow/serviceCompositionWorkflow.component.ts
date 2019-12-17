@@ -38,7 +38,6 @@ export class ServiceCompositionWorkflowComponent implements OnInit {
             editorConfig += '&isReadonly=true';
         }
 
-        console.log('URL start: ' + this.configurationService.configuration.endpoints.servicecompositionmodeler)
         this.editorUrl = this.configurationService.configuration.endpoints.servicecompositionmodeler + editorConfig;
     }
 }
