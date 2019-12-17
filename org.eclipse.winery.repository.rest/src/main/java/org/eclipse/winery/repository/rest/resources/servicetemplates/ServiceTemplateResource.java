@@ -418,8 +418,10 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         }
 
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
+        WineryVersion version = VersionUtils.getVersion(id);
+        String componentVersion = "_substituted_" + version.toString();
 
-        ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, splitting.createVersionForMultiParticipants(id, "_substituted"));
+        ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, splitting.createVersionForMultiParticipants(componentVersion));
 
         IRepository repo = RepositoryFactory.getRepository();
         if (repo.exists(newId)) {
@@ -481,42 +483,16 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         for (TTag tagOfServiceTemplate : tags) {
             // check if tag with partner in service template
             if (tagOfServiceTemplate.getName().contains("partner")) {
-                WineryVersion newVersion = new WineryVersion(
-                    tagOfServiceTemplate.getName() + "-" + version.toString().replace("gdm", "ldm"),
-                    1,
-                    0
-                );
+                WineryVersion newVersion = splitting.createVersionForMultiParticipants(tagOfServiceTemplate.getName() + "-" + version.toString().replace("gdm", "ldm"));
 
-                // create list of tags to add to service tempalte
-                TTags tTagList = new TTags();
-                for (TTag tag : tags) {
-                    if (tagOfServiceTemplate.getName().contains("partner") && !tag.getName().equals(tagOfServiceTemplate.getName())) {
-                        tTagList.getTag().add(tag);
-                    }
-                }
-
-                // new tag to define participant of service template
-                TTag participantTag = new TTag();
-                participantTag.setName("participant");
-                participantTag.setValue(tagOfServiceTemplate.getName());
-                tTagList.getTag().add(participantTag);
+                // create list of tags to add to service template
+                TTags tTagList = splitting.calculatePartnerTag(tags, tagOfServiceTemplate);
 
                 TTag choreoTag = splitting.calculateChoreographyTag(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates(), tagOfServiceTemplate.getName());
                 tTagList.getTag().add(choreoTag);
-                ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
-                    VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
-                    false);
+                ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, newVersion);
 
-                if (repo.exists(newId)) {
-                    repo.forceDelete(newId);
-                }
-
-                ResourceResult response = RestUtils.duplicate(id, newId);
-
-                if (response.getStatus() == Status.CREATED) {
-                    response.setUri(null);
-                    response.setMessage(new QNameApiData(newId));
-                }
+                ResourceResult response = checkResourceAndCreate(repo, id, newId);
 
                 TServiceTemplate tempServiceTempl = repo.getElement(newId);
                 // reset tags and set tags with respective entry
@@ -533,36 +509,35 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         return listOfResponses;
     }
 
-    @POST()
-    @Path("createplaceholderversion")
-    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response createNewPlaceholderVersion() throws IOException {
-        LOGGER.debug("Creating new placeholder version of Service Template {}...", this.getId());
-        ServiceTemplateId id = (ServiceTemplateId) this.getId();
-        WineryVersion version = VersionUtils.getVersion(id);
-
-        WineryVersion newVersion = new WineryVersion(
-            "gdm-" + version.toString(),
-            1,
-            0
-        );
-
-        IRepository repository = RepositoryFactory.getRepository();
-
-        ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
-            VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
-            false);
-
-        if (repository.exists(newId)) {
-            repository.forceDelete(newId);
+    private ResourceResult checkResourceAndCreate(IRepository repo, ServiceTemplateId oldId, ServiceTemplateId newId) throws IOException {
+        if (repo.exists(newId)) {
+            repo.forceDelete(newId);
         }
 
-        ResourceResult response = RestUtils.duplicate(id, newId);
+        ResourceResult response = RestUtils.duplicate(oldId, newId);
 
         if (response.getStatus() == Status.CREATED) {
             response.setUri(null);
             response.setMessage(new QNameApiData(newId));
         }
+
+        return response;
+    }
+
+    @POST()
+    @Path("createplaceholderversion")
+    @Produces( {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response createNewPlaceholderVersion() throws IOException {
+        Splitting splitting = new Splitting();
+        LOGGER.debug("Creating new placeholder version of Service Template {}...", this.getId());
+        ServiceTemplateId id = (ServiceTemplateId) this.getId();
+        WineryVersion version = VersionUtils.getVersion(id);
+
+        IRepository repo = RepositoryFactory.getRepository();
+
+        ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, splitting.createVersionForMultiParticipants("gdm-" + version.toString()));
+
+        ResourceResult response = checkResourceAndCreate(repo, id, newId);
 
         LOGGER.debug("Created Service Template {}", newId.getQName());
 

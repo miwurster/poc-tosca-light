@@ -378,23 +378,21 @@ public class Splitting {
         return relationshipTemplatesToBeRemoved;
     }
 
-    public WineryVersion createVersionForMultiParticipants(ServiceTemplateId id, String versionName) {
-        WineryVersion version = VersionUtils.getVersion(id);
-
+    public WineryVersion createVersionForMultiParticipants(String componentVersion) {
         WineryVersion newVersion = new WineryVersion(
-            versionName + version.toString(),
+            componentVersion,
             1,
             0
         );
-        
+
         return newVersion;
     }
-    
+
     public ServiceTemplateId createServiceTemplateIdForMultiParticipants(ServiceTemplateId id, WineryVersion newVersion) {
         ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
             VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
             false);
-        
+
         return newId;
     }
 
@@ -945,6 +943,24 @@ public class Splitting {
         choreoTag.setValue(choreoValue);
 
         return choreoTag;
+    }
+
+    public TTags calculatePartnerTag(List<TTag> tags, TTag tagOfServiceTemplate) {
+        TTags tTagList = new TTags();
+
+        for (TTag tag : tags) {
+            if (tagOfServiceTemplate.getName().contains("partner") && !tag.getName().equals(tagOfServiceTemplate.getName())) {
+                tTagList.getTag().add(tag);
+            }
+        }
+
+        // new tag to define participant of service template
+        TTag participantTag = new TTag();
+        participantTag.setName("participant");
+        participantTag.setValue(tagOfServiceTemplate.getName());
+        tTagList.getTag().add(participantTag);
+
+        return tTagList;
     }
 
     /**
