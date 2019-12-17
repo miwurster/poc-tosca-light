@@ -389,6 +389,14 @@ public class Splitting {
         
         return newVersion;
     }
+    
+    public ServiceTemplateId createServiceTemplateIdForMultiParticipants(ServiceTemplateId id, WineryVersion newVersion) {
+        ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
+            VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
+            false);
+        
+        return newId;
+    }
 
     public Map<Map<String, TNodeTemplate>, List<TNodeTemplate>> getNodeTemplatesToBeRemovedForPlaceholderSubstitution(String participantId, TTopologyTemplate originTopologyTemplate) {
         Map<String, TNodeTemplate> nodeTemplateIdAndPlaceholderMap = new LinkedHashMap<>();
@@ -918,7 +926,7 @@ public class Splitting {
         return injectConnectionNodeTemplates(topologyTemplate, defaultConnectorSelection);
     }
 
-    public String calculateChoreographyTag(List<TNodeTemplate> nodeTemplateList, String participantName) {
+    public TTag calculateChoreographyTag(List<TNodeTemplate> nodeTemplateList, String participantName) {
         String choreoValue = "";
         // iterate over node templates and check if their target location == current participant
         for (TNodeTemplate tNodeTemplate : nodeTemplateList) {
@@ -932,7 +940,11 @@ public class Splitting {
 
         choreoValue = choreoValue.substring(0, choreoValue.length() - 1);
 
-        return choreoValue;
+        TTag choreoTag = new TTag();
+        choreoTag.setName("choreography");
+        choreoTag.setValue(choreoValue);
+
+        return choreoTag;
     }
 
     /**

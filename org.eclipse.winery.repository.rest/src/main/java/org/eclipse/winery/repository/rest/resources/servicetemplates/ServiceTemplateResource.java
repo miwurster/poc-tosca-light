@@ -419,11 +419,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
 
-        WineryVersion newVersion = splitting.createVersionForMultiParticipants(id, "_substituted_");
-
-        ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
-            VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
-            false);
+        ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, splitting.createVersionForMultiParticipants(id, "_substituted"));
 
         IRepository repo = RepositoryFactory.getRepository();
         if (repo.exists(newId)) {
@@ -447,11 +443,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
             }
         }
 
-        String choreoValue = splitting.calculateChoreographyTag(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates(), participantId);
-
-        TTag choreoTag = new TTag();
-        choreoTag.setName("choreography");
-        choreoTag.setValue(choreoValue);
+        TTag choreoTag = splitting.calculateChoreographyTag(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates(), participantId);
 
         newTagList.getTag().add(choreoTag);
         newServiceTemplate.setTags(newTagList);
@@ -509,10 +501,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
                 participantTag.setValue(tagOfServiceTemplate.getName());
                 tTagList.getTag().add(participantTag);
 
-                String choreoValue = splitting.calculateChoreographyTag(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates(), tagOfServiceTemplate.getName());
-                TTag choreoTag = new TTag();
-                choreoTag.setName("choreography");
-                choreoTag.setValue(choreoValue);
+                TTag choreoTag = splitting.calculateChoreographyTag(this.getServiceTemplate().getTopologyTemplate().getNodeTemplates(), tagOfServiceTemplate.getName());
                 tTagList.getTag().add(choreoTag);
                 ServiceTemplateId newId = new ServiceTemplateId(id.getNamespace().getDecoded(),
                     VersionUtils.getNameWithoutVersion(id) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + newVersion.toString(),
