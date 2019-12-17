@@ -165,7 +165,7 @@ public class MainResource {
         return new TestRefinementModelsResource();
     }
 
-    @Path("servicecomposition/")
+    @Path("servicecompositions/")
     public ServiceCompositionModelsResource serviceComposition() {
         return new ServiceCompositionModelsResource(); }
 
