@@ -17,10 +17,12 @@ ui:
     compliance: true
     accountability: true
     nfv: true
+    serviceComposition: true
   endpoints:
     container: http://localhost:1337
     workflowmodeler: http://localhost:8080/winery-workflowmodeler
     topologymodeler: http://localhost:8080/winery-topologymodeler
+    servicecompositionmodeler: http://localhost:8091/winery-servicecompositionmodeler
     repositoryApiUrl: http://localhost:8080/winery
     repositoryUiUrl: http://localhost:8080/#
 repository:

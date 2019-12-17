@@ -92,7 +92,7 @@ export class InstanceService {
                 subMenu = ['README', 'LICENSE', 'Identifier', 'Required Structure', 'Tags', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.ServiceComposition:
-                subMenu = ['README', 'LICENSE', 'Documentation', 'XML'];
+                subMenu = ['README', 'LICENSE', 'Parameters', 'Workflow', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.PatternRefinementModel:
                 subMenu = ['README', 'LICENSE', 'Detector', 'Refinement Structure', 'Relation Mappings', 'Attribute Mappings', 'Stay Mappings', 'XML'];

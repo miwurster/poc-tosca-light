@@ -12,10 +12,12 @@ ui:
     testRefinement: true
     placement: true
     edmmModeling: true
+    serviceComposition: true
   endpoints:
     container: http://localhost:1337
     workflowmodeler: http://localhost:9527
     topologymodeler: http://localhost:4201
+    servicecompositionmodeler: http://localhost:8091
     repositoryApiUrl: http://localhost:8080/winery
     repositoryUiUrl: http://localhost:4200/#
 repository:

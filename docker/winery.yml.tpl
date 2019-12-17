@@ -10,10 +10,13 @@ ui:
     problemDetection: true
     splitting: true
     testRefinement: true
+    serviceComposition: true
   endpoints:
     container: http://{{ .Env.CONTAINER_HOSTNAME }}:{{ .Env.CONTAINER_PORT }}
     workflowmodeler: http://{{ .Env.WORKFLOWMODELER_HOSTNAME }}:{{ .Env.WORKFLOWMODELER_PORT }}/winery-workflowmodeler
     topologymodeler: http://{{ .Env.TOPOLOGYMODELER_HOSTNAME }}:{{ .Env.TOPOLOGYMODELER_PORT }}/winery-topologymodeler
+    servicecompositionmodeler: http://{{ .Env.SERVICECOMPOSITIONMODELER_HOSTNAME }}:{{ .Env
+    .SERVICECOMPOSITIONMODELER_PORT }}/winery-servicecompositionmodeler
     repositoryApiUrl: http://{{ .Env.WINERY_HOSTNAME }}:{{ .Env.WINERY_PORT }}/winery
     repositoryUiUrl: http://{{ .Env.WINERY_HOSTNAME }}:{{ .Env.WINERY_PORT }}/#
 repository:

@@ -9,6 +9,7 @@ import { WineryLicenseComponent } from '../../wineryLicenseModule/wineryLicense.
 import { DocumentationComponent } from '../../instance/sharedComponents/documentation/documentation.component';
 import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXML.component';
 import { NgModule } from '@angular/core';
+import { ServiceCompositionWorkflowComponent } from '../../instance/sharedComponents/serviceCompositionWorkflow/serviceCompositionWorkflow.component';
 
 /*******************************************************************************
  * Copyright (c) 2019 Contributors to the Eclipse Foundation
@@ -36,6 +37,8 @@ const serviceCompositionRoutes: Routes = [
         children: [
             { path: 'readme', component: WineryReadmeComponent },
             { path: 'license', component: WineryLicenseComponent },
+            { path: 'parameters', component: WineryLicenseComponent }, // TODO
+            { path: 'workflow', component: ServiceCompositionWorkflowComponent },
             { path: 'documentation', component: DocumentationComponent },
             { path: 'xml', component: EditXMLComponent },
             { path: '', redirectTo: 'readme', pathMatch: 'full' }

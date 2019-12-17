@@ -29,6 +29,7 @@ import { HttpModule } from '@angular/http';
 import { TabsModule } from 'ngx-bootstrap';
 import { InstanceModule } from '../../instance/instance.module';
 import { TopologyTemplateModule } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.module';
+import { ServiceCompositionWorkflowModule } from '../../instance/sharedComponents/serviceCompositionWorkflow/serviceCompositionWorkflow.module';
 
 @NgModule({
     imports: [
@@ -46,7 +47,8 @@ import { TopologyTemplateModule } from '../../instance/sharedComponents/topology
         WineryEditorModule,
         WineryReadmeModule,
         WineryLicenseModule,
-        ServiceCompositionRouterModule
+        ServiceCompositionRouterModule,
+        ServiceCompositionWorkflowModule
     ]
 })
 export class ServiceCompositionModule {

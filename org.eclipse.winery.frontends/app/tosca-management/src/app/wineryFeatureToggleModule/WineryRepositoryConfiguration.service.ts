@@ -37,6 +37,7 @@ export interface WineryConfiguration {
         container: String;
         topologymodeler: String;
         workflowmodeler: String;
+        servicecompositionmodeler: String;
     };
 }
 
