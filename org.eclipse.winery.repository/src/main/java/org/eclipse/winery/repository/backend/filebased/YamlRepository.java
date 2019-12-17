@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
@@ -571,7 +573,7 @@ public class YamlRepository extends FilebasedRepository {
      **/
     private TServiceTemplate readServiceTemplate(Path targetPath) throws IOException, MultiException {
         InputStream in = newInputStream(targetPath);
-        return Reader.getReader().parse(in);
+        return new Reader().parse(in);
     }
 
     /**
@@ -583,7 +585,7 @@ public class YamlRepository extends FilebasedRepository {
     private TServiceTemplate readServiceTemplate(RepositoryFileReference ref) throws IOException, MultiException {
         Path targetPath = ref2AbsolutePath(ref);
         InputStream in = newInputStream(targetPath);
-        return Reader.getReader().parse(in);
+        return new Reader().parse(in);
     }
 
     /**
@@ -720,7 +722,7 @@ public class YamlRepository extends FilebasedRepository {
                 Writer writer = new Writer();
                 return writer.writeToInputStream(serviceTemplate);
             } catch (Exception e) {
-                LOGGER.error("Error converting service template: {}", e.getMessage(), e);
+                LOGGER.error("Error converting service template. Reason: {}", e.getMessage(), e);
             }
             return null;
         } else {
@@ -1007,5 +1009,10 @@ public class YamlRepository extends FilebasedRepository {
             }
         }
         return res;
+    }
+
+    @Override
+    public void getReferencedRequirementTypeIds(Collection<DefinitionsChildId> ids, TNodeTemplate n) {
+        // Do nothing. In Yaml mode, there are no requirement types!
     }
 }

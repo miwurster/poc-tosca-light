@@ -645,16 +645,8 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                             }
                         }
                     }
+                    getReferencedRequirementTypeIds(ids, n);
 
-                    // crawl through reqs/caps
-                    TNodeTemplate.Requirements requirements = n.getRequirements();
-                    if (requirements != null) {
-                        for (TRequirement req : requirements.getRequirement()) {
-                            QName type = req.getType();
-                            RequirementTypeId rtId = new RequirementTypeId(type);
-                            ids.add(rtId);
-                        }
-                    }
                     TNodeTemplate.Capabilities capabilities = n.getCapabilities();
                     if (capabilities != null) {
                         for (TCapability cap : capabilities.getCapability()) {
@@ -687,6 +679,18 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         }
 
         return ids;
+    }
+
+    default void getReferencedRequirementTypeIds(Collection<DefinitionsChildId> ids, TNodeTemplate n) {
+        // crawl through reqs/caps
+        TNodeTemplate.Requirements requirements = n.getRequirements();
+        if (requirements != null) {
+            for (TRequirement req : requirements.getRequirement()) {
+                QName type = req.getType();
+                RequirementTypeId rtId = new RequirementTypeId(type);
+                ids.add(rtId);
+            }
+        }
     }
 
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(PatternRefinementModelId id) {
@@ -728,14 +732,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                     }
 
                     // crawl through reqs/caps
-                    TNodeTemplate.Requirements requirements = n.getRequirements();
-                    if (requirements != null) {
-                        for (TRequirement req : requirements.getRequirement()) {
-                            QName type = req.getType();
-                            RequirementTypeId rtId = new RequirementTypeId(type);
-                            ids.add(rtId);
-                        }
-                    }
+                    getReferencedRequirementTypeIds(ids, n);
                     TNodeTemplate.Capabilities capabilities = n.getCapabilities();
                     if (capabilities != null) {
                         for (TCapability cap : capabilities.getCapability()) {
