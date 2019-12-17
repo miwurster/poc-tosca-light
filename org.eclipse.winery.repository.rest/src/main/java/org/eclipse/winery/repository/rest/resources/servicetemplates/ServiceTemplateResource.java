@@ -419,7 +419,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
         ServiceTemplateId id = (ServiceTemplateId) this.getId();
         WineryVersion version = VersionUtils.getVersion(id);
-        String componentVersion = "_substituted_" + version.toString();
+        String componentVersion = version.getComponentVersion() + "-substituted";
 
         ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, splitting.createVersionForMultiParticipants(componentVersion));
 
@@ -483,7 +483,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         for (TTag tagOfServiceTemplate : tags) {
             // check if tag with partner in service template
             if (tagOfServiceTemplate.getName().contains("partner")) {
-                WineryVersion newVersion = splitting.createVersionForMultiParticipants(tagOfServiceTemplate.getName() + "-" + version.toString().replace("gdm", "ldm"));
+                WineryVersion newVersion = splitting.createVersionForMultiParticipants(tagOfServiceTemplate.getName() + "-" + version.getComponentVersion().replace("gdm", "ldm"));
 
                 // create list of tags to add to service template
                 TTags tTagList = splitting.calculatePartnerTag(tags, tagOfServiceTemplate);
@@ -535,7 +535,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
 
         IRepository repo = RepositoryFactory.getRepository();
 
-        ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, splitting.createVersionForMultiParticipants("gdm-" + version.toString()));
+        ServiceTemplateId newId = splitting.createServiceTemplateIdForMultiParticipants(id, splitting.createVersionForMultiParticipants("gdm-" + version.getComponentVersion()));
 
         ResourceResult response = checkResourceAndCreate(repo, id, newId);
 
