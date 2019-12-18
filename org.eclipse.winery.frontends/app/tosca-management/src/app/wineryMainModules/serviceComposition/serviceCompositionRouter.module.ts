@@ -10,6 +10,7 @@ import { DocumentationComponent } from '../../instance/sharedComponents/document
 import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXML.component';
 import { NgModule } from '@angular/core';
 import { ServiceCompositionWorkflowComponent } from '../../instance/sharedComponents/serviceCompositionWorkflow/serviceCompositionWorkflow.component';
+import { ServiceCompositionParametersComponent } from '../../instance/sharedComponents/serviceCompositionParameters/serviceCompositionParameters.component';
 
 /*******************************************************************************
  * Copyright (c) 2019 Contributors to the Eclipse Foundation
@@ -37,7 +38,7 @@ const serviceCompositionRoutes: Routes = [
         children: [
             { path: 'readme', component: WineryReadmeComponent },
             { path: 'license', component: WineryLicenseComponent },
-            { path: 'parameters', component: WineryLicenseComponent }, // TODO
+            { path: 'parameters', component: ServiceCompositionParametersComponent },
             { path: 'workflow', component: ServiceCompositionWorkflowComponent },
             { path: 'documentation', component: DocumentationComponent },
             { path: 'xml', component: EditXMLComponent },
@@ -59,6 +60,4 @@ const serviceCompositionRoutes: Routes = [
     ],
 })
 
-export class ServiceCompositionRouterModule {
-
-}
+export class ServiceCompositionRouterModule { }
