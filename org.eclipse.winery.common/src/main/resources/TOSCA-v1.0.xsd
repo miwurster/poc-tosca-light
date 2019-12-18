@@ -91,6 +91,7 @@
       <xs:element name="PatternRefinementModel" type="tPatternRefinementModel"/>
       <xs:element name="ComplianceRule" type="tComplianceRule"/>
       <xs:element name="TestRefinementModel" type="tTestRefinementModel"/>
+      <xs:element name="ServiceComposition" type="tServiceCompositionModel"/>
      </xs:choice>
     </xs:sequence>
     <xs:attribute name="id" type="xs:ID" use="required"/>
@@ -918,6 +919,42 @@
       </xs:complexType>
      </xs:element>
     </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="optional"/>
+    <xs:attribute name="targetNamespace" type="xs:anyURI"/>
+   </xs:extension>
+  </xs:complexContent>
+ </xs:complexType>
+ <xs:complexType name="tServiceCompositionModel">
+  <xs:complexContent>
+   <xs:extension base="tExtensibleElements">
+    <xs:sequence>
+     <xs:element name="InputParameters" minOccurs="0">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="InputParameter" type="tParameter" maxOccurs="unbounded"/>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
+     <xs:element name="OutputParameters">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="OutputParameter" type="tParameter" maxOccurs="unbounded"/>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
+     <xs:element name="Services">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="Service" maxOccurs="unbounded">
+         <xs:complexType>
+          <xs:attribute name="type" type="xs:QName" use="required"/>
+         </xs:complexType>
+        </xs:element>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
     <xs:attribute name="name" type="xs:string" use="optional"/>
     <xs:attribute name="targetNamespace" type="xs:anyURI"/>
    </xs:extension>
