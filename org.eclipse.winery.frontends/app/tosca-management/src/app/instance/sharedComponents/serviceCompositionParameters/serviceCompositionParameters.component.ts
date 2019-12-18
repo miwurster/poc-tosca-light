@@ -13,15 +13,35 @@
  *******************************************************************************/
 import { Component, OnInit } from '@angular/core';
 import { InstanceService } from '../../instance.service';
-import { backendBaseURL } from '../../../configuration';
-import { WineryRepositoryConfigurationService } from '../../../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { WineryNotificationService } from '../../../wineryNotificationModule/wineryNotification.service';
+import { InterfaceParameter } from '../../../model/parameters';
+import { YesNoEnum } from '../../../model/enums';
 
 @Component({
     templateUrl: 'serviceCompositionParameters.component.html',
 })
 export class ServiceCompositionParametersComponent implements OnInit {
 
-    constructor() { }
+    loading = false;
+    inputParameters: InterfaceParameter[];
+    outputParameters: InterfaceParameter[];
 
-    ngOnInit() { }
+    constructor(public sharedData: InstanceService, private notify: WineryNotificationService) { }
+
+    ngOnInit() {
+        this.inputParameters = [];
+        this.outputParameters = [];
+    }
+
+    save() {
+        this.loading = true;
+        // TODO
+        console.log('Input parameters: ' + this.inputParameters.length);
+    }
+
+    private handleSave() {
+        this.loading = false;
+        this.notify.success('Changes saved!');
+        // TODO
+    }
 }

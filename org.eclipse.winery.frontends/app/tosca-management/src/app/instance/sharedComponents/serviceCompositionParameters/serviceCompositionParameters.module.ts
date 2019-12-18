@@ -18,7 +18,7 @@ import { RouterModule } from '@angular/router';
 import { ServiceCompositionParametersComponent } from './serviceCompositionParameters.component';
 import { WineryModalModule } from '../../../wineryModalModule/winery.modal.module';
 import { WineryLoaderModule } from '../../../wineryLoader/wineryLoader.module';
-import { SelectModule } from 'ng2-select';
+import { WineryIoParameterModule } from '../../../wineryIoParameter/wineryIoParameters.module';
 
 @NgModule({
     imports: [
@@ -27,6 +27,7 @@ import { SelectModule } from 'ng2-select';
         RouterModule,
         WineryModalModule,
         WineryLoaderModule,
+        WineryIoParameterModule
     ],
     exports: [
         ServiceCompositionParametersComponent

@@ -11,6 +11,17 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<div>
-    <p>Parameter View... TODO</p>
+<div *ngIf="loading">
+    <winery-loader></winery-loader>
+</div>
+
+<div *ngIf="!loading">
+    <div>
+        <winery-io-parameter [inputParameters]="inputParameters" [outputParameters]="outputParameters">
+        </winery-io-parameter>
+    </div>
+
+    <div class="right">
+        <button class="btn btn-primary" [disabled]="!sharedData?.currentVersion?.editable" name="save" (click)="save()">Save</button>
+    </div>
 </div>
