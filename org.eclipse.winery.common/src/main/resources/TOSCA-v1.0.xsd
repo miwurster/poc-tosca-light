@@ -445,6 +445,12 @@
    </xs:extension>
   </xs:complexContent>
  </xs:complexType>
+ <xs:complexType name="tDataLinkParameter">
+  <xs:attribute name="serviceTemplateId" type="xs:QName"/>
+  <xs:attribute name="interfaceName" type="xs:string"/>
+  <xs:attribute name="operationName" type="xs:string"/>
+  <xs:attribute name="parameterName" type="xs:string" use="required" />
+ </xs:complexType>
  <xs:complexType name="tRequirementType">
   <xs:complexContent>
    <xs:extension base="tEntityType">
@@ -948,6 +954,20 @@
         <xs:element name="Service" maxOccurs="unbounded">
          <xs:complexType>
           <xs:attribute name="id" type="xs:QName" use="required"/>
+         </xs:complexType>
+        </xs:element>
+       </xs:sequence>
+      </xs:complexType>
+     </xs:element>
+     <xs:element name="DataLinks">
+      <xs:complexType>
+       <xs:sequence>
+        <xs:element name="DataLink" maxOccurs="unbounded">
+         <xs:complexType>
+          <xs:sequence>
+           <xs:element name="Source" type="tDataLinkParameter" maxOccurs="unbounded"/>
+           <xs:element name="Target" type="tDataLinkParameter" maxOccurs="unbounded"/>
+          </xs:sequence>
          </xs:complexType>
         </xs:element>
        </xs:sequence>

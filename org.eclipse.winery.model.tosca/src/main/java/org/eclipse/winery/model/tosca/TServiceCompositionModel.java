@@ -51,6 +51,9 @@ public class TServiceCompositionModel  extends HasId implements HasName, HasTarg
     @XmlElement(name = "Services", required = true)
     protected Services services;
 
+    @XmlElement(name = "DataLinks", required = true)
+    protected DataLinks dataLinks;
+
     @Override
     public String getName() {
         return name;
@@ -215,6 +218,118 @@ public class TServiceCompositionModel  extends HasId implements HasName, HasTarg
         @Override
         public int hashCode() {
             return Objects.hash(id);
+        }
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class DataLinks implements Serializable {
+
+        @XmlElement(name = "DataLink", required = true)
+        protected List<DataLink> dataLinks;
+
+        @NonNull
+        public List<DataLink> getDataLinks() {
+            if (dataLinks == null) {
+                dataLinks = new ArrayList<DataLink>();
+            }
+            return this.dataLinks;
+        }
+        
+        public void setDataLinks(List<DataLink> dataLinks) { this.dataLinks = dataLinks; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DataLinks that = (DataLinks) o;
+            return Objects.equals(dataLinks, that.dataLinks);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(dataLinks);
+        }
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class DataLink implements Serializable {
+
+        @XmlElement(name = "Source", required = true)
+        protected DataLinkSourceOrTarget source;
+
+        @XmlElement(name = "Target", required = true)
+        protected DataLinkSourceOrTarget target;
+
+        public DataLinkSourceOrTarget getSource() { return source; }
+
+        public void setSource(DataLinkSourceOrTarget source) { this.source = source; }
+
+        public DataLinkSourceOrTarget getTarget() { return target; }
+
+        public void setTarget(DataLinkSourceOrTarget target) { this.target = target; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DataLink that = (DataLink) o;
+            return Objects.equals(source, that.source) && Objects.equals(target, that.target);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(source);
+        }
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class DataLinkSourceOrTarget implements Serializable {
+
+        @XmlAttribute(name = "serviceTemplateId")
+        protected QName serviceTemplateId;
+        
+        @XmlAttribute(name = "interfaceName")
+        protected String interfaceName;
+
+        @XmlAttribute(name = "operationName")
+        protected String operationName;
+
+        @XmlAttribute(name = "parameterName", required = true)
+        protected String parameterName;
+        
+        public QName getServiceTemplateId() { return serviceTemplateId; }
+
+        public void setServiceTemplateId(QName serviceTemplateId) { this.serviceTemplateId = serviceTemplateId; }
+
+        public String getInterfaceName() { return interfaceName; }
+
+        public void setInterfaceName(String interfaceName) { this.interfaceName = interfaceName; }
+
+        public String getOperationName() { return operationName; }
+
+        public void setOperationName(String operationName) { this.operationName = operationName; }
+        
+        public String getParameterName() { return parameterName; }
+
+        public void setParameterName(String parameterName) { this.parameterName = parameterName; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            DataLinkSourceOrTarget that = (DataLinkSourceOrTarget) o;
+            return Objects.equals(serviceTemplateId, that.serviceTemplateId) 
+                && Objects.equals(interfaceName, that.interfaceName)
+                && Objects.equals(operationName, that.operationName)
+                && Objects.equals(parameterName, that.parameterName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(serviceTemplateId, interfaceName, operationName, parameterName);
         }
     }
 }
