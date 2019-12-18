@@ -20,7 +20,7 @@ export class MultiParticipantsService {
 
     /**
      * Create a new version of the current service template
-     * 
+     *
      * @param endpoint: respective endpoint for placeholder version, participant version, ...
      */
     postNewVersion(endpoint: string): Observable<any> {
@@ -31,7 +31,7 @@ export class MultiParticipantsService {
             + encodeURIComponent(this.configuration.id)
             + '/'
             + endpoint;
-        
+
         return this.httpClient.post(
             url,
             { headers: this.httpHeaders, observe: 'response', responseType: 'json' }
@@ -40,7 +40,7 @@ export class MultiParticipantsService {
 
     /**
      * Create placeholder for participants.
-     * 
+     *
      * @param serviceTemplateId: id of service template where placeholders are generated
      */
     postPlaceholders(serviceTemplateId: string): Observable<any> {
@@ -50,7 +50,7 @@ export class MultiParticipantsService {
             + '/'
             + encodeURIComponent(serviceTemplateId)
             + '/placeholder/generator';
-        
+
         return this.httpClient.post(
             url,
             { headers: this.httpHeaders, observe: 'response' });
