@@ -88,6 +88,7 @@ import org.eclipse.winery.model.tosca.TRelationshipTypeImplementation;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementDefinition;
 import org.eclipse.winery.model.tosca.TRequirementType;
+import org.eclipse.winery.model.tosca.TServiceCompositionModel;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
@@ -684,8 +685,24 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
     }
 
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ServiceCompositionModelId id) {
-        // TODO
-        return new HashSet<>();
+        Collection<DefinitionsChildId> ids = new HashSet<>();
+
+        TServiceCompositionModel compositionModel = this.getElement(id);
+        if (Objects.isNull(compositionModel.getServices())) {
+            return ids;
+        }
+
+        // add all referenced service templates with their required definitions
+        for (TServiceCompositionModel.Service service: compositionModel.getServices().getServices()) {
+            DefinitionsChildId idToAdd = 
+                this.getAllDefinitionsChildIds(ServiceTemplateId.class).stream()
+                    .filter(childId -> childId.getQName().equals(service.getId())).findFirst().orElse(null);
+            if (Objects.nonNull(idToAdd)) {
+                ids.add(idToAdd);
+            }
+        }
+
+        return ids;
     }
 
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(PatternRefinementModelId id) {

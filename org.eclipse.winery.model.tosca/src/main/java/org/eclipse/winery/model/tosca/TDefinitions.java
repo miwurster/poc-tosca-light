@@ -71,7 +71,8 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         @XmlElement(name = "ComplianceRule", type = TComplianceRule.class),
         @XmlElement(name = "ServiceComposition", type = TServiceCompositionModel.class),
         @XmlElement(name = "PatternRefinementModel", type = TPatternRefinementModel.class),
-        @XmlElement(name = "TestRefinementModel", type = TTestRefinementModel.class)
+        @XmlElement(name = "TestRefinementModel", type = TTestRefinementModel.class),
+        @XmlElement(name = "ServiceComposition", type = TServiceCompositionModel.class)
     })
     protected List<TExtensibleElements> serviceTemplateOrNodeTypeOrNodeTypeImplementation;
 

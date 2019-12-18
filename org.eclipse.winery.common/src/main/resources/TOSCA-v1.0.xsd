@@ -947,7 +947,7 @@
        <xs:sequence>
         <xs:element name="Service" maxOccurs="unbounded">
          <xs:complexType>
-          <xs:attribute name="type" type="xs:QName" use="required"/>
+          <xs:attribute name="id" type="xs:QName" use="required"/>
          </xs:complexType>
         </xs:element>
        </xs:sequence>

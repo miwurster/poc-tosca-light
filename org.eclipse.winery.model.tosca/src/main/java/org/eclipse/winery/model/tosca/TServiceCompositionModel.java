@@ -87,9 +87,7 @@ public class TServiceCompositionModel  extends HasId implements HasName, HasTarg
         this.outputParameters = value;
     }
 
-    public Services getServices() {
-        return services;
-    }
+    public Services getServices() { return services; }
 
     public void setServices(Services value) {
         this.services = value;
@@ -195,15 +193,15 @@ public class TServiceCompositionModel  extends HasId implements HasName, HasTarg
     @XmlType(name = "")
     public static class Service implements Serializable {
 
-        @XmlAttribute(name = "type", required = true)
-        protected QName type;
+        @XmlAttribute(name = "id", required = true)
+        protected QName id;
 
-        public QName getType() {
-            return type;
+        public QName getId() {
+            return id;
         }
 
-        public void setRef(@NonNull QName value) {
-            this.type = value;
+        public void setId(@NonNull QName value) {
+            this.id = value;
         }
 
         @Override
@@ -211,12 +209,12 @@ public class TServiceCompositionModel  extends HasId implements HasName, HasTarg
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Service that = (Service) o;
-            return Objects.equals(type, that.type);
+            return Objects.equals(id, that.id);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(type);
+            return Objects.hash(id);
         }
     }
 }
