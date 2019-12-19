@@ -20,8 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.common.Util;
+import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.TServiceCompositionModel;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
@@ -29,6 +33,17 @@ import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 
+import com.google.gson.Gson;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +123,94 @@ public class DeploymentUtils {
      * @return the URL of the deployed service or <code>null</code> if the deployment fails
      */
     private static URL deployServiceTemplate(TServiceTemplate serviceTemplate, URL containerURL) {
-        // TODO
+        
+        if (!isCSARAlreadyDeployed(serviceTemplate, containerURL)) {
+            LOGGER.debug("CSAR for ServiceTemplate with Id {} is not available and has to be uploaded.",
+                serviceTemplate.getId());
+            if (uploadCSARToContainer(serviceTemplate, containerURL)) {
+                LOGGER.error("Failed to upload CSAR for ServiceTemplate with Id: {}", serviceTemplate.getId());
+                return null;
+            }
+        }
+
+        LOGGER.debug("CSAR is deployed at the target Container. Creating instance of the service...");
+        return createServiceInstance(serviceTemplate, containerURL);
+    }
+
+    /**
+     * Check if the CSAR for the given ServiceTemplate is already deployed in the Container.
+     * 
+     * @param serviceTemplate the ServiceTemplate to check for deployment
+     * @param containerURL the URL to the Container
+     * @return <code>true</code> if the CSAR is already deployed, <code>false</code> otherwise
+     */
+    private static boolean isCSARAlreadyDeployed(TServiceTemplate serviceTemplate, URL containerURL) {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            LOGGER.debug("Checking for availability of CSAR with name: {}.csar", serviceTemplate.getId());
+            
+            // retrieve all deployed CSARs
+            HttpGet get = new HttpGet(String.valueOf(containerURL));
+            get.setHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+            HttpResponse response = httpclient.execute(get);
+            
+            // parse response to JSON and search for deployed CSAR
+            String json = EntityUtils.toString(response.getEntity());
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) parser.parse(json);
+            JSONArray csars = (JSONArray) jsonObject.get("csars");
+            
+            for (Object csar : csars.toArray()) {
+                JSONObject csarJSON = (JSONObject) csar;
+                if (csarJSON.get("id").equals(serviceTemplate.getId() + ".csar")) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            LOGGER.error("Exception while checking for availability of CSAR: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Deploy the CSAR for the given ServiceTemplate to the Container
+     * 
+     * @param serviceTemplate the ServiceTemplate to deploy
+     * @param containerURL the URL to the Container
+     * @return <code>true</code> if upload is successful, <code>false</code> otherwise
+     */
+    private static boolean uploadCSARToContainer(TServiceTemplate serviceTemplate, URL containerURL) {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            ServiceTemplateId serviceId = BackendUtils.getDefinitionsChildId(ServiceTemplateId.class,
+                new QName(serviceTemplate.getTargetNamespace(), serviceTemplate.getId()));
+            
+            CsarUploadRequest uploadRequest = new CsarUploadRequest();
+            uploadRequest.setName(serviceTemplate.getId());
+            uploadRequest.setUrl(Environments.getUiConfig().getEndpoints().get("repositoryApiUrl") + "/" + Util.getUrlPath(serviceId) + "?csar");
+            uploadRequest.setEnrich("false");
+
+            HttpPost post = new HttpPost(String.valueOf(containerURL));
+            post.setEntity(new StringEntity(new Gson().toJson(uploadRequest)));
+            post.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+            HttpResponse response = httpclient.execute(post);
+            
+            LOGGER.debug("Retrieved status code {} for the upload request.", response.getStatusLine().getStatusCode());
+            return response.getStatusLine().getStatusCode() != 201;
+        } catch (Exception e) {
+            LOGGER.error("Exception while uploading CSAR: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Provision an instance of the given ServiceTemplate and return the endpoint of the created service.
+     * 
+     * @param serviceTemplate the ServiceTemplate to create an instance of
+     * @param containerURL the URL to the Container
+     * @return the endpoint of the provisioned service instance as URL or <code>null</code> if the deployment fails
+     */
+    private static URL createServiceInstance(TServiceTemplate serviceTemplate, URL containerURL) {
+        // TODO: create service instance; retrieve endpoint
         return null;
     }
 
@@ -124,9 +226,7 @@ public class DeploymentUtils {
      */
     private static URL deployWorkflow(TServiceCompositionModel serviceCompositionModel,
                                       List<TServiceTemplate> serviceTemplates, HashMap<QName, URL> endpointsMap, URL odeURL) {
-        // TODO
+        // TODO: generate and deploy workflow
         return null;
     }
 }
-
-
