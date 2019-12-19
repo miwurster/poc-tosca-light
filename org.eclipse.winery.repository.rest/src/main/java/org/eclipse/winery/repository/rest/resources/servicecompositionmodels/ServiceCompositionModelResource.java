@@ -15,6 +15,8 @@
 package org.eclipse.winery.repository.rest.resources.servicecompositionmodels;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +31,7 @@ import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.ServiceCompositionModelId;
+import org.eclipse.winery.model.adaptation.servicecomposition.DeploymentUtils;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TParameter;
 import org.eclipse.winery.model.tosca.TServiceCompositionModel;
@@ -37,6 +40,7 @@ import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.rest.RestUtils;
 import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResource;
 import org.eclipse.winery.repository.rest.resources._support.IHasName;
+import org.eclipse.winery.repository.rest.resources.apiData.ServiceCompositionEndpointData;
 import org.eclipse.winery.repository.rest.resources.apiData.ServiceCompositionParametersData;
 
 public class ServiceCompositionModelResource extends AbstractComponentInstanceResource implements IHasName {
@@ -104,12 +108,28 @@ public class ServiceCompositionModelResource extends AbstractComponentInstanceRe
         }
     }
 
-    @Path("deploy/")
+    @Path("deployment/")
     @POST
-    public Response deployServiceComposition() {
-        System.out.println("Deploying service composition...");
-        // TODO
-        return Response.status(Response.Status.OK).entity("Deployment triggered successfully").build();
+    @Consumes( {MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON} )
+    public Response deployServiceComposition(ServiceCompositionEndpointData endpoints) {
+        
+        if (Objects.isNull(endpoints.getContainerURL()) || Objects.isNull(endpoints.getOdeURL())) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Deployment not possible with missing " +
+                "endpoint!").build();
+        }
+
+        try {
+            URL containerURL = new URL(endpoints.getContainerURL());
+            URL odeURL = new URL(endpoints.getOdeURL());
+            
+            // start deployment in separate thread and return response as it takes some minutes
+            new Thread(() -> {
+                DeploymentUtils.deployServiceComposition(this.getServiceCompositionModel(), containerURL, odeURL);
+            }).start();
+            return Response.status(Response.Status.OK).entity("Deployment triggered successfully").build();
+        } catch (MalformedURLException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Unable to parse given endpoint to URL: " + e.getMessage()).build();
+        }
     }
 
     @Override

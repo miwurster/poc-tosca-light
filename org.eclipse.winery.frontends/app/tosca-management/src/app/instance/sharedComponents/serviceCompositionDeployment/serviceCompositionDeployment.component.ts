@@ -28,18 +28,14 @@ export class ServiceCompositionDeploymentComponent implements OnInit {
     private readonly path: string;
     private readonly header = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    constructor(public sharedData: InstanceService, private notify: WineryNotificationService
-                , private route: Router, private http: HttpClient) {
+    constructor(private notify: WineryNotificationService, private route: Router, private http: HttpClient) {
         this.path = backendBaseURL + this.route.url + '/';
     }
 
     ngOnInit() { }
 
-    deployServiceComposition() {
-        // TODO
-        console.log(this.path);
-
-        this.http.post(this.path, null, { headers: this.header, observe: 'response', responseType: 'text' })
+    deployServiceComposition(containerURL: string, odeURL: string) {
+        this.http.post(this.path,  { containerURL: containerURL, odeURL: odeURL }, { headers: this.header, observe: 'response', responseType: 'text' })
             .subscribe(
                 data => this.notify.success('Deployment is in progress!'),
                 error => this.notify.error('Deployment failed with error: ' + error.error)
