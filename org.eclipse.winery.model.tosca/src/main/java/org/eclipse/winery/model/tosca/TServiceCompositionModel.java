@@ -118,6 +118,10 @@ public class TServiceCompositionModel  extends HasId implements HasName, HasTarg
             return this.inputParameter;
         }
 
+        public void setInputParameter(List<TParameter> inputParameter) {
+            this.inputParameter = inputParameter;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -147,6 +151,10 @@ public class TServiceCompositionModel  extends HasId implements HasName, HasTarg
                 outputParameter = new ArrayList<TParameter>();
             }
             return this.outputParameter;
+        }
+
+        public void setOutputParameter(List<TParameter> outputParameter) {
+            this.outputParameter = outputParameter;
         }
 
         @Override
