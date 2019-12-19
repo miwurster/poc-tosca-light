@@ -31,6 +31,7 @@ import { InstanceModule } from '../../instance/instance.module';
 import { TopologyTemplateModule } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.module';
 import { ServiceCompositionWorkflowModule } from '../../instance/sharedComponents/serviceCompositionWorkflow/serviceCompositionWorkflow.module';
 import { ServiceCompositionParametersModule } from '../../instance/sharedComponents/serviceCompositionParameters/serviceCompositionParameters.module';
+import { ServiceCompositionDeploymentModule } from '../../instance/sharedComponents/serviceCompositionDeployment/serviceCompositionDeployment.module';
 
 @NgModule({
     imports: [
@@ -50,6 +51,7 @@ import { ServiceCompositionParametersModule } from '../../instance/sharedCompone
         WineryLicenseModule,
         ServiceCompositionRouterModule,
         ServiceCompositionParametersModule,
+        ServiceCompositionDeploymentModule,
         ServiceCompositionWorkflowModule
     ]
 })

@@ -104,6 +104,14 @@ public class ServiceCompositionModelResource extends AbstractComponentInstanceRe
         }
     }
 
+    @Path("deploy/")
+    @POST
+    public Response deployServiceComposition() {
+        System.out.println("Deploying service composition...");
+        // TODO
+        return Response.status(Response.Status.OK).entity("Deployment triggered successfully").build();
+    }
+
     @Override
     protected TExtensibleElements createNewElement() { return new TServiceCompositionModel(); }
 

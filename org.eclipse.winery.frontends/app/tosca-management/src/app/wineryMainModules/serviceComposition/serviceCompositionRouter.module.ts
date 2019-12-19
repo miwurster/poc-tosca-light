@@ -11,6 +11,7 @@ import { EditXMLComponent } from '../../instance/sharedComponents/editXML/editXM
 import { NgModule } from '@angular/core';
 import { ServiceCompositionWorkflowComponent } from '../../instance/sharedComponents/serviceCompositionWorkflow/serviceCompositionWorkflow.component';
 import { ServiceCompositionParametersComponent } from '../../instance/sharedComponents/serviceCompositionParameters/serviceCompositionParameters.component';
+import { ServiceCompositionDeploymentComponent } from '../../instance/sharedComponents/serviceCompositionDeployment/serviceCompositionDeployment.component';
 
 /*******************************************************************************
  * Copyright (c) 2019 Contributors to the Eclipse Foundation
@@ -42,6 +43,7 @@ const serviceCompositionRoutes: Routes = [
             { path: 'workflow', component: ServiceCompositionWorkflowComponent },
             { path: 'documentation', component: DocumentationComponent },
             { path: 'xml', component: EditXMLComponent },
+            { path: 'deployment', component: ServiceCompositionDeploymentComponent },
             { path: '', redirectTo: 'readme', pathMatch: 'full' }
         ]
     }
