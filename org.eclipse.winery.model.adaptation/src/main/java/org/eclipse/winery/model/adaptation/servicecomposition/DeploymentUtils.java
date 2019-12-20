@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.adaptation.servicecomposition;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +97,7 @@ public class DeploymentUtils {
         LOGGER.debug("Successfully retrieved all required ServiceTemplates!");
         
         // upload the CSARs to the OpenTOSCA Container and create an instance of each service
-        HashMap<QName, URL> endpointsMap = new HashMap<QName, URL>();
+        HashMap<QName, URL> endpointsMap = new HashMap<>();
         for (TServiceTemplate serviceTemplate : serviceTemplates) {
             LOGGER.debug("Creating instance for ServiceTemplate {}...", serviceTemplate.getId());
             URL serviceEndpoint = deployServiceTemplate(serviceTemplate, containerURL);
@@ -147,16 +149,9 @@ public class DeploymentUtils {
     private static boolean isCSARAlreadyDeployed(TServiceTemplate serviceTemplate, URL containerURL) {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             LOGGER.debug("Checking for availability of CSAR with name: {}.csar", serviceTemplate.getId());
-            
+
             // retrieve all deployed CSARs
-            HttpGet get = new HttpGet(String.valueOf(containerURL));
-            get.setHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-            HttpResponse response = httpclient.execute(get);
-            
-            // parse response to JSON and search for deployed CSAR
-            String json = EntityUtils.toString(response.getEntity());
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) parser.parse(json);
+            JSONObject jsonObject = returnJsonFromGet(httpclient, String.valueOf(containerURL));
             JSONArray csars = (JSONArray) jsonObject.get("csars");
             
             for (Object csar : csars.toArray()) {
@@ -210,8 +205,82 @@ public class DeploymentUtils {
      * @return the endpoint of the provisioned service instance as URL or <code>null</code> if the deployment fails
      */
     private static URL createServiceInstance(TServiceTemplate serviceTemplate, URL containerURL) {
-        // TODO: create service instance; retrieve endpoint
-        return null;
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            LOGGER.debug("Creating service instance for ServiceTemplate: {}", serviceTemplate.getId());
+            
+            // retrieve all service templates contained in the csar
+            String serviceTemplatesUrl = containerURL + "/" + serviceTemplate.getId() + ".csar/servicetemplates";
+            JSONObject jsonObject = returnJsonFromGet(httpclient, serviceTemplatesUrl);
+            JSONArray serviceTemplatesArray = (JSONArray) jsonObject.get("service_templates");
+
+            // search for the required service template
+            String targetServiceTemplateUrl = null;
+            for (Object availableServiceTemplate : serviceTemplatesArray.toArray()) {
+                JSONObject serviceTemplateJson = (JSONObject) availableServiceTemplate;
+                if (serviceTemplateJson.get("id").equals(new QName(serviceTemplate.getTargetNamespace(),
+                    serviceTemplate.getId()).toString())) {
+                    JSONObject links = (JSONObject) serviceTemplateJson.get("_links");
+                    JSONObject self = (JSONObject) links.get("self");
+                    targetServiceTemplateUrl = self.get("href").toString();
+                    break;
+                }
+            }
+            
+            if (Objects.isNull(targetServiceTemplateUrl)) {
+                LOGGER.error("Unable to find required ServiceTemplate in the CSAR!");
+                return null;
+            }
+            
+            // get the link to the build plan of the service template
+            String buildPlansUrl = targetServiceTemplateUrl + "/buildplans";
+            jsonObject = returnJsonFromGet(httpclient, buildPlansUrl);
+            JSONArray plans = ((JSONArray) jsonObject.get("plans"));
+            if (plans.size() == 0) {
+                LOGGER.error("No build plans contained for ServiceTemplate: {}", serviceTemplate.getId());
+                return null;
+            }
+            
+            // use the first available build plan
+            JSONObject plan = (JSONObject) plans.get(0);
+            JSONArray inputParams = (JSONArray) plan.get("input_parameters");
+            JSONObject links = (JSONObject) plan.get("_links");
+            JSONObject instances = (JSONObject) links.get("instances");
+            String buildPlanUrl = instances.get("href").toString();
+            LOGGER.debug("Invoking build plan on Url: {}", buildPlanUrl);
+
+            // create the service instance
+            HttpPost post = new HttpPost(buildPlanUrl);
+            post.setEntity(new StringEntity(inputParams.toString())); // we expect no required user input parameters
+            post.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+            HttpResponse response = httpclient.execute(post);
+            
+            System.out.println(response.getStatusLine());
+            // TODO: retrieve endpoint
+            return null;
+        } catch (Exception e) {
+            LOGGER.error("Exception while creating service instance: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Perform a Http Get request on the given URL and return the result as a JSONObject
+     * 
+     * @param httpclient the client to perform the request (has to be closed by the caller)
+     * @param url the URL to perform the get on
+     * @return the JSONObject of the response
+     * @throws IOException 
+     * @throws ParseException
+     */
+    private static JSONObject returnJsonFromGet(CloseableHttpClient httpclient, String url) throws IOException, ParseException {
+        HttpGet get = new HttpGet(String.valueOf(url));
+        get.setHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+        HttpResponse response = httpclient.execute(get);
+        
+        String json = EntityUtils.toString(response.getEntity());
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(json);
+        return jsonObject;
     }
 
     /**
