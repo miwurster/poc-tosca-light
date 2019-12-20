@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.model.tosca.TPropertyMapping;
 import org.eclipse.winery.model.tosca.TServiceCompositionModel;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.repository.backend.BackendUtils;
@@ -205,6 +206,8 @@ public class DeploymentUtils {
      * @return the endpoint of the provisioned service instance as URL or <code>null</code> if the deployment fails
      */
     private static URL createServiceInstance(TServiceTemplate serviceTemplate, URL containerURL) {
+        QName serviceTemplateQName = new QName(serviceTemplate.getTargetNamespace(), serviceTemplate.getId());
+        
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             LOGGER.debug("Creating service instance for ServiceTemplate: {}", serviceTemplate.getId());
             
@@ -217,8 +220,7 @@ public class DeploymentUtils {
             String targetServiceTemplateUrl = null;
             for (Object availableServiceTemplate : serviceTemplatesArray.toArray()) {
                 JSONObject serviceTemplateJson = (JSONObject) availableServiceTemplate;
-                if (serviceTemplateJson.get("id").equals(new QName(serviceTemplate.getTargetNamespace(),
-                    serviceTemplate.getId()).toString())) {
+                if (serviceTemplateJson.get("id").equals(serviceTemplateQName.toString())) {
                     JSONObject links = (JSONObject) serviceTemplateJson.get("_links");
                     JSONObject self = (JSONObject) links.get("self");
                     targetServiceTemplateUrl = self.get("href").toString();
@@ -254,13 +256,106 @@ public class DeploymentUtils {
             post.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
             HttpResponse response = httpclient.execute(post);
             
-            System.out.println(response.getStatusLine());
-            // TODO: retrieve endpoint
-            return null;
+            if (response.getStatusLine().getStatusCode() != 201) {
+                LOGGER.error("Received invalid status code when invoking build plan: {}", response.getStatusLine().getStatusCode());
+                return null;
+            }
+            LOGGER.debug("Build plan instance is running. Waiting for termination...");
+            
+            // wait for the plan create the instance in the instance database
+            Thread.sleep(10000);
+            
+            if (Objects.isNull(serviceTemplate.getBoundaryDefinitions()) 
+                || Objects.isNull(serviceTemplate.getBoundaryDefinitions().getProperties()) 
+                || Objects.isNull(serviceTemplate.getBoundaryDefinitions().getProperties().getPropertyMappings())
+                || Objects.isNull(serviceTemplate.getBoundaryDefinitions().getProperties().getPropertyMappings().getPropertyMapping())) {
+                LOGGER.error("ServiceTemplate has no boundary definitons specifying the interface and endpoint of the" +
+                    " service!");
+                return null;
+            }
+
+            TPropertyMapping endpointMapping = 
+                serviceTemplate.getBoundaryDefinitions().getProperties().getPropertyMappings().getPropertyMapping()
+                    .stream()
+                    .filter(propertyMapping -> propertyMapping.getServiceTemplatePropertyRef().equals("ServiceEndpoint"))
+                    .findFirst().orElse(null);
+            
+            if (Objects.isNull(endpointMapping)) {
+                LOGGER.error("ServiceTemplate can not be used in service composition as it does not specify a " +
+                    "property containing the endpoint of the deployed service in its boundary definition!");
+                return null;
+            }
+
+            // wait for plan termination and retrieve endpoint 
+            return getEndpointForServiceInstance(httpclient, buildPlanUrl, EntityUtils.toString(response.getEntity())
+                , endpointMapping.getTargetObjectRef().toString(), endpointMapping.getTargetPropertyRef());
         } catch (Exception e) {
             LOGGER.error("Exception while creating service instance: {}", e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Wait for the ServiceTemplate instance to be created and retrieve the endpoint of the service.
+     * 
+     * @param httpclient the client to perform the requests (has to be closed by the caller)
+     * @param buildPlanUrl the url to the build plan instances of the ServiceTemplate
+     * @param planCorrelationId the correlation id of the build plan related to the ServiceTemplate
+     * @param endpointNodeTemplate the name of the NodeTemplate with the property containing the endpoint of the 
+     *                             created service
+     * @param endpointPropertyName the name of the property containing the endpoint of the created service
+     * @return the URL if the ServiceTemplate instance is created successfully, <code>null</code> if a timeout or 
+     * error occurs
+     * @throws IOException
+     * @throws ParseException
+     * @throws InterruptedException
+     */
+    private static URL getEndpointForServiceInstance(CloseableHttpClient httpclient, String buildPlanUrl, 
+                                                    String planCorrelationId, String endpointNodeTemplate,
+                                                     String endpointPropertyName) throws IOException, ParseException,
+        InterruptedException {
+        // search service template instance corresponding to the triggered build plan
+        JSONObject planInstances = returnJsonFromGet(httpclient, buildPlanUrl);
+        JSONArray planInstancesArray = (JSONArray) planInstances.get("plan_instances");
+        String relatedServiceTemplateUrl = null;
+        for (Object planInstance : planInstancesArray.toArray()) {
+            JSONObject planInstanceJson = (JSONObject) planInstance;
+
+            if (planInstanceJson.get("correlation_id").equals(planCorrelationId)) {
+                JSONObject planInstanceLinks = (JSONObject) planInstanceJson.get("_links");
+                relatedServiceTemplateUrl =
+                    ((JSONObject) planInstanceLinks.get("service_template_instance")).get("href").toString();
+                break;
+            }
+        }
+
+        if (Objects.isNull(relatedServiceTemplateUrl)) {
+            LOGGER.error("Unable to retrieve service template instance related to triggered build plan!");
+            return null;
+        }
+
+        // wait for the termination
+        relatedServiceTemplateUrl += "/state";
+        String serviceTemplateState = "INITIAL";
+        int count = 1;
+        while (!serviceTemplateState.equals("CREATED") && count <= 100) {
+            LOGGER.debug("Waiting for termination of build plan ({}/100).", count);
+            HttpGet get = new HttpGet(relatedServiceTemplateUrl);
+            serviceTemplateState = EntityUtils.toString(httpclient.execute(get).getEntity());
+            count++;
+            Thread.sleep(10000);
+        }
+
+        if (!serviceTemplateState.equals("CREATED")) {
+            LOGGER.debug("");
+            return null;
+        }
+        LOGGER.debug("ServiceTemplate instance created successfully.");
+        
+        LOGGER.debug("Enpoint is retrieved on NodeTemplate {} from property {}.", endpointNodeTemplate, endpointPropertyName);
+        // TODO: retrieve endpoint
+
+        return null;
     }
 
     /**
