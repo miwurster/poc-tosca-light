@@ -26,15 +26,24 @@ import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
-import org.eclipse.winery.common.version.WineryVersion;
 import org.eclipse.winery.model.tosca.TCapabilityDefinition;
+import org.eclipse.winery.model.tosca.TCapabilityType;
 import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TRequirementDefinition;
+import org.eclipse.winery.model.tosca.TRequirementType;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.eclipse.winery.common.version.WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR;
+import static org.eclipse.winery.common.version.WineryVersion.WINERY_VERSION_PREFIX;
+import static org.eclipse.winery.common.version.WineryVersion.WINERY_VERSION_SEPARATOR;
+
 public class CookbookConfigurationToscaConverter {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(CookbookConfigurationToscaConverter.class);
     private final IRepository repository = RepositoryFactory.getRepository(new File(Environments.getRepositoryConfig().getRepositoryRoot()).toPath());
 
     public List<TNodeType> convertCookbookConfigurationToToscaNode(ChefCookbookConfiguration cookbookConfiguration, int counter) {
@@ -44,17 +53,17 @@ public class CookbookConfigurationToscaConverter {
 
         String namespace = buildNamespaceForCookbookConfigs(cookbookName, version);
 
-        TNodeType.Builder configurationNodeType = new TNodeType.Builder(cookbookName + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter);
-        configurationNodeType.setTargetNamespace(namespace);
+        TNodeType.Builder nodeTypeBuilder = new TNodeType.Builder(cookbookName + WINERY_VERSION_SEPARATOR + WINERY_VERSION_PREFIX + counter);
+        nodeTypeBuilder.setTargetNamespace(namespace);
 
         TRequirementDefinition platform = convertPlatformToRequirement(cookbookConfiguration.getSupports(), namespace);
-        configurationNodeType.addRequirementDefinitions(platform);
+        nodeTypeBuilder.addRequirementDefinitions(platform);
 
         TCapabilityDefinition installedPackage;
         List<TCapabilityDefinition> installedPackages = convertInstalledPackagesToCapabilities(cookbookConfiguration.getInstalledPackages(), namespace);
         for (TCapabilityDefinition aPackage : installedPackages) {
             installedPackage = aPackage;
-            configurationNodeType.addCapabilityDefinitions(installedPackage);
+            nodeTypeBuilder.addCapabilityDefinitions(installedPackage);
         }
 
         TRequirementDefinition requiredPackage;
@@ -62,41 +71,19 @@ public class CookbookConfigurationToscaConverter {
 
         for (TRequirementDefinition aPackage : requiredPackages) {
             requiredPackage = aPackage;
-            configurationNodeType.addRequirementDefinitions(requiredPackage);
+            nodeTypeBuilder.addRequirementDefinitions(requiredPackage);
         }
-
-        TNodeType tNodeType = new TNodeType(configurationNodeType);
 
         TNodeType platformNodeType = convertPlatformToNodeType(cookbookConfiguration.getSupports());
 
-        nodeTypes.add(tNodeType);
+        nodeTypes.add(nodeTypeBuilder.build());
         nodeTypes.add(platformNodeType);
         return nodeTypes;
     }
 
     public void saveToscaNodeType(TNodeType tNodeType) {
         try {
-            repository.setElement(
-                new NodeTypeId(tNodeType.getTargetNamespace(), tNodeType.getName(), false),
-                tNodeType);
-            if (tNodeType.getCapabilityDefinitions() != null) {
-                for (TCapabilityDefinition capability : tNodeType.getCapabilityDefinitions().getCapabilityDefinition()) {
-                    QName capabilityType = capability.getCapabilityType();
-                    repository.setElement(
-                        new CapabilityTypeId(capabilityType),
-                        capability
-                    );
-                }
-            }
-            if (tNodeType.getRequirementDefinitions() != null) {
-                for (TRequirementDefinition requirementDefinition : tNodeType.getRequirementDefinitions().getRequirementDefinition()) {
-                    QName requirementType = requirementDefinition.getRequirementType();
-                    repository.setElement(
-                        new RequirementTypeId(requirementType),
-                        requirementDefinition
-                    );
-                }
-            }
+            repository.setElement(new NodeTypeId(tNodeType.getQName()), tNodeType);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,55 +91,81 @@ public class CookbookConfigurationToscaConverter {
 
     private List<TCapabilityDefinition> convertInstalledPackagesToCapabilities(LinkedHashMap<String, ChefPackage> installedPackages, String namespace) {
         List<TCapabilityDefinition> packageCapabilities = new ArrayList<>();
-        ChefPackage chefPackage;
         for (int i = 0; i < installedPackages.size(); i++) {
-            chefPackage = ChefCookbookConfiguration.getPackageByIndex(installedPackages, i);
-            packageCapabilities.add(convertPackageToCapability(chefPackage, namespace, i + 1));
+            ChefPackage chefPackage = ChefCookbookConfiguration.getPackageByIndex(installedPackages, i);
+            QName capabilityType = getCapabilityType(chefPackage.getPackageName(), getVersion(chefPackage), namespace, i);
+            packageCapabilities.add(new TCapabilityDefinition.Builder(chefPackage.getPackageName(), capabilityType).build());
         }
         return packageCapabilities;
     }
 
     private List<TRequirementDefinition> convertRequiredPackagesToRequirements(LinkedHashMap<String, ChefPackage> requiredPackages, String namespace) {
         List<TRequirementDefinition> packageRequirements = new ArrayList<>();
-        ChefPackage chefPackage;
         for (int i = 0; i < requiredPackages.size(); i++) {
-            chefPackage = ChefCookbookConfiguration.getPackageByIndex(requiredPackages, i);
-            packageRequirements.add(convertPackageToRequirement(chefPackage, namespace, i + 1));
+            ChefPackage chefPackage = ChefCookbookConfiguration.getPackageByIndex(requiredPackages, i);
+            QName requirementType = getRequirementType(chefPackage.getPackageName(), getVersion(chefPackage), namespace, i);
+            packageRequirements.add(new TRequirementDefinition.Builder(chefPackage.getPackageName(), requirementType).build());
         }
         return packageRequirements;
     }
 
-    private TCapabilityDefinition convertPackageToCapability(ChefPackage chefPackage, String namespace, int counter) {
-        TCapabilityDefinition.Builder builder;
-        if (chefPackage.getVersion() != null) {
-            builder = new TCapabilityDefinition.Builder(
-                "package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter,
-                new QName(namespace, chefPackage.getPackageName() + "-" + getVersion(chefPackage))
-            );
-        } else {
-            builder = new TCapabilityDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName()));
-        }
-        return new TCapabilityDefinition(builder);
-    }
-
-    private TRequirementDefinition convertPackageToRequirement(ChefPackage chefPackage, String namespace, int counter) {
-        TRequirementDefinition.Builder builder;
-        if (chefPackage.getVersion() != null) {
-            builder = new TRequirementDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName() + "-" + getVersion(chefPackage)));
-        } else {
-            builder = new TRequirementDefinition.Builder("package" + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + counter, new QName(namespace, chefPackage.getPackageName()));
-        }
-        return new TRequirementDefinition(builder);
-    }
-
     private TRequirementDefinition convertPlatformToRequirement(Platform platform, String namespace) {
-        TRequirementDefinition.Builder builder = new TRequirementDefinition.Builder("supported plattform", new QName(namespace, platform.getName() + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + getVersion(platform) + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"));
+        TRequirementDefinition.Builder builder = new TRequirementDefinition.Builder(
+            "supported platform",
+            getRequirementType(platform.getName(), getVersion(platform), namespace, 1)
+        );
         return new TRequirementDefinition(builder);
     }
 
     private TCapabilityDefinition convertPlatformToCapability(Platform platform, String namespace) {
-        TCapabilityDefinition.Builder builder = new TCapabilityDefinition.Builder("platform", new QName(namespace, platform.getName() + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + getVersion(platform) + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1"));
+        TCapabilityDefinition.Builder builder = new TCapabilityDefinition.Builder(
+            "platform",
+            this.getCapabilityType(platform.getName(), getVersion(platform), namespace, 1)
+        );
         return new TCapabilityDefinition(builder);
+    }
+
+    private QName getCapabilityType(String name, String version, String namespace, int wineryVersion) {
+        QName qName = new QName(namespace,
+            name + WINERY_NAME_FROM_VERSION_SEPARATOR + version + WINERY_VERSION_SEPARATOR + WINERY_VERSION_PREFIX + wineryVersion);
+        CapabilityTypeId id = new CapabilityTypeId(qName);
+
+        if (!repository.exists(id)) {
+            TCapabilityType capabilityType = new TCapabilityType();
+            capabilityType.setName(qName.getLocalPart());
+            capabilityType.setTargetNamespace(qName.getNamespaceURI());
+
+            try {
+                repository.setElement(id, capabilityType);
+            } catch (IOException e) {
+                LOGGER.debug("Could not persist CapabilityType {}", capabilityType, e);
+            }
+        }
+
+        return qName;
+    }
+
+    private QName getRequirementType(String name, String version, String namespace, int wineryVersion) {
+        QName requirementTypeQName = new QName(namespace,
+            name + "-Req" + WINERY_NAME_FROM_VERSION_SEPARATOR + version + WINERY_VERSION_SEPARATOR + WINERY_VERSION_PREFIX + wineryVersion);
+        QName capabilityType = this.getCapabilityType(name, version, namespace, wineryVersion);
+
+        RequirementTypeId requirementTypeId = new RequirementTypeId(requirementTypeQName);
+
+        if (!repository.exists(requirementTypeId)) {
+            TRequirementType requirementType = new TRequirementType();
+            requirementType.setName(requirementTypeQName.getLocalPart());
+            requirementType.setTargetNamespace(requirementTypeQName.getNamespaceURI());
+            requirementType.setRequiredCapabilityType(capabilityType);
+
+            try {
+                repository.setElement(requirementTypeId, requirementType);
+            } catch (IOException e) {
+                LOGGER.debug("Could not persist RequirementType {}", requirementType, e);
+            }
+        }
+
+        return requirementTypeQName;
     }
 
     /**
@@ -168,7 +181,7 @@ public class CookbookConfigurationToscaConverter {
 
     private TNodeType convertPlatformToNodeType(Platform platform) {
         String namespace = buildNamespaceForPlatforms();
-        TNodeType.Builder configurationNodeType = new TNodeType.Builder(platform.getName() + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + getVersion(platform) + WineryVersion.WINERY_VERSION_SEPARATOR + WineryVersion.WINERY_VERSION_PREFIX + "1");
+        TNodeType.Builder configurationNodeType = new TNodeType.Builder(platform.getName() + WINERY_NAME_FROM_VERSION_SEPARATOR + getVersion(platform) + WINERY_VERSION_SEPARATOR + WINERY_VERSION_PREFIX + "1");
         configurationNodeType.setTargetNamespace(namespace);
 
         configurationNodeType.addCapabilityDefinitions(convertPlatformToCapability(platform, namespace));
@@ -177,6 +190,8 @@ public class CookbookConfigurationToscaConverter {
     }
 
     private String getVersion(VersionedChefElement element) {
-        return element.getVersion() != null ? element.getVersion().replaceAll("/g|<|>|~|=|/", "").replaceAll(" ", "") : "";
+        return element.getVersion() != null
+            ? element.getVersion().replaceAll("/g|<|>|~|=|/", "").replaceAll(" ", "")
+            : "";
     }
 }
