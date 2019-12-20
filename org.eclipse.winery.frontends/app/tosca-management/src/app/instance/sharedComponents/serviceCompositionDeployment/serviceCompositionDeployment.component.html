@@ -13,11 +13,12 @@
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 <div>
     <label for="ode-url">Apache ODE URL</label>
-    <input type="text" id="ode-url" class="form-control" name="ode-url" required #ode>
+    <input type="text" id="ode-url" class="form-control" name="ode-url" value="http://localhost:9763/ode" required #ode>
     <br/>
 
     <label for="container-url">OpenTOSCA Container URL</label>
-    <input type="text" id="container-url" class="form-control" name="container-url" required #container>
+    <input type="text" id="container-url" class="form-control" name="container-url" value="http://localhost:1337/csars" 
+           required #container>
     <br/>
     
     <button class="btn btn-primary" name="deploy" (click)="deployServiceComposition(container.value, ode.value)">Deploy 
