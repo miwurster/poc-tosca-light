@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.adaptation.servicecomposition;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,6 +27,11 @@ import java.util.Objects;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.xml.namespace.QName;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPBodyElement;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPMessage;
 
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.configuration.Environments;
@@ -39,6 +45,7 @@ import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 
 import com.google.gson.Gson;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -420,8 +427,7 @@ public class DeploymentUtils {
         
         String json = EntityUtils.toString(response.getEntity());
         JSONParser parser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) parser.parse(json);
-        return jsonObject;
+        return (JSONObject) parser.parse(json);
     }
 
     /**
@@ -437,7 +443,62 @@ public class DeploymentUtils {
     private static URL deployWorkflow(TServiceCompositionModel serviceCompositionModel,
                                       List<TServiceTemplate> serviceTemplates, HashMap<QName, URI> endpointsMap,
                                       URL odeURL) {
-        // TODO: generate and deploy workflow
-        return null;
+        byte[] workflow = new ServiceCompositionGenerator().generateServiceComposition(serviceCompositionModel,
+            serviceTemplates, endpointsMap, odeURL);
+        return deployWorkflowArchive(serviceCompositionModel, workflow, odeURL);
+    }
+
+    /**
+     * Deploy the given workflow archive to Apache ODE.
+     * 
+     * @param serviceCompositionModel the service comosition model to which the workflow belongs
+     * @param workflow the workflow archive to deploy as byte array
+     * @param odeURL the URL to the target Apache ODE
+     * @return the URL to the deployed workflow, or <code>null</code> in case of an error
+     */
+    private static URL deployWorkflowArchive(TServiceCompositionModel serviceCompositionModel, byte[] workflow,
+                                             URL odeURL) {
+        LOGGER.debug("Deploying workflow archive to ODE at Url: {}", odeURL);
+        String deploymentUrl = odeURL.toString() + "/processes/DeploymentService/deploy";
+
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            
+            // generate SOAP message to upload workflow zip to ODE
+            SOAPMessage soapMessage = MessageFactory.newInstance().createMessage();
+            SOAPFactory soapFactory = SOAPFactory.newInstance();
+            SOAPBodyElement deployBody = soapMessage.getSOAPBody().addBodyElement(soapFactory.createName("deploy","prfx","http://www.apache.org/ode/pmapi"));
+            
+            // add 'name' part to the SOAP message
+            deployBody.addChildElement(soapFactory.createName("name")).addTextNode(serviceCompositionModel.getId());
+            
+            // add 'message' part to the SOAP message
+            SOAPElement packageParam = deployBody.addChildElement(soapFactory.createName("package"));
+            packageParam.addNamespaceDeclaration("dep", "http://www.apache.org/ode/deployapi");
+            
+            // add workflow zip as Base64 String
+            SOAPElement zipParam = packageParam.addChildElement("zip", "dep");
+            zipParam.addTextNode(new String(Base64.encodeBase64(workflow)));
+            
+            // send SOAP request to deploy workflow archive
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            soapMessage.writeTo(out);
+            HttpPost post = new HttpPost(deploymentUrl);
+            post.setEntity(new StringEntity(new String(out.toByteArray())));
+            post.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+            HttpResponse response = httpclient.execute(post);
+            
+            if (response.getStatusLine().getStatusCode() != 200) {
+                LOGGER.error("Error while deploying workflow archive. Received response code: {}",
+                    response.getStatusLine().getStatusCode());
+                return null;
+            }
+            LOGGER.debug("Workflow archive successfully deployed!");
+            
+            // return endpoint of the deployed service composition
+            return new URL(odeURL + "/processes/" + serviceCompositionModel.getId());
+        } catch (Exception e) {
+            LOGGER.error("Error while deploying workflow to ODE: {}", e.getMessage());
+            return null;
+        }
     }
 }
