@@ -61,6 +61,8 @@ import { LiveModelingActions } from './redux/actions/live-modeling.actions';
 import { AngularResizedEventModule } from 'angular-resize-event';
 import { NavbarComponent } from './navbar/navbar.component';
 import { ResizableModule } from 'angular-resizable-element';
+import { PropertyValidatorService } from './services/property-validator.service';
+import { OverlayComponent } from './overlay/overlay.component';
 
 @NgModule({
     declarations: [
@@ -73,7 +75,8 @@ import { ResizableModule } from 'angular-resizable-element';
         ProblemDetectionComponent,
         EnricherComponent,
         LiveModelingSidebarComponent,
-        LiveModelingModalComponent
+        LiveModelingModalComponent,
+        OverlayComponent
     ],
     exports: [WineryComponent],
     imports: [
@@ -125,7 +128,8 @@ import { ResizableModule } from 'angular-resizable-element';
         PlaceComponentsService,
         ContainerService,
         LiveModelingService,
-        ReqCapRelationshipService
+        ReqCapRelationshipService,
+        PropertyValidatorService
     ],
     bootstrap: [WineryComponent],
     entryComponents: [LiveModelingModalComponent]

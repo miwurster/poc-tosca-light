@@ -78,6 +78,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
+    @Input() nodeEntityType: EntityType;
     @Input() dragSource: string;
     @Input() navbarButtonsState: TopologyRendererState;
     @Input() nodeTemplate: TNodeTemplate;

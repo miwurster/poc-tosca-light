@@ -15,7 +15,7 @@
      style="display: flex; justify-content: center; align-items: center">
     <i class="fa fa-3x fa-refresh fa-spin" style="max-width: 50%;"></i>
 </div>
-<table *ngIf="currentNodeData.propertyDefinitionType == 'KV'" class="table table-border--grey table-sm body-table">
+<table *ngIf="currentNodeData.propertyDefinitionType == 'KV'" class="kv-table">
     <tr>
         <th>
             Key
@@ -23,19 +23,28 @@
         <th>
             Values
         </th>
-    <tr *ngFor="let key of nodeProperties | keysPipe">
-        <td class="">{{key.key}}</td>
+        <th style="text-align: center">
+            Input
+        </th>
+    <tr *ngFor="let property of nodeProperties | keysPipe; let index = index">
+        <td class="">{{property.key}}</td>
         <td class="">
-                <textarea
-                    style="width:100%; overflow-y: scroll;"
-                    rows="1"
-                    placeholder="Edit your value here."
-                    required
-                    [disabled]="readonly"
-                    value="{{key.value}}"
-                    (keyup)="properties.next($event.target.value)"
-                    (keyup)="keyOfEditedKVProperty.next(key.key)">
-                </textarea>
+            <input type="text"
+                   style="width: 100%"
+                   placeholder="Edit property"
+                   [disabled]="readonly || getPropertyByIndex(index).indexOf('get_input:') > -1"
+                   [ngModel]="getPropertyByIndex(index)"
+                   [class.has-error]="(this.errorKVPropertySubjects.get(property.key).asObservable() | async)"
+                   (keyup)="properties.next($event.target.value)"
+                   (keyup)="keyOfEditedKVProperty.next(property.key)"
+            >
+        </td>
+        <td style="text-align: center">
+            <input style="vertical-align: middle"
+                   type="checkbox"
+                   [checked]="property.value.indexOf('get_input:') > -1"
+                   (change)="toggleInputProperty(property.key, $event.target.checked)"
+            >
         </td>
     </tr>
 </table>

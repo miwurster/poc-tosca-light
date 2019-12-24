@@ -193,6 +193,14 @@ export interface SendLiveModelingSidebarOpenedAction extends Action {
     sidebarOpened: boolean;
 }
 
+export interface SetOverlayContentAction extends Action {
+    content: string;
+}
+
+export interface SetOverlayVisibilityAction extends Action {
+    visible: boolean;
+}
+
 /**
  * Winery Actions
  */
@@ -228,6 +236,11 @@ export class WineryActions {
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
     static SET_NODE_VISUALS = 'SET_NODE_VISUALS';
     static SEND_LIVE_MODELING_SIDEBAR_OPENED = 'SEND_LIVE_MODELING_SIDEBAR_OPENED';
+    
+    static SET_OVERLAY_CONTENT = 'SET_OVERLAY_CONTENT';
+    static SET_OVERLAY_VISIBILITY= 'SET_OVERLAY_VISIBILITY';
+    
+    static SAVE_TOPOLOGY_TEMPLATE = 'SAVE_TOPOLOGY_TEMPLATE';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
@@ -364,5 +377,19 @@ export class WineryActions {
         ((sidebarOpened) => ({
             type: WineryActions.SEND_LIVE_MODELING_SIDEBAR_OPENED,
             sidebarOpened: sidebarOpened
+        }));
+    setOverlayContent: ActionCreator<SetOverlayContentAction> =
+        ((content) => ({
+            type: WineryActions.SET_OVERLAY_CONTENT,
+            content: content
+        }));
+    setOverlayVisibility: ActionCreator<SetOverlayVisibilityAction> =
+        ((visible) => ({
+            type: WineryActions.SET_OVERLAY_VISIBILITY,
+            visible: visible
+        }));
+    saveTopologyTemplate: ActionCreator<Action> =
+        (() => ({
+            type: WineryActions.SAVE_TOPOLOGY_TEMPLATE
         }));
 }

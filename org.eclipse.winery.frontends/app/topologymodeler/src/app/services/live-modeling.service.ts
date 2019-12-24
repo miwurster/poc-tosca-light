@@ -25,6 +25,7 @@ import { TRelationshipTemplate, TTopologyTemplate } from '../models/ttopology-te
 import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
 import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
 import { LiveModelingLog } from '../models/liveModelingLog';
+import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 
 @Injectable()
 export class LiveModelingService {
@@ -54,6 +55,15 @@ export class LiveModelingService {
 
         this.ngRedux.select(state => state.liveModelingState.state)
             .subscribe(state => this.performAction(state));
+
+        // this.ngRedux.select(state => {
+        //     console.log('Checking whether topolopgy updated');
+        //     return TopologyTemplateUtil.didTopologyTemplateChanged(state.wineryState.currentJsonTopology, state.wineryState.lastSavedJsonTopology);
+        // }).subscribe(topologyChanged => {
+        //     if (topologyChanged) {
+        //         console.log('Topology changed!');
+        //     }
+        // });
 
         this.ngRedux.select(state => state.wineryState.currentJsonTopology)
             .subscribe(topologyTemplate => {

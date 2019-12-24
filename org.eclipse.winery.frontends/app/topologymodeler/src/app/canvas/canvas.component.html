@@ -36,6 +36,7 @@
                      [readonly]="readonly"
                      [nodeTemplate]="nodeTemplate"
                      [entityTypes]="this.entityTypes"
+                     [nodeEntityType]="getNodeEntityType(nodeTemplate.id)"
                      (sendId)="activateNewNode($event)"
                      [navbarButtonsState]="topologyRendererState"
                      (askForRepaint)="revalidateContainer()"

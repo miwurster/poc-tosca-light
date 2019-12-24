@@ -14,12 +14,13 @@
 
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../../redux/store/winery.store';
 import { WineryActions } from '../../redux/actions/winery.actions';
 import { JsPlumbService } from '../../services/jsPlumb.service';
 import { PropertyDefinitionType } from '../../models/enums';
+import { PropertyValidatorService } from '../../services/property-validator.service';
 
 @Component({
     selector: 'winery-properties-content',
@@ -35,10 +36,13 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
     key: string;
     nodeProperties: any;
     subscriptions: Array<Subscription> = [];
+    
+    errorKVPropertySubjects = new Map<string, BehaviorSubject<boolean>>();
 
     constructor(private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
-                private jsPlumbService: JsPlumbService) {
+                private jsPlumbService: JsPlumbService,
+                private propertyValidatorService: PropertyValidatorService) {
     }
 
     /**
@@ -69,6 +73,10 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                 const currentProperties = this.currentNodeData.nodeTemplate.properties;
                 if (this.currentNodeData.propertyDefinitionType === PropertyDefinitionType.KV) {
                     this.nodeProperties = currentProperties.kvproperties;
+                    for (const key of Object.keys(this.nodeProperties)) {
+                        this.errorKVPropertySubjects.set(key, new BehaviorSubject<boolean>(false));
+                        this.checkPropertyValidity(key, this.nodeProperties[key]);
+                    }
                 } else if (this.currentNodeData.propertyDefinitionType === PropertyDefinitionType.XML) {
                     this.nodeProperties = currentProperties.any;
                 }
@@ -78,15 +86,16 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
         // find out which row was edited by key
         this.subscriptions.push(this.keyOfEditedKVProperty.pipe(
             debounceTime(200),
-            distinctUntilChanged(), )
+            distinctUntilChanged(),)
             .subscribe(key => {
                 this.key = key;
             }));
         // set key value property with a debounceTime of 300ms
         this.subscriptions.push(this.properties.pipe(
             debounceTime(300),
-            distinctUntilChanged(), )
+            distinctUntilChanged(),)
             .subscribe(value => {
+                this.checkPropertyValidity(this.key, value);
                 if (this.currentNodeData.propertyDefinitionType === PropertyDefinitionType.KV) {
                     this.nodeProperties[this.key] = value;
                 } else {
@@ -100,6 +109,29 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                     }
                 }));
             }));
+    }
+
+    checkPropertyValidity(key: string, value: string): boolean {
+        if (this.currentNodeData.propertyDefinitionType === PropertyDefinitionType.KV) {
+            const propertiesKVList: [] = this.currentNodeData.entityType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
+            const xsdType = propertiesKVList.find(prop => prop['key'] === key)['type'];
+            const isPropertyValid = this.propertyValidatorService.validateAgainstXSDType(value, xsdType);
+            this.errorKVPropertySubjects.get(key).next(!isPropertyValid);
+        } else {
+            // Todo: validate for properties that are XML elements
+        }
+        return null;
+    }
+
+    toggleInputProperty(key: string, checked: boolean) {
+        this.keyOfEditedKVProperty.next(key);
+        const value = checked ? `get_input: ${key}` : ``;
+        this.nodeProperties[key] = value;
+        this.properties.next(value);
+    }
+
+    getPropertyByIndex(index: number) {
+        return this.nodeProperties[Object.keys(this.nodeProperties)[index]];
     }
 
     ngOnDestroy() {

@@ -241,13 +241,22 @@ export class NavbarComponent implements OnDestroy {
      * Calls the BackendService's saveTopologyTemplate method and displays a success message if successful.
      */
     saveTopologyTemplateToRepository() {
+        this.ngRedux.dispatch(this.wineryActions.setOverlayContent('Saving topology template. This may take a while.'));
+        this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(true));
         this.backendService.saveTopologyTemplate(this.unformattedTopologyTemplate)
             .subscribe(res => {
-                res.ok === true ? this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
-                    + res.statusText + ' ' + res.status + '</p>')
-                    : this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
-                    + res.statusText + ' ' + res.status + '</p>');
-            }, err => this.alert.error(err.error));
+                if (res.ok) {
+                    this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>');
+                    this.ngRedux.dispatch(this.wineryActions.saveTopologyTemplate());
+                } else {
+                    this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>');
+                }
+            }, err => this.alert.error(err.error))
+            .add(() => {
+                this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(false));
+            });
     }
 
     /**

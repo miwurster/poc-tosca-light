@@ -17,7 +17,7 @@ import {
     DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
     DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
     SaveRelationshipAction, SendCurrentNodeIdAction, SendLiveModelingSidebarOpenedAction, SendPaletteOpenedAction, SetCababilityAction,
-    SetDeploymentArtifactAction, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
+    SetDeploymentArtifactAction, SetNodeVisuals, SetOverlayContentAction, SetOverlayVisibilityAction, SetPolicyAction, SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
     UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
 } from '../actions/winery.actions';
@@ -30,9 +30,11 @@ export interface WineryState {
     hideNavBarAndPaletteState: boolean;
     sidebarContents: any;
     currentJsonTopology: TTopologyTemplate;
+    lastSavedJsonTopology: TTopologyTemplate;
     currentNodeData: any;
     nodeVisuals: Visuals[];
     liveModelingSidebarOpenedState: boolean;
+    overlayState: any;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -52,12 +54,17 @@ export const INITIAL_WINERY_STATE: WineryState = {
         target: ''
     },
     currentJsonTopology: new TTopologyTemplate,
+    lastSavedJsonTopology: new TTopologyTemplate,
     currentNodeData: {
         id: '',
         focus: false
     },
     nodeVisuals: null,
-    liveModelingSidebarOpenedState: false
+    liveModelingSidebarOpenedState: false,
+    overlayState: {
+        content: '',
+        visible: false
+    }
 };
 
 /**
@@ -473,6 +480,31 @@ export const WineryReducer =
                 return <WineryState>{
                     ...lastState,
                     liveModelingSidebarOpenedState: sidebarOpened
+                };
+            case WineryActions.SET_OVERLAY_CONTENT:
+                const overlayContent: string = (<SetOverlayContentAction>action).content;
+
+                return {
+                    ...lastState,
+                    overlayState: {
+                        ...lastState.overlayState,
+                        content: overlayContent
+                    }
+                };
+            case WineryActions.SET_OVERLAY_VISIBILITY:
+                const overlayVisible: boolean = (<SetOverlayVisibilityAction>action).visible;
+
+                return {
+                    ...lastState,
+                    overlayState: {
+                        ...lastState.overlayState,
+                        visible: overlayVisible
+                    }
+                };
+            case WineryActions.SAVE_TOPOLOGY_TEMPLATE:
+                return {
+                  ...lastState,
+                  lastSavedJsonTopology: JSON.parse(JSON.stringify(lastState.currentJsonTopology))
                 };
             default:
                 return <WineryState>lastState;

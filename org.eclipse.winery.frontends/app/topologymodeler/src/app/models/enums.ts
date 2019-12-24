@@ -54,6 +54,14 @@ export enum PropertyDefinitionType {
     XML = 'XML'
 }
 
+export enum PropertyKVType {
+    XSD_STRING = 'xsd:string',
+    XSD_FLOAT = 'xsd:float',
+    XSD_DECIMAL = 'xsd:decimal',
+    XSD_ANYURI = 'xsd:anyURI',
+    XSD_QNAME = 'xsd:QName',
+}
+
 export enum LiveModelingStates {
     DISABLED = 'DISABLED',
     START = 'START',

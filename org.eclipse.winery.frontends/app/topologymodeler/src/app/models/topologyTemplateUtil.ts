@@ -146,14 +146,12 @@ export class TopologyTemplateUtil {
             if (element.name === name) {
                 // if any is defined with at least one element it's a KV property, sets default values if there aren't
                 // any in the node template
-                if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any) {
-                    if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0 &&
-                        element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList) {
-                        const properties = {
-                            kvproperties: TopologyTemplateUtil.setKVProperties(element)
-                        };
-                        return properties;
-                    }
+                if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0 &&
+                    element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList) {
+                    const properties = {
+                        kvproperties: TopologyTemplateUtil.setKVProperties(element)
+                    };
+                    return properties;
                     // if propertiesDefinition is defined it's a XML property
                 } else if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition
                     && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
@@ -232,5 +230,9 @@ export class TopologyTemplateUtil {
             .forEach(
                 relationship => ngRedux.dispatch(wineryActions.saveRelationship(relationship))
             );
+    }
+    
+    static didTopologyTemplateChanged(currentTopology: TTopologyTemplate, lastSavedTopology: TTopologyTemplate) {
+        return JSON.stringify(currentTopology) !== JSON.stringify(lastSavedTopology);
     }
 }

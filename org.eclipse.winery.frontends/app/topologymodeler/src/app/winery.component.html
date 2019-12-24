@@ -14,6 +14,8 @@
 <hotkeys-cheatsheet></hotkeys-cheatsheet>
 <router-outlet *ngIf="!readonly"></router-outlet>
 
+<winery-overlay *ngIf="!readonly && loaded?.loadedData"></winery-overlay>
+
 <winery-navbar
     *ngIf="loaded?.loadedData"
     [readonly]="readonly"
