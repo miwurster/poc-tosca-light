@@ -444,14 +444,20 @@ public class Builder {
 
     @Nullable
     public TEntrySchema buildEntrySchema(Object object, Parameter<TEntrySchema> parameter) {
-        if (Objects.isNull(object)) return null;
-        @SuppressWarnings("unchecked")
-        Map<String, Object> map = (Map<String, Object>) object;
-        return new TEntrySchema.Builder()
-            .setType(buildQName(stringValue(map.get("type"))))
-            .setDescription(buildDescription(map.get("description")))
-            .setConstraints(buildList(map, "constraints", this::buildConstraintClause, parameter))
-            .build();
+        if (Objects.isNull(object)) {
+            return null;
+        }
+        if (object instanceof String) {
+            return new TEntrySchema.Builder().setType(buildQName(stringValue(object))).build();
+        } else {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = (Map<String, Object>) object;
+            return new TEntrySchema.Builder()
+                .setType(buildQName(stringValue(map.get("type"))))
+                .setDescription(buildDescription(map.get("description")))
+                .setConstraints(buildList(map, "constraints", this::buildConstraintClause, parameter))
+                .build();
+        }
     }
 
     @Nullable
