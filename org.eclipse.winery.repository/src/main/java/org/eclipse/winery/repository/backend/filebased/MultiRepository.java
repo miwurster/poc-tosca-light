@@ -377,7 +377,7 @@ public class MultiRepository implements IRepository {
 
     @Override
     public Definitions definitionsFromRef(RepositoryFileReference ref) throws IOException {
-        return localRepository.definitionsFromRef(ref);
+        return RepositoryUtils.getRepositoryByRef(ref, this).definitionsFromRef(ref);
     }
 
     @Override
