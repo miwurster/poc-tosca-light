@@ -333,6 +333,7 @@ public class DeploymentUtils {
                                                      String targetServiceTemplateUrl, String planCorrelationId,
                                                      String endpointNodeTemplate, String endpointPropertyName)
         throws IOException, ParseException, InterruptedException, URISyntaxException {
+        
         // search service template instance corresponding to the triggered build plan
         JSONObject planInstances = returnJsonFromGet(httpclient, buildPlanUrl);
         JSONArray planInstancesArray = (JSONArray) planInstances.get("plan_instances");
@@ -451,7 +452,7 @@ public class DeploymentUtils {
     /**
      * Deploy the given workflow archive to Apache ODE.
      * 
-     * @param serviceCompositionModel the service comosition model to which the workflow belongs
+     * @param serviceCompositionModel the service composition model to which the workflow belongs
      * @param workflow the workflow archive to deploy as byte array
      * @param odeURL the URL to the target Apache ODE
      * @return the URL to the deployed workflow, or <code>null</code> in case of an error
