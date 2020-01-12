@@ -22,6 +22,7 @@ import { WineryService } from './services/winery.service';
  * main component
  */
 @Component({
+    // tslint:disable-next-line:component-selector
     selector: 'b4t-app',
     templateUrl: 'app.component.html',
 })
