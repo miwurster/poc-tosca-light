@@ -32,6 +32,7 @@ import org.eclipse.jdt.annotation.Nullable;
     "appliesTo"
 })
 public class TPolicyType extends TEntityType {
+    
     @XmlElement(name = "AppliesTo")
     protected TAppliesTo appliesTo;
     @XmlAttribute(name = "policyLanguage")

@@ -27,7 +27,7 @@ import org.eclipse.winery.model.tosca.visitor.Visitor;
 @XmlType(name = "tCapabilityType")
 public class TCapabilityType extends TEntityType {
     // this is added here to support the YAML model
-    // cannot be annotated as transient. Reason: org.eclipse.winery.repository.backend.BackendUtils.persist(
+    // cannot be annotated as transient, otherwise it will be dropped. Reason: org.eclipse.winery.repository.backend.BackendUtils.persist(
     // java.lang.Object, org.eclipse.winery.common.RepositoryFileReference, org.apache.tika.mime.MediaType)
     private List<QName> validNodeTypes;
 

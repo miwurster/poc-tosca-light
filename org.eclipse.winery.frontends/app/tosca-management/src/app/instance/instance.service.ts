@@ -87,8 +87,12 @@ export class InstanceService {
                 subMenu = ['README', 'LICENSE', 'Implementation Artifacts', 'Inheritance', 'Documentation', 'XML'];
                 break;
             case ToscaTypes.PolicyType:
-                subMenu = ['README', 'LICENSE', 'Language', 'Applies To', 'Properties Definition', 'Inheritance',
-                    'Templates', 'Appearance', 'Documentation', 'XML'];
+                if (this.configurationService.isYaml()) {
+                    subMenu = ['README', 'LICENSE', 'Applies To', 'Properties Definition', 'Inheritance', 'Appearance', 'Documentation'];
+                } else {
+                    subMenu = ['README', 'LICENSE', 'Language', 'Applies To', 'Properties Definition', 'Inheritance',
+                        'Templates', 'Appearance', 'Documentation', 'XML'];
+                }
                 break;
             case ToscaTypes.PolicyTemplate:
                 subMenu = ['README', 'LICENSE', 'Properties', 'Property Constraints', 'Appearance', 'Documentation', 'XML'];

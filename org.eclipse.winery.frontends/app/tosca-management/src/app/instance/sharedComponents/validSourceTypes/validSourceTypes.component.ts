@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ValidSourceTypesService } from './validSourceTypes.service';
 import { WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
 import { InstanceService } from '../../instance.service';
@@ -26,6 +26,7 @@ import { forkJoin } from 'rxjs';
 import { QNameApiData } from '../../../model/qNameApiData';
 
 @Component({
+    selector: 'winery-nodetype-selector',
     templateUrl: 'validSourceTypes.component.html',
     styleUrls: [
         'validSourceTypes.component.css'
@@ -35,6 +36,8 @@ import { QNameApiData } from '../../../model/qNameApiData';
     ]
 })
 export class ValidSourceTypesComponent implements OnInit {
+    @Input() title = 'Valid Source Types';
+    @Input() resource: string;
     loading: boolean;
     currentNodeTypes: SelectData[];
     allNodeTypes: SelectData[];
@@ -56,9 +59,10 @@ export class ValidSourceTypesComponent implements OnInit {
 
     ngOnInit(): void {
         this.loading = true;
+        console.debug(this.resource);
         forkJoin(
             this.service.getAvailableValidSourceTypes(),
-            this.service.getValidSourceTypes()
+            this.service.getValidSourceTypes(this.resource)
         ).subscribe(
             ([available, current]) => {
                 this.loading = false;
@@ -72,7 +76,7 @@ export class ValidSourceTypesComponent implements OnInit {
     saveToServer() {
         this.loading = true;
         this.service
-            .saveValidSourceTypes(this.validSourceTypes)
+            .saveValidSourceTypes(this.validSourceTypes, this.resource)
             .subscribe(() => {
                     this.loading = false;
                     this.notify.success('Saved changes.');

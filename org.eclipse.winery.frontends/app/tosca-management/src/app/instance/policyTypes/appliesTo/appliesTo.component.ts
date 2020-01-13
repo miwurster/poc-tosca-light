@@ -11,12 +11,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FeatureEnum } from '../../../wineryFeatureToggleModule/wineryRepository.feature.direct';
 
 @Component({
     templateUrl: 'appliesTo.component.html'
 })
 export class AppliesToComponent implements OnInit {
+    configEnum = FeatureEnum;
+
     constructor() {
     }
 

@@ -29,8 +29,8 @@ export class ValidSourceTypesService {
         this.path = this.instanceService.path;
     }
 
-    getValidSourceTypes(): Observable<ValidSourceTypesApiData> {
-        return this.http.get<ValidSourceTypesApiData>(backendBaseURL + this.path + '/constraints');
+    getValidSourceTypes(resourceName: string): Observable<ValidSourceTypesApiData> {
+        return this.http.get<ValidSourceTypesApiData>(backendBaseURL + this.path + '/' + resourceName);
     }
 
     getAvailableValidSourceTypes(): Observable<SelectData[]> {
@@ -39,7 +39,7 @@ export class ValidSourceTypesService {
         return this.http.get<SelectData[]>(url);
     }
 
-    saveValidSourceTypes(v: ValidSourceTypesApiData): Observable<any> {
-        return this.http.put<any>(backendBaseURL + this.path + '/constraints', v);
+    saveValidSourceTypes(v: ValidSourceTypesApiData, resourceName: string): Observable<any> {
+        return this.http.put<any>(backendBaseURL + this.path + '/' + resourceName, v);
     }
 }

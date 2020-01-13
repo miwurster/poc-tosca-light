@@ -37,6 +37,7 @@ import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.TAppliesTo;
 import org.eclipse.winery.model.tosca.TArtifactReference;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
 import org.eclipse.winery.model.tosca.TBoolean;
@@ -387,9 +388,19 @@ public class X2YConverter {
     @NonNull
     public Map<String, TPolicyType> convert(org.eclipse.winery.model.tosca.TPolicyType node) {
         if (Objects.isNull(node)) return new LinkedHashMap<>();
+        TPolicyType.Builder builder = new TPolicyType.Builder();
+
+        if (node.getAppliesTo() != null) {
+            builder = builder.setTargets(node
+                .getAppliesTo()
+                .getNodeTypeReference()
+                .stream()
+                .map(TAppliesTo.NodeTypeReference::getTypeRef)
+                .collect(Collectors.toList()));
+        }
         return Collections.singletonMap(
             node.getName(),
-            convert(node, new TPolicyType.Builder(), org.eclipse.winery.model.tosca.TPolicyType.class)
+            convert(node, builder, org.eclipse.winery.model.tosca.TPolicyType.class)
                 .build()
         );
     }

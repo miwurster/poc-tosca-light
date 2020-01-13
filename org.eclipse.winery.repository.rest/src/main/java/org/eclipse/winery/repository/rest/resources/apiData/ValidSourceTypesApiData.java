@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.winery.model.tosca.TCapabilityType;
+import javax.xml.namespace.QName;
 
 public class ValidSourceTypesApiData {
     private List<QNameApiData> nodes;
@@ -26,10 +26,9 @@ public class ValidSourceTypesApiData {
     public ValidSourceTypesApiData() {
     }
 
-    public ValidSourceTypesApiData(TCapabilityType capabilityType) {
-        if (capabilityType.getValidNodeTypes() != null) {
-            this.nodes = capabilityType
-                .getValidNodeTypes()
+    public ValidSourceTypesApiData(List<QName> qNames) {
+        if (qNames != null) {
+            this.nodes = qNames
                 .stream()
                 .map(QNameApiData::fromQName)
                 .collect(Collectors.toList());

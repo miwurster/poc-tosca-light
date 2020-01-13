@@ -13,15 +13,65 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources.entitytypes.policytypes;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
+
+import org.eclipse.winery.model.tosca.TAppliesTo;
 import org.eclipse.winery.model.tosca.TPolicyType;
+import org.eclipse.winery.repository.rest.RestUtils;
+import org.eclipse.winery.repository.rest.resources.apiData.QNameApiData;
+import org.eclipse.winery.repository.rest.resources.apiData.ValidSourceTypesApiData;
 
 public class AppliesToResource {
 
     private final PolicyTypeResource policyTypeResource;
 
-
     public AppliesToResource(PolicyTypeResource policyTypeResource) {
         this.policyTypeResource = policyTypeResource;
+    }
+
+    @Path("constraints")
+    @GET
+    public ValidSourceTypesApiData getValidSourceTypes() {
+        List<QName> qNames = null;
+
+        if (getPolicyType().getAppliesTo() != null) {
+            qNames = getPolicyType()
+                .getAppliesTo()
+                .getNodeTypeReference()
+                .stream()
+                .map(TAppliesTo.NodeTypeReference::getTypeRef)
+                .collect(Collectors.toList());
+        }
+        return new ValidSourceTypesApiData(qNames);
+    }
+
+    @Path("constraints")
+    @PUT
+    public Response saveValidSourceTypes(ValidSourceTypesApiData newValidSourceTypes) {
+        TPolicyType t = this.getPolicyType();
+        List<TAppliesTo.NodeTypeReference> references = newValidSourceTypes
+            .getNodes()
+            .stream()
+            .map(QNameApiData::asQName)
+            .map(qName -> {
+                    TAppliesTo.NodeTypeReference ntr = new TAppliesTo.NodeTypeReference();
+                    ntr.setTypeRef(qName);
+                    return ntr;
+                }
+            )
+            .collect(Collectors.toList());
+        TAppliesTo appliesTo = new TAppliesTo();
+        appliesTo.getNodeTypeReference().addAll(references);
+        t.setAppliesTo(appliesTo);
+
+        return RestUtils.persist(getPolicyType());
     }
 
     public TPolicyType getPolicyType() {

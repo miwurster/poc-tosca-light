@@ -16,7 +16,7 @@ import { CommonModule } from '@angular/common';
 import { CapabilityTypeRouterModule } from './capabilityTypeRouter.module';
 import { WineryReadmeModule } from '../../wineryReadmeModule/wineryReadme.module';
 import { WineryLicenseModule } from '../../wineryLicenseModule/wineryLicense.module';
-import { ValidSourceTypesModule } from '../../instance/capabilityTypes/validSourceTypes/validSourceTypes.module';
+import { ValidSourceTypesModule } from '../../instance/sharedComponents/validSourceTypes/validSourceTypes.module';
 
 @NgModule({
     imports: [

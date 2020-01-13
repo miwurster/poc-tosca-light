@@ -22,7 +22,7 @@
         </button>
     </div>
 
-    <winery-table title="Valid Source Types"
+    <winery-table [title]="title"
                   [columns]="columns"
                   [data]="validSourceTypes?.nodes"
                   (addBtnClicked)="onAddClick()"
@@ -33,7 +33,7 @@
 
 
 <ng-template #addModal>
-    <winery-modal-header [title]="'Add Valid Source Type'" [modalRef]="addModalRef">
+    <winery-modal-header title="Add {{title}}" [modalRef]="addModalRef">
     </winery-modal-header>
     <winery-modal-body>
         <form>
