@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -73,6 +73,11 @@ public abstract class TEntityType extends TExtensibleElements implements HasName
     protected String targetNamespace;
 
     public TEntityType() {
+    }
+
+    public TEntityType(QName qName) {
+        this.name = qName.getLocalPart();
+        this.targetNamespace = qName.getNamespaceURI();
     }
 
     public TEntityType(Builder builder) {
@@ -231,6 +236,13 @@ public abstract class TEntityType extends TExtensibleElements implements HasName
 
         @XmlAttribute(name = "typeRef", required = true)
         protected QName typeRef;
+
+        public DerivedFrom() {
+        }
+
+        public DerivedFrom(QName typeRef) {
+            this.typeRef = typeRef;
+        }
 
         @NonNull
         public QName getTypeRef() {

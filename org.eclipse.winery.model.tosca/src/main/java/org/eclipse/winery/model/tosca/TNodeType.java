@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
@@ -37,6 +38,7 @@ import org.eclipse.jdt.annotation.Nullable;
     "interfaces"
 })
 public class TNodeType extends TEntityType {
+
     @XmlElement(name = "RequirementDefinitions")
     protected TNodeType.RequirementDefinitions requirementDefinitions;
     @XmlElement(name = "CapabilityDefinitions")
@@ -47,6 +49,10 @@ public class TNodeType extends TEntityType {
     protected TInterfaces interfaces;
 
     public TNodeType() {
+    }
+
+    public TNodeType(QName qName) {
+        super(qName);
     }
 
     public TNodeType(Builder builder) {
@@ -124,7 +130,7 @@ public class TNodeType extends TEntityType {
         @NonNull
         public List<TCapabilityDefinition> getCapabilityDefinition() {
             if (capabilityDefinition == null) {
-                capabilityDefinition = new ArrayList<TCapabilityDefinition>();
+                capabilityDefinition = new ArrayList<>();
             }
             return this.capabilityDefinition;
         }
@@ -155,7 +161,7 @@ public class TNodeType extends TEntityType {
         @NonNull
         public List<TRequirementDefinition> getRequirementDefinition() {
             if (requirementDefinition == null) {
-                requirementDefinition = new ArrayList<TRequirementDefinition>();
+                requirementDefinition = new ArrayList<>();
             }
             return this.requirementDefinition;
         }

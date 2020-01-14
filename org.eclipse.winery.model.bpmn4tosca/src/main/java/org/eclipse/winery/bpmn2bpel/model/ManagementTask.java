@@ -18,7 +18,6 @@ import javax.xml.namespace.QName;
 public class ManagementTask extends Task {
 
     private String interfaceName;
-    ;
 
     private QName nodeTemplateId;
 

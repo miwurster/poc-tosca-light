@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.rest.resources.admin;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -27,8 +28,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.winery.bpmn4tosca.model.BpmnDefinition;
+import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.configuration.Environments;
 import org.eclipse.winery.common.configuration.UiConfigurationObject;
+import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.consistencycheck.ConsistencyChecker;
@@ -48,9 +52,13 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Api(tags = "Admin")
 public class AdminTopResource {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AdminTopResource.class);
 
     @Path("namespaces/")
     public NamespacesResource getNamespacesResource() {
@@ -91,6 +99,7 @@ public class AdminTopResource {
 
     /**
      * This method answers a get-request by the WineryRepositoryConfigurationService
+     *
      * @return the winery config file in json format.
      */
     @GET
@@ -106,6 +115,23 @@ public class AdminTopResource {
     @Produces(MediaType.APPLICATION_JSON)
     public UiConfigurationObject setConfig(UiConfigurationObject changedConfiguration) {
         Environments.save(changedConfiguration);
+
+        changedConfiguration.getFeatures()
+            .computeIfPresent("bpmnInTopology", (key, value) -> {
+                if (value) {
+                    IRepository repository = RepositoryFactory.getRepository();
+                    BpmnDefinition.createBpmnTypes().forEach((qName, entityType) -> {
+                        DefinitionsChildId childId = Util.getDefinitionsChildId(entityType, qName);
+                        try {
+                            repository.setElement(childId, entityType);
+                        } catch (IOException e) {
+                            LOGGER.error("Error while persisting BPMN Tasks", e);
+                        }
+                    });
+                }
+                return true;
+            });
+
         return Environments.getUiConfig();
     }
 

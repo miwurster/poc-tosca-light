@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,13 +17,19 @@ package org.eclipse.winery.model.tosca;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tArtifactType")
 public class TArtifactType extends TEntityType {
+    
     public TArtifactType() {
+    }
+
+    public TArtifactType(QName qName) {
+        super(qName);
     }
 
     public TArtifactType(Builder builder) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,10 +29,15 @@ import org.eclipse.jdt.annotation.Nullable;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tRequirementType")
 public class TRequirementType extends TEntityType {
+
     @XmlAttribute(name = "requiredCapabilityType")
     protected QName requiredCapabilityType;
 
     public TRequirementType() {
+    }
+
+    public TRequirementType(QName qName) {
+        super(qName);
     }
 
     public TRequirementType(Builder builder) {

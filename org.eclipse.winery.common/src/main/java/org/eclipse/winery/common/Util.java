@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2013-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -52,21 +52,40 @@ import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.IdUtil;
 import org.eclipse.winery.common.ids.admin.AdminId;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
+import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
+import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.ComplianceRuleId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.EntityTemplateId;
 import org.eclipse.winery.common.ids.definitions.EntityTypeId;
 import org.eclipse.winery.common.ids.definitions.EntityTypeImplementationId;
+import org.eclipse.winery.common.ids.definitions.NodeTypeId;
+import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.PolicyTemplateId;
+import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
+import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
+import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationId;
+import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.ids.definitions.TestRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.imports.GenericImportId;
 import org.eclipse.winery.common.ids.definitions.imports.WsdlImportId;
 import org.eclipse.winery.common.ids.definitions.imports.XSDImportId;
 import org.eclipse.winery.common.ids.elements.ToscaElementId;
+import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TArtifactType;
+import org.eclipse.winery.model.tosca.TCapabilityType;
 import org.eclipse.winery.model.tosca.TEntityType;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
+import org.eclipse.winery.model.tosca.TNodeType;
+import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
+import org.eclipse.winery.model.tosca.TPolicyTemplate;
+import org.eclipse.winery.model.tosca.TPolicyType;
+import org.eclipse.winery.model.tosca.TRelationshipType;
+import org.eclipse.winery.model.tosca.TRelationshipTypeImplementation;
+import org.eclipse.winery.model.tosca.TRequirementType;
+import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 
 import org.apache.commons.lang3.StringUtils;
@@ -94,7 +113,7 @@ public class Util {
      */
     // NameCharRange \u10000-\ueffff is not supported by Java
     private static final String NCNameStartChar_RegExp = "[A-Z_a-z\u00c0-\u00d6\u00d8\u00f6\u00f8\u02ff\u0370\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]";
-    private static final String NCNameChar_RegExp = Util.NCNameStartChar_RegExp + "|[-\\.0-9\u00B7\u0300-\u036F\u203F-\u2040]";
+    private static final String NCNameChar_RegExp = Util.NCNameStartChar_RegExp + "|[-.0-9\u00B7\u0300-\u036F\u203F-\u2040]";
     private static final Pattern NCNameStartChar_Pattern = Pattern.compile(Util.NCNameStartChar_RegExp);
     private static final Pattern NCNameChar_RegExp_Pattern = Pattern.compile(Util.NCNameChar_RegExp);
 
@@ -325,8 +344,8 @@ public class Util {
     /**
      * Just calls @link{qname2href}
      * <p>
-     * Introduced because of JSP error "The method qname2href(String, Class&lt;? extends TExtensibleElements&gt;, QName) in
-     * the type Util is not applicable for the arguments (String, Class&lt;TNodeType&gt;, QName, String)"
+     * Introduced because of JSP error "The method qname2href(String, Class&lt;? extends TExtensibleElements&gt;, QName)
+     * in the type Util is not applicable for the arguments (String, Class&lt;TNodeType&gt;, QName, String)"
      */
     public static String qname2hrefWithName(String repositoryUiUrl, Class<? extends TExtensibleElements> element, QName qname, String name) {
         return Util.qname2href(repositoryUiUrl, element, qname, name);
@@ -448,11 +467,12 @@ public class Util {
         }
         String localName = Util.getLocalName(clazz);
         QName qname = new QName(namespace, localName);
-        return new JAXBElement<T>(qname, clazz, obj);
+        return new JAXBElement<>(qname, clazz, obj);
     }
 
     /**
-     * Method similar to @see org.eclipse.winery.repository.Utils#getXMLAsString(java.lang.Class, java.lang.Object, boolean)}.
+     * Method similar to @see org.eclipse.winery.repository.Utils#getXMLAsString(java.lang.Class, java.lang.Object,
+     * boolean)}.
      * <p>
      * Differences: <ul> <li>XML processing instruction is not included in the header</li> <li>JAXBcontext is created at
      * each call</li> </ul>
@@ -512,7 +532,8 @@ public class Util {
      * Determines whether the instance belonging to the given id supports the "name" attribute. This cannot be done
      * using the super class as the TOSCA specification treats that differently in the case of EntityTemplates
      * <p>
-     * NOTE: The respective subclasses of AbstractComponentInstanceResource have to implement @see org.eclipse.winery.repository.resources.IHasName
+     * NOTE: The respective subclasses of AbstractComponentInstanceResource have to implement @see
+     * org.eclipse.winery.repository.resources.IHasName
      *
      * @param idClass the class of the to test
      * @return true if the TOSCA model class belonging to the given id supports the method "getName()" in addition to
@@ -623,8 +644,8 @@ public class Util {
      * <p>
      * This function should be consistent with org.eclipse.winery.common.Util.cleanName(String)
      * <p>
-     * TODO: This method seems to be equal to org.eclipse.winery.repository.Utils.createXMLidAsString(String).
-     * These methods should be merged.
+     * TODO: This method seems to be equal to org.eclipse.winery.repository.Utils.createXMLidAsString(String). These
+     * methods should be merged.
      */
     public static String makeNCName(String text) {
         if (StringUtils.isEmpty(text)) {
@@ -690,5 +711,33 @@ public class Util {
     @SuppressWarnings( {"rawtypes", "unchecked"})
     public static org.eclipse.winery.model.tosca.TEntityType getType(org.eclipse.winery.common.interfaces.IWineryRepository client, javax.xml.namespace.QName qname, java.lang.Class clazz) {
         return client.getType(qname, clazz);
+    }
+
+    public static DefinitionsChildId getDefinitionsChildId(TExtensibleElements entityType, QName qName) {
+        if (entityType instanceof TRelationshipTypeImplementation) {
+            return new RelationshipTypeImplementationId(qName);
+        } else if (entityType instanceof TNodeTypeImplementation) {
+            return new NodeTypeImplementationId(qName);
+        } else if (entityType instanceof TRequirementType) {
+            return new RequirementTypeId(qName);
+        } else if (entityType instanceof TNodeType) {
+            return new NodeTypeId(qName);
+        } else if (entityType instanceof TRelationshipType) {
+            return new RelationshipTypeId(qName);
+        } else if (entityType instanceof TCapabilityType) {
+            return new CapabilityTypeId(qName);
+        } else if (entityType instanceof TArtifactType) {
+            return new ArtifactTypeId(qName);
+        } else if (entityType instanceof TPolicyType) {
+            return new PolicyTypeId(qName);
+        } else if (entityType instanceof TPolicyTemplate) {
+            return new PolicyTemplateId(qName);
+        } else if (entityType instanceof TServiceTemplate) {
+            return new ServiceTemplateId(qName);
+        } else if (entityType instanceof TArtifactTemplate) {
+            return new ArtifactTemplateId(qName);
+        } else {
+            throw new IllegalStateException("Unhandled id branch. Could happen for XSDImportId");
+        }
     }
 }

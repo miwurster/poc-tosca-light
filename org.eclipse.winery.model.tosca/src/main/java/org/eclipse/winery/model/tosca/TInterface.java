@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,15 +14,19 @@
 
 package org.eclipse.winery.model.tosca;
 
-import org.eclipse.jdt.annotation.NonNull;
-
-import javax.xml.bind.annotation.*;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+
+import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * <p>Java class for tInterface complex type.
@@ -57,6 +61,10 @@ public class TInterface implements HasName, Serializable {
     public TInterface() {
     }
 
+    public TInterface(String name) {
+        this.name = name;
+    }
+
     public TInterface(Builder builder) {
         this.operation = builder.operation;
         this.name = builder.name;
@@ -80,10 +88,9 @@ public class TInterface implements HasName, Serializable {
      * Gets the value of the operation property.
      * <p>
      * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the operation property.
+     * This accessor method returns a reference to the live list, not a snapshot. Therefore any modification you make to
+     * the returned list will be present inside the JAXB object. This is why there is not a <CODE>set</CODE> method for
+     * the operation property.
      * <p>
      * <p>
      * For example, to add a new item, do as follows:
@@ -93,13 +100,12 @@ public class TInterface implements HasName, Serializable {
      * <p>
      * <p>
      * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link TOperation }
+     * Objects of the following type(s) are allowed in the list {@link TOperation }
      */
     @NonNull
     public List<TOperation> getOperation() {
         if (operation == null) {
-            operation = new ArrayList<TOperation>();
+            operation = new ArrayList<>();
         }
         return this.operation;
     }

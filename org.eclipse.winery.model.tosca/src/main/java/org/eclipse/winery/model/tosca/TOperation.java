@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -39,6 +39,7 @@ import org.eclipse.jdt.annotation.Nullable;
     "outputParameters"
 })
 public class TOperation extends TExtensibleElements {
+
     @XmlElement(name = "InputParameters")
     protected TOperation.InputParameters inputParameters;
     @XmlElement(name = "OutputParameters")
@@ -49,6 +50,10 @@ public class TOperation extends TExtensibleElements {
     protected String name;
 
     public TOperation() {
+    }
+
+    public TOperation(String name) {
+        this.name = name;
     }
 
     public TOperation(Builder builder) {
@@ -117,7 +122,7 @@ public class TOperation extends TExtensibleElements {
         @NonNull
         public List<TParameter> getInputParameter() {
             if (inputParameter == null) {
-                inputParameter = new ArrayList<TParameter>();
+                inputParameter = new ArrayList<>();
             }
             return this.inputParameter;
         }
@@ -148,7 +153,7 @@ public class TOperation extends TExtensibleElements {
         @NonNull
         public List<TParameter> getOutputParameter() {
             if (outputParameter == null) {
-                outputParameter = new ArrayList<TParameter>();
+                outputParameter = new ArrayList<>();
             }
             return this.outputParameter;
         }

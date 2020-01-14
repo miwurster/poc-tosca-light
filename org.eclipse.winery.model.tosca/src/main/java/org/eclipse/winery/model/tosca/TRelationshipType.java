@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -56,6 +56,10 @@ public class TRelationshipType extends TEntityType {
     protected TRelationshipType.ValidTarget validTarget;
 
     public TRelationshipType() {
+    }
+
+    public TRelationshipType(QName qName) {
+        super(qName);
     }
 
     public TRelationshipType(Builder builder) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,13 +17,19 @@ package org.eclipse.winery.model.tosca;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tCapabilityType")
 public class TCapabilityType extends TEntityType {
+
     public TCapabilityType() {
+    }
+
+    public TCapabilityType(QName qName) {
+        super(qName);
     }
 
     public TCapabilityType(Builder builder) {
