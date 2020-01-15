@@ -279,7 +279,7 @@ export class WineryComponent implements OnInit, AfterViewInit {
             this.entityTypes.relationshipVisuals = topologyData[2];
             this.entityTypes.policyTemplateVisuals = topologyData[3];
             this.entityTypes.policyTypeVisuals = topologyData[4];
-            if (topologyData.length === 7 && !isNullOrUndefined(topologyData[5]) && !isNullOrUndefined(topologyData[6])) {
+            if (topologyData.length === 7 && topologyData[5] && topologyData[6]) {
                 this.topologyDifferences = [topologyData[5], topologyData[6]];
             }
             // init the NodeTemplates and RelationshipTemplates to start their rendering

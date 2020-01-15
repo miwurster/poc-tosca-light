@@ -21,6 +21,6 @@ export class Visuals {
                 public typeId: string,
                 public localName?: string,
                 public imageUrl?: string,
-                public pattern?: string) {
+                public pattern?: boolean) {
     }
 }
