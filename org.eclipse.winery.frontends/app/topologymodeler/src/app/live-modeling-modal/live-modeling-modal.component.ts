@@ -1,4 +1,18 @@
-import { Component } from '@angular/core';
+/*******************************************************************************
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+
+import { Component, OnDestroy } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap';
 import { LiveModelingStates } from '../models/enums';
 import { LiveModelingService } from '../services/live-modeling.service';
@@ -7,7 +21,7 @@ import { IWineryState } from '../redux/store/winery.store';
 import { ContainerService } from '../services/container.service';
 import { BackendService } from '../services/backend.service';
 import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { InputParameter } from '../models/container/input-parameter.model';
@@ -15,7 +29,6 @@ import { InputParameter } from '../models/container/input-parameter.model';
 export enum LiveModelingModalComponentViews {
     'ENABLE_LIVE_MODELING' = 'ENABLE_LIVE_MODELING',
     'DISABLE_LIVE_MODELING' = 'DISABLE_LIVE_MODELING',
-    'ENTER_BUILD_PLAN_INPUT_PARAMETER' = 'ENTER_BUILD_PLAN_INPUT_PARAMETER'
 }
 
 @Component({
@@ -36,9 +49,6 @@ export class LiveModelingModalComponent {
     testingContainerUrl = false;
     isContainerUrlInvalid: boolean;
 
-    fetchingBuildPlanParameters = true;
-    requiredBuildPlanParameters: InputParameter[];
-
     selectedServiceTemplateInstanceId: string;
     serviceTemplateInstanceIds: string[];
 
@@ -55,23 +65,6 @@ export class LiveModelingModalComponent {
         this.currentCsarId = this.normalizeCsarId(this.backendService.configuration.id);
         this.containerUrl = 'http://' + window.location.hostname + ':1337';
         this.terminateInstance = true;
-    }
-
-    switchCurrentModalView(newModalView: LiveModelingModalComponentViews) {
-        switch (newModalView) {
-            case LiveModelingModalComponentViews.ENTER_BUILD_PLAN_INPUT_PARAMETER:
-                this.currentModalView = newModalView;
-                this.fetchingBuildPlanParameters = true;
-                this.currentModalView = LiveModelingModalComponentViews.ENTER_BUILD_PLAN_INPUT_PARAMETER;
-                this.requiredBuildPlanParameters = [];
-                this.getRequiredBuildPlanParameters().subscribe(resp => {
-                    this.fetchingBuildPlanParameters = false;
-                    this.requiredBuildPlanParameters = resp;
-                });
-                break;
-            default:
-                break;
-        }
     }
 
     private normalizeCsarId(csarId: string) {
@@ -110,43 +103,33 @@ export class LiveModelingModalComponent {
     }
 
     enableLiveModeling() {
-        if (this.currentModalView === LiveModelingModalComponentViews.ENABLE_LIVE_MODELING) {
-            this.resetErrorsAndAnimations();
-            this.testingContainerUrl = true;
-            this.checkContainerUrl().subscribe(resp => {
-                if (!resp) {
-                    this.isContainerUrlInvalid = true;
-                    return;
-                }
-                this.ngRedux.dispatch(this.liveModelingActions.setContainerUrl(this.containerUrl));
-
-                if (this.selectedServiceTemplateInstanceId) {
-                    this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(this.selectedServiceTemplateInstanceId));
-                    this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.START));
-                    this.dismissModal();
-                } else {
-                    this.switchCurrentModalView(LiveModelingModalComponentViews.ENTER_BUILD_PLAN_INPUT_PARAMETER);
-                }
-            }, error => {
+        this.resetErrorsAndAnimations();
+        this.testingContainerUrl = true;
+        this.checkContainerUrl().subscribe(resp => {
+            if (!resp) {
                 this.isContainerUrlInvalid = true;
-            }).add(() => {
-                this.testingContainerUrl = false;
-            });
-        } else {
-            this.ngRedux.dispatch(this.liveModelingActions.setBuildPlanInputParameters(this.requiredBuildPlanParameters));
-            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.START));
+                return;
+            }
+            this.ngRedux.dispatch(this.liveModelingActions.setContainerUrl(this.containerUrl));
+
+            if (this.selectedServiceTemplateInstanceId) {
+                this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(this.selectedServiceTemplateInstanceId));
+                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
+            } else {
+                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.INIT));
+            }
             this.dismissModal();
-        }
+        }, error => {
+            this.isContainerUrlInvalid = true;
+        }).add(() => {
+            this.testingContainerUrl = false;
+        });
     }
 
     checkContainerUrl(): Observable<boolean> {
         return this.http.get(this.containerUrl, { observe: 'response' }).pipe(
             map(resp => resp.ok),
         );
-    }
-
-    getRequiredBuildPlanParameters(): Observable<Array<InputParameter>> {
-        return this.containerService.getRequiredBuildPlanInputParameters();
     }
 
     disableLiveModeling() {
@@ -163,17 +146,6 @@ export class LiveModelingModalComponent {
         this.noRunningServiceTemplateInstancesFound = false;
         this.testingContainerUrl = undefined;
         this.isContainerUrlInvalid = undefined;
-    }
-
-    back() {
-        switch (this.currentModalView) {
-            case LiveModelingModalComponentViews.ENTER_BUILD_PLAN_INPUT_PARAMETER:
-                this.currentModalView = LiveModelingModalComponentViews.ENABLE_LIVE_MODELING;
-                break;
-            default:
-                this.currentModalView = LiveModelingModalComponentViews.ENABLE_LIVE_MODELING;
-                break;
-        }
     }
 
     dismissModal() {

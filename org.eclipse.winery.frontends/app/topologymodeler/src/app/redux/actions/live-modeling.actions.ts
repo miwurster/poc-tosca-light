@@ -56,6 +56,10 @@ export interface SetBuildPlanInputParametersAction extends Action {
     inputParameters: Array<InputParameter>;
 }
 
+export interface SetSettingsAction extends Action {
+    settings: any;
+}
+
 /**
  * Actions for live modeling
  */
@@ -72,6 +76,8 @@ export class LiveModelingActions {
     static DELETE_NODE_TEMPLATE_DATA = 'DELETE_NODE_TEMPLATE_DATA';
     static SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE = 'SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE';
     static SET_BUILD_PLAN_INPUT_PARAMETERS = 'SET_BUILD_PLAN_INPUT_PARAMETERS';
+    static SET_SETTINGS = 'SET_SETTING';
+    static DISABLE_LIVE_MODELING = 'DISABLE_LIVE_MODELING';
 
     setState(state: LiveModelingStates): SetStateAction {
         return {
@@ -145,6 +151,19 @@ export class LiveModelingActions {
         return {
             type: LiveModelingActions.SET_BUILD_PLAN_INPUT_PARAMETERS,
             inputParameters: inputParameters
+        };
+    }
+
+    setSettings(settings: any): SetSettingsAction {
+        return {
+            type: LiveModelingActions.SET_SETTINGS,
+            settings: settings
+        };
+    }
+
+    disableLiveModeling(): Action {
+        return {
+            type: LiveModelingActions.DISABLE_LIVE_MODELING
         };
     }
 }

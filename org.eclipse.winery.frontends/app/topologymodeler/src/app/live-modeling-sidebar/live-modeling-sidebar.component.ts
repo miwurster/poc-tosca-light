@@ -12,8 +12,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { BsModalService, ProgressbarConfig } from 'ngx-bootstrap';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { BsModalRef, BsModalService, ProgressbarConfig } from 'ngx-bootstrap';
 import { Subscription } from 'rxjs';
 import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../redux/store/winery.store';
@@ -27,6 +27,9 @@ import { LiveModelingModalComponent, LiveModelingModalComponentViews } from '../
 import { InputParameter } from '../models/container/input-parameter.model';
 import { Csar } from '../models/container/csar.model';
 import { ResizeEvent } from 'angular-resizable-element';
+import { BackendService } from '../services/backend.service';
+import { ToastrService } from 'ngx-toastr';
+import { ContainerService } from '../services/container.service';
 
 export function getProgressbarConfig(): ProgressbarConfig {
     return Object.assign(new ProgressbarConfig(), { animate: true, striped: true, max: 100 });
@@ -60,6 +63,7 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
     @ViewChild('scrollContainer') private scrollContainer: ElementRef;
     @ViewChildren('logItems') private logItems: QueryList<any>;
     @Input() top: number;
+    objectKeys = Object.keys;
 
     sidebarWidth: number;
     sidebarContentState = 'extended';
@@ -76,17 +80,26 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
     liveModelingStates = LiveModelingStates;
     buildPlanInputParameters: Array<InputParameter>;
     serviceTemplateInstanceState: ServiceTemplateInstanceStates;
+    serviceTemplateInstanceId: string;
     currentCsar: Csar;
 
     subscriptions: Array<Subscription> = [];
 
     updatingServiceTemplateInstanceState = false;
+    modalRef: BsModalRef;
+    settings: any;
+
+    selectedServiceTemplateInstanceId: string;
+    serviceTemplateInstanceIds: string[];
 
     constructor(private ngRedux: NgRedux<IWineryState>,
                 private wineryActions: WineryActions,
                 private liveModelingActions: LiveModelingActions,
                 private liveModelingService: LiveModelingService,
-                private modalService: BsModalService) {
+                private modalService: BsModalService,
+                private backendService: BackendService,
+                private alert: ToastrService,
+                private containerService: ContainerService) {
     }
 
     ngOnInit() {
@@ -102,6 +115,10 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
             .subscribe(liveModelingState => {
                 this.liveModelingState = liveModelingState;
                 this.updateProgressbar();
+            }));
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.currentServiceTemplateInstanceId)
+            .subscribe(serviceTemplateInstanceId => {
+                this.serviceTemplateInstanceId = serviceTemplateInstanceId;
             }));
         this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.currentServiceTemplateInstanceState)
             .subscribe(serviceTemplateInstanceState => {
@@ -119,6 +136,14 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
             .subscribe(csar => {
                 this.currentCsar = csar;
             }));
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.settings)
+            .subscribe(settings => {
+                this.settings = settings;
+            }));
+    }
+
+    unsavedChanges(): boolean {
+        return this.ngRedux.getState().wineryState.unsavedChanges;
     }
 
     enableLiveModeling() {
@@ -128,11 +153,37 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
         this.modalService.show(LiveModelingModalComponent, { initialState, ignoreBackdropClick: true });
     }
 
+    saveTopologyAndEnableLiveModeling() {
+        this.dismissModal();
+        this.ngRedux.dispatch(this.wineryActions.setOverlayContent('Saving topology template. This may take a while.'));
+        this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(true));
+        this.backendService.saveTopologyTemplate(this.ngRedux.getState().wineryState.currentJsonTopology)
+            .subscribe(res => {
+                if (res.ok) {
+                    this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>');
+                    this.ngRedux.dispatch(this.wineryActions.saveTopologyTemplate());
+                    this.ngRedux.dispatch(this.wineryActions.checkForUnsavedChanges());
+                    this.enableLiveModeling();
+                } else {
+                    this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
+                        + res.statusText + ' ' + res.status + '</p>');
+                }
+            }, err => this.alert.error(err.error))
+            .add(() => {
+                this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(false));
+            });
+    }
+
     disableLiveModeling() {
         const initialState = {
             currentModalView: LiveModelingModalComponentViews.DISABLE_LIVE_MODELING
         };
         this.modalService.show(LiveModelingModalComponent, { initialState, ignoreBackdropClick: true });
+    }
+
+    deployNewInstance() {
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.INIT));
     }
 
     private displayLiveModelingLog(log) {
@@ -205,21 +256,44 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
 
     private getBadgeBackgroundForState(serviceTemplateInstanceState: ServiceTemplateInstanceStates) {
         switch (serviceTemplateInstanceState) {
-            case ServiceTemplateInstanceStates.INITIAL:
             case ServiceTemplateInstanceStates.DELETED:
             case ServiceTemplateInstanceStates.DELETING:
+            case ServiceTemplateInstanceStates.ERROR:
                 return '#dc3545';
-            case ServiceTemplateInstanceStates.INITIAL:
             case ServiceTemplateInstanceStates.MIGRATED:
             case ServiceTemplateInstanceStates.MIGRATING:
             case ServiceTemplateInstanceStates.CREATING:
                 return '#007bff';
             case ServiceTemplateInstanceStates.CREATED:
                 return '#28a745';
+            case ServiceTemplateInstanceStates.INITIAL:
             case ServiceTemplateInstanceStates.NOT_AVAILABLE:
                 return '#6c757d';
         }
     }
+
+    openSwitchInstanceModal(templateRef) {
+        this.openModal(templateRef);
+        this.selectedServiceTemplateInstanceId = this.serviceTemplateInstanceId;
+        this.containerService.fetchRunningServiceTemplateInstances(
+            this.ngRedux.getState().liveModelingState.containerUrl, 
+            this.ngRedux.getState().liveModelingState.currentCsarId
+        ).subscribe(resp => {
+            this.serviceTemplateInstanceIds = resp.filter(id => id !== this.serviceTemplateInstanceId);
+        });
+    }
+
+    selectServiceTemplateId(id: string) {
+        this.selectedServiceTemplateInstanceId = id;
+    }
+    
+    switchServiceTemplateInstance() {
+        this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(this.selectedServiceTemplateInstanceId));
+        this.ngRedux.dispatch(this.liveModelingActions.clearLogs());
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
+        this.dismissModal();
+    }
+    
 
     redeploy() {
         this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.REDEPLOY));
@@ -227,6 +301,7 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
 
     terminate() {
         this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.TERMINATE));
+        this.dismissModal();
     }
 
     refresh() {
@@ -235,6 +310,11 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
 
     clearLogs() {
         this.ngRedux.dispatch(this.liveModelingActions.clearLogs());
+    }
+
+    setSettings() {
+        this.ngRedux.dispatch(this.liveModelingActions.setSettings(this.settings));
+        this.dismissModal();
     }
 
     updateSidebarState(sidebarOpened: boolean) {
@@ -262,6 +342,14 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
 
     onResizeEnd(event: ResizeEvent): void {
         this.sidebarWidth = event.rectangle.width;
+    }
+
+    openModal(template: TemplateRef<any>) {
+        this.modalRef = this.modalService.show(template, { ignoreBackdropClick: true });
+    }
+
+    dismissModal() {
+        this.modalRef.hide();
     }
 
     ngOnDestroy() {

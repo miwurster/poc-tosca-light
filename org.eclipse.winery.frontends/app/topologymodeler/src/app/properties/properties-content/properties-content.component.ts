@@ -108,6 +108,7 @@ export class PropertiesContentComponent implements OnInit, OnChanges, OnDestroy 
                         nodeId: this.currentNodeData.nodeTemplate.id
                     }
                 }));
+                this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             }));
     }
 

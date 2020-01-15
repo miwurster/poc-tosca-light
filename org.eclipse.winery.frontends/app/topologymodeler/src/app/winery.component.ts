@@ -318,6 +318,14 @@ export class WineryComponent implements OnInit, AfterViewInit {
 
     onReduxReady() {
         this.loaded.generatedReduxState = true;
+        window.addEventListener('beforeunload', (e => {
+            if (this.ngRedux.getState().wineryState.unsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            } else {
+                delete e['returnValue'];
+            }
+        }));
     }
 
     sidebarDeleteButtonClicked($event) {

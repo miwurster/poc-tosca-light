@@ -148,6 +148,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             id: this.sidebarState.id
                         }
                     }));
+                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 } else {
                     this.$ngRedux.dispatch(this.actions.updateRelationshipName({
                         relData: {
@@ -158,6 +159,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             target: this.sidebarState.target
                         }
                     }));
+                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 }
                 // refresh
                 this.$ngRedux.dispatch(this.actions.openSidebar({
@@ -189,6 +191,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             count: data
                         }
                     }));
+                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 }
                 // refresh
                 this.$ngRedux.dispatch(this.actions.openSidebar({
@@ -219,6 +222,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             count: data
                         }
                     }));
+                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 }
                 // refresh
                 this.$ngRedux.dispatch(this.actions.openSidebar({
@@ -250,6 +254,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     id: this.sidebarState.id
                 }
             }));
+            this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             let number: number = this.sidebarState.minInstances;
             number += 1;
             this.sidebarState.minInstances = number;
@@ -262,6 +267,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         id: this.sidebarState.id
                     }
                 }));
+                this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 this.sidebarState.minInstances -= 1;
             }
         }
@@ -295,6 +301,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         id: this.sidebarState.id
                     }
                 }));
+                this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 this.sidebarState.maxInstances = Number.parseInt(this.sidebarState.maxInstances, 10) + 1;
             } else if ($event === 'dec') {
                 if (this.sidebarState.maxInstances === 0) {
@@ -305,6 +312,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             id: this.sidebarState.id
                         }
                     }));
+                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                     this.sidebarState.maxInstances -= 1;
                 }
             } else if ($event === 'inf') {
@@ -317,6 +325,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         count: '\u221E'
                     }
                 }));
+                this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             }
         } else {
             this.$ngRedux.dispatch(this.actions.changeMaxInstances({
@@ -325,6 +334,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     count: 0
                 }
             }));
+            this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             this.sidebarState.maxInstances = 0;
             this.maxInputEnabled = true;
         }

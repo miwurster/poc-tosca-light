@@ -25,6 +25,7 @@ import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reduce
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 
 /**
  * The navbar of the topologymodeler.
@@ -67,6 +68,7 @@ export class NavbarComponent implements OnDestroy {
     matchingOngoing: boolean;
     placingOngoing: boolean;
     configEnum = FeatureEnum;
+    unsavedChanges: boolean;
 
     constructor(private alert: ToastrService,
                 private ngRedux: NgRedux<IWineryState>,
@@ -79,6 +81,8 @@ export class NavbarComponent implements OnDestroy {
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
             .subscribe(topologyTemplate => this.unformattedTopologyTemplate = topologyTemplate));
+        this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.unsavedChanges)
+            .subscribe(unsavedChanges => this.unsavedChanges = unsavedChanges));
         this.hotkeysService.add(new Hotkey('mod+s', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             this.saveTopologyTemplateToRepository();
@@ -234,6 +238,9 @@ export class NavbarComponent implements OnDestroy {
                 this.ngRedux.dispatch(this.actions.placeComponents());
                 this.placingOngoing = true;
                 break;
+            case 'test':
+                this.ngRedux.dispatch(this.wineryActions.checkForUnsavedChanges());
+                break;
         }
     }
 
@@ -249,6 +256,7 @@ export class NavbarComponent implements OnDestroy {
                     this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
                         + res.statusText + ' ' + res.status + '</p>');
                     this.ngRedux.dispatch(this.wineryActions.saveTopologyTemplate());
+                    this.ngRedux.dispatch(this.wineryActions.checkForUnsavedChanges());
                 } else {
                     this.alert.info('<p>Something went wrong! <br>' + 'Response Status: '
                         + res.statusText + ' ' + res.status + '</p>');

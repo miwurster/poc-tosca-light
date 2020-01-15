@@ -236,11 +236,13 @@ export class WineryActions {
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
     static SET_NODE_VISUALS = 'SET_NODE_VISUALS';
     static SEND_LIVE_MODELING_SIDEBAR_OPENED = 'SEND_LIVE_MODELING_SIDEBAR_OPENED';
-    
+
     static SET_OVERLAY_CONTENT = 'SET_OVERLAY_CONTENT';
-    static SET_OVERLAY_VISIBILITY= 'SET_OVERLAY_VISIBILITY';
-    
+    static SET_OVERLAY_VISIBILITY = 'SET_OVERLAY_VISIBILITY';
+
     static SAVE_TOPOLOGY_TEMPLATE = 'SAVE_TOPOLOGY_TEMPLATE';
+    static CHECK_FOR_UNSAVED_CHANGES = 'CHECK_FOR_UNSAVED_CHANGES';
+    static TEST = 'TEST';
 
     sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
         ((paletteOpened) => ({
@@ -391,5 +393,9 @@ export class WineryActions {
     saveTopologyTemplate: ActionCreator<Action> =
         (() => ({
             type: WineryActions.SAVE_TOPOLOGY_TEMPLATE
+        }));
+    checkForUnsavedChanges: ActionCreator<Action> =
+        (() => ({
+            type: WineryActions.CHECK_FOR_UNSAVED_CHANGES
         }));
 }

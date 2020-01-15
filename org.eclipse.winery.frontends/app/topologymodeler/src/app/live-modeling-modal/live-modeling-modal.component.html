@@ -1,3 +1,17 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2020 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
 <ng-container *ngIf="currentModalView === liveModelingModalComponentViews.ENABLE_LIVE_MODELING">
     <div class="modal-header">
         <h4 class="modal-title pull-left">Enable Live-Modeling</h4>
@@ -75,36 +89,5 @@
     <div class="modal-footer">
         <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
         <button type="button" class="btn btn-danger" (click)="disableLiveModeling()">Disable</button>
-    </div>
-</ng-container>
-
-<ng-container *ngIf="currentModalView === liveModelingModalComponentViews.ENTER_BUILD_PLAN_INPUT_PARAMETER">
-    <div class="modal-header">
-        <h4 class="modal-title pull-left">Enter Build Plan Input Parameters</h4>
-        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    <div class="modal-body input-parameter">
-        <div *ngIf="fetchingBuildPlanParameters" class="fa-2x text-center">
-            <i class="fas fa-spinner fa-spin"></i>
-        </div>
-        <div class="px-2" *ngIf="requiredBuildPlanParameters && !fetchingBuildPlanParameters">
-            <div *ngIf="requiredBuildPlanParameters.length === 0">
-                <span>There are no required input parameters. Ready for deployment.</span>
-            </div>
-            <div *ngIf="requiredBuildPlanParameters.length > 0">
-                <div *ngFor="let parameter of requiredBuildPlanParameters" class="pb-2">
-                    <label class="font-weight-normal" [for]="parameter.name">{{parameter.name}}:</label>
-                    <input class="form-control" type="text" [id]="parameter.name"
-                           [placeholder]="parameter.required === 'YES' ? '' : '(optional)'"
-                           [(ngModel)]="parameter.value">
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-light" (click)="back()">Back</button>
-        <button type="button" class="btn btn-primary" (click)="enableLiveModeling()">Deploy</button>
     </div>
 </ng-container>

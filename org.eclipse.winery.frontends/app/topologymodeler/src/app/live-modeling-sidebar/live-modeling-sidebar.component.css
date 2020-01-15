@@ -112,8 +112,21 @@
 /*    background-color: #32383e;*/
 /*}*/
 
+.dropdown-toggle {
+    width: 100%;
+}
+
+.dropdown-menu {
+    width: 100%;
+    text-align: right;
+}
+
 td {
     cursor: text;
+}
+
+.dropdown-item {
+    cursor: pointer;
 }
 
 .scroll-container {
@@ -182,6 +195,6 @@ progressbar {
     align-items: center;
 }
 
-.wrapper span{
+.wrapper span {
     flex: 1;
 }

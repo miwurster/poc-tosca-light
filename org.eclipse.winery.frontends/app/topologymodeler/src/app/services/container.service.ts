@@ -17,7 +17,7 @@ import { CsarUpload } from '../models/container/csar-upload.model';
 import { of } from 'rxjs';
 import { Observable } from 'rxjs/Rx';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, concatMap, map, tap } from 'rxjs/operators';
+import { catchError, concatMap, filter, map, tap } from 'rxjs/operators';
 import { NodeTemplateInstanceStates, PlanTypes, ServiceTemplateInstanceStates } from '../models/enums';
 import { Csar } from '../models/container/csar.model';
 import { ServiceTemplate } from '../models/container/service-template.model';
@@ -153,17 +153,17 @@ export class ContainerService {
         state: ServiceTemplateInstanceStates,
         interval: number,
         timeout: number
-    ): Observable<boolean> {
+    ): Observable<ServiceTemplateInstanceStates> {
         return Observable.timer(0, interval)
             .concatMap(() => this.isServiceTemplateInstanceInState(state))
-            .first(resp => resp)
+            .first(resp => resp != null)
             .timeout(timeout);
     }
 
-    private isServiceTemplateInstanceInState(state: ServiceTemplateInstanceStates): Observable<boolean> {
+    private isServiceTemplateInstanceInState(state: ServiceTemplateInstanceStates): Observable<ServiceTemplateInstanceStates> {
         return this.getServiceTemplateInstanceState().pipe(
-            map(resp => resp === state),
-            catchError(() => of(false))
+            filter(resp => resp === state || resp === ServiceTemplateInstanceStates.ERROR),
+            catchError(() => of(null))
         );
     }
 
@@ -286,8 +286,15 @@ export class ContainerService {
             )
         );
     }
+    
+    public getServiceTemplateInstanceBuildPlanParameters(): Observable<Array<InputParameter>> {
+        return this.getServiceTemplateInstance().pipe(
+          concatMap(resp => this.http.get<PlanInstance>(resp._links['build_plan_instance'].href, this.headerAcceptJSON)),
+          map(resp => resp.inputs.filter(input => this.hidden_input_parameters.indexOf(input.name) === -1))  
+        );
+    }
 
-    public fetchRunningServiceTemplateInstances(containerUrl: string, csarId: string): Observable<any> {
+    public fetchRunningServiceTemplateInstances(containerUrl: string, csarId: string): Observable<string[]> {
         const csarUrl = this.combineURLs(this.combineURLs(containerUrl, 'csars'), csarId);
         return this.http.get<Csar>(csarUrl, this.headerAcceptJSON).pipe(
             concatMap(resp => this.http.get<ServiceTemplate>(resp._links['servicetemplate'].href, this.headerAcceptJSON)),
@@ -334,7 +341,6 @@ export class ContainerService {
                 resp.node_template_instances.find(instance =>
                     instance.service_template_instance_id.toString() === this.currentServiceTemplateInstanceId)._links['self'].href, this.headerAcceptJSON)
             )
-            // map(resp => resp.node_template_instances.find(instance => instance.service_template_instance_id.toString() === serviceTemplateInstanceId))
         );
     }
 

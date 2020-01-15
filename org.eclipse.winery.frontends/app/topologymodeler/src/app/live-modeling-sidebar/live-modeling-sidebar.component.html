@@ -32,14 +32,19 @@
     <div [@sidebarContentState]="sidebarContentState" class="live-modeling-sidebar-content">
         <div *ngIf="liveModelingState === liveModelingStates.DISABLED" class="live-modeling-sidebar-page start-page">
             <p>Live modeling is currently disabled.</p>
-            <button class="btn btn-warning font-weight-bold" (click)="enableLiveModeling()">Enable</button>
+            <button class="btn btn-warning font-weight-bold"
+                    (click)="unsavedChanges() ? openModal(confirmUnsavedChangesModal) : enableLiveModeling()">Enable
+            </button>
         </div>
         <div *ngIf="liveModelingState !== liveModelingStates.DISABLED" class="live-modeling-sidebar-page live-page">
             <div class="live-modeling-sidebar-section">
                 <div class="d-flex">
                     <label class="live-modeling-sidebar-section-label flex-grow-1">General</label>
                     <i class="fa fa-gear ml-2" style="cursor: pointer;" tooltip="Settings" placement="left"
-                       (click)="enableLiveModeling()"></i>
+                       (click)="openModal(settingsModal)"></i>
+                    <i class="fa fa-times ml-2" style="cursor: pointer;" tooltip="Disable Live-modeling"
+                       placement="left"
+                       (click)="disableLiveModeling()"></i>
                 </div>
                 <div class="d-flex">
                     <div class="d-flex align-items-center justify-content-center icon-container">
@@ -97,8 +102,12 @@
                 </div>
             </div>
             <div class="live-modeling-sidebar-section">
-                <label class="live-modeling-sidebar-section-label">Operations</label>
-                <div class="my-3">
+                <label class="live-modeling-sidebar-section-label">Instance</label>
+                <div class="my-2">
+                    <span>Instance Id: </span>
+                    <span class="font-weight-bold">{{serviceTemplateInstanceId}}</span>
+                </div>
+                <div class="my-2">
                     <span>State: </span>
                     <span class="badge-small"
                           [style.background]="getBadgeBackgroundForState(serviceTemplateInstanceState)">{{serviceTemplateInstanceState | uppercase }}
@@ -109,17 +118,33 @@
                        (click)="updateServiceTemplateInstanceState()"></i>
                 </div>
                 <div class="d-flex">
-                    <button class="btn btn-danger flex-grow-1"
+                    <button class="btn btn-info"
+                            [disabled]="liveModelingState !== liveModelingStates.ENABLED && liveModelingState !== liveModelingStates.ERROR"
+                            (click)="deployNewInstance()"
+                            tooltip="Deploy new instance"
+                            placement="bottom">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                    <button class="btn btn-danger ml-2"
                             [disabled]="liveModelingState !== liveModelingStates.ENABLED"
-                            (click)="disableLiveModeling()">
-                        Disable
+                            (click)="openModal(confirmTerminationModal)"
+                            tooltip="Terminate instance"
+                            placement="bottom">
+                        <i class="fa fa-minus-circle"></i>
                     </button>
                     <button class="btn btn-info ml-2"
                             [disabled]="liveModelingState !== liveModelingStates.ENABLED"
                             (click)="refresh()"
                             tooltip="Refresh node template data"
-                            placement="left">
+                            placement="bottom">
                         <i class="fa fa-refresh"></i>
+                    </button>
+                    <button class="btn btn-info ml-2"
+                            [disabled]="liveModelingState !== liveModelingStates.ENABLED"
+                            (click)="openSwitchInstanceModal(switchInstanceModal)"
+                            tooltip="Switch Service Template Instance"
+                            placement="bottom">
+                        <i class="fa fa-exchange"></i>
                     </button>
                 </div>
             </div>
@@ -148,3 +173,92 @@
         </div>
     </div>
 </div>
+
+
+<ng-template #confirmTerminationModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Confirm Termination</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        Do you want to terminate this instance?
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button" class="btn btn-danger" (click)="terminate()">Yes</button>
+    </div>
+</ng-template>
+
+<ng-template #settingsModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Live-Modeling Settings</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div *ngFor="let key of objectKeys(settings)" class="pb-2">
+            <label class="font-weight-normal" [for]="key">{{key}}:</label>
+            <input class="form-control" type="text" [id]="key"
+                   [(ngModel)]="settings[key]">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button" class="btn btn-primary" (click)="setSettings()">Save</button>
+    </div>
+</ng-template>
+
+<ng-template #confirmUnsavedChangesModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Unsaved Changes</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        You have unsaved changes made to the topology. In order to continue, save the current template and try again.
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button" class="btn btn-primary" (click)="saveTopologyAndEnableLiveModeling()">Save and Continue
+        </button>
+    </div>
+</ng-template>
+
+
+<ng-template #switchInstanceModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Switch Service Template Instance</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="d-flex">
+            <div class="btn-group mr-2 dropdown flex-grow-1" dropdown
+                 [isDisabled]="!(serviceTemplateInstanceIds && serviceTemplateInstanceIds?.length > 0)">
+                <button id="button-basic" dropdownToggle type="button" class="btn btn-light dropdown-toggle"
+                        aria-controls="dropdown-basic">
+                    Service Template Instance ID: <b>{{selectedServiceTemplateInstanceId}}</b>
+                </button>
+                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu"
+                    role="menu" aria-labelledby="button-basic">
+                    <li *ngFor="let id of serviceTemplateInstanceIds" role="menuitem">
+                        <span class="dropdown-item" (click)="selectServiceTemplateId(id)">{{id}}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+        <button type="button" class="btn btn-primary" 
+                [disabled]="selectedServiceTemplateInstanceId === serviceTemplateInstanceId"
+                (click)="switchServiceTemplateInstance()">
+            Switch
+        </button>
+    </div>
+</ng-template>

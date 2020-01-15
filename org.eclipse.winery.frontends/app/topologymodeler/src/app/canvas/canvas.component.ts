@@ -553,6 +553,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newCapabilityData = this.capabilities.capabilities;
         newCapabilityData.nodeId = this.capabilities.nodeId;
         this.ngRedux.dispatch(this.actions.setCapability(newCapabilityData));
+        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetCapabilities();
         this.capabilitiesModal.hide();
     }
@@ -584,6 +585,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newRequirementData = this.requirements.requirements;
         newRequirementData.nodeId = this.requirements.nodeId;
         this.ngRedux.dispatch(this.actions.setRequirement(newRequirementData));
+        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetRequirements();
         this.requirementsModal.hide();
     }
@@ -631,6 +633,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newCapabilityData = this.capabilities.capabilities;
         newCapabilityData.nodeId = this.capabilities.nodeId;
         this.ngRedux.dispatch(this.actions.setCapability(newCapabilityData));
+        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetCapabilities();
         this.capabilitiesModal.hide();
     }
@@ -690,6 +693,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             capability: this.currentModalData.capabilities.capability.filter(req => req.id !== this.currentModalData.currentCapability.id)
         };
         this.ngRedux.dispatch(this.actions.setCapability(capabilities));
+        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetCapabilities();
         this.capabilitiesModal.hide();
     }
@@ -737,6 +741,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newRequirementData = this.requirements.requirements;
         newRequirementData.nodeId = this.requirements.nodeId;
         this.ngRedux.dispatch(this.actions.setRequirement(newRequirementData));
+        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetRequirements();
         this.requirementsModal.hide();
     }
@@ -797,6 +802,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             requirement: this.currentModalData.requirements.requirement.filter(req => req.id !== this.currentModalData.currentRequirement.id)
         };
         this.ngRedux.dispatch(this.actions.setRequirement(requirements));
+        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetRequirements();
         this.requirementsModal.hide();
     }
@@ -1089,6 +1095,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         );
 
         this.ngRedux.dispatch(this.actions.saveNodeTemplate(newNode));
+        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
     }
 
     /**
@@ -1356,6 +1363,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                         }
                     }
                     this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id));
+                    this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 }
             });
             this.selectedNodes.length = 0;
@@ -1364,6 +1372,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 for (const con of this.newJsPlumbInstance.getAllConnections()) {
                     if (con.hasType('marked')) {
                         this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(con.id));
+                        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                         this.newJsPlumbInstance.deleteConnection(con);
                         this.hideSidebar();
                     }
@@ -2084,6 +2093,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             {}
                         );
                         this.ngRedux.dispatch(this.actions.saveRelationship(newRelationship));
+                        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                     }
                 }
                 this.unbindConnection();
@@ -2125,6 +2135,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                 {}
                             );
                             this.ngRedux.dispatch(this.actions.saveRelationship(newRelationship));
+                            this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                         }
                         for (const rel of this.newJsPlumbInstance.getConnections()) {
                             if (rel.targetId === info.targetId) {

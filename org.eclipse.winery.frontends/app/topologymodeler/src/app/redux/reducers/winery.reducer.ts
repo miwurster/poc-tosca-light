@@ -24,6 +24,7 @@ import {
 import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 import { Visuals } from '../../models/visuals';
+import { TopologyTemplateUtil } from '../../models/topologyTemplateUtil';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;
@@ -35,6 +36,7 @@ export interface WineryState {
     nodeVisuals: Visuals[];
     liveModelingSidebarOpenedState: boolean;
     overlayState: any;
+    unsavedChanges: boolean;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -64,7 +66,8 @@ export const INITIAL_WINERY_STATE: WineryState = {
     overlayState: {
         content: '',
         visible: false
-    }
+    },
+    unsavedChanges: false
 };
 
 /**
@@ -505,6 +508,11 @@ export const WineryReducer =
                 return {
                   ...lastState,
                   lastSavedJsonTopology: JSON.parse(JSON.stringify(lastState.currentJsonTopology))
+                };
+            case WineryActions.CHECK_FOR_UNSAVED_CHANGES:
+                return {
+                    ...lastState,
+                    unsavedChanges: TopologyTemplateUtil.hasTopologyTemplateChanged(lastState.currentJsonTopology, lastState.lastSavedJsonTopology)
                 };
             default:
                 return <WineryState>lastState;

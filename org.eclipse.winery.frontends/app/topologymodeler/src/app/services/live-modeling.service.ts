@@ -25,7 +25,10 @@ import { TRelationshipTemplate, TTopologyTemplate } from '../models/ttopology-te
 import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
 import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
 import { LiveModelingLog } from '../models/liveModelingLog';
-import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { BsModalService } from 'ngx-bootstrap';
+import { LiveModelingModalBuildplanComponent } from '../live-modeling-modal/live-modeling-modal-buildplan/live-modeling-modal-buildplan.component';
+import { Subscription } from 'rxjs';
 
 @Injectable()
 export class LiveModelingService {
@@ -40,18 +43,24 @@ export class LiveModelingService {
 
     private readonly csarEnding = '.csar';
 
+    subscriptions: Subscription[] = [];
+
     constructor(
         private ngRedux: NgRedux<IWineryState>,
         private liveModelingActions: LiveModelingActions,
         private topologyRendererActions: TopologyRendererActions,
+        private wineryActions: WineryActions,
         private containerService: ContainerService,
         private backendService: BackendService,
-        private errorHandler: ErrorHandlerService) {
+        private errorHandler: ErrorHandlerService,
+        private modalService: BsModalService) {
 
         this.ngRedux.dispatch(liveModelingActions.setCurrentCsarId(this.normalizeCsarId(this.backendService.configuration.id)));
 
-        this.pollInterval = 1000;
-        this.pollTimeout = 60000;
+        this.ngRedux.select(state => state.liveModelingState.settings).subscribe(settings => {
+            this.pollInterval = settings.interval;
+            this.pollTimeout = settings.timeout;
+        });
 
         this.ngRedux.select(state => state.liveModelingState.state)
             .subscribe(state => this.performAction(state));
@@ -107,8 +116,11 @@ export class LiveModelingService {
             case LiveModelingStates.DISABLED:
                 this.disable();
                 break;
-            case LiveModelingStates.START:
-                this.start();
+            case LiveModelingStates.INIT:
+                this.init();
+                break;
+            case LiveModelingStates.DEPLOY:
+                this.deploy();
                 break;
             case LiveModelingStates.TERMINATE:
                 this.terminate();
@@ -122,31 +134,43 @@ export class LiveModelingService {
                 this.update();
                 break;
             case LiveModelingStates.ERROR:
+                this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceState(ServiceTemplateInstanceStates.ERROR));
+                this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(false));
                 break;
             default:
         }
     }
 
     private disable() {
-        if (this.currentTopologyTemplate) {
-            this.deleteNodeTemplateData();
+        try {
+            this.ngRedux.dispatch(this.liveModelingActions.disableLiveModeling());
+        } catch (error) {
+            this.errorHandler.handleError(error);
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ERROR));
         }
     }
 
-    private async start() {
+    private async init() {
         try {
-            if (!this.currentServiceTemplateInstanceId) {
-                await this.installCsarIfNeeded();
-                await this.deployServiceTemplateInstance();
+            this.ngRedux.dispatch(this.liveModelingActions.clearLogs());
+            await this.installCsarIfNeeded();
+
+            const requiredBuildPlanInputParameters = await this.containerService.getRequiredBuildPlanInputParameters().toPromise();
+            if (requiredBuildPlanInputParameters.length > 0) {
+                // Request build plan parameters
+                this.modalService.show(LiveModelingModalBuildplanComponent, { ignoreBackdropClick: true });
             } else {
-                // Retrieve build plan parameters of already running instance
-                const buildPlanParameters = await this.containerService.getRequiredBuildPlanInputParameters().toPromise();
-                this.ngRedux.dispatch(this.liveModelingActions.setBuildPlanInputParameters(buildPlanParameters));
+                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
             }
+        } catch (error) {
+            this.errorHandler.handleError(error);
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ERROR));
+        }
+    }
 
-            const csar = await this.containerService.getCsar().toPromise();
-            this.ngRedux.dispatch(this.liveModelingActions.setCurrentCsar(csar));
-
+    private async deploy() {
+        try {
+            await this.deployServiceTemplateInstance();
             this.initiateNodeTemplateData();
             this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
         } catch (error) {
@@ -156,23 +180,22 @@ export class LiveModelingService {
     }
 
     private async installCsarIfNeeded() {
+        this.ngRedux.dispatch(this.wineryActions.setOverlayContent('Checking whether CSAR file is present'));
+        this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(true));
         const appInstalled = await this.containerService.isApplicationInstalled().toPromise();
 
         if (!appInstalled) {
             this.logWarning('App not found, installing now...');
+            this.ngRedux.dispatch(this.wineryActions.setOverlayContent('Uploading CSAR file to container'));
             const uploadPayload = new CsarUpload(this.getCsarResourceUrl(this.currentCsarId), this.currentCsarId, 'false');
             await this.containerService.installApplication(uploadPayload).toPromise();
         } else {
             this.logInfo('App found. Skipping installation');
         }
+        this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(false));
     }
 
     private async deployServiceTemplateInstance() {
-        const newServiceTemplateInstanceId = await this.deployServiceTemplateInstanceOfGivenCsar();
-        this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(newServiceTemplateInstanceId));
-    }
-
-    private async deployServiceTemplateInstanceOfGivenCsar(): Promise<string> {
         let correlationId;
         try {
             this.logInfo('Deploying service template instance...');
@@ -191,15 +214,19 @@ export class LiveModelingService {
 
             this.logInfo('Waiting for deployment of service template instance with id ' + instanceId);
 
-            await this.containerService.waitForServiceTemplateInstanceInState(
+            const state = await this.containerService.waitForServiceTemplateInstanceInState(
                 ServiceTemplateInstanceStates.CREATED,
                 this.pollInterval,
                 this.pollTimeout
             ).toPromise();
 
+            if (state === ServiceTemplateInstanceStates.ERROR) {
+                throw new Error();
+            }
+
             this.logSuccess('Successfully deployed service template instance with Id ' + instanceId);
 
-            return instanceId;
+            this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(instanceId));
         } catch (error) {
             this.logError('There was an error while deploying service template instance');
             throw error;
@@ -231,10 +258,6 @@ export class LiveModelingService {
             this.errorHandler.handleError(error);
             this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ERROR));
         }
-    }
-
-    private deleteNodeTemplateData() {
-        this.ngRedux.dispatch(this.liveModelingActions.deleteNodeTemplateData());
     }
 
     private async terminateServiceTemplateInstance() {
@@ -330,6 +353,8 @@ export class LiveModelingService {
 
     public async update() {
         try {
+            await this.updateCsar();
+            await this.updateBuildPlanParameters();
             await this.updateNodeTemplateData();
             await this.updateCurrentServiceTemplateInstanceState();
         } catch (error) {
@@ -337,6 +362,17 @@ export class LiveModelingService {
         } finally {
             this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.ENABLED));
         }
+    }
+
+    private async updateCsar() {
+        const csar = await this.containerService.getCsar().toPromise();
+        this.ngRedux.dispatch(this.liveModelingActions.setCurrentCsar(csar));
+    }
+
+    private async updateBuildPlanParameters() {
+        this.logInfo(`Fetching service template instance build plan parameters`);
+        const buildPlanParameters = await this.containerService.getServiceTemplateInstanceBuildPlanParameters().toPromise();
+        this.ngRedux.dispatch(this.liveModelingActions.setBuildPlanInputParameters(buildPlanParameters));
     }
 
     private async updateNodeTemplateData() {
@@ -457,5 +493,12 @@ export class LiveModelingService {
 
     private logError(message: string) {
         this.ngRedux.dispatch(this.liveModelingActions.sendLog(new LiveModelingLog(message, LiveModelingLogTypes.DANGER)));
+    }
+
+    private unsubscribe() {
+        this.subscriptions.forEach((subscription: Subscription) => {
+            subscription.unsubscribe();
+        });
+        this.subscriptions = [];
     }
 }

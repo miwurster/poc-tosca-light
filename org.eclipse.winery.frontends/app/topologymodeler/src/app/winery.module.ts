@@ -63,6 +63,7 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { ResizableModule } from 'angular-resizable-element';
 import { PropertyValidatorService } from './services/property-validator.service';
 import { OverlayComponent } from './overlay/overlay.component';
+import { LiveModelingModalBuildplanComponent } from './live-modeling-modal/live-modeling-modal-buildplan/live-modeling-modal-buildplan.component';
 
 @NgModule({
     declarations: [
@@ -76,6 +77,7 @@ import { OverlayComponent } from './overlay/overlay.component';
         EnricherComponent,
         LiveModelingSidebarComponent,
         LiveModelingModalComponent,
+        LiveModelingModalBuildplanComponent,
         OverlayComponent
     ],
     exports: [WineryComponent],
@@ -132,7 +134,7 @@ import { OverlayComponent } from './overlay/overlay.component';
         PropertyValidatorService
     ],
     bootstrap: [WineryComponent],
-    entryComponents: [LiveModelingModalComponent]
+    entryComponents: [LiveModelingModalComponent, LiveModelingModalBuildplanComponent]
 })
 export class WineryModule {
     constructor(ngRedux: NgRedux<IWineryState>,

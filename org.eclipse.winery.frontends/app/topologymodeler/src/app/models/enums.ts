@@ -64,7 +64,8 @@ export enum PropertyKVType {
 
 export enum LiveModelingStates {
     DISABLED = 'DISABLED',
-    START = 'START',
+    INIT = 'INIT',
+    DEPLOY = 'DEPLOY',
     TERMINATE = 'TERMINATE',
     ENABLED = 'ENABLED',
     REDEPLOY = 'REDEPLOY',

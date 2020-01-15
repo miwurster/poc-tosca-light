@@ -90,7 +90,7 @@ export class TopologyTemplateUtil {
             relationship.name,
             relationship.id,
             relationship.type,
-            relationship.properties,
+            relationship.properties ? relationship.properties : {},
             relationship.documentation,
             relationship.any,
             relationship.otherAttributes,
@@ -162,7 +162,7 @@ export class TopologyTemplateUtil {
 
                 } else {
                     // else no properties
-                    return null;
+                    return {};
                 }
             }
         }
@@ -174,7 +174,7 @@ export class TopologyTemplateUtil {
      * @returns newKVProperties: KV Properties as Object
      */
     static setKVProperties(type: any): any {
-        let newKVProperies;
+        let newKVProperties;
         const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
         for (const obj of kvProperties) {
             const key = obj.key;
@@ -187,9 +187,9 @@ export class TopologyTemplateUtil {
             const keyValuePair = {
                 [key]: value
             };
-            newKVProperies = { ...newKVProperies, ...keyValuePair };
+            newKVProperties = { ...newKVProperties, ...keyValuePair };
         }
-        return newKVProperies;
+        return newKVProperties;
     }
 
     static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>,
@@ -230,9 +230,70 @@ export class TopologyTemplateUtil {
             .forEach(
                 relationship => ngRedux.dispatch(wineryActions.saveRelationship(relationship))
             );
+
+        ngRedux.dispatch(wineryActions.checkForUnsavedChanges());
     }
-    
-    static didTopologyTemplateChanged(currentTopology: TTopologyTemplate, lastSavedTopology: TTopologyTemplate) {
-        return JSON.stringify(currentTopology) !== JSON.stringify(lastSavedTopology);
+
+    static hasTopologyTemplateChanged(currentTopology: TTopologyTemplate, lastSavedTopology: TTopologyTemplate) {
+        const objectsEqual = (o1, o2) =>
+            typeof o1 === 'object' && Object.keys(o1).length > 0
+                ? Object.keys(o1).length === Object.keys(o2).length
+                && Object.keys(o1).every(p => objectsEqual(o1[p], o2[p]))
+                : JSON.stringify(o1) === JSON.stringify(o2); // JSON.stringify so we also cover
+        
+        if (currentTopology.nodeTemplates.length !== lastSavedTopology.nodeTemplates.length ||
+            currentTopology.relationshipTemplates.length !== lastSavedTopology.relationshipTemplates.length) {
+            return true;
+        }
+        for (const currentNodeTemplate of currentTopology.nodeTemplates) {
+            const lastSavedNodeTemplate = lastSavedTopology.nodeTemplates.find(nodeTemplate => nodeTemplate.id === currentNodeTemplate.id);
+            if (!lastSavedNodeTemplate) {
+                return true;
+            }
+            if (!objectsEqual(currentNodeTemplate.properties, lastSavedNodeTemplate.properties)) {
+                return true;
+            }
+            if (currentNodeTemplate.name !== lastSavedNodeTemplate.name) {
+                return true;
+            }
+            if (currentNodeTemplate.minInstances !== lastSavedNodeTemplate.minInstances) {
+                return true;
+            }
+            if (currentNodeTemplate.maxInstances !== lastSavedNodeTemplate.maxInstances) {
+                return true;
+            }
+            if (!objectsEqual(currentNodeTemplate.capabilities, lastSavedNodeTemplate.capabilities)) {
+                return true;
+            }
+            if (!objectsEqual(currentNodeTemplate.requirements, lastSavedNodeTemplate.requirements)) {
+                return true;
+            }
+            if (!objectsEqual(currentNodeTemplate.deploymentArtifacts, lastSavedNodeTemplate.deploymentArtifacts)) {
+                return true;
+            }
+            if (!objectsEqual(currentNodeTemplate.policies, lastSavedNodeTemplate.policies)) {
+                return true;
+            }
+        }
+        for (const currentRelationshipTemplate of currentTopology.relationshipTemplates) {
+            const lastSavedRelationshipTemplate = lastSavedTopology.relationshipTemplates.find(relationshipTemplate => 
+                relationshipTemplate.sourceElement.ref === currentRelationshipTemplate.sourceElement.ref &&
+                relationshipTemplate.targetElement.ref === currentRelationshipTemplate.targetElement.ref &&
+                relationshipTemplate.type === currentRelationshipTemplate.type
+            );
+            if (!lastSavedRelationshipTemplate) {
+                return true;
+            }
+            if (currentRelationshipTemplate.name !== lastSavedRelationshipTemplate.name) {
+                return true;
+            }
+            if (!objectsEqual(currentRelationshipTemplate.properties, lastSavedRelationshipTemplate.properties)) {
+                return true;
+            }
+            if (!objectsEqual(currentRelationshipTemplate.policies, lastSavedRelationshipTemplate.policies)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
