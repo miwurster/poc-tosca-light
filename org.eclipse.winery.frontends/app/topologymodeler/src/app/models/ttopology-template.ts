@@ -13,6 +13,7 @@
  ********************************************************************************/
 import { DifferenceStates, VersionUtils } from './ToscaDiff';
 import { Visuals } from './visuals';
+import { TPolicy } from './policiesModalData';
 
 export class AbstractTTemplate {
     constructor(public documentation?: any,
@@ -27,6 +28,7 @@ export class AbstractTTemplate {
 export class TTopologyTemplate extends AbstractTTemplate {
     nodeTemplates: Array<TNodeTemplate> = [];
     relationshipTemplates: Array<TRelationshipTemplate> = [];
+    policies: Array<TPolicy>;
 }
 
 /**

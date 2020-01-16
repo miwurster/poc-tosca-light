@@ -41,32 +41,33 @@
 </table>
 
 <table *ngIf="toscaType===toscaTypes.PolicyType" class="toscatype-table" border="1">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Policy</th>
-        <th>Type</th>
-    </tr>
+    
+    <thead >
+        <tr>
+            <th>Name</th>
+            <th *wineryRepositoryHideOnFeature="'yaml'">Policy</th>
+            <th>Type</th>
+        </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let pol of currentToscaTypeData">
-        <td class="toscatype-table-td"
-            [class.cell-with-comment]="isEllipsisActive(pname)">
-            <div #pname (click)="openPolicyModal(pol)">{{ pol.name }}</div>
-            <span class="cell-comment">{{ pol.name }}</span>
-        </td>
-        <td class="toscatype-table-td"
-            [class.cell-with-comment]="isEllipsisActive(pref)">
-            <div #pref (click)="clickPolicyRef(pol.policyRef)">{{ pol.policyRef | localname }}</div>
-            <span class="cell-comment">{{ pol.policyRef | localname }}</span>
-
-        </td>
-        <td class="toscatype-table-td"
-            [class.cell-with-comment]="isEllipsisActive(ptype)">
-            <div #ptype (click)="clickPolicyType(pol.policyType)">{{ pol.policyType | localname }}</div>
-            <span class="cell-comment">{{ pol.policyType | localname }}</span>
-        </td>
-    </tr>
+        <tr *ngFor="let pol of currentToscaTypeData">
+            <td class="toscatype-table-td"
+                [class.cell-with-comment]="isEllipsisActive(pname)">
+                <div #pname (click)="openPolicyModal(pol)">{{ pol.name }}</div>
+                <span class="cell-comment">{{ pol.name }}</span>
+            </td>
+            <td class="toscatype-table-td" *wineryRepositoryHideOnFeature="'yaml'"
+                [class.cell-with-comment]="isEllipsisActive(pref)">
+                <div #pref (click)="clickPolicyRef(pol.policyRef)">{{ pol.policyRef | localname }}</div>
+                <span class="cell-comment">{{ pol.policyRef | localname }}</span>
+    
+            </td>
+            <td class="toscatype-table-td"
+                [class.cell-with-comment]="isEllipsisActive(ptype)">
+                <div #ptype (click)="clickPolicyType(pol.policyType)">{{ pol.policyType | localname }}</div>
+                <span class="cell-comment">{{ pol.policyType | localname }}</span>
+            </td>
+        </tr>
     </tbody>
 </table>
 

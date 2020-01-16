@@ -223,15 +223,15 @@ public class X2YConverter {
             .setDescription(convertDocumentation(node.getDocumentation()))
             .setNodeTemplates(convert(node.getNodeTemplates(), node.getRelationshipTemplates()))
             .setRelationshipTemplates(convert(node.getRelationshipTemplates()))
-            .setPolicies(convert(
-                node.getNodeTemplates().stream()
-                    .filter(Objects::nonNull)
-                    .map(org.eclipse.winery.model.tosca.TNodeTemplate::getPolicies)
-                    .filter(Objects::nonNull)
-                    .flatMap(p -> p.getPolicy().stream())
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList())
-            ))
+//            .setPolicies(convert(
+//                node.getNodeTemplates().stream()
+//                    .filter(Objects::nonNull)
+//                    .map(org.eclipse.winery.model.tosca.TNodeTemplate::getPolicies)
+//                    .filter(Objects::nonNull)
+//                    .flatMap(p -> p.getPolicy().stream())
+//                    .filter(Objects::nonNull)
+//                    .collect(Collectors.toList())
+//            ))
             .setSubstitutionMappings(convert(boundary))
             .build();
     }

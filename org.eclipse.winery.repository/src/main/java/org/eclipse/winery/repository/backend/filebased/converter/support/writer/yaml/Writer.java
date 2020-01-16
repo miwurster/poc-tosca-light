@@ -68,6 +68,7 @@ import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.TListString;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapObject;
+import org.eclipse.winery.model.tosca.yaml.support.TMapPolicyDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapPropertyFilterDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementDefinition;
@@ -156,7 +157,7 @@ public class Writer extends AbstractVisitor<Printer, Writer.Parameter> {
             .print(printMap("node_templates", node.getNodeTemplates(), parameter))
             .print(printMap("relationship_templates", node.getRelationshipTemplates(), parameter))
             .print(printMap("groups", node.getGroups(), parameter))
-            .print(printMap("policies", node.getPolicies(), parameter))
+            .print(printListMap("policies", node.getPolicies().stream().map(TMapPolicyDefinition::getMap).collect(Collectors.toList()), parameter))
             .print(printMap("outputs", node.getOutputs(), parameter))
             .print(printVisitorNode(node.getSubstitutionMappings(), new Parameter(parameter.getIndent()).addContext("substitution_mappings")));
     }

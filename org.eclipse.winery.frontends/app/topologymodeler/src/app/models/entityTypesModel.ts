@@ -16,6 +16,7 @@ import { Entity, EntityType, TTopologyTemplate, VisualEntityType } from './ttopo
 import { TopologyModelerConfiguration } from './topologyModelerConfiguration';
 import { VersionElement } from './versionElement';
 import { Visuals } from './visuals';
+import { TPolicy } from './policiesModalData';
 
 /**
  * Internal representation of entity Types
@@ -35,6 +36,7 @@ export class EntityTypesModel {
     relationshipTypes: VisualEntityType[];
     requirementTypes: EntityType[];
     unGroupedNodeTypes: EntityType[];
+    yamlPolicies: TPolicy[];
 }
 
 /**

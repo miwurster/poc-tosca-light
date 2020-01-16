@@ -35,7 +35,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tTopologyTemplate", propOrder = {
-    "nodeTemplateOrRelationshipTemplate"
+    "nodeTemplateOrRelationshipTemplate", "policies"
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TTopologyTemplate extends TExtensibleElements {
@@ -45,12 +45,16 @@ public class TTopologyTemplate extends TExtensibleElements {
     })
     protected List<TEntityTemplate> nodeTemplateOrRelationshipTemplate;
 
+    // added to support conversion from/to YAML policies
+    protected TPolicies policies;
+
     public TTopologyTemplate() {
     }
 
     public TTopologyTemplate(Builder builder) {
         super(builder);
         this.nodeTemplateOrRelationshipTemplate = builder.getNodeTemplateOrRelationshipTemplate();
+        this.policies = builder.policies;
     }
 
     @Override
@@ -146,6 +150,15 @@ public class TTopologyTemplate extends TExtensibleElements {
         this.getNodeTemplateOrRelationshipTemplate().add(rt);
     }
 
+    @Nullable
+    public TPolicies getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(TPolicies policies) {
+        this.policies = policies;
+    }
+
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
@@ -153,6 +166,7 @@ public class TTopologyTemplate extends TExtensibleElements {
     public static class Builder extends TExtensibleElements.Builder<Builder> {
         private List<TNodeTemplate> nodeTemplates;
         private List<TRelationshipTemplate> relationshipTemplates;
+        private TPolicies policies;
 
         public Builder() {
         }
@@ -216,6 +230,11 @@ public class TTopologyTemplate extends TExtensibleElements {
             List<TRelationshipTemplate> tmp = new ArrayList<>();
             tmp.add(relationshipTemplates);
             return addRelationshipTemplates(tmp);
+        }
+
+        public Builder setPolicies(TPolicies policies) {
+            this.policies = policies;
+            return this;
         }
 
         public List<TEntityTemplate> getNodeTemplateOrRelationshipTemplate() {

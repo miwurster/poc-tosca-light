@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.xml.namespace.QName;
 
@@ -35,8 +34,7 @@ public class AppliesToResource {
     public AppliesToResource(PolicyTypeResource policyTypeResource) {
         this.policyTypeResource = policyTypeResource;
     }
-
-    @Path("constraints")
+    
     @GET
     public ValidSourceTypesApiData getValidSourceTypes() {
         List<QName> qNames = null;
@@ -51,8 +49,7 @@ public class AppliesToResource {
         }
         return new ValidSourceTypesApiData(qNames);
     }
-
-    @Path("constraints")
+    
     @PUT
     public Response saveValidSourceTypes(ValidSourceTypesApiData newValidSourceTypes) {
         TPolicyType t = this.getPolicyType();
@@ -71,7 +68,7 @@ public class AppliesToResource {
         appliesTo.getNodeTypeReference().addAll(references);
         t.setAppliesTo(appliesTo);
 
-        return RestUtils.persist(getPolicyType());
+        return RestUtils.persist(this.policyTypeResource);
     }
 
     public TPolicyType getPolicyType() {

@@ -14,6 +14,7 @@
 
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { TableType } from '../../models/enums';
+import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
 
 @Component({
     selector: 'winery-policies',
@@ -25,7 +26,7 @@ import { TableType } from '../../models/enums';
  */
 export class PoliciesComponent implements OnInit {
 
-    readonly tableType = TableType;
+    readonly toscaTypes = ToscaTypes;
 
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() readonly: boolean;
