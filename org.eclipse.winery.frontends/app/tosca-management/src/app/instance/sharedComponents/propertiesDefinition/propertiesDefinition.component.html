@@ -120,9 +120,20 @@
                     <option value="xsd:QName">xsd:QName</option>
                 </select>
             </div>
+
+            <div class="form-group">
+                <label class="control-label" for="propPattern">Pattern</label>
+                <input #propPattern="ngModel"
+                       id="propPattern"
+                       class="form-control"
+                       type="text"
+                       name="pattern"
+                       autocomplete=off
+                       [(ngModel)]="newProperty.pattern"/>
+            </div>
         </form>
     </winery-modal-body>
-    <winery-modal-footer (onOk)="addProperty(selectProperty.value, propName.value); addPropertyFrom.reset();"
+    <winery-modal-footer (onOk)="addProperty(selectProperty.value, propName.value, propPattern.value); addPropertyFrom.reset();"
                          [closeButtonLabel]="'Cancel'"
                          [okButtonLabel]="'Add'"
                          [disableOkButton]="!addPropertyFrom?.form.valid">

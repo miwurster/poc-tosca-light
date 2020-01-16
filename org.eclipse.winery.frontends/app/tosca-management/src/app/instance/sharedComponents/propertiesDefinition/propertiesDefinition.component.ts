@@ -48,6 +48,7 @@ export class PropertiesDefinitionComponent implements OnInit {
     columns: Array<WineryTableColumn> = [
         { title: 'Name', name: 'key', sort: true },
         { title: 'Type', name: 'type', sort: true },
+        { title: 'Pattern', name: 'pattern', sort: true },
     ];
     newProperty: PropertiesDefinitionKVElement = new PropertiesDefinitionKVElement();
 
@@ -225,11 +226,13 @@ export class PropertiesDefinitionComponent implements OnInit {
      * Adds a property to the table and model
      * @param propType
      * @param propName
+     * @param propPattern
      */
-    addProperty(propType: string, propName: string) {
+    addProperty(propType: string, propName: string, propPattern: string) {
         this.resourceApiData.winerysPropertiesDefinition.propertyDefinitionKVList.push({
             key: propName,
-            type: propType
+            type: propType,
+            pattern: propPattern
         });
         this.addModal.hide();
     }
