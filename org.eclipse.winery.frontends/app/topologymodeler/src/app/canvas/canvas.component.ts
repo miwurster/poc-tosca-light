@@ -2371,8 +2371,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
 
     addNewYamlPolicy(policyName: string) {
         if (policyName && this.selectedNewPolicyType && policyName.length > 0 && this.selectedNewPolicyType.length > 0) {
-            const newPolicy = new TPolicy(policyName, undefined, this.selectedNewPolicyType, undefined,
-                undefined, undefined, { kvproperties: {} }, []);
+            const newPolicy = new TPolicy(policyName, undefined, this.selectedNewPolicyType, [],
+                [], {}, { kvproperties: {} }, []);
             const newPolicies = [...this.entityTypes.yamlPolicies, newPolicy];
             this.ngRedux.dispatch(this.actions.changeYamlPolicies(newPolicies));
             this.addYamlPolicyModal.hide();
@@ -2381,14 +2381,15 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         }
     }
 
-    handleUpdatedYamlPolicies(policies: TPolicy[]) {
+    handleUpdatedYamlPolicies(policies: { policy: TPolicy[] }) {
         if (this.entityTypes) {
-            this.entityTypes.yamlPolicies = policies;
+            this.entityTypes.yamlPolicies = policies.policy;
         }
     }
 
-    handleRemoveYamlPolicyClick($event: any) {
-
+    handleRemoveYamlPolicyClick($event: TPolicy) {
+        const newPolicies = this.entityTypes.yamlPolicies.filter(policy => policy.name !== $event.name);
+        this.ngRedux.dispatch(this.actions.changeYamlPolicies(newPolicies));
     }
 
     handleAddNewYamlPolicyClick() {
@@ -2407,11 +2408,16 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     savePolicyProperties(): void {
         this.yamlPolicyProperties.forEach(txtArea => {
             const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
-            console.debug(keyOfChangedTextArea);
-            console.debug(txtArea.nativeElement.value);
-            console.debug(this.selectedYamlPolicy);
-            this.selectedYamlPolicy.properties[keyOfChangedTextArea] = txtArea.nativeElement.value;
+            this.selectedYamlPolicy.properties.kvproperties[keyOfChangedTextArea] = txtArea.nativeElement.value;
         });
 
+    }
+
+    showPropertiesOfSelectedYamlPolicy(): boolean {
+        if (this.selectedYamlPolicy && this.selectedYamlPolicy.properties && this.selectedYamlPolicy.properties.kvproperties) {
+            return Object.keys(this.selectedYamlPolicy.properties.kvproperties).length > 0;
+        }
+
+        return false;
     }
 }

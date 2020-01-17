@@ -408,7 +408,7 @@ public class X2YConverter {
             new TPolicyDefinition.Builder(
                 convert(
                     node.getPolicyType(),
-                    new PolicyTypeId(node.getPolicyRef())
+                    new PolicyTypeId(node.getPolicyType())
                 ))
                 .setProperties(convert(node.getProperties()))
                 .setTargets(node.getTargets())

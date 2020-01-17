@@ -304,7 +304,7 @@ export class TopologyTemplateUtil {
             }
         });
 
-        return result;
+        return {kvproperties: result};
     }
 
     static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>,

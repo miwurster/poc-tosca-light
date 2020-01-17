@@ -28,7 +28,7 @@ export class AbstractTTemplate {
 export class TTopologyTemplate extends AbstractTTemplate {
     nodeTemplates: Array<TNodeTemplate> = [];
     relationshipTemplates: Array<TRelationshipTemplate> = [];
-    policies: Array<TPolicy>;
+    policies: { policy: Array<TPolicy> };
 }
 
 /**

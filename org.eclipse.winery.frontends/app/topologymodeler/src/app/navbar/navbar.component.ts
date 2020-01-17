@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ToastrService } from 'ngx-toastr';
 import { NgRedux } from '@angular-redux/store';
@@ -71,6 +71,7 @@ export class NavbarComponent implements OnDestroy {
                 private hotkeysService: HotkeysService) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
+
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
             .subscribe(topologyTemplate => this.unformattedTopologyTemplate = topologyTemplate));
         this.hotkeysService.add(new Hotkey('mod+s', (event: KeyboardEvent): boolean => {
@@ -85,6 +86,7 @@ export class NavbarComponent implements OnDestroy {
         }, undefined, 'Apply the layout directive to the Node Templates'));
         this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
     }
+    
 
     /**
      * Setter for buttonstate
@@ -244,7 +246,8 @@ export class NavbarComponent implements OnDestroy {
             any: [],
             otherAttributes: {},
             relationshipTemplates: [],
-            nodeTemplates: []
+            nodeTemplates: [],
+            policies: {}
         };
         // Prepare for saving by updating the existing topology with the current topology state inside the Redux store
         topologySkeleton.nodeTemplates = this.unformattedTopologyTemplate.nodeTemplates;
@@ -257,6 +260,7 @@ export class NavbarComponent implements OnDestroy {
             delete nodeTemplate.visuals;
             delete nodeTemplate._state;
         });
+        topologySkeleton.policies = this.unformattedTopologyTemplate.policies;
         const topologyToBeSaved = topologySkeleton;
         console.log(topologyToBeSaved);
         // The topology gets saved here.

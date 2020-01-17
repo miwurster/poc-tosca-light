@@ -167,7 +167,7 @@ export interface SetPolicyAction extends Action {
 
 export interface ChangeYamlPoliciesAction extends Action {
     yamlPolicies: {
-        policies: TPolicy[]
+        policies: { policy: TPolicy[] }
     };
 }
 
@@ -344,7 +344,9 @@ export class WineryActions {
         ((policies) => ({
             type: WineryActions.UPDATE_YAML_POLICIES,
             yamlPolicies: {
-                policies: policies
+                policies: {
+                    policy: policies
+                }
             }
         }));
     setTargetLocation: ActionCreator<SetTargetLocation> =

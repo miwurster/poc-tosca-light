@@ -380,27 +380,31 @@
                       (addBtnClicked)="handleAddNewYamlPolicyClick()"
                       (cellSelected)="handleYamlPolicySelected($event)"
         ></winery-table>
-        <hr style="margin-top: 20px;">
-        <div class="form-group" *ngIf="selectedYamlPolicy && selectedYamlPolicy.properties">
-            <h5>Properties of {{selectedYamlPolicy.name}}:</h5>
-            <form>
-                <div *ngFor="let prop of selectedYamlPolicy.properties | keysPipe">
-                    <label class="control-label">{{prop.key}}</label>
-                    <textarea
-                        style="width:100%; overflow-y: scroll;"
-                        rows="1"
-                        placeholder="Edit your value here."
-                        #YamlPolicyProperties
-                        [value]="prop.value">
+        <div *ngIf="selectedYamlPolicy">
+            <hr style="margin-top: 20px;">
+            <div class="form-group" *ngIf="showPropertiesOfSelectedYamlPolicy()">
+                <h5>Properties of {{selectedYamlPolicy.name}}:</h5>
+                <form>
+                    <div *ngFor="let prop of selectedYamlPolicy.properties.kvproperties | keysPipe">
+                        <label class="control-label">{{prop.key}}</label>
+                        <textarea
+                            style="width:100%; overflow-y: scroll;"
+                            rows="1"
+                            placeholder="Edit your value here."
+                            #YamlPolicyProperties
+                            [value]="prop.value">
                         
                     </textarea>
-                </div>
-                <button type="submit" class="btn btn-primary"
-                        (click)="savePolicyProperties()"> Save
-                </button>
-            </form>
+                    </div>
+                    <button type="submit" class="btn btn-primary"
+                            (click)="savePolicyProperties()"> Save
+                    </button>
+                </form>
+            </div>
+            <div class="form-group" *ngIf="!showPropertiesOfSelectedYamlPolicy()">
+                <h5>Policy: {{selectedYamlPolicy.name}} has no properties to show!</h5>
+            </div>
         </div>
-
     </winery-modal-body>
 </winery-modal>
 
