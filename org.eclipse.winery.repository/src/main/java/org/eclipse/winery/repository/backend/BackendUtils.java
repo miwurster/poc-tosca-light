@@ -1731,4 +1731,115 @@ public class BackendUtils {
             throw new RuntimeException("Repository does not support git!");
         }
     }
+
+    //TODO: Wenn keine exception: status = created.
+    public static Result rename(DefinitionsChildId oldId, DefinitionsChildId newId) throws IllegalStateException, IllegalArgumentException {
+        Result result = new Result();
+        IRepository repo = RepositoryFactory.getRepository();
+        WineryVersion version = VersionUtils.getVersion(oldId);
+        DefinitionsChildId id = newId;
+
+        if (version.toString().length() > 0) {
+            // ensure that the version isn't changed by the user
+            String componentName = VersionUtils.getNameWithoutVersion(newId) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + version.toString();
+            id = BackendUtils.getDefinitionsChildId(oldId.getClass(), newId.getNamespace().getDecoded(), componentName, false);
+        }
+
+        // If a definition was not committed yet, it is renamed, otherwise duplicate the definition.
+        if (repo instanceof GitBasedRepository && ((GitBasedRepository) repo).hasChangesInFile(BackendUtils.getRefOfDefinitions(oldId))) {
+            try {
+                repo.rename(oldId, id);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new IllegalStateException(e.getMessage());
+            }
+        } else {
+            result = duplicate(oldId, id);
+            freezeVersion(id);
+        }
+        result.setId(id);
+
+        return result;
+    }
+
+    public static Result duplicate(DefinitionsChildId oldComponent, DefinitionsChildId newComponent) throws IllegalArgumentException, IllegalStateException {
+        Result result = create(newComponent, newComponent.getXmlId().getDecoded());
+        IRepository repository = RepositoryFactory.getRepository();
+        try {
+            repository.duplicate(oldComponent, newComponent);
+            return result;
+        } catch (IOException e) {
+            throw new IllegalStateException("Error duplicating element.");
+        }
+    }
+
+    /**
+     * Generates given TOSCA element and returns appropriate response code <br  />
+     * <p>
+     * In the case of an existing resource, the other possible return code is 302. This code has no Status constant,
+     * therefore we use Status.CONFLICT, which is also possible.
+     *
+     * @return <ul> <li> <ul> <li>Status.CREATED (201) if the resource has been created,</li> <li>Status.CONFLICT if the
+     * resource already exists,</li> <li>Status.INTERNAL_SERVER_ERROR (500) if something went wrong</li> </ul> </li>
+     * <li>URI: the absolute URI of the newly created resource</li> </ul>
+     */
+    public static Result create(GenericId id, String name) throws IllegalArgumentException, IllegalStateException {
+        Result res = new Result();
+        if (RepositoryFactory.getRepository().exists(id)) {
+            // res.setStatus(302);
+            throw new IllegalArgumentException("Element with that id already exists.");
+        } else {
+            if (RepositoryFactory.getRepository().flagAsExisting(id)) {
+                // @formatter:off
+                // This method is a generic method
+                // We cannot return an "absolute" URL as the URL is always
+                // relative to the caller
+                // Does not work: String path = Environment.getUrlConfiguration().getRepositoryApiUrl()
+                // + "/" +
+                // Utils.getUrlPathForPathInsideRepo(id.getPathInsideRepo());
+                // We distinguish between two cases: DefinitionsChildId and
+                // TOSCAelementId
+                // @formatter:on
+                String path;
+                if (id instanceof DefinitionsChildId) {
+                    // here, we return namespace + id, as it is only possible to
+                    // post on the definition child*s* resource to create an
+                    // instance of a definition child
+                    DefinitionsChildId tcId = (DefinitionsChildId) id;
+                    path = tcId.getNamespace().getEncoded() + "/" + tcId.getXmlId().getEncoded() + "/";
+                    // in case the resource additionally supports a name attribute, we set the original name
+                    if ((tcId instanceof ServiceTemplateId) || (tcId instanceof ArtifactTemplateId) || (tcId instanceof PolicyTemplateId)) {
+                        // these three types have an additional name (instead of a pure id)
+                        // we store the name
+
+                        //TODO: What to do with those two lines:
+                        IHasName resource = (IHasName) AbstractComponentsResource.getComponentInstanceResource(tcId);
+                        resource.setName(name);
+                    }
+                } else {
+                    assert (id instanceof ToscaElementId);
+                    // We just return the id as we assume that only the parent
+                    // of this id may create sub elements
+                    path = id.getXmlId().getEncoded() + "/";
+                }
+                // we have to encode it twice to get correct URIs
+                path = Util.getUrlPath(path);
+                URI uri = URI.create(path);
+                res.setUri(uri);
+                res.setId(id);
+            } else {
+                throw new IllegalStateException("Error creating element.");
+            }
+        }
+        return res;
+    }
+
+    public static void freezeVersion(DefinitionsChildId componentToCommit) throws IllegalStateException {
+        try {
+            BackendUtils.commit(componentToCommit, "Freeze");
+        } catch (Exception e) {
+            LOGGER.error("Error freezing component", e);
+            throw new IllegalStateException("Error freezing the component.");
+        }
+    }
 }

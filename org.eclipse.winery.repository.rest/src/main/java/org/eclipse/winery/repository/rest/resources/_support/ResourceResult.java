@@ -14,6 +14,7 @@
 package org.eclipse.winery.repository.rest.resources._support;
 
 import org.eclipse.winery.common.ids.GenericId;
+import org.eclipse.winery.repository.backend.Result;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -85,5 +86,10 @@ public class ResourceResult {
             res = Response.created(this.getUri()).entity(this.getUri().toString()).build();
         }
         return res;
+    }
+    
+    public void ResultToResourceResult(Result result) {
+        this.id = result.getId();
+        this.uri = result.getUri();
     }
 }

@@ -88,6 +88,7 @@ import org.eclipse.winery.repository.backend.EdmmManager;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.NamespaceManager;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
+import org.eclipse.winery.repository.backend.Result;
 import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.xsd.NamespaceAndDefinedLocalNames;
@@ -666,39 +667,23 @@ public class RestUtils {
     }
 
     public static ResourceResult rename(DefinitionsChildId oldId, DefinitionsChildId newId) {
-        ResourceResult result = new ResourceResult();
-        IRepository repo = RepositoryFactory.getRepository();
-        WineryVersion version = VersionUtils.getVersion(oldId);
-        DefinitionsChildId id = newId;
-
-        if (version.toString().length() > 0) {
-            // ensure that the version isn't changed by the user
-            String componentName = VersionUtils.getNameWithoutVersion(newId) + WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + version.toString();
-            id = BackendUtils.getDefinitionsChildId(oldId.getClass(), newId.getNamespace().getDecoded(), componentName, false);
+        ResourceResult res = new ResourceResult();
+        try {
+            Result result = BackendUtils.rename(oldId, newId);
+            res.ResultToResourceResult(result);
+            res.setStatus(Status.CREATED);
         }
-
-        // If a definition was not committed yet, it is renamed, otherwise duplicate the definition.
-        if (repo instanceof GitBasedRepository && ((GitBasedRepository) repo).hasChangesInFile(BackendUtils.getRefOfDefinitions(oldId))) {
-            try {
-                repo.rename(oldId, id);
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-                result.setStatus(Status.INTERNAL_SERVER_ERROR);
-                result.setMessage(e.getMessage());
-                return result;
-            }
-        } else {
-            result = duplicate(oldId, id);
-            if (result.isSuccess()) {
-                result = freezeVersion(id);
-            }
+        catch (IllegalStateException isex) {
+            res.setStatus(Status.INTERNAL_SERVER_ERROR);
+            res.setMessage(isex.getMessage());
         }
-
-        URI uri = RestUtils.getAbsoluteURI(id);
-        result.setUri(uri);
-        result.setStatus(Status.CREATED);
-
-        return result;
+        catch (IllegalArgumentException iaex) {
+            res.setStatus(Status.CONFLICT);
+            res.setMessage(iaex.getMessage());
+        }
+        URI uri = RestUtils.getAbsoluteURI(res.getId());
+        res.setUri(uri);
+        return res;
     }
 
     public static Response renameAllVersionsOfOneDefinition(DefinitionsChildId oldId, DefinitionsChildId newId) {
@@ -776,51 +761,33 @@ public class RestUtils {
      */
     public static ResourceResult create(GenericId id, String name) {
         ResourceResult res = new ResourceResult();
-        if (RepositoryFactory.getRepository().exists(id)) {
-            // res.setStatus(302);
-            res.setStatus(Status.CONFLICT);
-        } else {
-            if (RepositoryFactory.getRepository().flagAsExisting(id)) {
-                res.setStatus(Status.CREATED);
-                // @formatter:off
-                // This method is a generic method
-                // We cannot return an "absolute" URL as the URL is always
-                // relative to the caller
-                // Does not work: String path = Environment.getUrlConfiguration().getRepositoryApiUrl()
-                // + "/" +
-                // Utils.getUrlPathForPathInsideRepo(id.getPathInsideRepo());
-                // We distinguish between two cases: DefinitionsChildId and
-                // TOSCAelementId
-                // @formatter:on
-                String path;
-                if (id instanceof DefinitionsChildId) {
-                    // here, we return namespace + id, as it is only possible to
-                    // post on the definition child*s* resource to create an
-                    // instance of a definition child
-                    DefinitionsChildId tcId = (DefinitionsChildId) id;
-                    path = tcId.getNamespace().getEncoded() + "/" + tcId.getXmlId().getEncoded() + "/";
-                    // in case the resource additionally supports a name attribute, we set the original name
-                    if ((tcId instanceof ServiceTemplateId) || (tcId instanceof ArtifactTemplateId) || (tcId instanceof PolicyTemplateId)) {
-                        // these three types have an additional name (instead of a pure id)
-                        // we store the name
-                        IHasName resource = (IHasName) AbstractComponentsResource.getComponentInstanceResource(tcId);
-                        resource.setName(name);
-                    }
-                } else {
-                    assert (id instanceof ToscaElementId);
-                    // We just return the id as we assume that only the parent
-                    // of this id may create sub elements
-                    path = id.getXmlId().getEncoded() + "/";
-                }
-                // we have to encode it twice to get correct URIs
-                path = Util.getUrlPath(path);
-                URI uri = URI.create(path);
-                res.setUri(uri);
-                res.setId(id);
+        //TODO: New Code:
+        try {
+            Result result = BackendUtils.create(id, name);
+            res.ResultToResourceResult(result);
+            //TODO: If this is just a REST thing we need to do this here:
+            String path;
+            DefinitionsChildId tcId = (DefinitionsChildId) id;
+            path = tcId.getNamespace().getEncoded() + "/" + tcId.getXmlId().getEncoded() + "/";
+            // in case the resource additionally supports a name attribute, we set the original name
+            if ((tcId instanceof ServiceTemplateId) || (tcId instanceof ArtifactTemplateId) || (tcId instanceof PolicyTemplateId)) {
+                // these three types have an additional name (instead of a pure id)
+                // we store the name
+                IHasName resource = (IHasName) AbstractComponentsResource.getComponentInstanceResource(tcId);
+                resource.setName(name);
             } else {
-                res.setStatus(Status.INTERNAL_SERVER_ERROR);
+                assert (id instanceof ToscaElementId);
+                // We just return the id as we assume that only the parent
+                // of this id may create sub elements
+                path = id.getXmlId().getEncoded() + "/";
             }
+            res.setStatus(Status.CREATED);
+        } catch (IllegalStateException isex) {
+            res.setStatus(Status.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException iaex) {
+            res.setStatus(Status.CONFLICT);
         }
+        //TODO: End new code
         return res;
     }
 
@@ -963,19 +930,19 @@ public class RestUtils {
     }
 
     public static ResourceResult duplicate(DefinitionsChildId oldComponent, DefinitionsChildId newComponent) {
-        ResourceResult result = create(newComponent, newComponent.getXmlId().getDecoded());
-
-        if (result.isSuccess()) {
-            // After successful creation of the new component, copy all files from old version to new version
-            IRepository repository = RepositoryFactory.getRepository();
-            try {
-                repository.duplicate(oldComponent, newComponent);
-            } catch (IOException e) {
-                result.setStatus(Status.INTERNAL_SERVER_ERROR);
-            }
+        ResourceResult res = new ResourceResult();
+        try {
+            Result result = BackendUtils.duplicate(oldComponent, newComponent);
+            res.ResultToResourceResult(result);
+            res.setStatus(Status.CREATED);
         }
-
-        return result;
+        catch (IllegalArgumentException iaex) {
+            res.setStatus(Status.CONFLICT);
+        }
+        catch (IllegalStateException isex) {
+            res.setStatus(Status.INTERNAL_SERVER_ERROR);
+        }
+        return res;
     }
 
     public static Response addNewVersion(DefinitionsChildId oldId, DefinitionsChildId newComponent, List<QNameWithTypeApiData> componentsToUpdate) {
@@ -1015,7 +982,7 @@ public class RestUtils {
         ResourceResult result = new ResourceResult();
 
         try {
-            BackendUtils.commit(componentToCommit, "Freeze");
+            BackendUtils.freezeVersion(componentToCommit);
             result.setStatus(Status.OK);
         } catch (Exception e) {
             LOGGER.error("Error freezing component", e);
