@@ -228,6 +228,9 @@ export class NavbarComponent implements OnDestroy {
                 this.ngRedux.dispatch(this.actions.placeComponents());
                 this.placingOngoing = true;
                 break;
+            case 'manageYamlPolicies':
+                this.ngRedux.dispatch(this.actions.manageYamlPolicies());
+                break;
         }
     }
 

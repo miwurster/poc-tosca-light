@@ -165,6 +165,12 @@ export interface SetPolicyAction extends Action {
     };
 }
 
+export interface ChangeYamlPoliciesAction extends Action {
+    yamlPolicies: {
+        policies: TPolicy[]
+    };
+}
+
 export interface SetTargetLocation extends Action {
     nodeTargetLocation: {
         nodeId: string,
@@ -217,6 +223,7 @@ export class WineryActions {
     static SET_DEPLOYMENT_ARTIFACT = 'SET_DEPLOYMENT_ARTIFACT';
     static DELETE_DEPLOYMENT_ARTIFACT = 'DELETE_DEPLOYMENT_ARTIFACT';
     static SET_POLICY = 'SET_POLICY';
+    static UPDATE_YAML_POLICIES = 'UPDATE_YAML_POLICIES';
     static SET_TARGET_LOCATION = 'SET_TARGET_LOCATION';
     static DELETE_POLICY = 'DELETE_POLICY';
     static SEND_CURRENT_NODE_ID = 'SEND_CURRENT_NODE_ID';
@@ -332,6 +339,13 @@ export class WineryActions {
         ((newPolicy) => ({
             type: WineryActions.SET_POLICY,
             nodePolicy: newPolicy
+        }));
+    changeYamlPolicies: ActionCreator<ChangeYamlPoliciesAction> =
+        ((policies) => ({
+            type: WineryActions.UPDATE_YAML_POLICIES,
+            yamlPolicies: {
+                policies: policies
+            }
         }));
     setTargetLocation: ActionCreator<SetTargetLocation> =
         ((newTargetLocation) => ({

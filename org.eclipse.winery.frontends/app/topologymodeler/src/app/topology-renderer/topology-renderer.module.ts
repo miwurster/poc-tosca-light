@@ -43,6 +43,7 @@ import { VersionsComponent } from '../node/versions/versions.component';
 import { PropertiesModule } from '../properties/properties.module';
 import { WineryModalModule } from '../../../../tosca-management/src/app/wineryModalModule/winery.modal.module';
 import { WineryFeatureToggleModule } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/winery-feature-toggle.module';
+import { WineryTableModule } from '../../../../tosca-management/src/app/wineryTableModule/wineryTable.module';
 
 @NgModule({
     imports: [
@@ -61,6 +62,7 @@ import { WineryFeatureToggleModule } from '../../../../tosca-management/src/app/
         PopoverModule.forRoot(),
         PropertiesModule,
         WineryFeatureToggleModule,
+        WineryTableModule,
     ],
     declarations: [
         NavbarComponent,

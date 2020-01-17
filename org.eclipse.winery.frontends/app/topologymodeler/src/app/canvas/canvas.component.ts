@@ -57,6 +57,7 @@ import { TPolicy } from '../models/policiesModalData';
 import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { RequirementDefinitionModel } from '../models/requirementDefinitonModel';
 import { CapabilityDefinitionModel } from '../models/capabilityDefinitionModel';
+import { WineryRowData } from '../../../../tosca-management/src/app/wineryTableModule/wineryTable.component';
 
 @Component({
     selector: 'winery-canvas',
@@ -69,12 +70,15 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     @ViewChildren(NodeComponent) nodeComponentChildren: QueryList<NodeComponent>;
     @ViewChildren('KVTextareas') KVTextareas: QueryList<any>;
     @ViewChildren('XMLTextareas') xmlTextareas: QueryList<any>;
+    @ViewChildren('YamlPolicyProperties') yamlPolicyProperties: QueryList<any>;
     @ViewChild('nodes') child: ElementRef;
     @ViewChild('selection') selection: ElementRef;
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('importTopologyModal') importTopologyModal: ModalDirective;
     @ViewChild('threatModelingModal') threatModelingModal: ModalDirective;
+    @ViewChild('manageYamlPoliciesModal') manageYamlPoliciesModal: ModalDirective;
+    @ViewChild('addYamlPolicyModal') addYamlPolicyModal: ModalDirective;
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
     @Input() diffMode = false;
@@ -146,6 +150,13 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
 
     private longPressing: boolean;
 
+    // Manage YAML Policies Modal
+    selectedNewPolicyType: string;
+    yamlPoliciesColumns = [
+        { title: 'Name', name: 'name' },
+        { title: 'Type', name: 'policyType' }];
+    selectedYamlPolicy: TPolicy;
+
     constructor(private jsPlumbService: JsPlumbService,
                 private eref: ElementRef,
                 private layoutDirective: LayoutDirective,
@@ -169,6 +180,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
 
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.policies)
+            .subscribe(policies => this.handleUpdatedYamlPolicies(policies)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
             .subscribe(currentNodes => this.updateNodes(currentNodes)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
@@ -331,12 +344,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.requirements.properties = TopologyTemplateUtil.setKVProperties(reqType);
+                                        this.requirements.properties = TopologyTemplateUtil.getKVProperties(reqType);
                                         this.setDefaultReqKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.requirements.properties = TopologyTemplateUtil.setKVProperties(reqType);
+                                    this.requirements.properties = TopologyTemplateUtil.getKVProperties(reqType);
                                     this.setDefaultReqKVProperties();
                                     return true;
                                 }
@@ -413,12 +426,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
+                                        this.capabilities.properties = TopologyTemplateUtil.getKVProperties(capType);
                                         this.setDefaultCapKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
+                                    this.capabilities.properties = TopologyTemplateUtil.getKVProperties(capType);
                                     this.setDefaultCapKVProperties();
                                     return true;
                                 }
@@ -689,7 +702,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.capabilities.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.capabilities.properties = TopologyTemplateUtil.setKVProperties(cap);
+                    this.capabilities.properties = TopologyTemplateUtil.getKVProperties(cap);
                     // if propertiesDefinition is defined it's a XML property
                 } else if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
                     if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
@@ -795,7 +808,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.requirements.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.requirements.properties = TopologyTemplateUtil.setKVProperties(req);
+                    this.requirements.properties = TopologyTemplateUtil.getKVProperties(req);
                     return true;
                     // if propertiesDefinition is defined it's a XML property
                 } else if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
@@ -1067,6 +1080,10 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     .forEach(value => this.enhanceDragSelection(value));
             } else if (this.topologyRendererState.buttonsState.placeComponentsButton) {
                 this.placementService.placeComponents(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
+            } else if (this.topologyRendererState.buttonsState.manageYamlPoliciesButton) {
+                this.ngRedux.dispatch(this.topologyRendererActions.manageYamlPolicies());
+                // show manageYamlPoliciesModal
+                this.manageYamlPoliciesModal.show();
             }
 
             setTimeout(() => {
@@ -2350,5 +2367,51 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     private layoutTopology() {
         this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
         this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
+    }
+
+    addNewYamlPolicy(policyName: string) {
+        if (policyName && this.selectedNewPolicyType && policyName.length > 0 && this.selectedNewPolicyType.length > 0) {
+            const newPolicy = new TPolicy(policyName, undefined, this.selectedNewPolicyType, undefined,
+                undefined, undefined, { kvproperties: {} }, []);
+            const newPolicies = [...this.entityTypes.yamlPolicies, newPolicy];
+            this.ngRedux.dispatch(this.actions.changeYamlPolicies(newPolicies));
+            this.addYamlPolicyModal.hide();
+        } else {
+            this.notify.warning('Missing info!', 'Policy not Added!');
+        }
+    }
+
+    handleUpdatedYamlPolicies(policies: TPolicy[]) {
+        if (this.entityTypes) {
+            this.entityTypes.yamlPolicies = policies;
+        }
+    }
+
+    handleRemoveYamlPolicyClick($event: any) {
+
+    }
+
+    handleAddNewYamlPolicyClick() {
+        this.addYamlPolicyModal.show();
+    }
+
+    handleYamlPolicySelected($event: WineryRowData) {
+        this.selectedYamlPolicy = <TPolicy>$event.row;
+        this.selectedYamlPolicy.properties = TopologyTemplateUtil.getActiveKVPropertiesOfTemplateElement(this.selectedYamlPolicy.properties,
+            this.selectedYamlPolicy.policyType, this.entityTypes.policyTypes);
+    }
+
+    /**
+     * Gets called from the modal to update all the capability data
+     */
+    savePolicyProperties(): void {
+        this.yamlPolicyProperties.forEach(txtArea => {
+            const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
+            console.debug(keyOfChangedTextArea);
+            console.debug(txtArea.nativeElement.value);
+            console.debug(this.selectedYamlPolicy);
+            this.selectedYamlPolicy.properties[keyOfChangedTextArea] = txtArea.nativeElement.value;
+        });
+
     }
 }

@@ -173,7 +173,9 @@ export class WineryComponent implements OnInit, AfterViewInit {
                             policyType.id,
                             policyType.qName,
                             policyType.name,
-                            policyType.namespace
+                            policyType.namespace,
+                            policyType.properties,
+                            policyType.full
                         ));
                 });
                 break;
@@ -304,10 +306,9 @@ export class WineryComponent implements OnInit, AfterViewInit {
             }
             // init the NodeTemplates and RelationshipTemplates to start their rendering
             this.initTopologyTemplateForRendering(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
+            
             // init YAML policies if they exist
-            if (topologyTemplate.policies && topologyTemplate.policies.policy && topologyTemplate.policies.policy.length > 0) {
-                this.initEntityType(topologyTemplate.policies, 'yamlPolicies');
-            }
+            this.initEntityType(topologyTemplate.policies.policy, 'yamlPolicies');
 
             // Artifact types
             this.initEntityType(JSON[3], 'artifactTypes');

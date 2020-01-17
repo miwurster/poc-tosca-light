@@ -320,7 +320,7 @@ public class Y2XConverter {
             );
         }
         if (node.getProperties() != null) {
-            builder.setProperties(convertPropertyAssignments(node.getProperties()));
+            builder.setProperties(new TEntityTemplate.Properties());
         }
         return builder.build();
     }
@@ -566,7 +566,7 @@ public class Y2XConverter {
             .setName(id)
             .setX(node.getMetadata().getOrDefault(Defaults.X_COORD, "0"))
             .setY(node.getMetadata().getOrDefault(Defaults.Y_COORD, "0"))
-            .setProperties(convertPropertyAssignments(node.getProperties()))
+            .setProperties(new TEntityTemplate.Properties())
             .addRequirements(convert(node.getRequirements()))
             .addCapabilities(convert(node.getCapabilities()))
             .setDeploymentArtifacts(convertDeploymentArtifacts(node.getArtifacts()));
@@ -644,14 +644,7 @@ public class Y2XConverter {
         TCapability.Builder builder = new TCapability.Builder(capId, capType, id);
 
         if (node.getProperties().entrySet().size() > 0) {
-            Map<String, String> properties = node.getProperties()
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> Objects.requireNonNull(entry.getValue().getValue()).toString()));
-            TEntityTemplate.Properties toscaProperties = new TEntityTemplate.Properties();
-            toscaProperties.setKVProperties(properties);
+            TEntityTemplate.Properties toscaProperties = this.convertPropertyAssignments(node.getProperties());
             return builder.setProperties(toscaProperties).build();
         }
 
@@ -906,7 +899,7 @@ public class Y2XConverter {
                         targetElement.setRef(capability);
                         return new TRelationshipTemplate.Builder(id, node.getType(), sourceElement, targetElement)
                             .setName(node.getType().getLocalPart())
-                            .setProperties(convertPropertyAssignments(node.getProperties()))
+                            .setProperties(new TEntityTemplate.Properties())
                             .build();
                     } else {
                         LOGGER.error("the node {} specified by the requirement {} cannot be found!", requirement.getNode().toString(),
@@ -954,13 +947,31 @@ public class Y2XConverter {
             return null;
         }
 
-        return new TPolicy
+        TPolicy.Builder builder = new TPolicy
             .Builder(node.getType())
             .setName(id)
-            .setProperties(convertPropertyAssignments(node.getProperties()))
             .addDocumentation(node.getDescription())
-            .setTargets(node.getTargets())
-            .build();
+            .setTargets(node.getTargets());
+
+        if (node.getProperties().entrySet().size() > 0) {
+            Map<String, TPropertyAssignment> originalProperties = node.getProperties();
+            TEntityTemplate.Properties toscaProperties = this.convertPropertyAssignments(originalProperties);
+            return builder.setProperties(toscaProperties).build();
+        }
+
+        return builder.build();
+    }
+
+    private TEntityTemplate.Properties convertPropertyAssignments(Map<String, TPropertyAssignment> originalProperties) {
+        Map<String, String> properties = originalProperties
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> Objects.requireNonNull(entry.getValue().getValue()).toString()));
+        TEntityTemplate.Properties toscaProperties = new TEntityTemplate.Properties();
+        toscaProperties.setKVProperties(properties);
+        return toscaProperties;
     }
 
     /**
@@ -1025,15 +1036,7 @@ public class Y2XConverter {
         appliesTo.getNodeTypeReference().addAll(references);
         return appliesTo;
     }
-
-    /**
-     * Converts a map of TOSCA YAML PropertyAssignment to TOSCA XML EntityTemplate.Properties
-     */
-    private TEntityTemplate.Properties convertPropertyAssignments(Map<String, TPropertyAssignment> propertyMap) {
-        if (Objects.isNull(propertyMap) || propertyMap.isEmpty()) return null;
-        //properties.setAny(assignmentBuilder.getAssignment(propertyMap, type));
-        return new TEntityTemplate.Properties();
-    }
+    
 
     /**
      * Converts TOSCA YAML ArtifactDefinitions to TOSCA XML NodeTypeImplementations and ArtifactTemplates
@@ -1170,6 +1173,8 @@ public class Y2XConverter {
                     return (T) convert((org.eclipse.winery.model.tosca.yaml.TRequirementDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TRequirementAssignment) {
                     return (T) convert((TRequirementAssignment) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TPolicyDefinition) {
+                    return (T) convert((TPolicyDefinition) entry.getValue(), entry.getKey());
                 } else {
                     V v = entry.getValue();
                     assert (v instanceof TImportDefinition ||

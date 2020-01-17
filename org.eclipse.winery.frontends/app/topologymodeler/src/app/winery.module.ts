@@ -51,6 +51,7 @@ import { EnricherComponent } from './enricher/enricher.component';
 import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/wineryFeatureToggleModule/winery-feature-toggle.module';
 import { PlaceComponentsService } from './services/placement.service';
 import { ReqCapRelationshipService } from './services/req-cap-relationship.service';
+import { WineryTableModule } from '../../../tosca-management/src/app/wineryTableModule/wineryTable.module';
 
 @NgModule({
     declarations: [
@@ -87,7 +88,8 @@ import { ReqCapRelationshipService } from './services/req-cap-relationship.servi
         TypeaheadModule.forRoot(),
         PopoverModule.forRoot(),
         PropertiesModule,
-        WineryFeatureToggleModule
+        WineryFeatureToggleModule,
+        WineryTableModule
     ],
     providers: [
         // { provide: ToastOptions, useClass: WineryCustomOption },

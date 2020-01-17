@@ -108,6 +108,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class X2YConverter {
     public final static Logger LOGGER = LoggerFactory.getLogger(X2YConverter.class);
 

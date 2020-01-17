@@ -148,8 +148,9 @@
                             placeholder="Edit your value here."
                             required
                             value="{{capabilities.properties}}">
-                </textarea>
+                        </textarea>
                     </div>
+
                 </div>
             </fieldset>
         </form>
@@ -339,6 +340,70 @@
         </button>
     </winery-modal-footer>
 </winery-modal>
+
+<winery-modal style="z-index: 1060" *ngIf="!readonly" bsModal #addYamlPolicyModal="bs-modal"
+              [modalRef]="addYamlPolicyModal">
+    <winery-modal-header title="Add New Policy"></winery-modal-header>
+    <winery-modal-body>
+        <form>
+            <div class="form-group">
+                <label for="newPolicyName">Policy Name</label>
+                <input type="text" class="form-control" #newPolicyName id="newPolicyName" required>
+            </div>
+            <div class="form-group">
+                <label for="newPolicyType">Policy Type</label>
+                <select class="form-control" id="newPolicyType" [(ngModel)]="selectedNewPolicyType" name="newPolicyType"
+                        required>
+                    <option *ngFor="let policyType of entityTypes.policyTypes"
+                            [value]="policyType.qName">
+                        {{policyType.qName}}
+                    </option>
+                </select>
+            </div>
+        </form>
+
+    </winery-modal-body>
+    <winery-modal-footer closeButtonLabel="Cancel" okButtonLabel="Add" (onOk)="addNewYamlPolicy(newPolicyName.value)">
+
+    </winery-modal-footer>
+</winery-modal>
+
+<winery-modal style="z-index: 1050" *ngIf="!readonly" bsModal #manageYamlPoliciesModal="bs-modal"
+              [modalRef]="manageYamlPoliciesModal">
+    <winery-modal-header title="Manage Policies"></winery-modal-header>
+    <winery-modal-body>
+        <h5>Existing Policies:</h5>
+        <winery-table *ngIf="entityTypes?.yamlPolicies"
+                      [columns]="yamlPoliciesColumns"
+                      [data]="entityTypes.yamlPolicies"
+                      (removeBtnClicked)="handleRemoveYamlPolicyClick($event)"
+                      (addBtnClicked)="handleAddNewYamlPolicyClick()"
+                      (cellSelected)="handleYamlPolicySelected($event)"
+        ></winery-table>
+        <hr style="margin-top: 20px;">
+        <div class="form-group" *ngIf="selectedYamlPolicy && selectedYamlPolicy.properties">
+            <h5>Properties of {{selectedYamlPolicy.name}}:</h5>
+            <form>
+                <div *ngFor="let prop of selectedYamlPolicy.properties | keysPipe">
+                    <label class="control-label">{{prop.key}}</label>
+                    <textarea
+                        style="width:100%; overflow-y: scroll;"
+                        rows="1"
+                        placeholder="Edit your value here."
+                        #YamlPolicyProperties
+                        [value]="prop.value">
+                        
+                    </textarea>
+                </div>
+                <button type="submit" class="btn btn-primary"
+                        (click)="savePolicyProperties()"> Save
+                </button>
+            </form>
+        </div>
+
+    </winery-modal-body>
+</winery-modal>
+
 
 <winery-modal *ngIf="!readonly" bsModal #threatModelingModal="bs-modal" [modalRef]="threatModelingModal">
     <winery-modal-header [title]="'Threat Model'">

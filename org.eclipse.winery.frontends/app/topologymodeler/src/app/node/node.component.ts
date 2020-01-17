@@ -33,6 +33,7 @@ import { VersionElement } from '../models/versionElement';
 import { VersionsComponent } from './versions/versions.component';
 import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -72,6 +73,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     propertyDefinitionType: string;
     policyIcons: string[];
     configEnum = FeatureEnum;
+    policiesOfNode: TPolicy[];
 
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
@@ -115,6 +117,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                 public elRef: ElementRef,
                 private backendService: BackendService,
                 private renderer: Renderer2,
+                private configurationService: WineryRepositoryConfigurationService,
                 private differs: KeyValueDiffers) {
         this.sendId = new EventEmitter();
         this.askForRepaint = new EventEmitter();
@@ -222,30 +225,35 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         }
 
         // todo: refactor to be updated upon addition of a policy
-        if (this.nodeTemplate.policies && this.nodeTemplate.policies.policy) {
-            this.policyIcons = [];
-            const list: TPolicy[] = this.nodeTemplate.policies.policy;
+        if (this.configurationService.isYaml()) {
+            this.policiesOfNode = this.entityTypes.yamlPolicies.filter(policy => policy.targets.includes(this.nodeTemplate.id));
+        } else {
+            if (this.nodeTemplate.policies && this.nodeTemplate.policies.policy) {
+                this.policiesOfNode = this.nodeTemplate.policies.policy;
+                this.policyIcons = [];
+                const list: TPolicy[] = this.nodeTemplate.policies.policy;
 
-            for (const value of list) {
-                let visual: Visuals;
-                if (value.policyRef) {
-                    visual = this.entityTypes.policyTemplateVisuals
-                        .find(policyVisual => policyVisual.typeId === value.policyRef);
+                for (const value of list) {
+                    let visual: Visuals;
+                    if (value.policyRef) {
+                        visual = this.entityTypes.policyTemplateVisuals
+                            .find(policyVisual => policyVisual.typeId === value.policyRef);
+                    }
+
+                    if (!visual) {
+                        visual = this.entityTypes.policyTypeVisuals.find(
+                            policyTypeVisual => policyTypeVisual.typeId === value.policyType
+                        );
+                    }
+
+                    if (visual && visual.imageUrl) {
+                        this.policyIcons.push(visual.imageUrl);
+                    }
                 }
 
-                if (!visual) {
-                    visual = this.entityTypes.policyTypeVisuals.find(
-                        policyTypeVisual => policyTypeVisual.typeId === value.policyType
-                    );
+                if (this.policyIcons.length === 0) {
+                    this.policyIcons = null;
                 }
-
-                if (visual && visual.imageUrl) {
-                    this.policyIcons.push(visual.imageUrl);
-                }
-            }
-
-            if (this.policyIcons.length === 0) {
-                this.policyIcons = null;
             }
         }
 

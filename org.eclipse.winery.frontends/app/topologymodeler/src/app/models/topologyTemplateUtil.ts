@@ -193,6 +193,8 @@ export class TopologyTemplateUtil {
 
     /**
      * Generates default properties from node types or relationshipTypes
+     * The assumption appears to be that types only add new properties and never change existing ones (e.g., change type or default value)
+     * todo why name not qname?
      * @param name
      * @param entities
      * @return properties
@@ -218,7 +220,7 @@ export class TopologyTemplateUtil {
                                 if (parentElement.qName === parent) {
                                     if (this.hasKVPropDefinition(parentElement)) {
                                         inheritedProperties = {
-                                            ...inheritedProperties, ...TopologyTemplateUtil.setKVProperties(parentElement)
+                                            ...inheritedProperties, ...TopologyTemplateUtil.getKVProperties(parentElement)
                                         };
                                     }
                                     if (this.hasParentType(parentElement)) {
@@ -237,7 +239,7 @@ export class TopologyTemplateUtil {
 
                     let typeProperties = {};
                     if (this.hasKVPropDefinition(element)) {
-                        typeProperties = TopologyTemplateUtil.setKVProperties(element);
+                        typeProperties = TopologyTemplateUtil.getKVProperties(element);
                     }
 
                     const mergedProperties = { ...inheritedProperties, ...typeProperties };
@@ -266,11 +268,11 @@ export class TopologyTemplateUtil {
     }
 
     /**
-     * This function sets KV properties
+     * This function gets KV properties of a type and sets their default values
      * @param any type: the element type, e.g. capabilityType, requirementType etc.
      * @returns newKVProperties: KV Properties as Object
      */
-    static setKVProperties(type: any): any {
+    static getKVProperties(type: any): any {
         const newKVProperies = {};
         const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
         for (const obj of kvProperties) {
@@ -287,6 +289,22 @@ export class TopologyTemplateUtil {
             newKVProperies[key] = value;
         }
         return newKVProperies;
+    }
+
+    static getActiveKVPropertiesOfTemplateElement(templateElementProperties: any, typeQName: string, entityTypes: EntityType[]): any {
+        const typeName = new QName(typeQName).localName;
+        const defaultTypeProperties = this.getDefaultPropertiesFromEntityTypes(typeName, entityTypes);
+        const result = {};
+
+        Object.keys(defaultTypeProperties.kvproperties).forEach(currentPropKey => {
+            if (Object.keys(templateElementProperties.kvproperties).some(tempPropertyKey => tempPropertyKey === currentPropKey)) {
+                result[currentPropKey] = templateElementProperties.kvproperties[currentPropKey];
+            } else {
+                result[currentPropKey] = defaultTypeProperties.kvproperties[currentPropKey];
+            }
+        });
+
+        return result;
     }
 
     static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>,

@@ -233,6 +233,15 @@
                         Substitute Topology
                     </button>
                 </li>
+                <li role="menuitem" *wineryRepositoryShowOnFeature="configEnum.Yaml">
+                    <button
+                        style="cursor: pointer"
+                        class="dropdown-item"
+                        id="manageYamlPolicies"
+                        (click)="toggleButton($event)">
+                        Manage Policies
+                    </button>
+                </li>
                 <!--<li role="menuitem"><a class="dropdown-item" (click)="checkCompliance()">Check Compliance</a></li>-->
                 <li role="menuitem"><a class="dropdown-item" href="#">About</a></li>
             </ul>

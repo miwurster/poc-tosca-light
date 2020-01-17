@@ -14,7 +14,7 @@
 
 import { Action } from 'redux';
 import {
-    DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction, DeleteRelationshipAction,
+    ChangeYamlPoliciesAction, DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction, DeleteRelationshipAction,
     HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction, SaveRelationshipAction, SendCurrentNodeIdAction,
     SendPaletteOpenedAction, SetCababilityAction, SetDeploymentArtifactAction, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction, UpdateNodeCoordinatesAction,
@@ -313,6 +313,16 @@ export const WineryReducer =
                             )
                     }
                 };
+            case WineryActions.UPDATE_YAML_POLICIES:
+                console.debug('updating yaml policies!');
+                console.debug((<ChangeYamlPoliciesAction>action));
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        policies: (<ChangeYamlPoliciesAction>action).yamlPolicies.policies
+                    }
+                };
             case WineryActions.SET_TARGET_LOCATION:
                 const newTargetLocation: any = (<SetTargetLocation>action).nodeTargetLocation;
 
@@ -457,7 +467,7 @@ export const WineryReducer =
                     currentNodeData: currentNodeData
                 };
             case WineryActions.SET_NODE_VISUALS:
-                const visuals: Visuals[] = (<SetNodeVisuals> action).visuals;
+                const visuals: Visuals[] = (<SetNodeVisuals>action).visuals;
 
                 return {
                     ...lastState,
@@ -465,6 +475,6 @@ export const WineryReducer =
                 };
 
             default:
-                return <WineryState> lastState;
+                return <WineryState>lastState;
         }
     };
