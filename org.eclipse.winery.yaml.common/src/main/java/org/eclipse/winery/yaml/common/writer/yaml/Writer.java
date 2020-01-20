@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -170,17 +171,14 @@ public class Writer extends AbstractVisitor<Printer, Writer.Parameter> {
     }
 
     public Printer visit(TConstraintClause node, Parameter parameter) {
-        return new Printer(parameter.getIndent()).printKeyObject("- equal", node.getEqual())
-            .printKeyObject("- greater_than", node.getGreaterThan())
-            .printKeyObject("- greater_or_equal", node.getGreaterOrEqual())
-            .printKeyObject("- less_than", node.getLessThan())
-            .printKeyObject("- less_or_equal", node.getLessOrEqual())
-            .printKeyListObjectInline("- in_range", node.getInRange())
-            .printKeyListObjectInline("- valid_values", node.getValidValues())
-            .printKeyObject("- length", node.getLength())
-            .printKeyObject("- min_length", node.getMinLength())
-            .printKeyObject("- max_length", node.getMaxLength())
-            .printKeyObject("- pattern", node.getPattern());
+        if (node.getValue() != null) {
+            return new Printer(parameter.getIndent())
+                .printKeyValue("- " + node.getKey(), node.getValue());
+        } else if (node.getList() != null) {
+            return new Printer(parameter.getIndent())
+                .printKeyListObjectInline("- " + node.getKey(), new ArrayList<>(node.getList()));
+        }
+        return null;
     }
 
     public Printer visit(TEntrySchema node, Parameter parameter) {

@@ -19,12 +19,20 @@ export enum PropertiesDefinitionEnum {
     None = 'None'
 }
 
+export class ConstraintClause {
+    constructor(public key: string,
+                public value: string,
+                public list: string[]) {
+    }
+}
+
 export class PropertiesDefinitionKVElement {
     key: string = null;
     type: string = null;
     required: boolean;
     defaultValue: string;
     description: string;
+    constraints: ConstraintClause[] = [];
 }
 
 export class PropertiesDefinition {

@@ -11,7 +11,8 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<div class="localLoader" [class.hidden]="!loading">
+<div class="localLoader" [class.hidden]="!loading" xmlns:trackBy="http://www.w3.org/1999/xhtml"
+     xmlns:trackBy="http://www.w3.org/1999/xhtml">
     <winery-loader></winery-loader>
 </div>
 <div *ngIf="!loading">
@@ -54,7 +55,7 @@
             <tabset>
                 <tab heading="Properties">
                     <winery-table
-                        [data]="resourceApiData.winerysPropertiesDefinition.propertyDefinitionKVList"
+                        [data]="tableData"
                         [columns]="columns"
                         (cellSelected)="onCellSelected($event)"
                         (removeBtnClicked)="onRemoveClick($event)"
@@ -131,8 +132,35 @@
                 <label class="control-label" for="isRequired">Is required</label>
             </div>
             <div class="form-group">
-                <label class="control-label" for="defaultValue">Description</label>
+                <label class="control-label" for="description">Description</label>
                 <input #propertyDescription id="description" class="form-control" type="text"/>
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="constraints">Constraints</label>
+                <p>
+                <div *ngFor="let constraintClause of newProperty.constraints" id="constraints" class="constraintField">
+                    <span><b>{{constraintClause.key}}</b>:
+                        <span *ngIf="constraintClause.value != null">{{constraintClause.value}}</span>
+                        <span *ngIf="constraintClause.list != null">{{constraintClause.list.toString()}}</span>
+                        <button class="rightbutton btn btn-danger btn-xs" (click)="removeConstraint(constraintClause)">Delete</button>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="constraintKey">Add new constraint</label><br>
+                <select #selectedConstraintKey id="constraintKey">
+                    <option *ngFor="let item of valid_constraint_keys">{{ item }}</option>
+                </select>
+                <div *ngIf="list_constraint_keys.includes(selectedConstraintKey.value)">
+                    Please separate items by using ','
+                </div>
+                <div *ngIf="range_constraint_keys.includes(selectedConstraintKey.value)">
+                    Only two items are allowed.
+                </div>
+                <input #constraintValue id="constraintVal" class="form-control" type="text"/>
+                <button type="button" class="btn btn-default"
+                        (click)="addConstraint(selectedConstraintKey.value, constraintValue.value)">Add Constraint
+                </button>
             </div>
         </form>
     </winery-modal-body>
