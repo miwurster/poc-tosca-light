@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,32 +11,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-.localLoader {
-    padding-top: 180px;
-}
 
-.radioWrapper {
-    height: 315px;
-}
+package org.eclipse.winery.model.tosca.kvproperties;
 
-.left {
-    float: left;
-}
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-.right {
-    float: right;
-}
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
-.wrapperTab {
-    margin-top: 15px;
-}
+@XmlRootElement(name = "ConstraintDefinitions")
+public class ConstraintClauseKVList extends ArrayList<ConstraintClauseKV> implements Serializable {
+    
+    @XmlElement(name = "ConstraintDefinition")
+    public List<ConstraintClauseKV> getConstraintDefinitionKVs() {
+        return this;
+    }
 
-.wrapperTabButtom {
-    margin-top: 15px;
-    padding-bottom: 30px;
-}
-
-.constraintField {
-    white-space: nowrap;
-    margin-top: 5px;
 }

@@ -16,12 +16,14 @@ package org.eclipse.winery.model.tosca.yaml;
 import io.github.adr.embedded.ADR;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractParameter;
 import org.eclipse.winery.model.tosca.yaml.visitor.AbstractResult;
 import org.eclipse.winery.model.tosca.yaml.visitor.IVisitor;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -222,13 +224,16 @@ public class TPropertyDefinition extends TPropertyAssignmentOrDefinition {
             return setStatus(TStatusValue.getStatus(status));
         }
 
-        public T setConstraints(List<TConstraintClause> constraints) {
-            this.constraints = constraints;
+        public T setEntrySchema(TEntrySchema entrySchema) {
+            this.entrySchema = entrySchema;
             return self();
         }
 
-        public T setEntrySchema(TEntrySchema entrySchema) {
-            this.entrySchema = entrySchema;
+        public T setConstraints(List<TConstraintClause> constraints) {
+            if (constraints == null || constraints.isEmpty()) {
+                return self();
+            }
+            this.constraints = constraints;
             return self();
         }
 

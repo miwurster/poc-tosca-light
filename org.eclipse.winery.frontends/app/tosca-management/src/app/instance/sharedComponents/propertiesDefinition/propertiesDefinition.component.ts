@@ -15,7 +15,8 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { InstanceService } from '../../instance.service';
 import { PropertiesDefinitionService } from './propertiesDefinition.service';
 import {
-    PropertiesDefinition, PropertiesDefinitionEnum, PropertiesDefinitionKVElement, PropertiesDefinitionsResourceApiData, WinerysPropertiesDefinition
+    PropertiesDefinition, PropertiesDefinitionEnum, PropertiesDefinitionKVElement, PropertiesDefinitionsResourceApiData, WinerysPropertiesDefinition,
+    ConstraintClause
 } from './propertiesDefinitionsResourceApiData';
 import { SelectData } from '../../../model/selectData';
 import { isNullOrUndefined } from 'util';
@@ -26,6 +27,12 @@ import { ModalDirective } from 'ngx-bootstrap';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { WineryRepositoryConfigurationService } from '../../../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { FeatureEnum } from '../../../wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { PropertiesTableData } from './PropertiesTableData';
+
+const valid_constraint_keys = ['equal', 'greater_than', 'greater_or_equal', 'less_than', 'less_or_equal', 'in_range',
+    'valid_values', 'length', 'min_length', 'max_length', 'pattern', 'schema'];
+const list_constraint_keys = ['valid_values', 'in_range'];
+const range_constraint_keys = ['in_range'];
 
 @Component({
     templateUrl: 'propertiesDefinition.component.html',
@@ -34,8 +41,9 @@ import { FeatureEnum } from '../../../wineryFeatureToggleModule/wineryRepository
     ],
     providers: [
         PropertiesDefinitionService
-    ]
+    ],
 })
+
 export class PropertiesDefinitionComponent implements OnInit {
 
     propertiesEnum = PropertiesDefinitionEnum;
@@ -52,7 +60,9 @@ export class PropertiesDefinitionComponent implements OnInit {
         { title: 'Required', name: 'required' },
         { title: 'Default Value', name: 'defaultValue' },
         { title: 'Description', name: 'description' },
+        { title: 'Constraints', name: 'constraints' },
     ];
+    tableData: Array<PropertiesTableData> = [];
     newProperty: PropertiesDefinitionKVElement = new PropertiesDefinitionKVElement();
     configEnum = FeatureEnum;
 
@@ -71,6 +81,27 @@ export class PropertiesDefinitionComponent implements OnInit {
      */
     ngOnInit() {
         this.getPropertiesDefinitionsResourceApiData();
+    }
+
+    copyToTable() {
+        this.tableData = [];
+        for (const property of this.resourceApiData.winerysPropertiesDefinition.propertyDefinitionKVList) {
+            let constraintsString = '';
+            for (const constraint of property.constraints) {
+                if (constraint.value == null) {
+                    constraintsString += constraint.key + ':' + constraint.list.toString();
+                } else if (constraint.list == null) {
+                    constraintsString += constraint.key + ':' + constraint.value;
+                } else {
+                    constraintsString += constraint.key;
+                }
+                if (property.constraints.indexOf(constraint) !== property.constraints.length - 1) {
+                    constraintsString += ', ';
+                }
+            }
+            this.tableData.push(new PropertiesTableData(property.key, property.type, property.required, property.defaultValue, property.description
+                , constraintsString));
+        }
     }
 
     // endregion
@@ -241,14 +272,26 @@ export class PropertiesDefinitionComponent implements OnInit {
             defaultValue: defaultValue,
             required: required,
             description: description,
+            constraints: this.newProperty.constraints.slice(),
         });
         this.addModal.hide();
+        this.copyToTable();
+    }
+
+    addConstraint(selectedConstraintKey: string, constraintValue: string) {
+        // lists have to be separated by ','
+        if (list_constraint_keys.indexOf(selectedConstraintKey) > -1) {
+            this.newProperty.constraints.push(new ConstraintClause(selectedConstraintKey, null, constraintValue.split(',')));
+        } else {
+            this.newProperty.constraints.push(new ConstraintClause(selectedConstraintKey, constraintValue, null));
+        }
     }
 
     removeConfirmed() {
         this.confirmDeleteModal.hide();
         this.deleteItemFromPropertyDefinitionKvList(this.elementToRemove);
         this.elementToRemove = null;
+        this.copyToTable();
     }
 
     onAddModalShown() {
@@ -293,6 +336,7 @@ export class PropertiesDefinitionComponent implements OnInit {
      */
     private handleSuccess(data: any, actionType?: string): void {
         this.loading = false;
+        this.copyToTable();
         switch (actionType) {
             case 'delete':
                 this.notify.success('Deleted PropertiesDefinition', 'Success');
@@ -359,6 +403,17 @@ export class PropertiesDefinitionComponent implements OnInit {
     }
 
     /**
+     * removes item from constraint list
+     * @param constraintClause
+     */
+    removeConstraint(constraintClause: ConstraintClause) {
+        const index = this.newProperty.constraints.indexOf(constraintClause);
+        if (index > -1) {
+            this.newProperty.constraints.splice(index, 1);
+        }
+    }
+
+    /**
      * Sets loading to false and shows error notification.
      *
      * @param error
@@ -366,6 +421,18 @@ export class PropertiesDefinitionComponent implements OnInit {
     private handleError(error: HttpErrorResponse): void {
         this.loading = false;
         this.notify.error(error.message, 'Error');
+    }
+
+    get valid_constraint_keys() {
+        return valid_constraint_keys;
+    }
+
+    get list_constraint_keys() {
+        return list_constraint_keys;
+    }
+
+    get range_constraint_keys() {
+        return range_constraint_keys;
     }
 
     // endregion
