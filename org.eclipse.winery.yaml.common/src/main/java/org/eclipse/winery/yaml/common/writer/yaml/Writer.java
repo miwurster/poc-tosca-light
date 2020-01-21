@@ -81,6 +81,7 @@ import org.eclipse.winery.yaml.common.writer.yaml.support.Printer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class Writer extends AbstractVisitor<Printer, Writer.Parameter> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractVisitor.class);

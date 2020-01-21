@@ -50,6 +50,7 @@ import org.yaml.snakeyaml.constructor.ConstructorException;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
+@Deprecated
 public class Reader {
     public static final Logger logger = LoggerFactory.getLogger(Builder.class);
     private static Reader INSTANCE;

@@ -13,7 +13,12 @@
  *******************************************************************************/
 package org.eclipse.winery.yaml.common;
 
-import org.eclipse.jdt.annotation.NonNull;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
@@ -21,11 +26,7 @@ import org.eclipse.winery.yaml.common.exception.MultiException;
 import org.eclipse.winery.yaml.common.reader.yaml.Reader;
 import org.eclipse.winery.yaml.common.writer.yaml.Writer;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
+import org.eclipse.jdt.annotation.NonNull;
 
 public class AbstractTest {
     protected static Path path;

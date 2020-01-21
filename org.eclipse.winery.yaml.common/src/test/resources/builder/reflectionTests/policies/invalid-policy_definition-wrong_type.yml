@@ -14,6 +14,5 @@ policy_types:
 topology_template:
   description: Topology template description    
   policies:
-    plc1:
-      type: plt2
-      
+    - plc1:
+        type: plt2
