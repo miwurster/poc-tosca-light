@@ -552,11 +552,14 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
             // get the node types allowed as targets to this current policy
             const allowedNodeTypes = TopologyTemplateUtil.getActiveTargetsOfYamlPolicyType(policy.policyType, this.entityTypes.policyTypes);
 
-            // if the two sets of node types intersect, the current policy is allowed.
-            if (allowedNodeTypes) {
+            if (allowedNodeTypes && allowedNodeTypes.length > 0) {
+                // if the two sets of node types intersect, the current policy is allowed.
                 if (allowedNodeTypes.some(nodeTypeQName => nodeTypeAncestry.some(ntAncestor => ntAncestor.qName === nodeTypeQName))) {
                     result.push(policy);
                 }
+            } else {
+                // also, if the allowedNodeTypes array is empty, then all node types are allowed!
+                result.push(policy);
             }
         });
 
