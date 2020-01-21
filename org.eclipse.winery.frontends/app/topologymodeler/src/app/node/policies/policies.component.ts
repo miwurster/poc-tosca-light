@@ -13,7 +13,6 @@
  ********************************************************************************/
 
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { TableType } from '../../models/enums';
 import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
 import { FeatureEnum } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
 import { EntityTypesModel } from '../../models/entityTypesModel';
@@ -32,6 +31,7 @@ export class PoliciesComponent implements OnInit {
     readonly features = FeatureEnum;
 
     @Output() toggleModalHandler: EventEmitter<any>;
+    @Output() showYamlPolicyManagementModal: EventEmitter<void>;
     @Input() readonly: boolean;
     @Input() currentNodeData: any;
     @Input() policies;
@@ -39,6 +39,7 @@ export class PoliciesComponent implements OnInit {
 
     constructor() {
         this.toggleModalHandler = new EventEmitter();
+        this.showYamlPolicyManagementModal = new EventEmitter();
     }
 
     /**
@@ -52,4 +53,7 @@ export class PoliciesComponent implements OnInit {
     ngOnInit() {
     }
 
+    handleShowYamlPolicyModalEvent() {
+        this.showYamlPolicyManagementModal.emit();
+    }
 }

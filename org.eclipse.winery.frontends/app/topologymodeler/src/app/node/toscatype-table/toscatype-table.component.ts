@@ -48,6 +48,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     // Event emitter for showing the modal of a clicked capability or requirement id
     @Output() showClickedReqOrCapModal: EventEmitter<ShowReqCapModalEventData>;
     @Output() relationshipTemplateIdClicked: EventEmitter<string>;
+    @Output() showYamlPolicyManagementModal: EventEmitter<void>;
 
     currentToscaTypeData;
     currentToscaType;
@@ -59,6 +60,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
                 private configurationService: WineryRepositoryConfigurationService) {
         this.showClickedReqOrCapModal = new EventEmitter();
         this.relationshipTemplateIdClicked = new EventEmitter<string>();
+        this.showYamlPolicyManagementModal = new EventEmitter<void>();
     }
 
     ngOnInit() {
@@ -120,23 +122,27 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     }
 
     openPolicyModal(policy) {
-        let qName;
-        let namespace = '';
-        let templateName = '(none)';
-        try {
-            qName = new QName(policy.policyRef);
-            namespace = qName.nameSpace;
-            templateName = qName.localName;
-        } catch (e) {
-            console.log(e);
+        if (this.configurationService.isYaml()) {
+            this.showYamlPolicyManagementModal.emit();
+        } else {
+            let qName;
+            let namespace = '';
+            let templateName = '(none)';
+            try {
+                qName = new QName(policy.policyRef);
+                namespace = qName.nameSpace;
+                templateName = qName.localName;
+            } catch (e) {
+                console.log(e);
+            }
+            const typeQName = policy.policyType;
+            const type = typeQName;
+            const name = policy.name;
+            const currentNodeId = this.currentNodeData.currentNodeId;
+            // push new event onto Subject
+            const eventObject: OpenModalEvent = new OpenModalEvent(currentNodeId, ModalVariant.Policies, name, templateName, namespace, type);
+            this.entitiesModalService.openModalEvent.next(eventObject);
         }
-        const typeQName = policy.policyType;
-        const type = typeQName;
-        const name = policy.name;
-        const currentNodeId = this.currentNodeData.currentNodeId;
-        // push new event onto Subject
-        const eventObject: OpenModalEvent = new OpenModalEvent(currentNodeId, ModalVariant.Policies, name, templateName, namespace, type);
-        this.entitiesModalService.openModalEvent.next(eventObject);
     }
 
     openDeploymentArtifactModal(deploymentArtifact) {

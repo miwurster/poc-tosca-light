@@ -48,7 +48,8 @@
                      (updateSelectedNodes)="updateSelectedNodes()"
                      (unmarkConnections)="unmarkConnections()"
                      (relationshipTemplateIdClicked)="onClickRelationshipTemplateName($event)"
-                     (sendNodeData)="toggleModalHandler($event)">
+                     (sendNodeData)="toggleModalHandler($event)"
+                     (showYamlPolicyManagementModal)="showYamlPolicyManagementModal();">
         </winery-node>
     </div>
     <!-- workaround for a jsPlumb connection bug, where upon loading node templates without relationships
@@ -397,7 +398,7 @@
                     </textarea>
                     </div>
                     <button type="submit" class="btn btn-primary"
-                            (click)="savePolicyProperties()"> Save
+                            (click)="savePolicyProperties()"> Save Properties
                     </button>
                 </form>
             </div>

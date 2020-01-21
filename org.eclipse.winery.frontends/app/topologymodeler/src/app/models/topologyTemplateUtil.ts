@@ -342,13 +342,17 @@ export class TopologyTemplateUtil {
         const defaultTypeProperties = this.getDefaultPropertiesFromEntityTypes(typeName, entityTypes);
         const result = {};
 
-        Object.keys(defaultTypeProperties.kvproperties).forEach(currentPropKey => {
-            if (Object.keys(templateElementProperties.kvproperties).some(tempPropertyKey => tempPropertyKey === currentPropKey)) {
-                result[currentPropKey] = templateElementProperties.kvproperties[currentPropKey];
-            } else {
-                result[currentPropKey] = defaultTypeProperties.kvproperties[currentPropKey];
-            }
-        });
+        if (defaultTypeProperties && defaultTypeProperties.kvproperties) {
+            Object.keys(defaultTypeProperties.kvproperties).forEach(currentPropKey => {
+
+                if (templateElementProperties && templateElementProperties.kvproperties &&
+                    Object.keys(templateElementProperties.kvproperties).some(tempPropertyKey => tempPropertyKey === currentPropKey)) {
+                    result[currentPropKey] = templateElementProperties.kvproperties[currentPropKey];
+                } else {
+                    result[currentPropKey] = defaultTypeProperties.kvproperties[currentPropKey];
+                }
+            });
+        }
 
         return { kvproperties: result };
     }

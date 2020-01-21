@@ -13,9 +13,10 @@
 -->
 
 <winery-toscatype-table
-                        [toscaType]="toscaTypes.PolicyType"
-                        [currentNodeData]="currentNodeData"
-                        [toscaTypeData]="policies">
+    [toscaType]="toscaTypes.PolicyType"
+    [currentNodeData]="currentNodeData"
+    [toscaTypeData]="policies"
+    (showYamlPolicyManagementModal)="handleShowYamlPolicyModalEvent()" >
 </winery-toscatype-table>
 
 <div *wineryRepositoryHideOnFeature="features.Yaml">

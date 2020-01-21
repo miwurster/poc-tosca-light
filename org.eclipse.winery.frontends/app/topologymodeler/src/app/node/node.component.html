@@ -237,7 +237,8 @@
                                     currentNodePart: 'POLICIES',
                                     currentProperties: nodeTemplate}"
                 [policies]="policiesOfNode"
-                [entityTypes]="entityTypes">
+                [entityTypes]="entityTypes"
+                (showYamlPolicyManagementModal)="handleShowYamlPolicyManagementModal()">
             </winery-policies>
         </accordion-group>
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Objects;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
@@ -28,6 +29,7 @@ import org.eclipse.winery.model.tosca.visitor.Visitor;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+@XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tPolicy")
 public class TPolicy extends TExtensibleElements implements HasName {
@@ -48,6 +50,7 @@ public class TPolicy extends TExtensibleElements implements HasName {
     protected TEntityTemplate.Properties properties;
 
     //Added to support conversion to/from YAML Policies
+    @XmlAttribute(name = "targets")
     @Nullable
     protected List<QName> targets;
 

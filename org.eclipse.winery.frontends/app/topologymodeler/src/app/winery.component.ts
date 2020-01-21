@@ -309,7 +309,11 @@ export class WineryComponent implements OnInit, AfterViewInit {
             this.initTopologyTemplateForRendering(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
 
             // init YAML policies if they exist
-            this.initEntityType(topologyTemplate.policies.policy, 'yamlPolicies');
+            if (topologyTemplate.policies) {
+                this.initEntityType(topologyTemplate.policies.policy, 'yamlPolicies');
+            } else {
+                this.initEntityType([], 'yamlPolicies');
+            }
 
             // Artifact types
             this.initEntityType(JSON[3], 'artifactTypes');

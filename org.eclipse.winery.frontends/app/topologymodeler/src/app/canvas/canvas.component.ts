@@ -2461,6 +2461,10 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         });
     }
 
+    showYamlPolicyManagementModal() {
+        this.ngRedux.dispatch(this.topologyRendererActions.manageYamlPolicies());
+    }
+
     private typeToHref(typeQName: QName, refType: string): string {
         // no need to encode the namespace since we assume dotted namespaces in YAML mode
         const absoluteURL = `${this.backendService.configuration.uiURL}${refType}/${typeQName.nameSpace}/${typeQName.localName}`;
