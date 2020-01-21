@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -152,6 +152,18 @@ export class VisualEntityType extends EntityType {
                 public color: string,
                 public full: any,
                 public visuals?: Visuals) {
+        super(id, qName, name, namespace, properties, full);
+    }
+}
+
+export class TPolicyType extends EntityType {
+    constructor(id: string,
+                qName: string,
+                name: string,
+                namespace: string,
+                properties: any,
+                public full: any,
+                public targets?: string[]) {
         super(id, qName, name, namespace, properties, full);
     }
 }

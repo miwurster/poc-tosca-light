@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,7 +13,7 @@
  ********************************************************************************/
 
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { Entity, EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate, VisualEntityType } from './models/ttopology-template';
+import { Entity, EntityType, TNodeTemplate, TPolicyType, TRelationshipTemplate, TTopologyTemplate, VisualEntityType } from './models/ttopology-template';
 import { ILoaded, LoadedService } from './services/loaded.service';
 import { AppReadyEventService } from './services/app-ready-event.service';
 import { BackendService } from './services/backend.service';
@@ -167,16 +167,17 @@ export class WineryComponent implements OnInit, AfterViewInit {
             }
             case 'policyTypes': {
                 this.entityTypes.policyTypes = [];
-                entityTypeJSON.forEach(policyType => {
-                    this.entityTypes.policyTypes
-                        .push(new EntityType(
-                            policyType.id,
-                            policyType.qName,
-                            policyType.name,
-                            policyType.namespace,
-                            policyType.properties,
-                            policyType.full
-                        ));
+                entityTypeJSON.forEach(element => {
+                    const policyType = new TPolicyType(element.id,
+                        element.qName,
+                        element.name,
+                        element.namespace,
+                        element.properties,
+                        element.full);
+                    if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].appliesTo) {
+                        policyType.targets = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].appliesTo.nodeTypeReference.map(ntr => ntr.typeRef);
+                    }
+                    this.entityTypes.policyTypes.push(policyType);
                 });
                 break;
             }
@@ -306,7 +307,7 @@ export class WineryComponent implements OnInit, AfterViewInit {
             }
             // init the NodeTemplates and RelationshipTemplates to start their rendering
             this.initTopologyTemplateForRendering(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
-            
+
             // init YAML policies if they exist
             this.initEntityType(topologyTemplate.policies.policy, 'yamlPolicies');
 

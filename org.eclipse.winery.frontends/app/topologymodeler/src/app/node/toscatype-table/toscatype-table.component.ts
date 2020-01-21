@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,7 @@ import { ReqCapModalType, ShowReqCapModalEventData } from './showReqCapModalEven
 import { RequirementModel } from '../../models/requirementModel';
 import { RequirementDefinitionModel } from '../../models/requirementDefinitonModel';
 import { VisualEntityType } from '../../models/ttopology-template';
+import { TPolicy } from '../../models/policiesModalData';
 
 @Component({
     selector: 'winery-toscatype-table',
@@ -280,5 +281,19 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
                 return true;
             }
         });
+    }
+
+    isYamlPolicyActiveForNode(policy: TPolicy): boolean {
+        return policy.targets.some(target => target === this.currentNodeData.currentNodeId);
+    }
+
+    toggleYamlPolicy(policy: TPolicy) {
+        const index = policy.targets.indexOf(this.currentNodeData.currentNodeId);
+
+        if (index >= 0) {
+            policy.targets.splice(index, 1);
+        } else {
+            policy.targets.push(this.currentNodeData.currentNodeId);
+        }
     }
 }

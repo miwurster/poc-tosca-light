@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,6 +15,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { TableType } from '../../models/enums';
 import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
+import { FeatureEnum } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { EntityTypesModel } from '../../models/entityTypesModel';
 
 @Component({
     selector: 'winery-policies',
@@ -27,11 +29,13 @@ import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums'
 export class PoliciesComponent implements OnInit {
 
     readonly toscaTypes = ToscaTypes;
+    readonly features = FeatureEnum;
 
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() readonly: boolean;
     @Input() currentNodeData: any;
     @Input() policies;
+    @Input() entityTypes: EntityTypesModel;
 
     constructor() {
         this.toggleModalHandler = new EventEmitter();

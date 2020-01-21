@@ -1,5 +1,5 @@
 <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  ~ Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
+  ~ Copyright (c) 2018-2020 Contributors to the Eclipse Foundation
   ~
   ~ See the NOTICE file(s) distributed with this work for additional
   ~ information regarding copyright ownership.
@@ -41,33 +41,55 @@
 </table>
 
 <table *ngIf="toscaType===toscaTypes.PolicyType" class="toscatype-table" border="1">
-    
-    <thead >
-        <tr>
-            <th>Name</th>
-            <th *wineryRepositoryHideOnFeature="'yaml'">Policy</th>
-            <th>Type</th>
-        </tr>
+
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th *wineryRepositoryHideOnFeature="'yaml'">Policy</th>
+        <th>Type</th>
+        <th *wineryRepositoryShowOnFeature="'yaml'">Is Active?</th>
+    </tr>
     </thead>
-    <tbody>
-        <tr *ngFor="let pol of currentToscaTypeData">
-            <td class="toscatype-table-td"
-                [class.cell-with-comment]="isEllipsisActive(pname)">
-                <div #pname (click)="openPolicyModal(pol)">{{ pol.name }}</div>
-                <span class="cell-comment">{{ pol.name }}</span>
-            </td>
-            <td class="toscatype-table-td" *wineryRepositoryHideOnFeature="'yaml'"
-                [class.cell-with-comment]="isEllipsisActive(pref)">
-                <div #pref (click)="clickPolicyRef(pol.policyRef)">{{ pol.policyRef | localname }}</div>
-                <span class="cell-comment">{{ pol.policyRef | localname }}</span>
-    
-            </td>
-            <td class="toscatype-table-td"
-                [class.cell-with-comment]="isEllipsisActive(ptype)">
-                <div #ptype (click)="clickPolicyType(pol.policyType)">{{ pol.policyType | localname }}</div>
-                <span class="cell-comment">{{ pol.policyType | localname }}</span>
-            </td>
-        </tr>
+    <tbody *wineryRepositoryShowOnFeature="'yaml'">
+    <tr *ngFor="let pol of currentToscaTypeData">
+        <td class="toscatype-table-td"
+            [class.cell-with-comment]="isEllipsisActive(pname)">
+            <div #pname (click)="openPolicyModal(pol)">{{ pol.name }}</div>
+            <span class="cell-comment">{{ pol.name }}</span>
+        </td>
+        <td class="toscatype-table-td"
+            [class.cell-with-comment]="isEllipsisActive(ptype)">
+            <div #ptype (click)="clickPolicyType(pol.policyType)">{{ pol.policyType | localname }}</div>
+            <span class="cell-comment">{{ pol.policyType | localname }}</span>
+        </td>
+        <td class="toscatype-table-td">
+            <div style="margin-left: 2px; margin-top: 4px;">
+                <input type="checkbox" id="isActiveCheckbox" [checked]="isYamlPolicyActiveForNode(pol)"
+                       (change)="toggleYamlPolicy(pol)">
+                <label for="isActiveCheckbox"></label>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+    <tbody *wineryRepositoryHideOnFeature="'yaml'">
+    <tr *ngFor="let pol of currentToscaTypeData">
+        <td class="toscatype-table-td"
+            [class.cell-with-comment]="isEllipsisActive(pname)">
+            <div #pname (click)="openPolicyModal(pol)">{{ pol.name }}</div>
+            <span class="cell-comment">{{ pol.name }}</span>
+        </td>
+        <td class="toscatype-table-td"
+            [class.cell-with-comment]="isEllipsisActive(pref)">
+            <div #pref (click)="clickPolicyRef(pol.policyRef)">{{ pol.policyRef | localname }}</div>
+            <span class="cell-comment">{{ pol.policyRef | localname }}</span>
+
+        </td>
+        <td class="toscatype-table-td"
+            [class.cell-with-comment]="isEllipsisActive(ptype)">
+            <div #ptype (click)="clickPolicyType(pol.policyType)">{{ pol.policyType | localname }}</div>
+            <span class="cell-comment">{{ pol.policyType | localname }}</span>
+        </td>
+    </tr>
     </tbody>
 </table>
 

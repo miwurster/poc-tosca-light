@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2019-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -59,7 +59,6 @@ export class ValidSourceTypesComponent implements OnInit {
 
     ngOnInit(): void {
         this.loading = true;
-        console.debug(this.resource);
         forkJoin(
             this.service.getAvailableValidSourceTypes(),
             this.service.getValidSourceTypes(this.resource)

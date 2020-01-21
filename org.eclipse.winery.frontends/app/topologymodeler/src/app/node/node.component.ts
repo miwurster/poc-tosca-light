@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -34,6 +34,8 @@ import { VersionsComponent } from './versions/versions.component';
 import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
 import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
+import { Subscription } from 'rxjs';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -74,6 +76,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     policyIcons: string[];
     configEnum = FeatureEnum;
     policiesOfNode: TPolicy[];
+    policyChangeSubscription: Subscription;
 
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
@@ -132,6 +135,17 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         this.sendPaletteStatus = new EventEmitter();
         this.sendNodeData = new EventEmitter();
         this.relationshipTemplateIdClicked = new EventEmitter<string>();
+
+        // update node's policies if the list is changed
+        if (configurationService.isYaml()) {
+            this.policyChangeSubscription = $ngRedux.select(wineryState => wineryState.wineryState.currentJsonTopology.policies)
+                .subscribe(policies => {
+                    if (this.entityTypes) {
+                        this.entityTypes.yamlPolicies = policies.policy;
+                        this.policiesOfNode = this.getAllowedPolicies();
+                    }
+                });
+        }
     }
 
     /**
@@ -224,9 +238,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
             this.nodeClass = 'nodeTemplate';
         }
 
-        // todo: refactor to be updated upon addition of a policy
         if (this.configurationService.isYaml()) {
-            this.policiesOfNode = this.entityTypes.yamlPolicies.filter(policy => policy.targets.includes(this.nodeTemplate.id));
+            this.policiesOfNode = this.getAllowedPolicies();
         } else {
             if (this.nodeTemplate.policies && this.nodeTemplate.policies.policy) {
                 this.policiesOfNode = this.nodeTemplate.policies.policy;
@@ -482,6 +495,10 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         if (this.nodeRef) {
             this.nodeRef.destroy();
         }
+
+        if (this.policyChangeSubscription) {
+            this.policyChangeSubscription.unsubscribe();
+        }
     }
 
     /**
@@ -524,5 +541,25 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     public openVersionModal() {
         this.versionModal.open();
+    }
+
+    private getAllowedPolicies() {
+        // get the ancestry of the node type
+        const nodeTypeAncestry = TopologyTemplateUtil.getInheritanceAncestry(this.nodeTemplate.type, this.entityTypes.unGroupedNodeTypes);
+        const result = [];
+        // check each potential yaml policy
+        this.entityTypes.yamlPolicies.forEach(policy => {
+            // get the node types allowed as targets to this current policy
+            const allowedNodeTypes = TopologyTemplateUtil.getActiveTargetsOfYamlPolicyType(policy.policyType, this.entityTypes.policyTypes);
+
+            // if the two sets of node types intersect, the current policy is allowed.
+            if (allowedNodeTypes) {
+                if (allowedNodeTypes.some(nodeTypeQName => nodeTypeAncestry.some(ntAncestor => ntAncestor.qName === nodeTypeQName))) {
+                    result.push(policy);
+                }
+            }
+        });
+
+        return result;
     }
 }

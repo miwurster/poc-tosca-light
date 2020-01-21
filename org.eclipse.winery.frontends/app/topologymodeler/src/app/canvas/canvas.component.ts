@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -154,8 +154,19 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     selectedNewPolicyType: string;
     yamlPoliciesColumns = [
         { title: 'Name', name: 'name' },
-        { title: 'Type', name: 'policyType' }];
+        { title: 'Type', name: 'typeHref' }];
     selectedYamlPolicy: TPolicy;
+    /**
+     * Used to change the policy type fields into clickable <a> elements.
+     * Must be populated on every show of the modal!
+     */
+    copyOfYamlPolicies: {
+        name: string,
+        policyType: string,
+        typeHref: string,
+        properties?: any,
+        targets?: string[]
+    }[];
 
     constructor(private jsPlumbService: JsPlumbService,
                 private eref: ElementRef,
@@ -1083,6 +1094,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             } else if (this.topologyRendererState.buttonsState.manageYamlPoliciesButton) {
                 this.ngRedux.dispatch(this.topologyRendererActions.manageYamlPolicies());
                 // show manageYamlPoliciesModal
+                this.copyOfYamlPolicies = this.getYamlPoliciesTableData();
                 this.manageYamlPoliciesModal.show();
             }
 
@@ -2369,13 +2381,18 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
     }
 
+    // YAML Policy methids
     addNewYamlPolicy(policyName: string) {
         if (policyName && this.selectedNewPolicyType && policyName.length > 0 && this.selectedNewPolicyType.length > 0) {
-            const newPolicy = new TPolicy(policyName, undefined, this.selectedNewPolicyType, [],
-                [], {}, { kvproperties: {} }, []);
-            const newPolicies = [...this.entityTypes.yamlPolicies, newPolicy];
-            this.ngRedux.dispatch(this.actions.changeYamlPolicies(newPolicies));
-            this.addYamlPolicyModal.hide();
+            if (this.entityTypes.yamlPolicies.some(policy => policy.name === policyName)) {
+                this.notify.warning('Duplicate policy name!', 'Policy not Added!');
+            } else {
+                const newPolicy = new TPolicy(policyName, undefined, this.selectedNewPolicyType, [],
+                    [], {}, { kvproperties: {} }, []);
+                const newPolicies = [...this.entityTypes.yamlPolicies, newPolicy];
+                this.ngRedux.dispatch(this.actions.changeYamlPolicies(newPolicies));
+                this.addYamlPolicyModal.hide();
+            }
         } else {
             this.notify.warning('Missing info!', 'Policy not Added!');
         }
@@ -2384,6 +2401,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     handleUpdatedYamlPolicies(policies: { policy: TPolicy[] }) {
         if (this.entityTypes) {
             this.entityTypes.yamlPolicies = policies.policy;
+            this.copyOfYamlPolicies = this.getYamlPoliciesTableData();
         }
     }
 
@@ -2397,14 +2415,11 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     }
 
     handleYamlPolicySelected($event: WineryRowData) {
-        this.selectedYamlPolicy = <TPolicy>$event.row;
+        this.selectedYamlPolicy = this.entityTypes.yamlPolicies.find(policy => policy.name === (<TPolicy>$event.row).name);
         this.selectedYamlPolicy.properties = TopologyTemplateUtil.getActiveKVPropertiesOfTemplateElement(this.selectedYamlPolicy.properties,
             this.selectedYamlPolicy.policyType, this.entityTypes.policyTypes);
     }
 
-    /**
-     * Gets called from the modal to update all the capability data
-     */
     savePolicyProperties(): void {
         this.yamlPolicyProperties.forEach(txtArea => {
             const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
@@ -2419,5 +2434,31 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         }
 
         return false;
+    }
+
+    getYamlPoliciesTableData() {
+        return this.entityTypes.yamlPolicies.map(policy => {
+            const result:
+                {
+                    name: string,
+                    policyType: string,
+                    typeHref: string,
+                    properties?: any,
+                    targets?: string[]
+                } = {
+                name: policy.name,
+                policyType: policy.policyType,
+                typeHref: this.typeToHref(new QName(policy.policyType), 'policytypes'),
+                properties: policy.properties,
+                targets: policy.targets
+            };
+            return result;
+        });
+    }
+
+    private typeToHref(typeQName: QName, refType: string): string {
+        // no need to encode the namespace since we assume dotted namespaces in YAML mode
+        const absoluteURL = `${this.backendService.configuration.uiURL}${refType}/${typeQName.nameSpace}/${typeQName.localName}`;
+        return '<a href="' + absoluteURL + '">' + typeQName.localName + '</a>';
     }
 }

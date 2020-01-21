@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
-import { EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from './ttopology-template';
+import { EntityType, TNodeTemplate, TPolicyType, TRelationshipTemplate, TTopologyTemplate } from './ttopology-template';
 import { QName } from './qname';
 import { DifferenceStates, ToscaDiff, VersionUtils } from './ToscaDiff';
 import { Visuals } from './visuals';
@@ -195,6 +195,7 @@ export class TopologyTemplateUtil {
      * Generates default properties from node types or relationshipTypes
      * The assumption appears to be that types only add new properties and never change existing ones (e.g., change type or default value)
      * todo why name not qname?
+     * todo use the 'getInheritanceAncestry' method
      * @param name
      * @param entities
      * @return properties
@@ -291,6 +292,51 @@ export class TopologyTemplateUtil {
         return newKVProperies;
     }
 
+    static getParent(element: EntityType, entities: EntityType[]): EntityType {
+        if (this.hasParentType(element)) {
+            const parentQName = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.type;
+            return entities.find(entity => entity.qName === parentQName);
+        }
+        return null;
+    }
+
+    static getInheritanceAncestry(entityType: string, entityTypes: EntityType[]): EntityType[] {
+        const entity = entityTypes.find(type => type.qName === entityType);
+        const result = [];
+
+        if (entity) {
+            result.push(entity);
+            let parent = this.getParent(entity, entityTypes);
+
+            while (parent) {
+                result.push(parent);
+                parent = this.getParent(parent, entityTypes);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets the active set of allowed target node types for this YAML policy type
+     * i.e., returns the targets array which is the lowest possible.
+     * @param policyTypeQName
+     * @param policyTypes
+     */
+    static getActiveTargetsOfYamlPolicyType(policyTypeQName: string, policyTypes: TPolicyType[]): string[] {
+        const hierarchy = this.getInheritanceAncestry(policyTypeQName, policyTypes);
+        let result = [];
+
+        for (const type of hierarchy) {
+            if ((<TPolicyType>type).targets) {
+                result = (<TPolicyType>type).targets;
+                break;
+            }
+        }
+
+        return result;
+    }
+
     static getActiveKVPropertiesOfTemplateElement(templateElementProperties: any, typeQName: string, entityTypes: EntityType[]): any {
         const typeName = new QName(typeQName).localName;
         const defaultTypeProperties = this.getDefaultPropertiesFromEntityTypes(typeName, entityTypes);
@@ -304,7 +350,7 @@ export class TopologyTemplateUtil {
             }
         });
 
-        return {kvproperties: result};
+        return { kvproperties: result };
     }
 
     static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>,
