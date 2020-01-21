@@ -423,6 +423,7 @@ export const WineryReducer =
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .filter(nodeTemplate => nodeTemplate.id !== deletedNodeId),
                         relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates.filter(
