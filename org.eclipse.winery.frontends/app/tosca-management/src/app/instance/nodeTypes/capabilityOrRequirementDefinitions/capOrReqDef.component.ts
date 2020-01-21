@@ -26,9 +26,9 @@ import { BsModalRef, BsModalService, ModalDirective } from 'ngx-bootstrap';
 import { SpinnerWithInfinityComponent } from '../../../winerySpinnerWithInfinityModule/winerySpinnerWithInfinity.component';
 import { InstanceService } from '../../instance.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ValidSourceTypesService } from '../../capabilityTypes/validSourceTypes/validSourceTypes.service';
 import { QName } from '../../../model/qName';
 import { WineryRepositoryConfigurationService } from '../../../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { ValidSourceTypesService } from '../../sharedComponents/validSourceTypes/validSourceTypes.service';
 
 @Component({
     selector: 'winery-instance-cap-or-req-definitions',
@@ -142,7 +142,7 @@ export class CapOrReqDefComponent implements OnInit {
         this.capOrReqDefToBeAdded.validSourceTypes = [];
         this.validSourceTypesTableData = [];
         if (!this.noneSelected) {
-            this.validSourceTypesService.getValidSourceTypesForCapabilityDefinition(value.replace('{', '/').replace('}', '/'))
+            this.validSourceTypesService.getValidSourceTypesForCapabilityDefinition(value.replace('{', '/').replace('}', '/'), 'capabilitydefinitions')
                 .subscribe(
                     (current) => {
                         current.nodes.forEach(value1 => {
