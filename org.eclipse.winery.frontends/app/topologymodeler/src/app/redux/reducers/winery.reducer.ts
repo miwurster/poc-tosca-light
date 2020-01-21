@@ -314,8 +314,6 @@ export const WineryReducer =
                     }
                 };
             case WineryActions.UPDATE_YAML_POLICIES:
-                console.debug('updating yaml policies!');
-                console.debug((<ChangeYamlPoliciesAction>action));
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {

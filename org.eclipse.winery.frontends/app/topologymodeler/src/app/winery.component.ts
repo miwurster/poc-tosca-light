@@ -175,7 +175,8 @@ export class WineryComponent implements OnInit, AfterViewInit {
                         element.properties,
                         element.full);
                     if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].appliesTo) {
-                        policyType.targets = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].appliesTo.nodeTypeReference.map(ntr => ntr.typeRef);
+                        policyType.targets = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].appliesTo
+                            .nodeTypeReference.map(ntr => ntr.typeRef);
                     }
                     this.entityTypes.policyTypes.push(policyType);
                 });
@@ -282,7 +283,6 @@ export class WineryComponent implements OnInit, AfterViewInit {
 
     initiateData(): void {
         this.backendService.allEntities$.subscribe(JSON => {
-            console.debug(JSON);
             // Grouped NodeTypes
             this.initEntityType(JSON[0], 'groupedNodeTypes');
 

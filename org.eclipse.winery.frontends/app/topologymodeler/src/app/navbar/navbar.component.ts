@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ToastrService } from 'ngx-toastr';
 import { NgRedux } from '@angular-redux/store';
@@ -86,7 +86,6 @@ export class NavbarComponent implements OnDestroy {
         }, undefined, 'Apply the layout directive to the Node Templates'));
         this.exportCsarUrl = this.backendService.serviceTemplateURL + '/?csar';
     }
-    
 
     /**
      * Setter for buttonstate
