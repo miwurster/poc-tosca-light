@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2019-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -37,6 +37,11 @@ export class ValidSourceTypesService {
         const url = backendBaseURL + '/' + ToscaTypes.NodeType + '?grouped=angularSelect&dev=true/';
 
         return this.http.get<SelectData[]>(url);
+    }
+
+    getValidSourceTypesForCapabilityDefinition(type: string): Observable<ValidSourceTypesApiData> {
+        const path = '/' + ToscaTypes.CapabilityType + type;
+        return this.http.get<ValidSourceTypesApiData>(backendBaseURL + path + '/constraints');
     }
 
     saveValidSourceTypes(v: ValidSourceTypesApiData): Observable<any> {

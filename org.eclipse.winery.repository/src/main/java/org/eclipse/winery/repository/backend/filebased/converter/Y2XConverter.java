@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -755,6 +755,7 @@ public class Y2XConverter {
             .addDocumentation(node.getDescription())
             .setLowerBound(node.getLowerBound())
             .setUpperBound(node.getUpperBound())
+            .setValidSourceTypes(node.getValidSourceTypes())
             .build();
 
         return result;

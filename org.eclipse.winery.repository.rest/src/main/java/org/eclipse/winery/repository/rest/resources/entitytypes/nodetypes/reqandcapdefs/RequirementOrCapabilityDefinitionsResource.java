@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -125,6 +125,7 @@ public abstract class RequirementOrCapabilityDefinitionsResource<ReqDefOrCapDefR
 
             if (def instanceof TCapabilityDefinition) {
                 ((TCapabilityDefinition) def).setCapabilityType(typeQName);
+                ((TCapabilityDefinition) def).setValidSourceTypes(postData.validSourceTypes);
             } else {
                 ((TRequirementDefinition) def).setRequirementType(typeQName);
             }
@@ -151,7 +152,6 @@ public abstract class RequirementOrCapabilityDefinitionsResource<ReqDefOrCapDefR
             // add new element
             this.list.add(def);
         }
-
         return RestUtils.persist(this.res);
     }
 }
