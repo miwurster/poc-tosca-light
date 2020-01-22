@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,7 +13,7 @@
  ********************************************************************************/
 
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { Entity, EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate, VisualEntityType } from './models/ttopology-template';
+import { Entity, EntityType, TNodeTemplate, TPolicyType, TRelationshipTemplate, TTopologyTemplate, VisualEntityType } from './models/ttopology-template';
 import { ILoaded, LoadedService } from './services/loaded.service';
 import { AppReadyEventService } from './services/app-ready-event.service';
 import { BackendService } from './services/backend.service';
@@ -31,6 +31,7 @@ import { TopologyRendererState } from './redux/reducers/topologyRenderer.reducer
 import { VersionElement } from './models/versionElement';
 import { TopologyRendererActions } from './redux/actions/topologyRenderer.actions';
 import { WineryRepositoryConfigurationService } from '../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { TPolicy } from './models/policiesModalData';
 
 /**
  * This is the root component of the topology modeler.
@@ -130,6 +131,23 @@ export class WineryComponent implements OnInit, AfterViewInit {
         }
 
         switch (entityType) {
+            case 'yamlPolicies': {
+                this.entityTypes.yamlPolicies = [];
+                entityTypeJSON.forEach(policy => {
+                    this.entityTypes.yamlPolicies.push(
+                        new TPolicy(
+                            policy.name,
+                            policy.policyRef,
+                            policy.policyType,
+                            policy.any,
+                            policy.documentation,
+                            policy.otherAttributes,
+                            policy.properties,
+                            policy.targets)
+                    );
+                });
+                break;
+            }
             case 'artifactTypes': {
                 this.entityTypes.artifactTypes = [];
                 entityTypeJSON.forEach(artifactType => {
@@ -149,14 +167,18 @@ export class WineryComponent implements OnInit, AfterViewInit {
             }
             case 'policyTypes': {
                 this.entityTypes.policyTypes = [];
-                entityTypeJSON.forEach(policyType => {
-                    this.entityTypes.policyTypes
-                        .push(new EntityType(
-                            policyType.id,
-                            policyType.qName,
-                            policyType.name,
-                            policyType.namespace
-                        ));
+                entityTypeJSON.forEach(element => {
+                    const policyType = new TPolicyType(element.id,
+                        element.qName,
+                        element.name,
+                        element.namespace,
+                        element.properties,
+                        element.full);
+                    if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].appliesTo) {
+                        policyType.targets = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].appliesTo
+                            .nodeTypeReference.map(ntr => ntr.typeRef);
+                    }
+                    this.entityTypes.policyTypes.push(policyType);
                 });
                 break;
             }
@@ -246,12 +268,12 @@ export class WineryComponent implements OnInit, AfterViewInit {
             = tmData.topologyTemplate.relationshipTemplates;
         // init rendering
         this.entityTypes.nodeVisuals = tmData.visuals;
-        this.initTopologyTemplate(nodeTemplateArray, relationshipTemplateArray);
+        this.initTopologyTemplateForRendering(nodeTemplateArray, relationshipTemplateArray);
         this.loaded = { loadedData: true, generatedReduxState: false };
         this.appReadyEvent.trigger();
     }
 
-    initTopologyTemplate(nodeTemplateArray: Array<TNodeTemplate>, relationshipTemplateArray: Array<TRelationshipTemplate>) {
+    initTopologyTemplateForRendering(nodeTemplateArray: Array<TNodeTemplate>, relationshipTemplateArray: Array<TRelationshipTemplate>) {
         // init node templates
         this.nodeTemplates = TopologyTemplateUtil.initNodeTemplates(nodeTemplateArray, this.entityTypes.nodeVisuals,
             this.configurationService.isYaml(), this.entityTypes, this.topologyDifferences);
@@ -284,7 +306,14 @@ export class WineryComponent implements OnInit, AfterViewInit {
                 this.topologyDifferences = [topologyData[5], topologyData[6]];
             }
             // init the NodeTemplates and RelationshipTemplates to start their rendering
-            this.initTopologyTemplate(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
+            this.initTopologyTemplateForRendering(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
+
+            // init YAML policies if they exist
+            if (topologyTemplate.policies) {
+                this.initEntityType(topologyTemplate.policies.policy, 'yamlPolicies');
+            } else {
+                this.initEntityType([], 'yamlPolicies');
+            }
 
             // Artifact types
             this.initEntityType(JSON[3], 'artifactTypes');

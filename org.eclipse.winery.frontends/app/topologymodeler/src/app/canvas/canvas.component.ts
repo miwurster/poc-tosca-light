@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -57,6 +57,7 @@ import { TPolicy } from '../models/policiesModalData';
 import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { RequirementDefinitionModel } from '../models/requirementDefinitonModel';
 import { CapabilityDefinitionModel } from '../models/capabilityDefinitionModel';
+import { WineryRowData } from '../../../../tosca-management/src/app/wineryTableModule/wineryTable.component';
 
 @Component({
     selector: 'winery-canvas',
@@ -69,12 +70,15 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     @ViewChildren(NodeComponent) nodeComponentChildren: QueryList<NodeComponent>;
     @ViewChildren('KVTextareas') KVTextareas: QueryList<any>;
     @ViewChildren('XMLTextareas') xmlTextareas: QueryList<any>;
+    @ViewChildren('YamlPolicyProperties') yamlPolicyProperties: QueryList<any>;
     @ViewChild('nodes') child: ElementRef;
     @ViewChild('selection') selection: ElementRef;
     @ViewChild('capabilitiesModal') capabilitiesModal: ModalDirective;
     @ViewChild('requirementsModal') requirementsModal: ModalDirective;
     @ViewChild('importTopologyModal') importTopologyModal: ModalDirective;
     @ViewChild('threatModelingModal') threatModelingModal: ModalDirective;
+    @ViewChild('manageYamlPoliciesModal') manageYamlPoliciesModal: ModalDirective;
+    @ViewChild('addYamlPolicyModal') addYamlPolicyModal: ModalDirective;
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
     @Input() diffMode = false;
@@ -146,6 +150,24 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
 
     private longPressing: boolean;
 
+    // Manage YAML Policies Modal
+    selectedNewPolicyType: string;
+    yamlPoliciesColumns = [
+        { title: 'Name', name: 'name' },
+        { title: 'Type', name: 'typeHref' }];
+    selectedYamlPolicy: TPolicy;
+    /**
+     * Used to change the policy type fields into clickable <a> elements.
+     * Must be populated on every show of the modal!
+     */
+    copyOfYamlPolicies: {
+        name: string,
+        policyType: string,
+        typeHref: string,
+        properties?: any,
+        targets?: string[]
+    }[];
+
     constructor(private jsPlumbService: JsPlumbService,
                 private eref: ElementRef,
                 private layoutDirective: LayoutDirective,
@@ -169,6 +191,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.newJsPlumbInstance = this.jsPlumbService.getJsPlumbInstance();
         this.newJsPlumbInstance.setContainer('container');
 
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.policies)
+            .subscribe(policies => this.handleUpdatedYamlPolicies(policies)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.nodeTemplates)
             .subscribe(currentNodes => this.updateNodes(currentNodes)));
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology.relationshipTemplates)
@@ -331,12 +355,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.requirements.properties = TopologyTemplateUtil.setKVProperties(reqType);
+                                        this.requirements.properties = TopologyTemplateUtil.getKVProperties(reqType);
                                         this.setDefaultReqKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.requirements.properties = TopologyTemplateUtil.setKVProperties(reqType);
+                                    this.requirements.properties = TopologyTemplateUtil.getKVProperties(reqType);
                                     this.setDefaultReqKVProperties();
                                     return true;
                                 }
@@ -413,12 +437,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
+                                        this.capabilities.properties = TopologyTemplateUtil.getKVProperties(capType);
                                         this.setDefaultCapKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.capabilities.properties = TopologyTemplateUtil.setKVProperties(capType);
+                                    this.capabilities.properties = TopologyTemplateUtil.getKVProperties(capType);
                                     this.setDefaultCapKVProperties();
                                     return true;
                                 }
@@ -689,7 +713,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.capabilities.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.capabilities.properties = TopologyTemplateUtil.setKVProperties(cap);
+                    this.capabilities.properties = TopologyTemplateUtil.getKVProperties(cap);
                     // if propertiesDefinition is defined it's a XML property
                 } else if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
                     if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
@@ -795,7 +819,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.requirements.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.requirements.properties = TopologyTemplateUtil.setKVProperties(req);
+                    this.requirements.properties = TopologyTemplateUtil.getKVProperties(req);
                     return true;
                     // if propertiesDefinition is defined it's a XML property
                 } else if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
@@ -1067,6 +1091,11 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                     .forEach(value => this.enhanceDragSelection(value));
             } else if (this.topologyRendererState.buttonsState.placeComponentsButton) {
                 this.placementService.placeComponents(this.backendService, this.ngRedux, this.topologyRendererActions, this.errorHandler);
+            } else if (this.topologyRendererState.buttonsState.manageYamlPoliciesButton) {
+                this.ngRedux.dispatch(this.topologyRendererActions.manageYamlPolicies());
+                // show manageYamlPoliciesModal
+                this.copyOfYamlPolicies = this.getYamlPoliciesTableData();
+                this.manageYamlPoliciesModal.show();
             }
 
             setTimeout(() => {
@@ -2267,6 +2296,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         return capability;
     }
 
+    // todo ensure supporting inheritance of node types and capability types
     checkReqCapCompatibility(reqDefinition: RequirementDefinitionModel, capDefinition: CapabilityDefinitionModel,
                              cap: CapabilityModel, sourceNodeType: QName, targetNodeType: QName) {
         if (this.configuration.isYaml()) {
@@ -2274,15 +2304,21 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             // check the conditions set by the requirement definition
             if (this.matchType(reqDefinition.node, targetNodeType.qName, this.entityTypes.unGroupedNodeTypes) &&
                 this.matchType(reqDefinition.capability, capDefinition.capabilityType, this.entityTypes.capabilityTypes)) {
-                // todo check for the conditions set by the capability definition/type (valid_source_types)
-                if (cap.validSourceTypes && cap.validSourceTypes.filter(e => e.qName === sourceNodeType.qName)) {
-                    return true;
+
+                if (cap.validSourceTypes) {
+                    if (cap.validSourceTypes.some(e => this.matchType(e, sourceNodeType.qName, this.entityTypes.unGroupedNodeTypes))) {
+                        return true;
+                    } else {
+                        this.notify.warning(sourceNodeType.localName + ' is not a valid source type for a capability of type '
+                        + new QName(cap.type).localName);
+                        return false;
+                    }
                 } else {
-                    this.notify.warning(sourceNodeType.localName + ' is not a valid source type for ' + targetNodeType.localName);
-                    return false;
+                    // if no valid source types are defined, then we assume all node types are valid sources.
+                    return true;
                 }
             } else {
-                this.notify.warning('The Selected Requirement and Capability are not Compatible');
+                this.notify.warning('The selected requirement and capability are not compatible');
                 return false;
             }
         } else {
@@ -2307,24 +2343,18 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     }
 
     /**
-     * check recursively if the target entity type (or any of its parents) match the required entity type
+     * check if the target entity type (or any of its parents) match the required entity type
      * @param requiredType
      * @param targetElementType
      * @param targetElementTypeSet
      */
     matchType(requiredType: string, targetElementType: string, targetElementTypeSet: EntityType[]) {
-        if (requiredType === targetElementType) {
-            return true;
+        if (requiredType) {
+            const typeAncestry = TopologyTemplateUtil.getInheritanceAncestry(targetElementType, targetElementTypeSet);
+            return typeAncestry.some(type => type.qName === requiredType);
         } else {
-            const parentType = targetElementTypeSet
-                .filter(type => type.qName === targetElementType)
-                .map(type => type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom);
-
-            if (parentType && parentType.length > 0 && parentType[0]) {
-                return this.matchType(requiredType, parentType[0].type, targetElementTypeSet);
-            }
-
-            return false;
+            // if there is no required type, we assume all target types are valid!
+            return true;
         }
     }
 
@@ -2355,5 +2385,90 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     private layoutTopology() {
         this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
         this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
+    }
+
+    // YAML Policy methids
+    addNewYamlPolicy(policyName: string) {
+        if (policyName && this.selectedNewPolicyType && policyName.length > 0 && this.selectedNewPolicyType.length > 0) {
+            if (this.entityTypes.yamlPolicies.some(policy => policy.name === policyName)) {
+                this.notify.warning('Duplicate policy name!', 'Policy not Added!');
+            } else {
+                const newPolicy = new TPolicy(policyName, undefined, this.selectedNewPolicyType, [],
+                    [], {}, { kvproperties: {} }, []);
+                const newPolicies = [...this.entityTypes.yamlPolicies, newPolicy];
+                this.ngRedux.dispatch(this.actions.changeYamlPolicies(newPolicies));
+                this.addYamlPolicyModal.hide();
+            }
+        } else {
+            this.notify.warning('Missing info!', 'Policy not Added!');
+        }
+    }
+
+    handleUpdatedYamlPolicies(policies: { policy: TPolicy[] }) {
+        if (this.entityTypes) {
+            this.entityTypes.yamlPolicies = policies.policy;
+            this.copyOfYamlPolicies = this.getYamlPoliciesTableData();
+        }
+    }
+
+    handleRemoveYamlPolicyClick($event: TPolicy) {
+        const newPolicies = this.entityTypes.yamlPolicies.filter(policy => policy.name !== $event.name);
+        this.ngRedux.dispatch(this.actions.changeYamlPolicies(newPolicies));
+    }
+
+    handleAddNewYamlPolicyClick() {
+        this.addYamlPolicyModal.show();
+    }
+
+    handleYamlPolicySelected($event: WineryRowData) {
+        this.selectedYamlPolicy = this.entityTypes.yamlPolicies.find(policy => policy.name === (<TPolicy>$event.row).name);
+        this.selectedYamlPolicy.properties = TopologyTemplateUtil.getActiveKVPropertiesOfTemplateElement(this.selectedYamlPolicy.properties,
+            this.selectedYamlPolicy.policyType, this.entityTypes.policyTypes);
+    }
+
+    savePolicyProperties(): void {
+        this.yamlPolicyProperties.forEach(txtArea => {
+            const keyOfChangedTextArea = txtArea.nativeElement.parentElement.innerText.replace(/\s/g, '');
+            this.selectedYamlPolicy.properties.kvproperties[keyOfChangedTextArea] = txtArea.nativeElement.value;
+        });
+
+    }
+
+    showPropertiesOfSelectedYamlPolicy(): boolean {
+        if (this.selectedYamlPolicy && this.selectedYamlPolicy.properties && this.selectedYamlPolicy.properties.kvproperties) {
+            return Object.keys(this.selectedYamlPolicy.properties.kvproperties).length > 0;
+        }
+
+        return false;
+    }
+
+    getYamlPoliciesTableData() {
+        return this.entityTypes.yamlPolicies.map(policy => {
+            const result:
+                {
+                    name: string,
+                    policyType: string,
+                    typeHref: string,
+                    properties?: any,
+                    targets?: string[]
+                } = {
+                name: policy.name,
+                policyType: policy.policyType,
+                typeHref: this.typeToHref(new QName(policy.policyType), 'policytypes'),
+                properties: policy.properties,
+                targets: policy.targets
+            };
+            return result;
+        });
+    }
+
+    showYamlPolicyManagementModal() {
+        this.ngRedux.dispatch(this.topologyRendererActions.manageYamlPolicies());
+    }
+
+    private typeToHref(typeQName: QName, refType: string): string {
+        // no need to encode the namespace since we assume dotted namespaces in YAML mode
+        const absoluteURL = `${this.backendService.configuration.uiURL}${refType}/${typeQName.nameSpace}/${typeQName.localName}`;
+        return '<a href="' + absoluteURL + '">' + typeQName.localName + '</a>';
     }
 }

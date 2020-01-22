@@ -59,7 +59,7 @@ public final class CapabilityTypeResource extends EntityTypeResource {
     @Path("constraints")
     @GET
     public ValidSourceTypesApiData getValidSourceTypes() {
-        return new ValidSourceTypesApiData(getCapabilityType());
+        return new ValidSourceTypesApiData(getCapabilityType().getValidNodeTypes());
     }
 
     @Path("constraints")

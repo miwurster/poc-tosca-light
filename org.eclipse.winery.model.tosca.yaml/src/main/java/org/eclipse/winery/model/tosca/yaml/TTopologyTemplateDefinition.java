@@ -13,21 +13,26 @@
  *******************************************************************************/
 package org.eclipse.winery.model.tosca.yaml;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.winery.model.tosca.yaml.visitor.AbstractParameter;
-import org.eclipse.winery.model.tosca.yaml.visitor.AbstractResult;
-import org.eclipse.winery.model.tosca.yaml.visitor.IVisitor;
-import org.eclipse.winery.model.tosca.yaml.visitor.VisitorNode;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+
+import org.eclipse.winery.model.tosca.yaml.support.TMapPolicyDefinition;
+import org.eclipse.winery.model.tosca.yaml.visitor.AbstractParameter;
+import org.eclipse.winery.model.tosca.yaml.visitor.AbstractResult;
+import org.eclipse.winery.model.tosca.yaml.visitor.IVisitor;
+import org.eclipse.winery.model.tosca.yaml.visitor.VisitorNode;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tTopologyTemplate", namespace = " http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0", propOrder = {
@@ -48,7 +53,7 @@ public class TTopologyTemplateDefinition implements VisitorNode {
     @XmlAttribute(name = "relationship_templates")
     private Map<String, TRelationshipTemplate> relationshipTemplates;
     private Map<String, TGroupDefinition> groups;
-    private Map<String, TPolicyDefinition> policies;
+    private List<TMapPolicyDefinition> policies;
     private Map<String, TParameterDefinition> outputs;
     @XmlAttribute(name = "substitution_mappings")
     private TSubstitutionMappings substitutionMappings;
@@ -163,15 +168,15 @@ public class TTopologyTemplateDefinition implements VisitorNode {
     }
 
     @NonNull
-    public Map<String, TPolicyDefinition> getPolicies() {
+    public List<TMapPolicyDefinition> getPolicies() {
         if (this.policies == null) {
-            this.policies = new LinkedHashMap<>();
+            this.policies = new ArrayList<>();
         }
 
         return policies;
     }
 
-    public void setPolicies(Map<String, TPolicyDefinition> policies) {
+    public void setPolicies(List<TMapPolicyDefinition> policies) {
         this.policies = policies;
     }
 
@@ -207,7 +212,7 @@ public class TTopologyTemplateDefinition implements VisitorNode {
         private Map<String, TNodeTemplate> nodeTemplates;
         private Map<String, TRelationshipTemplate> relationshipTemplates;
         private Map<String, TGroupDefinition> groups;
-        private Map<String, TPolicyDefinition> policies;
+        private List<TMapPolicyDefinition> policies;
         private Map<String, TParameterDefinition> outputs;
         private TSubstitutionMappings substitutionMappings;
 
@@ -236,7 +241,7 @@ public class TTopologyTemplateDefinition implements VisitorNode {
             return this;
         }
 
-        public Builder setPolicies(Map<String, TPolicyDefinition> policies) {
+        public Builder setPolicies(List<TMapPolicyDefinition> policies) {
             this.policies = policies;
             return this;
         }
@@ -339,27 +344,27 @@ public class TTopologyTemplateDefinition implements VisitorNode {
             return addGroups(Collections.singletonMap(name, group));
         }
 
-        public Builder addPolicies(Map<String, TPolicyDefinition> policies) {
-            if (policies == null || policies.isEmpty()) {
-                return this;
-            }
-
-            if (this.policies == null) {
-                this.policies = new LinkedHashMap<>(policies);
-            } else {
-                this.policies.putAll(policies);
-            }
-
-            return this;
-        }
-
-        public Builder addPolicies(String name, TPolicyDefinition policy) {
-            if (name == null || name.isEmpty()) {
-                return this;
-            }
-
-            return addPolicies(Collections.singletonMap(name, policy));
-        }
+//        public Builder addPolicies(Map<String, TPolicyDefinition> policies) {
+//            if (policies == null || policies.isEmpty()) {
+//                return this;
+//            }
+//
+//            if (this.policies == null) {
+//                this.policies = new LinkedHashMap<>(policies);
+//            } else {
+//                this.policies.putAll(policies);
+//            }
+//
+//            return this;
+//        }
+//
+//        public Builder addPolicies(String name, TPolicyDefinition policy) {
+//            if (name == null || name.isEmpty()) {
+//                return this;
+//            }
+//
+//            return addPolicies(Collections.singletonMap(name, policy));
+//        }
 
         public Builder addOutputs(Map<String, TParameterDefinition> outputs) {
             if (outputs == null || outputs.isEmpty()) {

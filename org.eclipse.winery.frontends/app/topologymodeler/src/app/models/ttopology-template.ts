@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,6 +13,7 @@
  ********************************************************************************/
 import { DifferenceStates, VersionUtils } from './ToscaDiff';
 import { Visuals } from './visuals';
+import { TPolicy } from './policiesModalData';
 
 export class AbstractTTemplate {
     constructor(public documentation?: any,
@@ -27,6 +28,7 @@ export class AbstractTTemplate {
 export class TTopologyTemplate extends AbstractTTemplate {
     nodeTemplates: Array<TNodeTemplate> = [];
     relationshipTemplates: Array<TRelationshipTemplate> = [];
+    policies: { policy: Array<TPolicy> };
 }
 
 /**
@@ -116,6 +118,11 @@ export class TNodeTemplate extends AbstractTTemplate {
         this._state = value;
         this.visuals.color = VersionUtils.getElementColorByDiffState(value);
     }
+
+    public deleteStateAndVisuals() {
+        delete this._state;
+        delete this.visuals;
+    }
 }
 
 export class Entity {
@@ -150,6 +157,18 @@ export class VisualEntityType extends EntityType {
                 public color: string,
                 public full: any,
                 public visuals?: Visuals) {
+        super(id, qName, name, namespace, properties, full);
+    }
+}
+
+export class TPolicyType extends EntityType {
+    constructor(id: string,
+                qName: string,
+                name: string,
+                namespace: string,
+                properties: any,
+                public full: any,
+                public targets?: string[]) {
         super(id, qName, name, namespace, properties, full);
     }
 }

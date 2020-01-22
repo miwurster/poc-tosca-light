@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,6 +25,7 @@ import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reduce
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { TPolicy } from '../models/policiesModalData';
 
 /**
  * The navbar of the topologymodeler.
@@ -116,14 +117,16 @@ export class NavbarComponent implements OnDestroy {
     /**
      * Exports the service template as a CSAR file
      * @param event
+     * @param edmm indicates whether EDMM should be exported.
      */
-    exportCsar(event) {
+    exportCsar(event, edmm?: string) {
         let url = this.exportCsarUrl;
-        if (event.ctrlKey) {
-            url = url.replace(/csar$/, 'definitions');
-            console.log(url);
+        if (edmm) {
+            url = this.backendService.serviceTemplateURL + '/?edmm';
+        } else if (event.ctrlKey) {
+            url = this.backendService.serviceTemplateURL + '?definitions';
         }
-        window.open(url);
+        window.open(url, '_blank');
     }
 
     /**
@@ -158,6 +161,10 @@ export class NavbarComponent implements OnDestroy {
             }
             case 'types': {
                 this.ngRedux.dispatch(this.actions.toggleTypes());
+                break;
+            }
+            case 'edmmTransformationCheck': {
+                this.ngRedux.dispatch(this.actions.toggleEdmmTransformationCheck());
                 break;
             }
             case 'ids': {
@@ -228,6 +235,9 @@ export class NavbarComponent implements OnDestroy {
                 this.ngRedux.dispatch(this.actions.placeComponents());
                 this.placingOngoing = true;
                 break;
+            case 'manageYamlPolicies':
+                this.ngRedux.dispatch(this.actions.manageYamlPolicies());
+                break;
         }
     }
 
@@ -241,7 +251,8 @@ export class NavbarComponent implements OnDestroy {
             any: [],
             otherAttributes: {},
             relationshipTemplates: [],
-            nodeTemplates: []
+            nodeTemplates: [],
+            policies: { policy: new Array<TPolicy>() }
         };
         // Prepare for saving by updating the existing topology with the current topology state inside the Redux store
         topologySkeleton.nodeTemplates = this.unformattedTopologyTemplate.nodeTemplates;
@@ -254,6 +265,7 @@ export class NavbarComponent implements OnDestroy {
             delete nodeTemplate.visuals;
             delete nodeTemplate._state;
         });
+        topologySkeleton.policies = this.unformattedTopologyTemplate.policies;
         const topologyToBeSaved = topologySkeleton;
         console.log(topologyToBeSaved);
         // The topology gets saved here.

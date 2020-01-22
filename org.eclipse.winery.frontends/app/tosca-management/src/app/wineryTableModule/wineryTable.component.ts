@@ -146,6 +146,8 @@ export class WineryTableComponent implements OnInit, DoCheck {
         className: ['table-striped', 'table-bordered']
     };
     @Input() disableButtons = false;
+    @Input() showAddButton = true;
+    @Input() showRemoveButton = true;
     @Input() enableEditButton = false;
     @Input() enableIOButton = false;
 

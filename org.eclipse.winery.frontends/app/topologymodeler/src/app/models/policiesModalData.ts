@@ -42,6 +42,8 @@ export class TPolicy {
                 public policyType?: string,
                 public any?: any[],
                 public documentation?: any[],
-                public otherAttributes?: any) {
+                public otherAttributes?: any,
+                public properties?: any,
+                public targets?: string[]) {
     }
 }

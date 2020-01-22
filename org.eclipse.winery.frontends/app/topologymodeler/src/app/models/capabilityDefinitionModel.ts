@@ -11,7 +11,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { QName } from './qname';
 
 export class CapabilityDefinitionModel {
     public constraints: any;
@@ -22,5 +21,5 @@ export class CapabilityDefinitionModel {
     public documentation: any;
     public any: any[];
     public otherAttributes: any;
-    public validSourceTypes: QName[];
+    public validSourceTypes: string[];
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,7 +14,7 @@
 
 import { Action } from 'redux';
 import {
-    DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction, DeleteRelationshipAction,
+    ChangeYamlPoliciesAction, DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction, DeleteRelationshipAction,
     HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction, SaveRelationshipAction, SendCurrentNodeIdAction,
     SendPaletteOpenedAction, SetCababilityAction, SetDeploymentArtifactAction, SetNodeVisuals, SetPolicyAction, SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction, UpdateNodeCoordinatesAction,
@@ -313,6 +313,14 @@ export const WineryReducer =
                             )
                     }
                 };
+            case WineryActions.UPDATE_YAML_POLICIES:
+                return <WineryState>{
+                    ...lastState,
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        policies: (<ChangeYamlPoliciesAction>action).yamlPolicies.policies
+                    }
+                };
             case WineryActions.SET_TARGET_LOCATION:
                 const newTargetLocation: any = (<SetTargetLocation>action).nodeTargetLocation;
 
@@ -419,7 +427,21 @@ export const WineryReducer =
                             .filter(nodeTemplate => nodeTemplate.id !== deletedNodeId),
                         relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates.filter(
                             relationshipTemplate => relationshipTemplate.sourceElement.ref !== deletedNodeId &&
-                                relationshipTemplate.targetElement.ref !== deletedNodeId)
+                                relationshipTemplate.targetElement.ref !== deletedNodeId),
+                        // we check if the targets of YAML policies include the deleted node template<
+                        policies: {
+                            policy: lastState.currentJsonTopology.policies.policy.map(pol => {
+                                if (pol.targets) {
+                                    pol.targets = pol.targets.filter(target => target !== deletedNodeId);
+                                    // to keep a consistent behavior, if no targets remain, remove the field.
+                                    if (pol.targets.length === 0) {
+                                        pol.targets = undefined;
+                                    }
+                                }
+
+                                return pol;
+                            })
+                        }
                     }
                 };
             case WineryActions.DELETE_RELATIONSHIP_TEMPLATE:
@@ -457,7 +479,7 @@ export const WineryReducer =
                     currentNodeData: currentNodeData
                 };
             case WineryActions.SET_NODE_VISUALS:
-                const visuals: Visuals[] = (<SetNodeVisuals> action).visuals;
+                const visuals: Visuals[] = (<SetNodeVisuals>action).visuals;
 
                 return {
                     ...lastState,
@@ -465,6 +487,6 @@ export const WineryReducer =
                 };
 
             default:
-                return <WineryState> lastState;
+                return <WineryState>lastState;
         }
     };

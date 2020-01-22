@@ -79,6 +79,7 @@ import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.TListString;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapObject;
+import org.eclipse.winery.model.tosca.yaml.support.TMapPolicyDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapPropertyFilterDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementDefinition;
@@ -201,7 +202,7 @@ public class Builder {
             .setNodeTemplates(buildMap(map, "node_templates", this::buildNodeTemplate, parameter))
             .setRelationshipTemplates(buildMap(map, "relationship_templates", this::buildRelationshipTemplate, parameter))
             .setGroups(buildMap(map, "groups", this::buildGroupDefinition, parameter))
-            .setPolicies(buildMap(map, "policies", this::buildPolicyDefinition, parameter))
+            .setPolicies(buildList(map, "policies", this::buildMapPolicyDefinition, parameter))
             .setOutputs(buildMap(map, "outputs", this::buildParameterDefinition, parameter))
             .setSubstitutionMappings(buildSubstitutionMappings(map.get("substitution_mappings"),
                 parameter.copy().addContext("substitution_mappings")
@@ -1031,6 +1032,13 @@ public class Builder {
             .setInterfaces(buildMap(map, "interfaces", this::buildInterfaceDefinition, parameter.setValue("TGroupDefinition")
             ))
             .build();
+    }
+
+    @Nullable
+    public TMapPolicyDefinition buildMapPolicyDefinition(Object object, Parameter<TMapPolicyDefinition> parameter) {
+        TMapPolicyDefinition result = new TMapPolicyDefinition();
+        put(result, parameter.getValue(), buildPolicyDefinition(object, new Parameter<>(parameter.getContext())));
+        return result;
     }
 
     @Nullable

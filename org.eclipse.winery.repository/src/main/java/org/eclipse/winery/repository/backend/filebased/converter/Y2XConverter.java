@@ -49,8 +49,8 @@ import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
 import org.eclipse.winery.model.tosca.TOperation;
 import org.eclipse.winery.model.tosca.TParameter;
+import org.eclipse.winery.model.tosca.TPolicies;
 import org.eclipse.winery.model.tosca.TPolicy;
-import org.eclipse.winery.model.tosca.TPolicyTemplate;
 import org.eclipse.winery.model.tosca.TPolicyType;
 import org.eclipse.winery.model.tosca.TRelationshipTemplate;
 import org.eclipse.winery.model.tosca.TRelationshipType;
@@ -103,7 +103,6 @@ public class Y2XConverter {
     private List<TNodeTypeImplementation> nodeTypeImplementations;
     private List<TRelationshipTypeImplementation> relationshipTypeImplementations;
     private Map<String, TArtifactTemplate> artifactTemplates;
-    private List<TPolicyTemplate> policyTemplates;
     private List<TRequirementType> requirementTypes;
     private List<TImport> imports;
     private Map<QName, TInterfaceType> interfaceTypes;
@@ -120,7 +119,6 @@ public class Y2XConverter {
         this.nodeTypeImplementations = new ArrayList<>();
         this.relationshipTypeImplementations = new ArrayList<>();
         this.artifactTemplates = new LinkedHashMap<>();
-        this.policyTemplates = new ArrayList<>();
         this.requirementTypes = new ArrayList<>();
         this.imports = new ArrayList<>();
         this.policies = new LinkedHashMap<>();
@@ -174,7 +172,6 @@ public class Y2XConverter {
             .setName(id)
             .addImports(this.imports)
             .addRequirementTypes(this.requirementTypes)
-            .addPolicyTemplates(this.policyTemplates)
             .build();
 //        WriterUtils.storeDefinitions(definitions, true, path);
         return definitions;
@@ -350,7 +347,7 @@ public class Y2XConverter {
             );
         }
         if (node.getProperties() != null) {
-            builder.setProperties(convertPropertyAssignments(node.getProperties()));
+            builder.setProperties(new TEntityTemplate.Properties());
         }
         return builder.build();
     }
@@ -596,7 +593,7 @@ public class Y2XConverter {
             .setName(id)
             .setX(node.getMetadata().getOrDefault(Defaults.X_COORD, "0"))
             .setY(node.getMetadata().getOrDefault(Defaults.Y_COORD, "0"))
-            .setProperties(convertPropertyAssignments(node.getProperties()))
+            .setProperties(new TEntityTemplate.Properties())
             .addRequirements(convert(node.getRequirements()))
             .addCapabilities(convert(node.getCapabilities()))
             .setDeploymentArtifacts(convertDeploymentArtifacts(node.getArtifacts()));
@@ -674,14 +671,7 @@ public class Y2XConverter {
         TCapability.Builder builder = new TCapability.Builder(capId, capType, id);
 
         if (node.getProperties().entrySet().size() > 0) {
-            Map<String, String> properties = node.getProperties()
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> Objects.requireNonNull(entry.getValue().getValue()).toString()));
-            TEntityTemplate.Properties toscaProperties = new TEntityTemplate.Properties();
-            toscaProperties.setKVProperties(properties);
+            TEntityTemplate.Properties toscaProperties = this.convertPropertyAssignments(node.getProperties());
             return builder.setProperties(toscaProperties).build();
         }
 
@@ -798,7 +788,7 @@ public class Y2XConverter {
 
         builder.setNodeTemplates(convert(node.getNodeTemplates()));
         builder.setRelationshipTemplates(convert(node.getRelationshipTemplates()));
-        convert(node.getPolicies());
+        builder.setPolicies(new TPolicies(convert(node.getPolicies())));
 
         return builder.build();
     }
@@ -937,7 +927,7 @@ public class Y2XConverter {
                         targetElement.setRef(capability);
                         return new TRelationshipTemplate.Builder(id, node.getType(), sourceElement, targetElement)
                             .setName(node.getType().getLocalPart())
-                            .setProperties(convertPropertyAssignments(node.getProperties()))
+                            .setProperties(new TEntityTemplate.Properties())
                             .build();
                     } else {
                         LOGGER.error("the node {} specified by the requirement {} cannot be found!", requirement.getNode().toString(),
@@ -976,35 +966,40 @@ public class Y2XConverter {
     }
 
     /**
-     * Converts TOSCA YAML PolicyDefinitions to TOSCA XML Policy and PolicyTemplate Additional TOSCA YAML element
-     * trigger is not converted
+     * Converts a TOSCA YAML PolicyDefinitions to a TOSCA XML Policy. trigger and metadata are not converted
      *
      * @param node TOSCA YAML PolicyDefinition
      */
-    private void convert(TPolicyDefinition node, String id) {
+    private TPolicy convert(TPolicyDefinition node, String id) {
         if (node == null) {
-            return;
+            return null;
         }
 
-        TPolicyTemplate.Builder builder = new TPolicyTemplate.Builder(id + "_templ", node.getType());
-        builder.setName(id);
-        builder.setProperties(convertPropertyAssignments(node.getProperties()));
-        this.policyTemplates.add(builder.build());
+        TPolicy.Builder builder = new TPolicy
+            .Builder(node.getType())
+            .setName(id)
+            .addDocumentation(node.getDescription())
+            .setTargets(node.getTargets());
 
-        TPolicy.Builder pbuilder = new TPolicy.Builder(node.getType());
-        pbuilder.setName(id);
-        pbuilder.setPolicyRef(new QName(id + "_templ"));
-
-        /* if PolicyDefinition has targets the resulting Policy is added to the target else its added to the
-         * BoundaryDefinition of the Service Template
-         */
-        if (node.getTargets() == null || node.getTargets().size() == 0) {
-            this.addPolicy("boundary", pbuilder.build());
-        } else {
-            for (QName target : node.getTargets()) {
-                this.addPolicy(target.toString(), pbuilder.build());
-            }
+        if (node.getProperties().entrySet().size() > 0) {
+            Map<String, TPropertyAssignment> originalProperties = node.getProperties();
+            TEntityTemplate.Properties toscaProperties = this.convertPropertyAssignments(originalProperties);
+            return builder.setProperties(toscaProperties).build();
         }
+
+        return builder.build();
+    }
+
+    private TEntityTemplate.Properties convertPropertyAssignments(Map<String, TPropertyAssignment> originalProperties) {
+        Map<String, String> properties = originalProperties
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> Objects.requireNonNull(entry.getValue().getValue()).toString()));
+        TEntityTemplate.Properties toscaProperties = new TEntityTemplate.Properties();
+        toscaProperties.setKVProperties(properties);
+        return toscaProperties;
     }
 
     /**
@@ -1069,15 +1064,7 @@ public class Y2XConverter {
         appliesTo.getNodeTypeReference().addAll(references);
         return appliesTo;
     }
-
-    /**
-     * Converts a map of TOSCA YAML PropertyAssignment to TOSCA XML EntityTemplate.Properties
-     */
-    private TEntityTemplate.Properties convertPropertyAssignments(Map<String, TPropertyAssignment> propertyMap) {
-        if (Objects.isNull(propertyMap) || propertyMap.isEmpty()) return null;
-        //properties.setAny(assignmentBuilder.getAssignment(propertyMap, type));
-        return new TEntityTemplate.Properties();
-    }
+    
 
     /**
      * Converts TOSCA YAML ArtifactDefinitions to TOSCA XML NodeTypeImplementations and ArtifactTemplates
@@ -1214,6 +1201,8 @@ public class Y2XConverter {
                     return (T) convert((org.eclipse.winery.model.tosca.yaml.TRequirementDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TRequirementAssignment) {
                     return (T) convert((TRequirementAssignment) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TPolicyDefinition) {
+                    return (T) convert((TPolicyDefinition) entry.getValue(), entry.getKey());
                 } else {
                     V v = entry.getValue();
                     assert (v instanceof TImportDefinition ||
@@ -1266,8 +1255,8 @@ public class Y2XConverter {
                     return convert((org.eclipse.winery.model.tosca.yaml.TNodeType) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TImportDefinition) {
                     return convert((TImportDefinition) entry.getValue(), entry.getKey());
-                } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TPolicyType) {
-                    return convert((org.eclipse.winery.model.tosca.yaml.TPolicyType) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TPolicyDefinition) {
+                    return convert((org.eclipse.winery.model.tosca.yaml.TPolicyDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TCapabilityAssignment) {
                     return convert((TCapabilityAssignment) entry.getValue(), entry.getKey());
                 } else {

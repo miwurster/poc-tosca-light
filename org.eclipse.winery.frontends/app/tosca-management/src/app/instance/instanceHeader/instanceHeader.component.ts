@@ -21,6 +21,7 @@ import { WineryVersion } from '../../model/wineryVersion';
 import { InstanceService } from '../instance.service';
 import { ConfigurationService } from '../admin/accountability/configuration/configuration.service';
 import { WineryRepositoryConfigurationService } from '../../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { SubMenuItem } from '../../model/subMenuItem';
 
 @Component({
     selector: 'winery-instance-header',
@@ -40,8 +41,7 @@ export class InstanceHeaderComponent implements OnInit {
     @Input() typeUrl: string;
     @Input() typeId: string;
     @Input() typeOf: string;
-    @Input() subMenu: string[];
-    @Input() subMenuLinks: string[];
+    @Input() subMenu: SubMenuItem[];
     @Input() imageUrl: string;
     @Output() deleteConfirmed: EventEmitter<any> = new EventEmitter();
 

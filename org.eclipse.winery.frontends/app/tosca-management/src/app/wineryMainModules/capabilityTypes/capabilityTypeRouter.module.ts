@@ -25,7 +25,7 @@ import { InheritanceComponent } from '../../instance/sharedComponents/inheritanc
 import { PropertiesDefinitionComponent } from '../../instance/sharedComponents/propertiesDefinition/propertiesDefinition.component';
 import { WineryReadmeComponent } from '../../wineryReadmeModule/wineryReadme.component';
 import { WineryLicenseComponent } from '../../wineryLicenseModule/wineryLicense.component';
-import { ValidSourceTypesComponent } from '../../instance/capabilityTypes/validSourceTypes/validSourceTypes.component';
+import { ValidSourceTypesComponent } from '../../instance/sharedComponents/validSourceTypes/validSourceTypes.component';
 
 const toscaType = ToscaTypes.CapabilityType;
 

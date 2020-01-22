@@ -29,8 +29,8 @@ export class ValidSourceTypesService {
         this.path = this.instanceService.path;
     }
 
-    getValidSourceTypes(): Observable<ValidSourceTypesApiData> {
-        return this.http.get<ValidSourceTypesApiData>(backendBaseURL + this.path + '/constraints');
+    getValidSourceTypes(resourceName: string): Observable<ValidSourceTypesApiData> {
+        return this.http.get<ValidSourceTypesApiData>(backendBaseURL + this.path + '/' + resourceName);
     }
 
     getAvailableValidSourceTypes(): Observable<SelectData[]> {
@@ -39,12 +39,12 @@ export class ValidSourceTypesService {
         return this.http.get<SelectData[]>(url);
     }
 
-    getValidSourceTypesForCapabilityDefinition(type: string): Observable<ValidSourceTypesApiData> {
+    getValidSourceTypesForCapabilityDefinition(type: string, resourceName: string): Observable<ValidSourceTypesApiData> {
         const path = '/' + ToscaTypes.CapabilityType + type;
-        return this.http.get<ValidSourceTypesApiData>(backendBaseURL + path + '/constraints');
+        return this.http.get<ValidSourceTypesApiData>(backendBaseURL + this.path + '/' + resourceName);
     }
 
-    saveValidSourceTypes(v: ValidSourceTypesApiData): Observable<any> {
-        return this.http.put<any>(backendBaseURL + this.path + '/constraints', v);
+    saveValidSourceTypes(v: ValidSourceTypesApiData, resourceName: string): Observable<any> {
+        return this.http.put<any>(backendBaseURL + this.path + '/' + resourceName, v);
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,6 +23,7 @@ export interface TopologyRendererState {
         deploymentArtifactsButton?: boolean;
         propertiesButton?: boolean;
         typesButton?: boolean;
+        edmmTransformationCheck?: boolean;
         idsButton?: boolean;
         layoutButton?: boolean;
         alignHButton?: boolean;
@@ -40,6 +41,7 @@ export interface TopologyRendererState {
         determineFreezableComponentsButton?: boolean;
         cleanFreezableComponentsButton?: boolean;
         placeComponentsButton?: boolean;
+        manageYamlPoliciesButton?: boolean;
     };
     nodesToSelect?: string[];
 }
@@ -52,6 +54,7 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
         deploymentArtifactsButton: false,
         propertiesButton: false,
         typesButton: true,
+        edmmTransformationCheck: false,
         idsButton: false,
         layoutButton: false,
         alignHButton: false,
@@ -69,6 +72,7 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
         determineFreezableComponentsButton: false,
         cleanFreezableComponentsButton: false,
         placeComponentsButton: false,
+        manageYamlPoliciesButton: false
     }
 };
 /**
@@ -78,8 +82,6 @@ export const TopologyRendererReducer =
     function (lastState: TopologyRendererState = INITIAL_TOPOLOGY_RENDERER_STATE, action: Action): TopologyRendererState {
         switch (action.type) {
             case TopologyRendererActions.TOGGLE_POLICIES:
-                // console.log({...lastState, buttonsState: { ...lastState.buttonsState, policiesButton:
-                // !lastState.buttonsState.policiesButton}});
                 return {
                     ...lastState,
                     buttonsState: {
@@ -133,6 +135,14 @@ export const TopologyRendererReducer =
                     buttonsState: {
                         ...lastState.buttonsState,
                         typesButton: !lastState.buttonsState.typesButton
+                    }
+                };
+            case TopologyRendererActions.TOGGLE_EDMM_TRANSFORMATION_CHECK:
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        edmmTransformationCheck: !lastState.buttonsState.edmmTransformationCheck
                     }
                 };
             case TopologyRendererActions.EXECUTE_LAYOUT:
@@ -191,14 +201,6 @@ export const TopologyRendererReducer =
                         matchTopologyButton: !lastState.buttonsState.matchTopologyButton
                     }
                 };
-            case TopologyRendererActions.MATCH_TOPOLOGY:
-                return {
-                    ...lastState,
-                    buttonsState: {
-                        ...lastState.buttonsState,
-                        matchTopologyButton: !lastState.buttonsState.matchTopologyButton
-                    }
-                };
             case TopologyRendererActions.DETECT_PROBLEMS:
                 return {
                     ...lastState,
@@ -213,8 +215,8 @@ export const TopologyRendererReducer =
                     buttonsState: {
                         ...lastState.buttonsState,
                         enrichmentButton: !lastState.buttonsState.enrichmentButton
-                }
-            };
+                    }
+                };
             case TopologyRendererActions.SUBSTITUTE_TOPOLOGY:
                 return {
                     ...lastState,
@@ -280,6 +282,14 @@ export const TopologyRendererReducer =
                     buttonsState: {
                         ...lastState.buttonsState,
                         placeComponentsButton: !lastState.buttonsState.placeComponentsButton
+                    }
+                };
+            case TopologyRendererActions.MANAGE_YAML_POLICIES:
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        manageYamlPoliciesButton: !lastState.buttonsState.manageYamlPoliciesButton
                     }
                 };
         }

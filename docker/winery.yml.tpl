@@ -10,14 +10,16 @@ ui:
     problemDetection: {{ .Env.WINERY_FEATURE_PROBLEM_DETECTION }}
     splitting: {{ .Env.WINERY_FEATURE_SPLITTING }}
     testRefinement: {{ .Env.WINERY_FEATURE_TEST_REFINEMENT }}
+    edmmModeling: {{ .Env.WINERY_FEATURE_EDMM_MODELING }}
   endpoints:
     container: http://{{ .Env.CONTAINER_HOSTNAME }}:{{ .Env.CONTAINER_PORT }}
     workflowmodeler: http://{{ .Env.WORKFLOWMODELER_HOSTNAME }}:{{ .Env.WORKFLOWMODELER_PORT }}/winery-workflowmodeler
     topologymodeler: http://{{ .Env.TOPOLOGYMODELER_HOSTNAME }}:{{ .Env.TOPOLOGYMODELER_PORT }}/winery-topologymodeler
     repositoryApiUrl: http://{{ .Env.WINERY_HOSTNAME }}:{{ .Env.WINERY_PORT }}/winery
     repositoryUiUrl: http://{{ .Env.WINERY_HOSTNAME }}:{{ .Env.WINERY_PORT }}/#
+    edmmTransformationTool: http://{{ .Env.EDMM_TRANSFORMATION_HOSTNAME }}:{{ .Env.EDMM_TRANSFORMATION_PORT }}/plugins/check-model-support
 repository:
-  provider: {{ .Env.WINERY_REPOSITORY_PROVIDER }}
+  provider: file
   repositoryRoot: {{ .Env.WINERY_REPOSITORY_PATH }}
   git:
     clientSecret: secret

@@ -31,12 +31,12 @@ import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
-import org.eclipse.winery.common.ids.definitions.PolicyTemplateId;
 import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.TAppliesTo;
 import org.eclipse.winery.model.tosca.TArtifactReference;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
 import org.eclipse.winery.model.tosca.TBoolean;
@@ -54,8 +54,8 @@ import org.eclipse.winery.model.tosca.TInterfaces;
 import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
 import org.eclipse.winery.model.tosca.TOperation;
 import org.eclipse.winery.model.tosca.TParameter;
+import org.eclipse.winery.model.tosca.TPolicies;
 import org.eclipse.winery.model.tosca.TPolicy;
-import org.eclipse.winery.model.tosca.TPolicyTemplate;
 import org.eclipse.winery.model.tosca.TRelationshipTypeImplementation;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TRequirementType;
@@ -65,7 +65,6 @@ import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.kvproperties.ConstraintClauseKVList;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
-import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactType;
 import org.eclipse.winery.model.tosca.yaml.TCapabilityAssignment;
@@ -95,6 +94,7 @@ import org.eclipse.winery.model.tosca.yaml.TTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.Defaults;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
+import org.eclipse.winery.model.tosca.yaml.support.TMapPolicyDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementDefinition;
 import org.eclipse.winery.repository.backend.filebased.YamlRepository;
@@ -170,9 +170,9 @@ public class X2YConverter {
         }
     }
 
-    public Map<String, TPropertyAssignment> convert(TEntityTemplate tEntityTemplate, TEntityTemplate.Properties node) {
+    public Map<String, TPropertyAssignment> convert(TEntityTemplate.Properties node) {
         if (Objects.isNull(node)) return null;
-        Map<String, String> propertiesKV = ModelUtilities.getPropertiesKV(tEntityTemplate);
+        Map<String, String> propertiesKV = node.getKVProperties();
         if (Objects.isNull(propertiesKV)) return null;
         return propertiesKV.entrySet().stream()
             .map(entry ->
@@ -191,24 +191,13 @@ public class X2YConverter {
 
     public TTopologyTemplateDefinition convert(org.eclipse.winery.model.tosca.TServiceTemplate node) {
         if (Objects.isNull(node)) return null;
-        return convert(node.getTopologyTemplate(), node.getBoundaryDefinitions());
-    }
-
-    public TTopologyTemplateDefinition convert(TTopologyTemplate node, TBoundaryDefinitions boundary) {
-        if (Objects.isNull(node)) return null;
+        TTopologyTemplate topologyTemplate = node.getTopologyTemplate();
+        if (Objects.isNull(topologyTemplate)) return null;
         return new TTopologyTemplateDefinition.Builder()
-            .setDescription(convertDocumentation(node.getDocumentation()))
-            .setNodeTemplates(convert(node.getNodeTemplates(), node.getRelationshipTemplates()))
-            .setRelationshipTemplates(convert(node.getRelationshipTemplates()))
-            .setPolicies(convert(
-                node.getNodeTemplates().stream()
-                    .filter(Objects::nonNull)
-                    .map(org.eclipse.winery.model.tosca.TNodeTemplate::getPolicies)
-                    .filter(Objects::nonNull)
-                    .flatMap(p -> p.getPolicy().stream())
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList())
-            ))
+            .setDescription(convertDocumentation(topologyTemplate.getDocumentation()))
+            .setNodeTemplates(convert(topologyTemplate.getNodeTemplates(), topologyTemplate.getRelationshipTemplates()))
+            .setRelationshipTemplates(convert(topologyTemplate.getRelationshipTemplates()))
+            .setPolicies(topologyTemplate.getPolicies() == null ? null : convert(topologyTemplate.getPolicies()))
             // TODO substitution mappings are currently not converted
             //.setSubstitutionMappings(convert(boundary))
             .build();
@@ -240,7 +229,7 @@ public class X2YConverter {
                     node.getType(),
                     new NodeTypeId(node.getType())
                 ))
-                .setProperties(convert(node, node.getProperties()))
+                .setProperties(convert(node.getProperties()))
                 .setMetadata(meta)
                 .setRequirements(convert(node.getRequirements()))
                 .setCapabilities(convert(node.getCapabilities()))
@@ -255,7 +244,7 @@ public class X2YConverter {
         return Collections.singletonMap(
             node.getIdFromIdOrNameField(),
             new TRelationshipTemplate.Builder(convert(node.getType(), new RelationshipTypeId(node.getType())))
-                .setProperties(convert(node, node.getProperties()))
+                .setProperties(convert(node.getProperties()))
                 .build()
         );
     }
@@ -404,9 +393,19 @@ public class X2YConverter {
     @NonNull
     public Map<String, TPolicyType> convert(org.eclipse.winery.model.tosca.TPolicyType node) {
         if (Objects.isNull(node)) return new LinkedHashMap<>();
+        TPolicyType.Builder builder = new TPolicyType.Builder();
+
+        if (node.getAppliesTo() != null) {
+            builder = builder.setTargets(node
+                .getAppliesTo()
+                .getNodeTypeReference()
+                .stream()
+                .map(TAppliesTo.NodeTypeReference::getTypeRef)
+                .collect(Collectors.toList()));
+        }
         return Collections.singletonMap(
             node.getName(),
-            convert(node, new TPolicyType.Builder(), org.eclipse.winery.model.tosca.TPolicyType.class)
+            convert(node, builder, org.eclipse.winery.model.tosca.TPolicyType.class)
                 .build()
         );
     }
@@ -419,23 +418,19 @@ public class X2YConverter {
     }
 
     @NonNull
-    public Map<String, TPolicyDefinition> convert(TPolicy node) {
-        if (Objects.isNull(node)) return new LinkedHashMap<>();
-        return Collections.singletonMap(
+    public TMapPolicyDefinition convert(TPolicy node) {
+        if (Objects.isNull(node)) return new TMapPolicyDefinition();
+        return new TMapPolicyDefinition(Collections.singletonMap(
             node.getName(),
             new TPolicyDefinition.Builder(
                 convert(
                     node.getPolicyType(),
-                    new PolicyTypeId(node.getPolicyRef())
+                    new PolicyTypeId(node.getPolicyType())
                 ))
-                .setProperties(convertPropertyAssignment(repository.getElement(new PolicyTemplateId(node.getPolicyRef()))))
+                .setProperties(convert(node.getProperties()))
+                .setTargets(node.getTargets())
                 .build()
-        );
-    }
-
-    public Map<String, TPropertyAssignment> convertPropertyAssignment(TPolicyTemplate node) {
-        if (Objects.isNull(node)) return null;
-        return convert(node, node.getProperties());
+        ));
     }
 
     /**
@@ -947,7 +942,7 @@ public class X2YConverter {
         return Collections.singletonMap(
             node.getName(),
             new TCapabilityAssignment.Builder()
-                .setProperties(convert(node, node.getProperties()))
+                .setProperties(convert(node.getProperties()))
                 .build()
         );
     }
@@ -987,6 +982,14 @@ public class X2YConverter {
         ));
     }
 
+    private List<TMapPolicyDefinition> convert(TPolicies node) {
+        if (Objects.isNull(node)) return null;
+        return node.getPolicy().stream()
+            .filter(Objects::nonNull)
+            .map(this::convert)
+            .collect(Collectors.toList());
+    }
+
     private <T, K> Map<String, K> convert(List<T> nodes) {
         return nodes.stream()
             .filter(Objects::nonNull)
@@ -1003,6 +1006,8 @@ public class X2YConverter {
                     return convert((org.eclipse.winery.model.tosca.TNodeType) node).entrySet().stream();
                 } else if (node instanceof org.eclipse.winery.model.tosca.TPolicyType) {
                     return convert((org.eclipse.winery.model.tosca.TPolicyType) node).entrySet().stream();
+                } else if (node instanceof TPolicy) {
+                    return convert((TPolicy) node).entrySet().stream();
                 }
                 throw new AssertionError();
             })

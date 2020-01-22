@@ -746,6 +746,7 @@ public class BackendUtils {
             m.marshal(o, out);
             byte[] data = out.toByteArray();
             try (ByteArrayInputStream in = new ByteArrayInputStream(data)) {
+                // String xml = IOUtils.toString(in);
                 // this may throw an IOException. We propagate this exception.
                 RepositoryFactory.getRepository().putContentToFile(ref, in, mediaType);
             }

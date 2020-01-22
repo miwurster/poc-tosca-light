@@ -1,5 +1,5 @@
 <!--
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -207,6 +207,19 @@
             </button>
         </div>
 
+        <div *wineryRepositoryFeatureToggle="configEnum.EdmmModeling" class="btn-group button-group"
+             data-toggle="buttons">
+            <button class="btn btn-sm align-middle dark-button-style" id="edmmTransformationCheck"
+                    (click)="toggleButton($event)"
+                    [style.background-color]="getStyle(navbarButtonsState.buttonsState.edmmTransformationCheck)">
+                Show EDMM Transformation Check
+            </button>
+            <button class="btn btn-sm align-middle dark-button-style" id="edmmExport"
+                    (click)="exportCsar($event, 'edmm')">
+                Export EDMM
+            </button>
+        </div>
+
         <div *ngIf="!readonly" class="btn-group button-group" dropdown>
             <button dropdownToggle type="button" class="btn btn-sm dark-button-style align-middle dropdown-toggle">
                 Other <span class="caret"></span>
@@ -231,6 +244,15 @@
                         id="substituteTopology"
                         (click)="toggleButton($event)">
                         Substitute Topology
+                    </button>
+                </li>
+                <li role="menuitem" *wineryRepositoryShowOnFeature="configEnum.Yaml">
+                    <button
+                        style="cursor: pointer"
+                        class="dropdown-item"
+                        id="manageYamlPolicies"
+                        (click)="toggleButton($event)">
+                        Manage Policies
                     </button>
                 </li>
                 <!--<li role="menuitem"><a class="dropdown-item" (click)="checkCompliance()">Check Compliance</a></li>-->

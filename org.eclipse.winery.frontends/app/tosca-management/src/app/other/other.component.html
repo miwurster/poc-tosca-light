@@ -12,22 +12,22 @@
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 <div class="otherelement">
-    <p *ngIf="!configurationService.isYaml(); else yamlDesc">The following items list TOSCA elements contained in
+    <p *wineryRepositoryHideOnFeature="configEnum.Yaml">The following items list TOSCA elements contained in
         TOSCA's
         <code>Definitions</code>
         element, which are not listed as separate tabs.
     </p>
-    <ng-template #yamlDesc>
-        <p>The following items list TOSCA elements contained in a TOSCA YAML
-            <code>ServiceTemplate</code>, which are not listed as separate tabs.</p>
-    </ng-template>
+
+    <p *wineryRepositoryShowOnFeature="configEnum.Yaml">The following items list TOSCA elements contained in a TOSCA
+        YAML
+        <code>ServiceTemplate</code>, which are not listed as separate tabs.
+    </p>
     <h4>Artifacts</h4>
     <a class="btn btn-default right-margin-10" [routerLink]="['/artifacttypes']">Artifact Types</a>
     <a class="btn btn-default" [routerLink]="['/artifacttemplates']">Artifact Templates</a>
     <h4> {{!configurationService.isYaml() ? 'Requirements and ' : ''}} Capabilities</h4>
-    <!-- todo use the directive instead of the service-->
-    <a class="btn btn-default right-margin-10" [routerLink]="['/requirementtypes']"
-       *ngIf="!configurationService.isYaml()">
+    <a *wineryRepositoryHideOnFeature="configEnum.Yaml" class="btn btn-default right-margin-10"
+       [routerLink]="['/requirementtypes']">
         Requirement Types
     </a>
     <a class="btn btn-default" [routerLink]="['/capabilitytypes']">Capability Types</a>
@@ -36,7 +36,7 @@
     <a class="btn btn-default" [routerLink]="['/relationshiptypeimplementations']">Relationship Type Implementations</a>
     <h4>Policies</h4>
     <a class="btn btn-default right-margin-10" [routerLink]="['/policytypes']">Policy Types</a>
-    <a class="btn btn-default" [routerLink]="['/policytemplates']">Policy Templates</a>
+    <a *wineryRepositoryHideOnFeature="configEnum.Yaml" class="btn btn-default" [routerLink]="['/policytemplates']">Policy Templates</a>
     <hr>
     <h4>Imports</h4>
     <a class="btn btn-default right-margin-10" [routerLink]="['/imports/http%3A%2F%2Fwww.w3.org%2F2001%2FXMLSchema/']">XML

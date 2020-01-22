@@ -13,9 +13,13 @@
  *******************************************************************************/
 package org.eclipse.winery.yaml.common.writer;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.yaml.common.AbstractTest;
 import org.eclipse.winery.yaml.common.Utils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -23,9 +27,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+// todo ensure it works with the new Reader, Writer, Data model, Converter
 public class YamlWriterTest extends AbstractTest {
     private static Path temporaryFolder;
 
