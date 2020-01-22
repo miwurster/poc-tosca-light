@@ -2296,6 +2296,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         return capability;
     }
 
+    // todo ensure supporting inheritance of node types and capability types
     checkReqCapCompatibility(reqDefinition: RequirementDefinitionModel, capDefinition: CapabilityDefinitionModel,
                              cap: CapabilityModel, sourceNodeType: QName, targetNodeType: QName) {
         if (this.configuration.isYaml()) {
@@ -2303,15 +2304,21 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             // check the conditions set by the requirement definition
             if (this.matchType(reqDefinition.node, targetNodeType.qName, this.entityTypes.unGroupedNodeTypes) &&
                 this.matchType(reqDefinition.capability, capDefinition.capabilityType, this.entityTypes.capabilityTypes)) {
-                // todo check for the conditions set by the capability definition/type (valid_source_types)
-                if (cap.validSourceTypes && cap.validSourceTypes.filter(e => e.qName === sourceNodeType.qName)) {
-                    return true;
+
+                if (cap.validSourceTypes) {
+                    if (cap.validSourceTypes.some(e => this.matchType(e, sourceNodeType.qName, this.entityTypes.unGroupedNodeTypes))) {
+                        return true;
+                    } else {
+                        this.notify.warning(sourceNodeType.localName + ' is not a valid source type for a capability of type '
+                        + new QName(cap.type).localName);
+                        return false;
+                    }
                 } else {
-                    this.notify.warning(sourceNodeType.localName + ' is not a valid source type for ' + targetNodeType.localName);
-                    return false;
+                    // if no valid source types are defined, then we assume all node types are valid sources.
+                    return true;
                 }
             } else {
-                this.notify.warning('The Selected Requirement and Capability are not Compatible');
+                this.notify.warning('The selected requirement and capability are not compatible');
                 return false;
             }
         } else {
@@ -2336,24 +2343,18 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     }
 
     /**
-     * check recursively if the target entity type (or any of its parents) match the required entity type
+     * check if the target entity type (or any of its parents) match the required entity type
      * @param requiredType
      * @param targetElementType
      * @param targetElementTypeSet
      */
     matchType(requiredType: string, targetElementType: string, targetElementTypeSet: EntityType[]) {
-        if (requiredType === targetElementType) {
-            return true;
+        if (requiredType) {
+            const typeAncestry = TopologyTemplateUtil.getInheritanceAncestry(targetElementType, targetElementTypeSet);
+            return typeAncestry.some(type => type.qName === requiredType);
         } else {
-            const parentType = targetElementTypeSet
-                .filter(type => type.qName === targetElementType)
-                .map(type => type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom);
-
-            if (parentType && parentType.length > 0 && parentType[0]) {
-                return this.matchType(requiredType, parentType[0].type, targetElementTypeSet);
-            }
-
-            return false;
+            // if there is no required type, we assume all target types are valid!
+            return true;
         }
     }
 

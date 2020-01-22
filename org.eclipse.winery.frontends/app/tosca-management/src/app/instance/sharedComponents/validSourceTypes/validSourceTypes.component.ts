@@ -37,7 +37,7 @@ import { QNameApiData } from '../../../model/qNameApiData';
 })
 export class ValidSourceTypesComponent implements OnInit {
     @Input() title = 'Valid Source Types';
-    @Input() resource: string;
+    @Input() resource = 'constraints';
     loading: boolean;
     currentNodeTypes: SelectData[];
     allNodeTypes: SelectData[];

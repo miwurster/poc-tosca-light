@@ -13,7 +13,6 @@
  ********************************************************************************/
 
 import { CapabilityDefinitionModel } from './capabilityDefinitionModel';
-import { QName } from './qname';
 
 /**
  * Encompasses the capability model
@@ -25,7 +24,7 @@ export class CapabilityModel {
     public name: string;
     public otherAttributes: any;
     public type: string;
-    public validSourceTypes: QName[];
+    public validSourceTypes: string[];
     public properties?: any;
 
     static fromCapabilityDefinitionModel(def: CapabilityDefinitionModel): CapabilityModel {
