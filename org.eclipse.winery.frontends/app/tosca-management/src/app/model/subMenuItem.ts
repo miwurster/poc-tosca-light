@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2019-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -62,6 +62,7 @@ export class SubMenuItems {
     static readonly requiredCapabilityType: SubMenuItem = { displayName: 'Required Capability Type', urlFragment: 'requiredcapabilitytype' };
     static readonly requiredStructure: SubMenuItem = { displayName: 'Required Structure', urlFragment: 'requiredstructure' };
     static readonly requirementDefinitions: SubMenuItem = { displayName: 'Requirement Definitions', urlFragment: 'requirementdefinitions' };
+    static readonly requirementDefinitionsYaml: SubMenuItem = { displayName: 'Requirement Definitions', urlFragment: 'requirementdefinitionsyaml' };
     static readonly selfServicePortal: SubMenuItem = { displayName: 'Self-Service Portal', urlFragment: 'selfserviceportal' };
     static readonly source: SubMenuItem = { displayName: 'Source', urlFragment: 'source' };
     static readonly sourceInterfaces: SubMenuItem = { displayName: 'Source Interfaces', urlFragment: 'sourceinterfaces' };
@@ -73,5 +74,6 @@ export class SubMenuItems {
     static readonly threatModeling: SubMenuItem = { displayName: 'Threat Modeling', urlFragment: 'threatmodeling' };
     static readonly topologyTemplate: SubMenuItem = { displayName: 'Topology Template', urlFragment: 'topologytemplate' };
     static readonly validSourcesAndTargets: SubMenuItem = { displayName: 'Valid Sources and Targets', urlFragment: 'validsourcesandtargets' };
+    static readonly capabilityTypeConstraints: SubMenuItem = { displayName: 'Constraints', urlFragment: 'constraints' };
     static readonly xml: SubMenuItem = { displayName: 'XML', urlFragment: 'xml' };
 }

@@ -285,16 +285,19 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     }
 
     isYamlPolicyActiveForNode(policy: TPolicy): boolean {
-        return policy.targets.some(target => target === this.currentNodeData.currentNodeId);
+        return policy.targets && policy.targets.some(target => target === this.currentNodeData.currentNodeId);
     }
 
     toggleYamlPolicy(policy: TPolicy) {
-        const index = policy.targets.indexOf(this.currentNodeData.currentNodeId);
-
-        if (index >= 0) {
-            policy.targets.splice(index, 1);
+        if (policy.targets) {
+            const index = policy.targets.indexOf(this.currentNodeData.currentNodeId);
+            if (index >= 0) {
+                policy.targets.splice(index, 1);
+            } else {
+                policy.targets.push(this.currentNodeData.currentNodeId);
+            }
         } else {
-            policy.targets.push(this.currentNodeData.currentNodeId);
+            policy.targets = [this.currentNodeData.currentNodeId];
         }
     }
 }

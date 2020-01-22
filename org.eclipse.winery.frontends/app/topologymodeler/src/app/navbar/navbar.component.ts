@@ -25,6 +25,7 @@ import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reduce
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { TPolicy } from '../models/policiesModalData';
 
 /**
  * The navbar of the topologymodeler.
@@ -251,7 +252,7 @@ export class NavbarComponent implements OnDestroy {
             otherAttributes: {},
             relationshipTemplates: [],
             nodeTemplates: [],
-            policies: {}
+            policies: { policy: new Array<TPolicy>() }
         };
         // Prepare for saving by updating the existing topology with the current topology state inside the Redux store
         topologySkeleton.nodeTemplates = this.unformattedTopologyTemplate.nodeTemplates;
