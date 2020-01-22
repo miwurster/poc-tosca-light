@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -423,12 +423,25 @@ export const WineryReducer =
                 return <WineryState>{
                     ...lastState,
                     currentJsonTopology: {
-                        ...lastState.currentJsonTopology,
                         nodeTemplates: lastState.currentJsonTopology.nodeTemplates
                             .filter(nodeTemplate => nodeTemplate.id !== deletedNodeId),
                         relationshipTemplates: lastState.currentJsonTopology.relationshipTemplates.filter(
                             relationshipTemplate => relationshipTemplate.sourceElement.ref !== deletedNodeId &&
-                                relationshipTemplate.targetElement.ref !== deletedNodeId)
+                                relationshipTemplate.targetElement.ref !== deletedNodeId),
+                        // we check if the targets of YAML policies include the deleted node template<
+                        policies: {
+                            policy: lastState.currentJsonTopology.policies.policy.map(pol => {
+                                if (pol.targets) {
+                                    pol.targets = pol.targets.filter(target => target !== deletedNodeId);
+                                    // to keep a consistent behavior, if no targets remain, remove the field.
+                                    if (pol.targets.length === 0) {
+                                        pol.targets = undefined;
+                                    }
+                                }
+
+                                return pol;
+                            })
+                        }
                     }
                 };
             case WineryActions.DELETE_RELATIONSHIP_TEMPLATE:
