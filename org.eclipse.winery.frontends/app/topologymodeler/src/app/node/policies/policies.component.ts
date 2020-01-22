@@ -13,7 +13,7 @@
  ********************************************************************************/
 
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
+import { TableType } from '../../models/enums';
 import { FeatureEnum } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
 import { EntityTypesModel } from '../../models/entityTypesModel';
 
@@ -27,7 +27,7 @@ import { EntityTypesModel } from '../../models/entityTypesModel';
  */
 export class PoliciesComponent implements OnInit {
 
-    readonly toscaTypes = ToscaTypes;
+    readonly tableTypes = TableType;
     readonly features = FeatureEnum;
 
     @Output() toggleModalHandler: EventEmitter<any>;

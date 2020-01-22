@@ -148,6 +148,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                     }
                 });
         }
+        this.$ngRedux.subscribe(() => this.setPolicyIcons());
     }
 
     /**
@@ -243,37 +244,9 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         if (this.configurationService.isYaml()) {
             this.policiesOfNode = this.getAllowedPolicies();
         } else {
-            if (this.nodeTemplate.policies && this.nodeTemplate.policies.policy) {
-                this.policiesOfNode = this.nodeTemplate.policies.policy;
-                this.policyIcons = [];
-                const list: TPolicy[] = this.nodeTemplate.policies.policy;
-
-                for (const value of list) {
-                    let visual: Visuals;
-                    if (value.policyRef) {
-                        visual = this.entityTypes.policyTemplateVisuals
-                            .find(policyVisual => policyVisual.typeId === value.policyRef);
-                    }
-
-                    if (!visual) {
-                        visual = this.entityTypes.policyTypeVisuals.find(
-                            policyTypeVisual => policyTypeVisual.typeId === value.policyType
-                        );
-                    }
-
-                    if (visual && visual.imageUrl) {
-                        this.policyIcons.push(visual.imageUrl);
-                    }
-                }
-
-                if (this.policyIcons.length === 0) {
-                    this.policyIcons = null;
-                }
-            }
+            this.setPolicyIcons();
+            this.addNewVersions(new QName(this.nodeTemplate.type));
         }
-
-        this.addNewVersions(new QName(this.nodeTemplate.type));
-
     }
 
     /**
@@ -284,6 +257,38 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         if (nodeTemplateChanges) {
             if (this.entityTypes.groupedNodeTypes) {
                 this.findOutPropertyDefinitionTypeForProperties(this.nodeTemplate.type, this.entityTypes.groupedNodeTypes);
+            }
+        }
+    }
+
+    /**
+     * Get the icons of the policies.
+     */
+    setPolicyIcons() {
+        if (this.nodeTemplate.policies && this.nodeTemplate.policies.policy) {
+            this.policyIcons = [];
+            const list: TPolicy[] = this.nodeTemplate.policies.policy;
+
+            for (const value of list) {
+                let visual: Visuals;
+                if (value.policyRef) {
+                    visual = this.entityTypes.policyTemplateVisuals
+                        .find(policyVisual => policyVisual.typeId === value.policyRef);
+                }
+
+                if (!visual) {
+                    visual = this.entityTypes.policyTypeVisuals.find(
+                        policyTypeVisual => policyTypeVisual.typeId === value.policyType
+                    );
+                }
+
+                if (visual && visual.imageUrl) {
+                    this.policyIcons.push(visual.imageUrl);
+                }
+            }
+
+            if (this.policyIcons.length === 0) {
+                this.policyIcons = null;
             }
         }
     }

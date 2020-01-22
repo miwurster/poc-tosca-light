@@ -20,7 +20,6 @@ import { definitionType, TableType, urlElement } from '../../models/enums';
 import { BackendService } from '../../services/backend.service';
 import { EntityTypesModel } from '../../models/entityTypesModel';
 import { ReqCapRelationshipService } from '../../services/req-cap-relationship.service';
-import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
 import { WineryRepositoryConfigurationService } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { ReqCapModalType, ShowReqCapModalEventData } from './showReqCapModalEventData';
 import { RequirementModel } from '../../models/requirementModel';
@@ -37,10 +36,9 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
 
     readonly editOperation = ReqCapModalType.Edit;
     readonly newOperation = ReqCapModalType.AddNew;
-    readonly toscaTypes = ToscaTypes;
-    readonly tableType = TableType;
+    readonly tableTypes = TableType;
 
-    @Input() toscaType: string;
+    @Input() tableType: TableType;
     @Input() currentNodeData: any;
     @Input() toscaTypeData: any;
     @Input() entityTypes: EntityTypesModel;
@@ -71,7 +69,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
             this.currentToscaTypeData = this.toscaTypeData;
         }
         if (changes['toscaType']) {
-            this.currentToscaType = this.toscaType;
+            this.currentToscaType = this.tableType;
         }
     }
 
@@ -135,8 +133,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
             } catch (e) {
                 console.log(e);
             }
-            const typeQName = policy.policyType;
-            const type = typeQName;
+            const type = policy.policyType;
             const name = policy.name;
             const currentNodeId = this.currentNodeData.currentNodeId;
             // push new event onto Subject
@@ -156,8 +153,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
         } catch (e) {
             console.log(e);
         }
-        const typeQName = deploymentArtifact.artifactType;
-        const type = typeQName;
+        const type = deploymentArtifact.artifactType;
         const name = deploymentArtifact.name;
         const currentNodeId = this.currentNodeData.currentNodeId;
         // push new event onto Subject
@@ -183,7 +179,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     clickReqOrCapRef(reqOrCapRef: string) {
         let clickedDefinition;
         let url;
-        if (this.toscaType === this.toscaTypes.RequirementType) {
+        if (this.tableType === this.tableTypes.Requirements) {
             clickedDefinition = definitionType.RequirementDefinitions;
         } else {
             clickedDefinition = definitionType.CapabilityDefinitions;
@@ -193,7 +189,6 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
             + urlElement.NodeTypeURL
             + encodeURIComponent(encodeURIComponent(this.getNamespace(this.currentNodeData.nodeTemplate.type)))
             + '/' + this.getLocalName(this.currentNodeData.nodeTemplate.type) + clickedDefinition;
-
         window.open(url, '_blank');
     }
 
@@ -261,7 +256,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
      */
     clickReqOrCapType(reqOrCapType: string) {
         let clickedType;
-        if (this.toscaType === this.toscaTypes.RequirementType) {
+        if (this.tableType === this.tableTypes.Requirements) {
             clickedType = urlElement.RequirementTypeURL;
         } else {
             clickedType = urlElement.CapabilityTypeURL;

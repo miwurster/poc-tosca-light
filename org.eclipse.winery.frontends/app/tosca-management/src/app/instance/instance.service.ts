@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@ import { ToscaTypes } from '../model/enums';
 import { WineryVersion } from '../model/wineryVersion';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { SubMenuItem, SubMenuItems } from '../model/subMenuItem';
 
 @Injectable()
 export class InstanceService {
@@ -35,98 +36,113 @@ export class InstanceService {
 
     /**
      * Get the submenu for the given resource type for displaying a component instance.
-     * TODO: instead of string[], use objects which contain displayName and url fragment
      *
-     * @returns string[] containing all menus for each resource type.
+     * @returns SubMenuItem[] containing all menus for each resource type.
      */
-    public getSubMenuByResource(): string[] {
-        let subMenu: string[];
-
+    public getSubMenuByResource(): SubMenuItem[] {
+        let subMenu: SubMenuItem[];
         switch (this.toscaComponent.toscaType) {
             case ToscaTypes.NodeType:
-                subMenu = ['README', 'LICENSE', 'Appearance', 'Instance States', 'Interfaces', 'Implementations',
-                    'Requirement Definitions', 'Capability Definitions', 'Properties Definition', 'Inheritance'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.instanceStates, SubMenuItems.interfaces,
+                    SubMenuItems.implementations, SubMenuItems.requirementDefinitionsYaml, SubMenuItems.capabilityDefinitions,
+                    SubMenuItems.propertiesDefinition, SubMenuItems.inheritance];
                 if (!this.configurationService.configuration.features.yaml) {
-                    subMenu.push('Tags', 'Documentation', 'XML');
+                    subMenu.push(SubMenuItems.tags, SubMenuItems.documentation, SubMenuItems.xml);
                 }
                 break;
             case ToscaTypes.ServiceTemplate:
-                subMenu = ['README', 'LICENSE', 'Topology Template'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.topologyTemplate];
                 if (!this.configurationService.configuration.features.yaml) {
-                    subMenu.push('Plans', 'Selfservice Portal', 'Boundary Definitions', 'Tags', 'Constraint Checking', 'Documentation', 'XML');
+                    subMenu.push(SubMenuItems.plans, SubMenuItems.selfServicePortal,
+                        SubMenuItems.boundaryDefinitions, SubMenuItems.tags, SubMenuItems.constraintChecking,
+                        SubMenuItems.documentation, SubMenuItems.xml);
+                    if (this.configurationService.configuration.features.nfv) {
+                        subMenu.push(SubMenuItems.threatModeling);
+                    }
                 }
-                if (this.configurationService.configuration.features.nfv) {
-                    subMenu.push('Threat Modeling');
-                }
+
                 break;
             case ToscaTypes.RelationshipType:
-                subMenu = ['README', 'LICENSE', 'Appearance', 'Instance States', 'Source Interfaces', 'Interfaces',
-                    'Target Interfaces', 'Valid Sources and Targets', 'Implementations', 'Properties Definition',
-                    'Inheritance', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.instanceStates, SubMenuItems.sourceInterfaces,
+                    SubMenuItems.interfaces, SubMenuItems.targetInterfaces, SubMenuItems.validSourcesAndTargets, SubMenuItems.implementations,
+                    SubMenuItems.propertiesDefinition, SubMenuItems.inheritance, SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.ArtifactType:
-                subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Templates', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.propertiesDefinition, SubMenuItems.inheritance, SubMenuItems.templates,
+                    SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.ArtifactTemplate:
-                subMenu = ['README', 'LICENSE', 'Files', 'Source', 'Properties', 'Property Constraints', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.files, SubMenuItems.source, SubMenuItems.properties,
+                    SubMenuItems.propertyConstraints, SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.RequirementType:
-                subMenu = ['README', 'LICENSE', 'Required Capability Type', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.requiredCapabilityType, SubMenuItems.propertiesDefinition,
+                    SubMenuItems.inheritance, SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.CapabilityType:
                 if (this.configurationService.isYaml()) {
-                    subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Constraints', 'Documentation'];
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.propertiesDefinition, SubMenuItems.inheritance,
+                        SubMenuItems.constraintTypes, SubMenuItems.documentation];
                 } else {
-                    subMenu = ['README', 'LICENSE', 'Properties Definition', 'Inheritance', 'Documentation', 'XML'];
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.propertiesDefinition, SubMenuItems.inheritance,
+                        SubMenuItems.documentation, SubMenuItems.xml];
                 }
                 break;
             case ToscaTypes.NodeTypeImplementation:
-                subMenu = ['README', 'LICENSE', 'Implementation Artifacts', 'Deployment Artifacts', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.implementationArtifacts, SubMenuItems.deploymentArtifacts,
+                    SubMenuItems.inheritance, SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.RelationshipTypeImplementation:
-                subMenu = ['README', 'LICENSE', 'Implementation Artifacts', 'Inheritance', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.implementationArtifacts, SubMenuItems.inheritance,
+                    SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.PolicyType:
                 if (this.configurationService.isYaml()) {
-                    subMenu = ['README', 'LICENSE', 'Applies To', 'Properties Definition', 'Inheritance', 'Appearance', 'Documentation'];
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appliesTo, SubMenuItems.propertiesDefinition,
+                        SubMenuItems.inheritance, SubMenuItems.appearance, SubMenuItems.documentation];
                 } else {
-                    subMenu = ['README', 'LICENSE', 'Language', 'Applies To', 'Properties Definition', 'Inheritance',
-                        'Templates', 'Appearance', 'Documentation', 'XML'];
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.language, SubMenuItems.appliesTo, SubMenuItems.propertiesDefinition,
+                        SubMenuItems.inheritance, SubMenuItems.templates, SubMenuItems.appearance, SubMenuItems.documentation, SubMenuItems.xml];
                 }
                 break;
             case ToscaTypes.PolicyTemplate:
-                subMenu = ['README', 'LICENSE', 'Properties', 'Property Constraints', 'Appearance', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.properties, SubMenuItems.propertyConstraints, SubMenuItems.appearance,
+                    SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.Imports:
-                subMenu = ['All Declared Elements Local Names', 'All Defined Types Local Names'];
+                subMenu = [SubMenuItems.allDeclaredElementsLocalNames, SubMenuItems.allDefinedTypesLocalNames];
                 break;
             case ToscaTypes.ComplianceRule:
-                subMenu = ['README', 'LICENSE', 'Identifier', 'Required Structure', 'Tags', 'Documentation', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.identifier, SubMenuItems.requiredStructure, SubMenuItems.tags,
+                    SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.PatternRefinementModel:
-                subMenu = ['README', 'LICENSE', 'Detector', 'Refinement Structure', 'Relation Mappings', 'Attribute Mappings', 'Stay Mappings', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.detector, SubMenuItems.refinementStructure, SubMenuItems.relationMappings,
+                    SubMenuItems.attributeMappings, SubMenuItems.stayMappings, SubMenuItems.xml];
                 break;
             case ToscaTypes.TestRefinementModel:
-                subMenu = ['README', 'LICENSE', 'Detector', 'Test Fragment', 'Relation Mappings', 'XML'];
+                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.detector, SubMenuItems.testFragment, SubMenuItems.relationMappings,
+                    SubMenuItems.xml];
                 break;
             default: // assume Admin
                 if (this.configurationService.isYaml()) {
-                    subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types', 'Consistency Check', 'Log', 'Configuration'];
+                    subMenu = [SubMenuItems.namespaces, SubMenuItems.repository, SubMenuItems.planLanguages, SubMenuItems.planTypes,
+                        SubMenuItems.consistencyCheck, SubMenuItems.log, SubMenuItems.configuration];
                 } else {
                     // YAML 1.2 does not contain Constraint Types
-                    subMenu = ['Namespaces', 'Repository', 'Plan Languages', 'Plan Types',
-                        'Constraint Types', 'Consistency Check', 'Log', 'Configuration'];
+                    subMenu = [SubMenuItems.namespaces, SubMenuItems.repository, SubMenuItems.planLanguages, SubMenuItems.planTypes,
+                        SubMenuItems.constraintTypes, SubMenuItems.consistencyCheck, SubMenuItems.log, SubMenuItems.configuration];
                 }
                 if (this.configurationService.configuration.features.accountability) {
-                    subMenu.push('Accountability');
+                    subMenu.push(SubMenuItems.accountability);
                 }
                 if (this.configurationService.configuration.features.edmmModeling) {
-                    subMenu.push('1 to 1 EDMM Mappings', 'EDMM Type Mappings');
+                    subMenu.push(SubMenuItems.oneToOneEDMMMappings, SubMenuItems.edmmTypeMappings);
                 }
         }
 
         if (this.configurationService.isYaml()) {
-            subMenu = subMenu.filter(item => item !== 'XML');
+            subMenu = subMenu.filter(item => item !== SubMenuItems.xml);
         }
 
         return subMenu;

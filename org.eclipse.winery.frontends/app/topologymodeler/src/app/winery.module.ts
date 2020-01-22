@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -52,6 +52,7 @@ import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/win
 import { PlaceComponentsService } from './services/placement.service';
 import { ReqCapRelationshipService } from './services/req-cap-relationship.service';
 import { WineryTableModule } from '../../../tosca-management/src/app/wineryTableModule/wineryTable.module';
+import { EdmmTransformationCheckComponent } from './edmmTransformationCheck/edmmTransformationCheck.component';
 
 @NgModule({
     declarations: [
@@ -61,7 +62,8 @@ import { WineryTableModule } from '../../../tosca-management/src/app/wineryTable
         PrintViewComponent,
         RefinementSidebarComponent,
         ProblemDetectionComponent,
-        EnricherComponent
+        EnricherComponent,
+        EdmmTransformationCheckComponent,
     ],
     exports: [WineryComponent],
     imports: [

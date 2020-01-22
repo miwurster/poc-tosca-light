@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -71,7 +71,6 @@ export class NavbarComponent implements OnDestroy {
                 private hotkeysService: HotkeysService) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
-
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
             .subscribe(topologyTemplate => this.unformattedTopologyTemplate = topologyTemplate));
         this.hotkeysService.add(new Hotkey('mod+s', (event: KeyboardEvent): boolean => {
@@ -117,14 +116,16 @@ export class NavbarComponent implements OnDestroy {
     /**
      * Exports the service template as a CSAR file
      * @param event
+     * @param edmm indicates whether EDMM should be exported.
      */
-    exportCsar(event) {
+    exportCsar(event, edmm?: string) {
         let url = this.exportCsarUrl;
-        if (event.ctrlKey) {
-            url = url.replace(/csar$/, 'definitions');
-            console.log(url);
+        if (edmm) {
+            url = this.backendService.serviceTemplateURL + '/?edmm';
+        } else if (event.ctrlKey) {
+            url = this.backendService.serviceTemplateURL + '?definitions';
         }
-        window.open(url);
+        window.open(url, '_blank');
     }
 
     /**
@@ -159,6 +160,10 @@ export class NavbarComponent implements OnDestroy {
             }
             case 'types': {
                 this.ngRedux.dispatch(this.actions.toggleTypes());
+                break;
+            }
+            case 'edmmTransformationCheck': {
+                this.ngRedux.dispatch(this.actions.toggleEdmmTransformationCheck());
                 break;
             }
             case 'ids': {

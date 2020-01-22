@@ -11,7 +11,7 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<table *ngIf="toscaType=== tableType.deploymentArtifacts" class="toscatype-table" border="1" style="">
+<table *ngIf="tableType === tableTypes.DeploymentArtifacts" class="toscatype-table" style="">
     <thead>
     <tr>
         <th>Name</th>
@@ -40,8 +40,7 @@
     </tbody>
 </table>
 
-<table *ngIf="toscaType===toscaTypes.PolicyType" class="toscatype-table" border="1">
-
+<table *ngIf="tableType === tableTypes.Policies" class="toscatype-table">
     <thead>
     <tr>
         <th>Name</th>
@@ -93,22 +92,22 @@
     </tbody>
 </table>
 
-<div *ngIf="toscaType === toscaTypes.CapabilityType || toscaType === toscaTypes.RequirementType">
+<div *ngIf="tableType === tableTypes.CapabilityType || tableType === tableTypes.RequirementType">
 
     <table *wineryRepositoryHideOnFeature="'yaml'"
            class="toscatype-table">
         <thead>
         <tr>
-            <th *ngIf="toscaType === toscaTypes.CapabilityType" width="25px"></th>
+            <th *ngIf="tableType === tableTypes.CapabilityType" width="25px"></th>
             <th>Endpoint</th>
             <th>Id</th>
             <th>Name</th>
-            <th *ngIf="toscaType === toscaTypes.RequirementType"></th>
+            <th *ngIf="tableType === tableTypes.RequirementType"></th>
         </tr>
         </thead>
         <tbody>
         <tr *ngFor="let reqOrCap of currentToscaTypeData">
-            <td *ngIf="toscaType === toscaTypes.CapabilityType" class="toscatype-table-td">
+            <td *ngIf="tableType === tableTypes.CapabilityType" class="toscatype-table-td">
                 <button type="button" class="reqCap-button btn btn-sm btn-outline-secondary btn-block"
                         style="font-size: x-small;" id="{{currentNodeData.nodeTemplate.id +'.'+ reqOrCap.id}}">
                     <i class="fa fa-dot-circle-o" aria-hidden="true"></i> {{""}}
@@ -130,7 +129,7 @@
                 <div #reqOrCapRef (click)="clickReqOrCapRef(reqOrCap.name)">{{ reqOrCap.name }}</div>
                 <span class="cell-comment">{{ reqOrCap.name }}</span>
             </td>
-            <td *ngIf="toscaType === toscaTypes.RequirementType" class="toscatype-table-td">
+            <td *ngIf="tableType === tableTypes.RequirementType" class="toscatype-table-td">
                 <div (mousedown)="passCurrentType($event);
             reqCapRelationshipService.createSourceInfo(this.currentNodeData, reqOrCap);">
                     <div class="btn-group-vertical center-block" role="group" id={{dragSource}} style="width: 100%;">
@@ -146,7 +145,7 @@
     </table>
 
     <div *wineryRepositoryShowOnFeature="'yaml'">
-        <table *ngIf="toscaType === toscaTypes.RequirementType"
+        <table *ngIf="tableType === tableTypes.RequirementType"
                class="toscatype-table">
             <thead>
             <tr>
@@ -199,11 +198,11 @@
             </tbody>
         </table>
 
-        <table *ngIf="toscaType === toscaTypes.CapabilityType"
+        <table *ngIf="tableType === tableTypes.CapabilityType"
                class="toscatype-table">
             <thead>
             <tr>
-                <th *ngIf="toscaType === toscaTypes.CapabilityType" width="25px"></th>
+                <th *ngIf="tableType === tableTypes.CapabilityType" width="25px"></th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Actions</th>

@@ -27,7 +27,7 @@ import { ToscaComponent } from '../model/toscaComponent';
 import { Utils } from '../wineryUtils/utils';
 import { WineryVersion } from '../model/wineryVersion';
 import { HttpErrorResponse } from '@angular/common/http';
-import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { SubMenuItem } from '../model/subMenuItem';
 
 @Component({
     templateUrl: 'instance.component.html',
@@ -38,8 +38,7 @@ import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModu
 })
 export class InstanceComponent implements OnDestroy {
 
-    availableTabs: string[];
-    availableTabsLinks: string[];
+    availableTabs: SubMenuItem[];
     toscaComponent: ToscaComponent;
     versions: WineryVersion[];
     typeUrl: string;
@@ -57,7 +56,6 @@ export class InstanceComponent implements OnDestroy {
                 private router: Router,
                 private service: InstanceService,
                 private notify: WineryNotificationService,
-                private configurationService: WineryRepositoryConfigurationService,
                 private existService: ExistService) {
         this.routeSub = this.route
             .data
@@ -92,16 +90,6 @@ export class InstanceComponent implements OnDestroy {
                     }
 
                     this.availableTabs = this.service.getSubMenuByResource();
-                    this.availableTabsLinks = this.availableTabs.map(item => {
-                        let link = `./${item.toLowerCase().replace(/ /g, '')}`;
-
-                        if (link === './requirementdefinitions' && configurationService.isYaml()) {
-                            link += 'yaml';
-                        }
-
-                        return link;
-                    });
-
                 },
                 error => this.handleError(error)
             );

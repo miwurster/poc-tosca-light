@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,9 +19,9 @@ import { NgRedux } from '@angular-redux/store';
 import { IWineryState } from '../../redux/store/winery.store';
 import { Subscription } from 'rxjs';
 import { CapabilityModel } from '../../models/capabilityModel';
-import { ToscaTypes } from '../../../../../tosca-management/src/app/model/enums';
-import { WineryRepositoryConfigurationService } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { TableType } from '../../models/enums';
 import { ReqCapModalType, ShowReqCapModalEventData } from '../toscatype-table/showReqCapModalEventData';
+import { WineryRepositoryConfigurationService } from '../../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 @Component({
     selector: 'winery-capabilities',
@@ -33,7 +33,7 @@ import { ReqCapModalType, ShowReqCapModalEventData } from '../toscatype-table/sh
  */
 export class CapabilitiesComponent implements OnInit, OnChanges, OnDestroy {
 
-    readonly toscaTypes = ToscaTypes;
+    readonly tableTypes = TableType;
 
     @Output() toggleModalHandler: EventEmitter<any>;
     @Input() readonly: boolean;
