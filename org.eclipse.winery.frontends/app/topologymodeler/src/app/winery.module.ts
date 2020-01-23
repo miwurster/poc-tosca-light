@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -64,6 +64,7 @@ import { ResizableModule } from 'angular-resizable-element';
 import { OverlayComponent } from './overlay/overlay.component';
 import { LiveModelingModalBuildplanComponent } from './live-modeling-modal/live-modeling-modal-buildplan/live-modeling-modal-buildplan.component';
 import { LiveModelingModalConfirmComponent } from './live-modeling-modal/live-modeling-modal-confirm/live-modeling-modal-confirm.component';
+import { EdmmTransformationCheckComponent } from './edmmTransformationCheck/edmmTransformationCheck.component';
 
 @NgModule({
     declarations: [
@@ -79,7 +80,8 @@ import { LiveModelingModalConfirmComponent } from './live-modeling-modal/live-mo
         LiveModelingModalComponent,
         LiveModelingModalBuildplanComponent,
         LiveModelingModalConfirmComponent,
-        OverlayComponent
+        OverlayComponent,
+        EdmmTransformationCheckComponent,
     ],
     exports: [WineryComponent],
     imports: [

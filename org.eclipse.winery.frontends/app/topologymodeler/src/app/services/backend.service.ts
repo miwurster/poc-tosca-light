@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright(c) 2018-2019 Contributors to the Eclipse Foundation
+ * Copyright(c) 2018-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -271,7 +271,7 @@ export class BackendService {
     /**
      * Saves the topologyTemplate back to the repository
      */
-    saveTopologyTemplate(topologyTemplate: any): Observable<HttpResponse<string>> {
+    saveTopologyTemplate(topologyTemplate: TTopologyTemplate): Observable<HttpResponse<string>> {
         if (this.configuration) {
             const topologyToBeSaved = this.prepareTopologyTemplateForExport(topologyTemplate);
             const headers = new HttpHeaders().set('Content-Type', 'application/json');
@@ -308,18 +308,14 @@ export class BackendService {
             documentation: [],
             any: [],
             otherAttributes: {},
-            relationshipTemplates: topologyTemplate.relationshipTemplates,
-            nodeTemplates: topologyTemplate.nodeTemplates
+            relationshipTemplates: topologyTemplate.relationshipTemplates.map(relationship => {
+                delete relationship.state;
+            }),
+            // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
+            nodeTemplates: topologyTemplate.nodeTemplates.map(nodeTemplate => {
+                nodeTemplate.deleteStateAndVisuals();
+            })
         };
-
-        topologySkeleton.relationshipTemplates.map(relationship => {
-            delete relationship.state;
-        });
-
-        topologySkeleton.nodeTemplates.map(nodeTemplate => {
-            delete nodeTemplate.visuals;
-            delete nodeTemplate._state;
-        });
 
         return topologySkeleton;
     }
