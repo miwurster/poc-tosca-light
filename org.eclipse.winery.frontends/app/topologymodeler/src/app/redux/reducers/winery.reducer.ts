@@ -17,7 +17,8 @@ import {
     DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
     DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
     SaveRelationshipAction, SendCurrentNodeIdAction, SendLiveModelingSidebarOpenedAction, SendPaletteOpenedAction, SetCababilityAction,
-    SetDeploymentArtifactAction, SetNodeVisuals, SetOverlayContentAction, SetOverlayVisibilityAction, SetPolicyAction, SetPropertyAction, SetRequirementAction,
+    SetDeploymentArtifactAction, SetNodePropertyValidityAction, SetNodeVisuals, SetOverlayContentAction, SetOverlayVisibilityAction, SetPolicyAction,
+    SetPropertyAction, SetRequirementAction,
     SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
     UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
 } from '../actions/winery.actions';
@@ -37,6 +38,7 @@ export interface WineryState {
     liveModelingSidebarOpenedState: boolean;
     overlayState: any;
     unsavedChanges: boolean;
+    nodePropertiesValidity: any;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -67,7 +69,8 @@ export const INITIAL_WINERY_STATE: WineryState = {
         content: '',
         visible: false
     },
-    unsavedChanges: false
+    unsavedChanges: false,
+    nodePropertiesValidity: {}
 };
 
 /**
@@ -76,28 +79,31 @@ export const INITIAL_WINERY_STATE: WineryState = {
 export const WineryReducer =
     function (lastState: WineryState = INITIAL_WINERY_STATE, action: Action): WineryState {
         switch (action.type) {
-            case WineryActions.SEND_PALETTE_OPENED:
+            case WineryActions.SEND_PALETTE_OPENED: {
                 const paletteOpened: boolean = (<SendPaletteOpenedAction>action).paletteOpened;
 
                 return <WineryState>{
                     ...lastState,
                     currentPaletteOpenedState: paletteOpened
                 };
-            case WineryActions.HIDE_NAVBAR_AND_PALETTE:
+            }
+            case WineryActions.HIDE_NAVBAR_AND_PALETTE: {
                 const hideNavBarAndPalette: boolean = (<HideNavBarAndPaletteAction>action).hideNavBarAndPalette;
 
                 return <WineryState>{
                     ...lastState,
                     hideNavBarAndPaletteState: hideNavBarAndPalette
                 };
-            case WineryActions.OPEN_SIDEBAR:
+            }
+            case WineryActions.OPEN_SIDEBAR: {
                 const newSidebarData: any = (<SidebarStateAction>action).sidebarContents;
 
                 return <WineryState>{
                     ...lastState,
                     sidebarContents: newSidebarData
                 };
-            case WineryActions.CHANGE_MIN_INSTANCES:
+            }
+            case WineryActions.CHANGE_MIN_INSTANCES: {
                 const sideBarNodeId: any = (<SidebarMinInstanceChanges>action).minInstances.id;
                 const minInstances: any = (<SidebarMinInstanceChanges>action).minInstances.count;
                 const indexChangeMinInstances = lastState.currentJsonTopology.nodeTemplates.map(el => el.id).indexOf(sideBarNodeId);
@@ -112,7 +118,8 @@ export const WineryReducer =
                         )
                     }
                 };
-            case WineryActions.CHANGE_MAX_INSTANCES:
+            }
+            case WineryActions.CHANGE_MAX_INSTANCES: {
                 const sideBarNodeId2: any = (<SidebarMaxInstanceChanges>action).maxInstances.id;
                 const maxInstances: any = (<SidebarMaxInstanceChanges>action).maxInstances.count;
                 const indexChangeMaxInstances = lastState.currentJsonTopology.nodeTemplates
@@ -128,7 +135,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.INC_MIN_INSTANCES:
+            }
+            case WineryActions.INC_MIN_INSTANCES: {
                 const id_incMinInstances: any = (<IncMinInstances>action).minInstances.id;
                 const indexIncMinInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_incMinInstances);
@@ -145,7 +153,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.DEC_MIN_INSTANCES:
+            }
+            case WineryActions.DEC_MIN_INSTANCES: {
                 const id_decMinInstances: any = (<DecMinInstances>action).minInstances.id;
                 const indexDecMinInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_decMinInstances);
@@ -162,7 +171,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.INC_MAX_INSTANCES:
+            }
+            case WineryActions.INC_MAX_INSTANCES: {
                 const id_incMaxInstances: any = (<IncMaxInstances>action).maxInstances.id;
                 const indexIncMaxInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_incMaxInstances);
@@ -179,7 +189,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.DEC_MAX_INSTANCES:
+            }
+            case WineryActions.DEC_MAX_INSTANCES: {
                 const id_decMaxInstances: any = (<DecMaxInstances>action).maxInstances.id;
                 const indexDecMaxInstances = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(id_decMaxInstances);
@@ -196,7 +207,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SET_REQUIREMENT:
+            }
+            case WineryActions.SET_REQUIREMENT: {
                 const newRequirement: any = (<SetRequirementAction>action).nodeRequirement;
 
                 return <WineryState>{
@@ -212,7 +224,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SET_PROPERTY:
+            }
+            case WineryActions.SET_PROPERTY: {
                 const newProperty: any = (<SetPropertyAction>action).nodeProperty;
 
                 return <WineryState>{
@@ -227,7 +240,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SET_CAPABILITY:
+            }
+            case WineryActions.SET_CAPABILITY: {
                 const newCapability: any = (<SetCababilityAction>action).nodeCapability;
 
                 return <WineryState>{
@@ -243,7 +257,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SET_DEPLOYMENT_ARTIFACT:
+            }
+            case WineryActions.SET_DEPLOYMENT_ARTIFACT: {
                 const newDepArt: any = (<SetDeploymentArtifactAction>action).nodeDeploymentArtifact;
                 const newDeploymentArtifact: TDeploymentArtifact = newDepArt.newDeploymentArtifact;
                 const indexOfNodeDepArt = lastState.currentJsonTopology.nodeTemplates
@@ -272,7 +287,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.DELETE_DEPLOYMENT_ARTIFACT:
+            }
+            case WineryActions.DELETE_DEPLOYMENT_ARTIFACT: {
                 const deletedDeploymentArtifact: any = (<DeleteDeploymentArtifactAction>action).nodeDeploymentArtifact.deletedDeploymentArtifact;
                 const indexOfNodeWithDeletedDeploymentArtifact = lastState.currentJsonTopology.nodeTemplates
                     .map((node) => {
@@ -297,8 +313,8 @@ export const WineryReducer =
                             )
                     }
                 };
-
-            case WineryActions.SET_POLICY:
+            }
+            case WineryActions.SET_POLICY: {
                 const newPolicy: any = (<SetPolicyAction>action).nodePolicy;
                 const policy = newPolicy.newPolicy;
                 const indexOfNodePolicy = lastState.currentJsonTopology.nodeTemplates
@@ -327,7 +343,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SET_TARGET_LOCATION:
+            }
+            case WineryActions.SET_TARGET_LOCATION: {
                 const newTargetLocation: any = (<SetTargetLocation>action).nodeTargetLocation;
 
                 return <WineryState>{
@@ -341,7 +358,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.DELETE_POLICY:
+            }
+            case WineryActions.DELETE_POLICY: {
                 const deletedPolicy: any = (<DeletePolicyAction>action).nodePolicy.deletedPolicy;
                 const indexOfNodeWithDeletedPolicy = lastState.currentJsonTopology.nodeTemplates
                     .map((node) => {
@@ -366,7 +384,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.CHANGE_NODE_NAME:
+            }
+            case WineryActions.CHANGE_NODE_NAME: {
                 const newNodeName: any = (<SidebarNodeNamechange>action).nodeNames;
                 const indexChangeNodeName = lastState.currentJsonTopology.nodeTemplates
                     .map(el => el.id).indexOf(newNodeName.id);
@@ -382,7 +401,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.UPDATE_NODE_COORDINATES:
+            }
+            case WineryActions.UPDATE_NODE_COORDINATES: {
                 const currentNodeCoordinates: any = (<UpdateNodeCoordinatesAction>action).otherAttributes;
                 const nodeId = currentNodeCoordinates.id;
                 const otherAttributes = {
@@ -403,7 +423,8 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SAVE_NODE_TEMPLATE :
+            }
+            case WineryActions.SAVE_NODE_TEMPLATE : {
                 const newNode: TNodeTemplate = (<SaveNodeTemplateAction>action).nodeTemplate;
 
                 return <WineryState>{
@@ -413,7 +434,8 @@ export const WineryReducer =
                         nodeTemplates: [...lastState.currentJsonTopology.nodeTemplates, newNode]
                     }
                 };
-            case WineryActions.SAVE_RELATIONSHIP :
+            }
+            case WineryActions.SAVE_RELATIONSHIP : {
                 const newRelationship: TRelationshipTemplate = (<SaveRelationshipAction>action).relationshipTemplate;
 
                 return <WineryState>{
@@ -423,7 +445,8 @@ export const WineryReducer =
                         relationshipTemplates: [...lastState.currentJsonTopology.relationshipTemplates, newRelationship]
                     }
                 };
-            case WineryActions.DELETE_NODE_TEMPLATE:
+            }
+            case WineryActions.DELETE_NODE_TEMPLATE: {
                 const deletedNodeId: string = (<DeleteNodeAction>action).nodeTemplateId;
 
                 return <WineryState>{
@@ -436,7 +459,8 @@ export const WineryReducer =
                                 relationshipTemplate.targetElement.ref !== deletedNodeId)
                     }
                 };
-            case WineryActions.DELETE_RELATIONSHIP_TEMPLATE:
+            }
+            case WineryActions.DELETE_RELATIONSHIP_TEMPLATE: {
                 const deletedRelNodeId: string = (<DeleteRelationshipAction>action).nodeTemplateId;
 
                 return <WineryState>{
@@ -447,7 +471,8 @@ export const WineryReducer =
                             relationshipTemplate => relationshipTemplate.id !== deletedRelNodeId)
                     }
                 };
-            case WineryActions.UPDATE_REL_DATA:
+            }
+            case WineryActions.UPDATE_REL_DATA: {
                 const relData: any = (<UpdateRelationshipNameAction>action).relData;
                 const indexRel = lastState.currentJsonTopology.relationshipTemplates
                     .map(rel => rel.id).indexOf(relData.id);
@@ -463,28 +488,32 @@ export const WineryReducer =
                             )
                     }
                 };
-            case WineryActions.SEND_CURRENT_NODE_ID :
+            }
+            case WineryActions.SEND_CURRENT_NODE_ID : {
                 const currentNodeData: string = (<SendCurrentNodeIdAction>action).currentNodeData;
 
                 return <WineryState>{
                     ...lastState,
                     currentNodeData: currentNodeData
                 };
-            case WineryActions.SET_NODE_VISUALS:
+            }
+            case WineryActions.SET_NODE_VISUALS: {
                 const visuals: Visuals[] = (<SetNodeVisuals>action).visuals;
 
                 return {
                     ...lastState,
                     nodeVisuals: visuals
                 };
-            case WineryActions.SEND_LIVE_MODELING_SIDEBAR_OPENED:
+            }
+            case WineryActions.SEND_LIVE_MODELING_SIDEBAR_OPENED: {
                 const sidebarOpened: boolean = (<SendLiveModelingSidebarOpenedAction>action).sidebarOpened;
 
                 return <WineryState>{
                     ...lastState,
                     liveModelingSidebarOpenedState: sidebarOpened
                 };
-            case WineryActions.SET_OVERLAY_CONTENT:
+            }
+            case WineryActions.SET_OVERLAY_CONTENT: {
                 const overlayContent: string = (<SetOverlayContentAction>action).content;
 
                 return {
@@ -494,7 +523,8 @@ export const WineryReducer =
                         content: overlayContent
                     }
                 };
-            case WineryActions.SET_OVERLAY_VISIBILITY:
+            }
+            case WineryActions.SET_OVERLAY_VISIBILITY: {
                 const overlayVisible: boolean = (<SetOverlayVisibilityAction>action).visible;
 
                 return {
@@ -504,16 +534,31 @@ export const WineryReducer =
                         visible: overlayVisible
                     }
                 };
-            case WineryActions.SAVE_TOPOLOGY_TEMPLATE:
+            }
+            case WineryActions.SAVE_TOPOLOGY_TEMPLATE: {
                 return {
-                  ...lastState,
-                  lastSavedJsonTopology: JSON.parse(JSON.stringify(lastState.currentJsonTopology))
+                    ...lastState,
+                    lastSavedJsonTopology: JSON.parse(JSON.stringify(lastState.currentJsonTopology))
                 };
-            case WineryActions.CHECK_FOR_UNSAVED_CHANGES:
+            }
+            case WineryActions.CHECK_FOR_UNSAVED_CHANGES: {
                 return {
                     ...lastState,
                     unsavedChanges: TopologyTemplateUtil.hasTopologyTemplateChanged(lastState.currentJsonTopology, lastState.lastSavedJsonTopology)
                 };
+            }
+            case WineryActions.SET_NODE_PROPERTY_VALIDITY: {
+                const nodeId = (<SetNodePropertyValidityAction>action).nodeId;
+                const invalid = (<SetNodePropertyValidityAction>action).invalid;
+
+                return {
+                    ...lastState,
+                    nodePropertiesValidity: {
+                        ...lastState.nodePropertiesValidity,
+                        [nodeId]: invalid
+                    }
+                };
+            }
             default:
                 return <WineryState>lastState;
         }

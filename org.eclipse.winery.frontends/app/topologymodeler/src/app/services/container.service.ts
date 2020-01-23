@@ -286,11 +286,11 @@ export class ContainerService {
             )
         );
     }
-    
+
     public getServiceTemplateInstanceBuildPlanParameters(): Observable<Array<InputParameter>> {
         return this.getServiceTemplateInstance().pipe(
-          concatMap(resp => this.http.get<PlanInstance>(resp._links['build_plan_instance'].href, this.headerAcceptJSON)),
-          map(resp => resp.inputs.filter(input => this.hidden_input_parameters.indexOf(input.name) === -1))  
+            concatMap(resp => this.http.get<PlanInstance>(resp._links['build_plan_instance'].href, this.headerAcceptJSON)),
+            map(resp => resp.inputs.filter(input => this.hidden_input_parameters.indexOf(input.name) === -1))
         );
     }
 

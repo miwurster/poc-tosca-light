@@ -15,7 +15,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
     subscriptions: Array<Subscription> = [];
 
     constructor(
-        private ngRedux: NgRedux<IWineryState>,) {
+        private ngRedux: NgRedux<IWineryState>) {
 
         this.subscriptions.push(
             this.ngRedux.select(state => state.wineryState.overlayState)

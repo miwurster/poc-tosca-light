@@ -29,6 +29,7 @@ import { WineryActions } from '../redux/actions/winery.actions';
 import { BsModalService } from 'ngx-bootstrap';
 import { LiveModelingModalBuildplanComponent } from '../live-modeling-modal/live-modeling-modal-buildplan/live-modeling-modal-buildplan.component';
 import { Subscription } from 'rxjs';
+import { LiveModelingModalConfirmComponent } from '../live-modeling-modal/live-modeling-modal-confirm/live-modeling-modal-confirm.component';
 
 @Injectable()
 export class LiveModelingService {
@@ -64,15 +65,6 @@ export class LiveModelingService {
 
         this.ngRedux.select(state => state.liveModelingState.state)
             .subscribe(state => this.performAction(state));
-
-        // this.ngRedux.select(state => {
-        //     console.log('Checking whether topolopgy updated');
-        //     return TopologyTemplateUtil.didTopologyTemplateChanged(state.wineryState.currentJsonTopology, state.wineryState.lastSavedJsonTopology);
-        // }).subscribe(topologyChanged => {
-        //     if (topologyChanged) {
-        //         console.log('Topology changed!');
-        //     }
-        // });
 
         this.ngRedux.select(state => state.wineryState.currentJsonTopology)
             .subscribe(topologyTemplate => {
@@ -117,7 +109,7 @@ export class LiveModelingService {
                 this.disable();
                 break;
             case LiveModelingStates.INIT:
-                this.init();
+                this.checkNodePropertiesBeforeContinue(this.init.bind(this));
                 break;
             case LiveModelingStates.DEPLOY:
                 this.deploy();
@@ -138,6 +130,28 @@ export class LiveModelingService {
                 this.ngRedux.dispatch(this.wineryActions.setOverlayVisibility(false));
                 break;
             default:
+        }
+    }
+
+    private checkNodePropertiesBeforeContinue(callback) {
+        if (this.ngRedux.getState().topologyRendererState.buttonsState.checkNodePropertiesButton) {
+            const nodePropertyInvalidity = this.ngRedux.getState().wineryState.nodePropertiesValidity;
+            let invalid = false;
+            Object.keys(nodePropertyInvalidity).forEach(key => {
+                invalid = invalid || nodePropertyInvalidity[key];
+            });
+            if (invalid) {
+                const initialState = {
+                    title: 'Information',
+                    content: 'There are errors within the current configuration. Do you want to continue anyway?',
+                    callback: callback
+                };
+                this.modalService.show(LiveModelingModalConfirmComponent, { initialState, ignoreBackdropClick: true });
+            } else {
+                callback();
+            }
+        } else {
+            callback();
         }
     }
 

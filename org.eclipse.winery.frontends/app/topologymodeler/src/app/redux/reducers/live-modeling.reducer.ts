@@ -45,7 +45,7 @@ export const INITIAL_LIVE_MODELING_STATE: LiveModelingState = {
     nodeTemplatesData: <LiveModelingNodeTemplateData[]>[],
     currentServiceTemplateInstanceState: ServiceTemplateInstanceStates.INITIAL,
     buildPlanInputParameters: <InputParameter[]>[],
-    settings: {timeout: 60000, interval: 1000}
+    settings: { timeout: 60000, interval: 1000 }
 };
 
 export const LiveModelingReducer =
@@ -107,7 +107,7 @@ export const LiveModelingReducer =
                         nextState = state;
                     }
                 }
-                
+
                 if (!nextState) {
                     nextState = LiveModelingStates.ERROR;
                 }
@@ -202,11 +202,11 @@ export const LiveModelingReducer =
             }
             case LiveModelingActions.SET_SETTINGS: {
                 const settings = (<SetSettingsAction>action).settings;
-                
+
                 return <LiveModelingState>{
                     ...lastState,
                     settings: settings
-                }
+                };
             }
             case LiveModelingActions.DISABLE_LIVE_MODELING: {
                 return <LiveModelingState>{
@@ -219,7 +219,7 @@ export const LiveModelingReducer =
                     nodeTemplatesData: <LiveModelingNodeTemplateData[]>[],
                     currentServiceTemplateInstanceState: ServiceTemplateInstanceStates.INITIAL,
                     buildPlanInputParameters: <InputParameter[]>[],
-                }
+                };
             }
             default: {
                 return <LiveModelingState>lastState;

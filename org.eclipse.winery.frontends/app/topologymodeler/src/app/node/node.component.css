@@ -211,3 +211,8 @@ button.btn.btn-sm.btn-outline-secondary:hover, button.btn.btn-sm.btn-outline-sec
     cursor: pointer;
     font-size: 10px;
 }
+
+.has-error {
+    border: 1px solid red;
+    border-radius: 0.25rem;
+}

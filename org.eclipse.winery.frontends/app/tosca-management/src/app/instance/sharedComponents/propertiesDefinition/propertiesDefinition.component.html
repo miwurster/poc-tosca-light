@@ -38,7 +38,9 @@
             <label for="customkv" class="cursorpointer">Custom key/value pairs</label>
         </div>
         <div class="right">
-            <button class="btn btn-primary" name="save" [disabled]="!sharedData?.currentVersion?.editable" (click)="save()">Save</button>
+            <button class="btn btn-primary" name="save" [disabled]="!sharedData?.currentVersion?.editable"
+                    (click)="save()">Save
+            </button>
         </div>
     </div>
     <div>
@@ -122,21 +124,41 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label" for="propPattern">Pattern</label>
+                <label class="control-label" for="propDescription">Description (optional)</label>
+                <input #propDescription="ngModel"
+                       id="propDescription"
+                       class="form-control"
+                       type="text"
+                       name="description"
+                       autocomplete=off
+                       placeholder="(empty)"
+                       [(ngModel)]="newProperty.description"/>
+            </div>
+
+            <label>
+                <input style="vertical-align: -2px" type="checkbox" id="includePattern" name="includePattern"
+                       [(ngModel)]="includePattern">
+                Include Pattern
+            </label>
+            <div class="form-group" [hidden]="!includePattern">
+                <label class="control-label" for="propPattern">Pattern (Regex)</label>
                 <input #propPattern="ngModel"
                        id="propPattern"
                        class="form-control"
                        type="text"
                        name="pattern"
                        autocomplete=off
+                       placeholder="(empty)"
                        [(ngModel)]="newProperty.pattern"/>
             </div>
+
         </form>
     </winery-modal-body>
-    <winery-modal-footer (onOk)="addProperty(selectProperty.value, propName.value, propPattern.value); addPropertyFrom.reset();"
-                         [closeButtonLabel]="'Cancel'"
-                         [okButtonLabel]="'Add'"
-                         [disableOkButton]="!addPropertyFrom?.form.valid">
+    <winery-modal-footer
+        (onOk)="addProperty(selectProperty.value, propName.value, propDescription.value,includePattern ? propPattern.value : null); addPropertyFrom.reset();"
+        [closeButtonLabel]="'Cancel'"
+        [okButtonLabel]="'Add'"
+        [disableOkButton]="!addPropertyFrom?.form.valid">
     </winery-modal-footer>
 </winery-modal>
 

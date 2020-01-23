@@ -18,7 +18,7 @@
      [style.paddingTop.px]="this.top">
 
     <button [@paletteButtonState]="paletteButtonRootState" id="palette_root" class="btn btn-primary" type="button"
-            (click)="toggleRootState()" style="transform: rotate(-90deg) translateY(-135px) translateX(-135px)"
+            (click)="toggleRootState()"
             #toggleButton>
         <div *ngIf="paletteRootState === 'shrunk'">Open Palette</div>
         <div *ngIf="paletteRootState === 'extended'">Hide Palette</div>

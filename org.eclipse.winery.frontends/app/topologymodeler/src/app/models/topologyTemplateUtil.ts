@@ -240,7 +240,7 @@ export class TopologyTemplateUtil {
                 ? Object.keys(o1).length === Object.keys(o2).length
                 && Object.keys(o1).every(p => objectsEqual(o1[p], o2[p]))
                 : JSON.stringify(o1) === JSON.stringify(o2); // JSON.stringify so we also cover
-        
+
         if (currentTopology.nodeTemplates.length !== lastSavedTopology.nodeTemplates.length ||
             currentTopology.relationshipTemplates.length !== lastSavedTopology.relationshipTemplates.length) {
             return true;
@@ -276,7 +276,7 @@ export class TopologyTemplateUtil {
             }
         }
         for (const currentRelationshipTemplate of currentTopology.relationshipTemplates) {
-            const lastSavedRelationshipTemplate = lastSavedTopology.relationshipTemplates.find(relationshipTemplate => 
+            const lastSavedRelationshipTemplate = lastSavedTopology.relationshipTemplates.find(relationshipTemplate =>
                 relationshipTemplate.sourceElement.ref === currentRelationshipTemplate.sourceElement.ref &&
                 relationshipTemplate.targetElement.ref === currentRelationshipTemplate.targetElement.ref &&
                 relationshipTemplate.type === currentRelationshipTemplate.type

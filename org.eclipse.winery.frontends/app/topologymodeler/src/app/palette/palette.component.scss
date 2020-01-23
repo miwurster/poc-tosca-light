@@ -13,16 +13,15 @@
  ********************************************************************************/
 
 #palette_root {
-    border-radius: 1px;
+    min-height: 35px;
     box-shadow: initial;
     /*background-color: #424242;*/
     background-color: #dfdfdf;
     border: 1px solid #c0c0c0;
     color: black;
     min-width: 300px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
     font-size: small;
+    border-radius: 0 1px 1px 0;
 }
 
 #paletteBody {

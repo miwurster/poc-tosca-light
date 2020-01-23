@@ -54,16 +54,16 @@ import { PlaceComponentsService } from './services/placement.service';
 import { LiveModelingService } from './services/live-modeling.service';
 import { ContainerService } from './services/container.service';
 import { LiveModelingSidebarComponent } from './live-modeling-sidebar/live-modeling-sidebar.component';
-import { ProgressbarModule, TooltipModule } from 'ngx-bootstrap';
+import { ModalModule, ProgressbarModule, TooltipModule } from 'ngx-bootstrap';
 import { LiveModelingModalComponent } from './live-modeling-modal/live-modeling-modal.component';
 import { ReqCapRelationshipService } from './services/req-cap-relationship.service';
 import { LiveModelingActions } from './redux/actions/live-modeling.actions';
 import { AngularResizedEventModule } from 'angular-resize-event';
 import { NavbarComponent } from './navbar/navbar.component';
 import { ResizableModule } from 'angular-resizable-element';
-import { PropertyValidatorService } from './services/property-validator.service';
 import { OverlayComponent } from './overlay/overlay.component';
 import { LiveModelingModalBuildplanComponent } from './live-modeling-modal/live-modeling-modal-buildplan/live-modeling-modal-buildplan.component';
+import { LiveModelingModalConfirmComponent } from './live-modeling-modal/live-modeling-modal-confirm/live-modeling-modal-confirm.component';
 
 @NgModule({
     declarations: [
@@ -78,6 +78,7 @@ import { LiveModelingModalBuildplanComponent } from './live-modeling-modal/live-
         LiveModelingSidebarComponent,
         LiveModelingModalComponent,
         LiveModelingModalBuildplanComponent,
+        LiveModelingModalConfirmComponent,
         OverlayComponent
     ],
     exports: [WineryComponent],
@@ -109,7 +110,8 @@ import { LiveModelingModalBuildplanComponent } from './live-modeling-modal/live-
         ProgressbarModule.forRoot(),
         TooltipModule.forRoot(),
         ResizableModule,
-        AngularResizedEventModule
+        AngularResizedEventModule,
+        ModalModule.forRoot()
     ],
     providers: [
         // { provide: ToastOptions, useClass: WineryCustomOption },
@@ -130,11 +132,10 @@ import { LiveModelingModalBuildplanComponent } from './live-modeling-modal/live-
         PlaceComponentsService,
         ContainerService,
         LiveModelingService,
-        ReqCapRelationshipService,
-        PropertyValidatorService
+        ReqCapRelationshipService
     ],
     bootstrap: [WineryComponent],
-    entryComponents: [LiveModelingModalComponent, LiveModelingModalBuildplanComponent]
+    entryComponents: [LiveModelingModalComponent, LiveModelingModalBuildplanComponent, LiveModelingModalConfirmComponent]
 })
 export class WineryModule {
     constructor(ngRedux: NgRedux<IWineryState>,

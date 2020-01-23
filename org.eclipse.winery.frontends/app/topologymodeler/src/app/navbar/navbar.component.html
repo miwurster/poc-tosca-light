@@ -17,7 +17,7 @@
         <h3 style="margin-right: .5em;">winery</h3>
         <button *ngIf="!readonly"
                 class="btn btn-sm align-middle btn-success" type="button"
-                (click)="saveTopologyTemplateToRepository()">Save<span *ngIf="unsavedChanges">*</span>
+                (click)="checkNodePropertiesBeforeContinue(saveTopologyTemplateToRepository.bind(this))">Save<span *ngIf="unsavedChanges">*</span>
         </button>
 
         <button class="btn btn-sm align-middle btn-info button-group" (click)="openManagementUi()">
@@ -208,9 +208,10 @@
         </div>
         <div class="btn-group button-group"
              data-toggle="buttons">
-            <button class="btn btn-sm align-middle dark-button-style" id="test"
-                    (click)="toggleButton($event)">
-                Test
+            <button class="btn btn-sm align-middle dark-button-style" id="checkNodeProperties"
+                    (click)="toggleButton($event)"
+                    [style.background-color]="getStyle(navbarButtonsState.buttonsState.checkNodePropertiesButton)">
+                Check Node Properties
             </button>
         </div>
         

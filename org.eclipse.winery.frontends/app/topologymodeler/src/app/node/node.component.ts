@@ -35,6 +35,7 @@ import { VersionsComponent } from './versions/versions.component';
 import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
 import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
+import { PropertiesComponent } from '../properties/properties.component';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -97,6 +98,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     @Output() sendNodeData: EventEmitter<any>;
 
     @ViewChild('versionModal') versionModal: VersionsComponent;
+    @ViewChild('nodeProperties') nodePropertiesComponent: PropertiesComponent;
     previousPosition: any;
     currentPosition: any;
     nodeRef: ComponentRef<Component>;
@@ -111,6 +113,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     newerVersions: WineryVersion[];
     newerVersionExist: boolean;
     newVersionElement: VersionElement;
+
+    nodePropertiesInvalid = false;
 
     constructor(private zone: NgZone,
                 private $ngRedux: NgRedux<IWineryState>,
@@ -482,5 +486,9 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     public openVersionModal() {
         this.versionModal.open();
+    }
+
+    private getPropertyErrors(invalid: boolean) {
+        this.nodePropertiesInvalid = invalid;
     }
 }

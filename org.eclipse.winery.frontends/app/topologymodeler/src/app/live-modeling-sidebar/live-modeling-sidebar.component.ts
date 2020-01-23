@@ -276,7 +276,7 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
         this.openModal(templateRef);
         this.selectedServiceTemplateInstanceId = this.serviceTemplateInstanceId;
         this.containerService.fetchRunningServiceTemplateInstances(
-            this.ngRedux.getState().liveModelingState.containerUrl, 
+            this.ngRedux.getState().liveModelingState.containerUrl,
             this.ngRedux.getState().liveModelingState.currentCsarId
         ).subscribe(resp => {
             this.serviceTemplateInstanceIds = resp.filter(id => id !== this.serviceTemplateInstanceId);
@@ -286,14 +286,13 @@ export class LiveModelingSidebarComponent implements OnInit, AfterViewInit, OnDe
     selectServiceTemplateId(id: string) {
         this.selectedServiceTemplateInstanceId = id;
     }
-    
+
     switchServiceTemplateInstance() {
         this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(this.selectedServiceTemplateInstanceId));
         this.ngRedux.dispatch(this.liveModelingActions.clearLogs());
         this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
         this.dismissModal();
     }
-    
 
     redeploy() {
         this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.REDEPLOY));

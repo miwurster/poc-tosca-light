@@ -40,6 +40,7 @@ export interface TopologyRendererState {
         determineFreezableComponentsButton?: boolean;
         cleanFreezableComponentsButton?: boolean;
         placeComponentsButton?: boolean;
+        checkNodePropertiesButton?: boolean;
     };
     nodesToSelect?: string[];
 }
@@ -69,6 +70,7 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
         determineFreezableComponentsButton: false,
         cleanFreezableComponentsButton: false,
         placeComponentsButton: false,
+        checkNodePropertiesButton: false
     }
 };
 /**
@@ -77,7 +79,7 @@ export const INITIAL_TOPOLOGY_RENDERER_STATE: TopologyRendererState = {
 export const TopologyRendererReducer =
     function (lastState: TopologyRendererState = INITIAL_TOPOLOGY_RENDERER_STATE, action: Action): TopologyRendererState {
         switch (action.type) {
-            case TopologyRendererActions.TOGGLE_POLICIES:
+            case TopologyRendererActions.TOGGLE_POLICIES: {
                 // console.log({...lastState, buttonsState: { ...lastState.buttonsState, policiesButton:
                 // !lastState.buttonsState.policiesButton}});
                 return {
@@ -87,7 +89,8 @@ export const TopologyRendererReducer =
                         policiesButton: !lastState.buttonsState.policiesButton
                     }
                 };
-            case TopologyRendererActions.TOGGLE_TARGET_LOCATIONS:
+            }
+            case TopologyRendererActions.TOGGLE_TARGET_LOCATIONS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -95,7 +98,8 @@ export const TopologyRendererReducer =
                         targetLocationsButton: !lastState.buttonsState.targetLocationsButton
                     }
                 };
-            case TopologyRendererActions.TOGGLE_PROPERTIES:
+            }
+            case TopologyRendererActions.TOGGLE_PROPERTIES: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -103,7 +107,8 @@ export const TopologyRendererReducer =
                         propertiesButton: !lastState.buttonsState.propertiesButton
                     }
                 };
-            case TopologyRendererActions.TOGGLE_REQUIREMENTS_CAPABILITIES:
+            }
+            case TopologyRendererActions.TOGGLE_REQUIREMENTS_CAPABILITIES: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -111,7 +116,8 @@ export const TopologyRendererReducer =
                         requirementsCapabilitiesButton: !lastState.buttonsState.requirementsCapabilitiesButton
                     }
                 };
-            case TopologyRendererActions.TOGGLE_DEPLOYMENT_ARTIFACTS:
+            }
+            case TopologyRendererActions.TOGGLE_DEPLOYMENT_ARTIFACTS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -119,7 +125,8 @@ export const TopologyRendererReducer =
                         deploymentArtifactsButton: !lastState.buttonsState.deploymentArtifactsButton
                     }
                 };
-            case TopologyRendererActions.TOGGLE_IDS:
+            }
+            case TopologyRendererActions.TOGGLE_IDS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -127,7 +134,8 @@ export const TopologyRendererReducer =
                         idsButton: !lastState.buttonsState.idsButton
                     }
                 };
-            case TopologyRendererActions.TOGGLE_TYPES:
+            }
+            case TopologyRendererActions.TOGGLE_TYPES: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -135,7 +143,8 @@ export const TopologyRendererReducer =
                         typesButton: !lastState.buttonsState.typesButton
                     }
                 };
-            case TopologyRendererActions.EXECUTE_LAYOUT:
+            }
+            case TopologyRendererActions.EXECUTE_LAYOUT: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -143,7 +152,8 @@ export const TopologyRendererReducer =
                         layoutButton: !lastState.buttonsState.layoutButton
                     }
                 };
-            case TopologyRendererActions.EXECUTE_ALIGN_H:
+            }
+            case TopologyRendererActions.EXECUTE_ALIGN_H: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -151,7 +161,8 @@ export const TopologyRendererReducer =
                         alignHButton: !lastState.buttonsState.alignHButton
                     }
                 };
-            case TopologyRendererActions.EXECUTE_ALIGN_V:
+            }
+            case TopologyRendererActions.EXECUTE_ALIGN_V: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -159,7 +170,8 @@ export const TopologyRendererReducer =
                         alignVButton: !lastState.buttonsState.alignVButton
                     }
                 };
-            case TopologyRendererActions.IMPORT_TOPOLOGY:
+            }
+            case TopologyRendererActions.IMPORT_TOPOLOGY: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -167,7 +179,8 @@ export const TopologyRendererReducer =
                         importTopologyButton: !lastState.buttonsState.importTopologyButton
                     }
                 };
-            case TopologyRendererActions.THREATMODEL_TOPOLOGY:
+            }
+            case TopologyRendererActions.THREATMODEL_TOPOLOGY: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -175,7 +188,8 @@ export const TopologyRendererReducer =
                         threatModelingButton: !lastState.buttonsState.threatModelingButton
                     }
                 };
-            case TopologyRendererActions.SPLIT_TOPOLOGY:
+            }
+            case TopologyRendererActions.SPLIT_TOPOLOGY: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -183,7 +197,8 @@ export const TopologyRendererReducer =
                         splitTopologyButton: !lastState.buttonsState.splitTopologyButton
                     }
                 };
-            case TopologyRendererActions.MATCH_TOPOLOGY:
+            }
+            case TopologyRendererActions.MATCH_TOPOLOGY: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -191,7 +206,8 @@ export const TopologyRendererReducer =
                         matchTopologyButton: !lastState.buttonsState.matchTopologyButton
                     }
                 };
-            case TopologyRendererActions.MATCH_TOPOLOGY:
+            }
+            case TopologyRendererActions.MATCH_TOPOLOGY: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -199,7 +215,8 @@ export const TopologyRendererReducer =
                         matchTopologyButton: !lastState.buttonsState.matchTopologyButton
                     }
                 };
-            case TopologyRendererActions.DETECT_PROBLEMS:
+            }
+            case TopologyRendererActions.DETECT_PROBLEMS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -207,15 +224,17 @@ export const TopologyRendererReducer =
                         problemDetectionButton: !lastState.buttonsState.problemDetectionButton
                     }
                 };
-            case TopologyRendererActions.ENRICH_NODE_TEMPLATES:
+            }
+            case TopologyRendererActions.ENRICH_NODE_TEMPLATES: {
                 return {
                     ...lastState,
                     buttonsState: {
                         ...lastState.buttonsState,
                         enrichmentButton: !lastState.buttonsState.enrichmentButton
-                }
-            };
-            case TopologyRendererActions.SUBSTITUTE_TOPOLOGY:
+                    }
+                };
+            }
+            case TopologyRendererActions.SUBSTITUTE_TOPOLOGY: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -223,7 +242,8 @@ export const TopologyRendererReducer =
                         substituteTopologyButton: !lastState.buttonsState.substituteTopologyButton
                     }
                 };
-            case TopologyRendererActions.REFINE_TOPOLOGY:
+            }
+            case TopologyRendererActions.REFINE_TOPOLOGY: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -231,7 +251,8 @@ export const TopologyRendererReducer =
                         refineTopologyButton: !lastState.buttonsState.refineTopologyButton
                     }
                 };
-            case TopologyRendererActions.REFINE_TOPOLOGY_WITH_TESTS:
+            }
+            case TopologyRendererActions.REFINE_TOPOLOGY_WITH_TESTS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -239,7 +260,8 @@ export const TopologyRendererReducer =
                         refineTopologyWithTestsButton: !lastState.buttonsState.refineTopologyWithTestsButton
                     }
                 };
-            case TopologyRendererActions.HIGHLIGHT_NODES:
+            }
+            case TopologyRendererActions.HIGHLIGHT_NODES: {
                 const data = <HighlightNodesAction>action;
                 if (data.nodesToHighlight) {
                     return {
@@ -250,7 +272,8 @@ export const TopologyRendererReducer =
                     delete lastState.nodesToSelect;
                 }
                 break;
-            case TopologyRendererActions.DETERMINE_STATEFUL_COMPONENTS:
+            }
+            case TopologyRendererActions.DETERMINE_STATEFUL_COMPONENTS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -258,7 +281,8 @@ export const TopologyRendererReducer =
                         determineStatefulComponents: !lastState.buttonsState.determineStatefulComponents
                     }
                 };
-            case TopologyRendererActions.DETERMINE_FREEZABLE_COMPONENTS:
+            }
+            case TopologyRendererActions.DETERMINE_FREEZABLE_COMPONENTS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -266,7 +290,8 @@ export const TopologyRendererReducer =
                         determineFreezableComponentsButton: !lastState.buttonsState.determineFreezableComponentsButton
                     }
                 };
-            case TopologyRendererActions.CLEAN_FREEZABLE_COMPONENTS:
+            }
+            case TopologyRendererActions.CLEAN_FREEZABLE_COMPONENTS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -274,7 +299,8 @@ export const TopologyRendererReducer =
                         cleanFreezableComponentsButton: !lastState.buttonsState.cleanFreezableComponentsButton
                     }
                 };
-            case TopologyRendererActions.PLACE_COMPONENTS:
+            }
+            case TopologyRendererActions.PLACE_COMPONENTS: {
                 return {
                     ...lastState,
                     buttonsState: {
@@ -282,6 +308,16 @@ export const TopologyRendererReducer =
                         placeComponentsButton: !lastState.buttonsState.placeComponentsButton
                     }
                 };
+            }
+            case TopologyRendererActions.TOGGLE_CHECK_NODE_PROPERTIES: {
+                return {
+                    ...lastState,
+                    buttonsState: {
+                        ...lastState.buttonsState,
+                        checkNodePropertiesButton: !lastState.buttonsState.checkNodePropertiesButton
+                    }
+                };
+            }
         }
         return lastState;
     };

@@ -39,27 +39,19 @@ import { BackendService } from '../services/backend.service';
             state('shrunk', style({
                 display: 'none',
                 opacity: '0',
-                height: '*',
             })),
             state('extended', style({
                 display: 'block',
                 opacity: '1',
-                height: '*',
             })),
             transition('shrunk => extended', animate('500ms ease-out')),
             transition('extended => shrunk', animate('50ms ease-out'))
         ]),
         trigger('paletteButtonState', [
             state('left', style({
-                display: 'block',
-                opacity: '1',
-                height: '*',
                 transform: 'rotate(-90deg) translateY(-135px) translateX(-135px)'
             })),
             state('top', style({
-                display: 'block',
-                opacity: '1',
-                height: '*',
                 transform: 'rotate(0deg) translateY(0px) translateX(0px)'
             })),
             transition('left => top', animate('50ms ease-in')),

@@ -49,6 +49,7 @@ export class TopologyRendererActions {
     static DETERMINE_FREEZABLE_COMPONENTS = 'DETERMINE_FREEZABLE_COMPONENTS';
     static CLEAN_FREEZABLE_COMPONENTS = 'CLEAN_FREEZABLE_COMPONENTS';
     static PLACE_COMPONENTS = 'PLACE_COMPONENTS';
+    static TOGGLE_CHECK_NODE_PROPERTIES = 'TOGGLE_CHECK_NODE_PROPERTIES';
 
     togglePolicies(): Action {
         return { type: TopologyRendererActions.TOGGLE_POLICIES };
@@ -149,5 +150,9 @@ export class TopologyRendererActions {
 
     placeComponents(): Action {
         return { type: TopologyRendererActions.PLACE_COMPONENTS };
+    }
+
+    toggleCheckNodeProperties(): Action {
+        return { type: TopologyRendererActions.TOGGLE_CHECK_NODE_PROPERTIES };
     }
 }

@@ -28,7 +28,6 @@ import { LiveModelingStates } from '../../models/enums';
     styleUrls: ['./live-modeling-modal-buildplan.component.css']
 })
 export class LiveModelingModalBuildplanComponent implements OnInit {
-
     fetchingBuildPlanParameters = true;
     requiredBuildPlanParameters: InputParameter[];
 
@@ -38,7 +37,7 @@ export class LiveModelingModalBuildplanComponent implements OnInit {
                 private liveModelingActions: LiveModelingActions,
     ) {
     }
-    
+
     ngOnInit(): void {
         this.fetchingBuildPlanParameters = true;
         this.requiredBuildPlanParameters = [];
@@ -57,7 +56,18 @@ export class LiveModelingModalBuildplanComponent implements OnInit {
     getRequiredBuildPlanParameters(): Observable<Array<InputParameter>> {
         return this.containerService.getRequiredBuildPlanInputParameters();
     }
-    
+
+    disableDeployButton(): boolean {
+        for (let i = 0; i < this.requiredBuildPlanParameters.length; i++) {
+            if (this.requiredBuildPlanParameters[i].value === null ||
+                this.requiredBuildPlanParameters[i].value === undefined ||
+                this.requiredBuildPlanParameters[i].value === '') {
+                return true;
+            }
+        }
+        return false;
+    }
+
     cancel() {
         if (!this.ngRedux.getState().liveModelingState.currentServiceTemplateInstanceId) {
             this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DISABLED));

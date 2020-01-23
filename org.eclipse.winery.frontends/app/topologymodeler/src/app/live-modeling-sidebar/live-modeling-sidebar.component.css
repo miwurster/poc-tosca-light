@@ -22,6 +22,7 @@
 }
 
 #toggleButton {
+    height: 35px;
     transform-origin: top left;
     box-shadow: initial;
     background-color: #4A4A4F;

@@ -130,7 +130,7 @@ export class TopologyRendererComponent implements OnInit, OnDestroy {
         });
 
         this.ngRedux.dispatch(this.actions.setNodeVisuals(this.entityTypes.nodeVisuals));
-        
+
         this.ngRedux.dispatch(this.actions.saveTopologyTemplate());
 
         this.loader.generatedReduxState = true;

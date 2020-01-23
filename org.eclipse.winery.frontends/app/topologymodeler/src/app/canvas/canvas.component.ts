@@ -2249,8 +2249,8 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             }
         });
     }
-    
-    private getNodeEntityType(nodeTemplateId: string): EntityType {
-        return this.entityTypes.unGroupedNodeTypes.find(type => type.id === nodeTemplateId);
+
+    private getNodeEntityType(name: string): EntityType {
+        return this.entityTypes.unGroupedNodeTypes.find(type => type.name === name);
     }
 }

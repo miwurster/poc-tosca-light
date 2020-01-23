@@ -22,6 +22,7 @@ export enum PropertiesDefinitionEnum {
 export class PropertiesDefinitionKVElement {
     key: string = null;
     type: string = null;
+    description: string = null;
     pattern: string = null;
 }
 

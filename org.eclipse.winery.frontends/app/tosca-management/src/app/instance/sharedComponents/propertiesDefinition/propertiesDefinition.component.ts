@@ -48,6 +48,7 @@ export class PropertiesDefinitionComponent implements OnInit {
     columns: Array<WineryTableColumn> = [
         { title: 'Name', name: 'key', sort: true },
         { title: 'Type', name: 'type', sort: true },
+        { title: 'Description', name: 'description', sort: true },
         { title: 'Pattern', name: 'pattern', sort: true },
     ];
     newProperty: PropertiesDefinitionKVElement = new PropertiesDefinitionKVElement();
@@ -56,6 +57,8 @@ export class PropertiesDefinitionComponent implements OnInit {
     @ViewChild('confirmDeleteModal') confirmDeleteModal: ModalDirective;
     @ViewChild('addModal') addModal: ModalDirective;
     @ViewChild('nameInputForm') nameInputForm: ElementRef;
+
+    includePattern = false;
 
     constructor(public sharedData: InstanceService, private service: PropertiesDefinitionService,
                 private notify: WineryNotificationService) {
@@ -228,10 +231,11 @@ export class PropertiesDefinitionComponent implements OnInit {
      * @param propName
      * @param propPattern
      */
-    addProperty(propType: string, propName: string, propPattern: string) {
+    addProperty(propType: string, propName: string, propDescription: string, propPattern: string) {
         this.resourceApiData.winerysPropertiesDefinition.propertyDefinitionKVList.push({
             key: propName,
             type: propType,
+            description: propDescription,
             pattern: propPattern
         });
         this.addModal.hide();

@@ -23,6 +23,7 @@ public class PropertyDefinitionKV implements Serializable {
 
     private String key;
     private String type;
+    private String description;
     private String pattern;
 
     public PropertyDefinitionKV() {
@@ -35,10 +36,11 @@ public class PropertyDefinitionKV implements Serializable {
         this.setType(type);
     }
 
-    public PropertyDefinitionKV(String key, String type, String pattern) {
+    public PropertyDefinitionKV(String key, String type, String description, String pattern) {
         super();
         this.setKey(key);
         this.setType(type);
+        this.setDescription(description);
         this.setPattern(pattern);
     }
 
@@ -63,6 +65,14 @@ public class PropertyDefinitionKV implements Serializable {
         }
         this.type = type;
     }
+    
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getPattern() {
         return this.pattern;
@@ -71,7 +81,7 @@ public class PropertyDefinitionKV implements Serializable {
     public void setPattern(String pattern) {
         this.pattern = pattern;
     }
-
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -79,6 +89,7 @@ public class PropertyDefinitionKV implements Serializable {
         PropertyDefinitionKV that = (PropertyDefinitionKV) o;
         return Objects.equals(key, that.key) &&
             Objects.equals(type, that.type) &&
+            Objects.equals(description, that.description) &&
             Objects.equals(pattern, that.pattern);
     }
 

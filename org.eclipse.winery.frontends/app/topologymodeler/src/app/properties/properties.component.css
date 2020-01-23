@@ -19,3 +19,28 @@ textarea {
     width: 100%;
     overflow: hidden !important;
 }
+
+.kv-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.kv-table td{
+    padding: 2px;
+}
+
+.kv-table .col-key {
+    width: 40%;
+}
+
+.kv-table .col-value {
+    width: 60%;
+}
+
+.has-error {
+    border-color: #ff4a5b;
+}
+
+:host >>> .tooltip {
+    font-size: x-small;
+}
