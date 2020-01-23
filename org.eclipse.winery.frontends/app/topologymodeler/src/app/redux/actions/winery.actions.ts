@@ -201,6 +201,11 @@ export interface SetOverlayVisibilityAction extends Action {
     visible: boolean;
 }
 
+export interface SetNodePropertyValidityAction extends Action {
+    nodeId: string;
+    invalid: boolean;
+}
+
 /**
  * Winery Actions
  */
@@ -242,160 +247,228 @@ export class WineryActions {
 
     static SAVE_TOPOLOGY_TEMPLATE = 'SAVE_TOPOLOGY_TEMPLATE';
     static CHECK_FOR_UNSAVED_CHANGES = 'CHECK_FOR_UNSAVED_CHANGES';
-    static TEST = 'TEST';
+    static SET_NODE_PROPERTY_VALIDITY = 'SET_NODE_PROPERTY_VALIDITY';
 
-    sendPaletteOpened: ActionCreator<SendPaletteOpenedAction> =
-        ((paletteOpened) => ({
+    sendPaletteOpened(paletteOpened: boolean): SendPaletteOpenedAction {
+        return {
             type: WineryActions.SEND_PALETTE_OPENED,
             paletteOpened: paletteOpened
-        }));
-    hideNavBarAndPalette: ActionCreator<HideNavBarAndPaletteAction> =
-        ((hideNavBarAndPalette) => ({
+        };
+    }
+
+    hideNavBarAndPalette(hideNavBarAndPalette: boolean): HideNavBarAndPaletteAction {
+        return {
             type: WineryActions.HIDE_NAVBAR_AND_PALETTE,
             hideNavBarAndPalette: hideNavBarAndPalette
-        }));
-    openSidebar: ActionCreator<SidebarStateAction> =
-        ((newSidebarData) => ({
+        };
+    }
+
+    openSidebar(newSidebarData): SidebarStateAction {
+        return {
             type: WineryActions.OPEN_SIDEBAR,
             sidebarContents: newSidebarData.sidebarContents
-        }));
-    changeNodeName: ActionCreator<SidebarNodeNamechange> =
-        ((nodeNames) => ({
+        };
+    }
+
+    changeNodeName(nodeNames): SidebarNodeNamechange {
+        return {
             type: WineryActions.CHANGE_NODE_NAME,
             nodeNames: nodeNames.nodeNames
-        }));
-    changeMinInstances: ActionCreator<SidebarMinInstanceChanges> =
-        ((minInstances) => ({
+        };
+    }
+
+    changeMinInstances(minInstances): SidebarMinInstanceChanges {
+        return {
             type: WineryActions.CHANGE_MIN_INSTANCES,
             minInstances: minInstances.minInstances
-        }));
-    changeMaxInstances: ActionCreator<SidebarMaxInstanceChanges> =
-        ((maxInstances) => ({
+        };
+    }
+
+    changeMaxInstances(maxInstances): SidebarMaxInstanceChanges {
+        return {
             type: WineryActions.CHANGE_MAX_INSTANCES,
             maxInstances: maxInstances.maxInstances
-        }));
-    incMinInstances: ActionCreator<IncMinInstances> =
-        ((minInstances) => ({
+        };
+    }
+
+    incMinInstances(minInstances): IncMinInstances {
+        return {
             type: WineryActions.INC_MIN_INSTANCES,
             minInstances: minInstances.minInstances
-        }));
-    incMaxInstances: ActionCreator<IncMaxInstances> =
-        ((maxInstances) => ({
+        };
+    }
+
+    incMaxInstances(maxInstances): IncMaxInstances {
+        return {
             type: WineryActions.INC_MAX_INSTANCES,
             maxInstances: maxInstances.maxInstances
-        }));
-    decMinInstances: ActionCreator<DecMinInstances> =
-        ((minInstances) => ({
+        };
+    }
+
+    decMinInstances(minInstances): DecMinInstances {
+        return {
             type: WineryActions.DEC_MIN_INSTANCES,
             minInstances: minInstances.minInstances
-        }));
-    decMaxInstances: ActionCreator<DecMaxInstances> =
-        ((maxInstances) => ({
+        };
+    }
+
+    decMaxInstances(maxInstances): DecMaxInstances {
+        return {
             type: WineryActions.DEC_MAX_INSTANCES,
             maxInstances: maxInstances.maxInstances
-        }));
-    saveNodeTemplate: ActionCreator<SaveNodeTemplateAction> =
-        ((newNode) => ({
+        };
+    }
+
+    saveNodeTemplate(newNode): SaveNodeTemplateAction {
+        return {
             type: WineryActions.SAVE_NODE_TEMPLATE,
             nodeTemplate: newNode
-        }));
-    saveRelationship: ActionCreator<SaveRelationshipAction> =
-        ((newRelationship) => ({
+        };
+    }
+
+    saveRelationship(newRelationship): SaveRelationshipAction {
+        return {
             type: WineryActions.SAVE_RELATIONSHIP,
             relationshipTemplate: newRelationship
-        }));
-    deleteNodeTemplate: ActionCreator<DeleteNodeAction> =
-        ((deletedNodeId) => ({
+        };
+    }
+
+    deleteNodeTemplate(deletedNodeId): DeleteNodeAction {
+        return {
             type: WineryActions.DELETE_NODE_TEMPLATE,
             nodeTemplateId: deletedNodeId
-        }));
-    deleteRelationshipTemplate: ActionCreator<DeleteRelationshipAction> =
-        ((deletedRelationshipId) => ({
+        };
+    }
+
+    deleteRelationshipTemplate(deletedRelationshipId): DeleteRelationshipAction {
+        return {
             type: WineryActions.DELETE_RELATIONSHIP_TEMPLATE,
             nodeTemplateId: deletedRelationshipId
-        }));
-    updateNodeCoordinates: ActionCreator<UpdateNodeCoordinatesAction> =
-        ((currentNodeCoordinates) => ({
+        };
+    }
+
+    updateNodeCoordinates(currentNodeCoordinates): UpdateNodeCoordinatesAction {
+        return {
             type: WineryActions.UPDATE_NODE_COORDINATES,
             otherAttributes: currentNodeCoordinates
-        }));
-    updateRelationshipName: ActionCreator<UpdateRelationshipNameAction> =
-        ((currentRelData) => ({
+        };
+    }
+
+    updateRelationshipName(currentRelData): UpdateRelationshipNameAction {
+        return {
             type: WineryActions.UPDATE_REL_DATA,
             relData: currentRelData.relData
-        }));
-    setProperty: ActionCreator<SetPropertyAction> =
-        ((newProperty) => ({
+        };
+    }
+
+    setProperty(newProperty): SetPropertyAction {
+        return {
             type: WineryActions.SET_PROPERTY,
-            nodeProperty: newProperty.nodeProperty,
-            propertyType: newProperty.propertyType
-        }));
-    setCapability: ActionCreator<SetCababilityAction> =
-        ((newCapability) => ({
+            nodeProperty: newProperty.nodeProperty
+        };
+    }
+
+    setCapability(newCapability): SetCababilityAction {
+        return {
             type: WineryActions.SET_CAPABILITY,
             nodeCapability: newCapability
-        }));
-    setRequirement: ActionCreator<SetRequirementAction> =
-        ((newRequirement) => ({
+        };
+    }
+
+    setRequirement(newRequirement): SetRequirementAction {
+        return {
             type: WineryActions.SET_REQUIREMENT,
             nodeRequirement: newRequirement
-        }));
-    setDeploymentArtifact: ActionCreator<SetDeploymentArtifactAction> =
-        ((newDepArt) => ({
+        };
+    }
+
+    setDeploymentArtifact(newDepArt): SetDeploymentArtifactAction {
+        return {
             type: WineryActions.SET_DEPLOYMENT_ARTIFACT,
             nodeDeploymentArtifact: newDepArt
-        }));
-    deleteDeploymentArtifact: ActionCreator<DeleteDeploymentArtifactAction> =
-        ((deletedDeploymentArtifact) => ({
+        };
+    }
+
+    deleteDeploymentArtifact(deletedDeploymentArtifact): DeleteDeploymentArtifactAction {
+        return {
             type: WineryActions.DELETE_DEPLOYMENT_ARTIFACT,
             nodeDeploymentArtifact: deletedDeploymentArtifact
-        }));
-    setPolicy: ActionCreator<SetPolicyAction> =
-        ((newPolicy) => ({
+        };
+    }
+
+    setPolicy(newPolicy): SetPolicyAction {
+        return {
             type: WineryActions.SET_POLICY,
             nodePolicy: newPolicy
-        }));
-    setTargetLocation: ActionCreator<SetTargetLocation> =
-        ((newTargetLocation) => ({
+        };
+    }
+
+    setTargetLocation(newTargetLocation): SetTargetLocation {
+        return {
             type: WineryActions.SET_TARGET_LOCATION,
             nodeTargetLocation: newTargetLocation
-        }));
-    deletePolicy: ActionCreator<DeletePolicyAction> =
-        ((deletedPolicy) => ({
+        };
+    }
+
+    deletePolicy(deletedPolicy): DeletePolicyAction {
+        return {
             type: WineryActions.DELETE_POLICY,
             nodePolicy: deletedPolicy
-        }));
-    sendCurrentNodeId: ActionCreator<SendCurrentNodeIdAction> =
-        ((currentNodeData) => ({
+        };
+    }
+
+    sendCurrentNodeId(currentNodeData): SendCurrentNodeIdAction {
+        return {
             type: WineryActions.SEND_CURRENT_NODE_ID,
             currentNodeData: currentNodeData
-        }));
-    setNodeVisuals: ActionCreator<SetNodeVisuals> =
-        ((visuals: Visuals[]) => ({
+        };
+    }
+
+    setNodeVisuals(visuals): SetNodeVisuals {
+        return {
             type: WineryActions.SET_NODE_VISUALS,
             visuals: visuals
-        }));
-    sendLiveModelingSidebarOpened: ActionCreator<SendLiveModelingSidebarOpenedAction> =
-        ((sidebarOpened) => ({
+        };
+    }
+
+    sendLiveModelingSidebarOpened(sidebarOpened): SendLiveModelingSidebarOpenedAction {
+        return {
             type: WineryActions.SEND_LIVE_MODELING_SIDEBAR_OPENED,
             sidebarOpened: sidebarOpened
-        }));
-    setOverlayContent: ActionCreator<SetOverlayContentAction> =
-        ((content) => ({
+        };
+    }
+
+    setOverlayContent(content): SetOverlayContentAction {
+        return {
             type: WineryActions.SET_OVERLAY_CONTENT,
             content: content
-        }));
-    setOverlayVisibility: ActionCreator<SetOverlayVisibilityAction> =
-        ((visible) => ({
+        };
+    }
+
+    setOverlayVisibility(visible): SetOverlayVisibilityAction {
+        return {
             type: WineryActions.SET_OVERLAY_VISIBILITY,
             visible: visible
-        }));
-    saveTopologyTemplate: ActionCreator<Action> =
-        (() => ({
+        };
+    }
+
+    saveTopologyTemplate(): Action {
+        return {
             type: WineryActions.SAVE_TOPOLOGY_TEMPLATE
-        }));
-    checkForUnsavedChanges: ActionCreator<Action> =
-        (() => ({
+        };
+    }
+
+    checkForUnsavedChanges(): Action {
+        return {
             type: WineryActions.CHECK_FOR_UNSAVED_CHANGES
-        }));
+        };
+    }
+
+    setNodePropertyValidity(nodeId: string, invalid: boolean): SetNodePropertyValidityAction {
+        return {
+            type: WineryActions.SET_NODE_PROPERTY_VALIDITY,
+            nodeId: nodeId,
+            invalid: invalid
+        };
+    }
 }
