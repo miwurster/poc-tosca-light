@@ -32,6 +32,7 @@ import { VersionElement } from './models/versionElement';
 import { TopologyRendererActions } from './redux/actions/topologyRenderer.actions';
 import { WineryRepositoryConfigurationService } from '../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { ResizedEvent } from 'angular-resize-event';
+import { FeatureEnum } from '../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
 
 /**
  * This is the root component of the topology modeler.
@@ -66,6 +67,7 @@ export class WineryComponent implements OnInit, AfterViewInit {
     private requiredRelationshipVisuals: number;
 
     navbarHeight = 0;
+    configEnum = FeatureEnum;
 
     constructor(private loadedService: LoadedService,
                 private appReadyEvent: AppReadyEventService,

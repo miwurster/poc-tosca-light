@@ -39,8 +39,11 @@
                               [top]="this.navbarHeight">
     </winery-palette-component>
 
-    <winery-live-modeling-sidebar *ngIf="!hideNavBarState && !readonly" [top]="this.navbarHeight">
-    </winery-live-modeling-sidebar>
+    <div *wineryRepositoryFeatureToggle="configEnum.LiveModeling">
+        <winery-live-modeling-sidebar *ngIf="!hideNavBarState && !readonly"
+                                      [top]="this.navbarHeight">
+        </winery-live-modeling-sidebar>
+    </div>
 
     <winery-refinement *ngIf="refiningType" [refinementType]="refiningType" class="sidebar">
     </winery-refinement>

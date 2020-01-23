@@ -17,11 +17,15 @@
                     "propertyDefinitionKVList": [
                         {
                             "key": "key1",
-                            "type": "xsd:string"
+                            "type": "xsd:string",
+                            "description":  null,
+                            "pattern": null
                         },
                         {
                             "key": "key2",
-                            "type": "xsd:string"
+                            "type": "xsd:string",
+                            "description":  null,
+                            "pattern": null
                         }
                     ],
                     "isDerivedFromXSD": null

@@ -43,6 +43,8 @@ ENV WINERY_FEATURE_PROBLEM_DETECTION false
 ENV WINERY_FEATURE_SPLITTING false
 ENV WINERY_FEATURE_TEST_REFINEMENT false
 ENV WINERY_FEATURE_EDMM_MODELING false
+ENV WINERY_FEATURE_LIVE_MODELING false
+ENV WINERY_FEATURE_PROPERTY_CHECK false
 
 RUN rm /dev/random && ln -s /dev/urandom /dev/random \
     && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
