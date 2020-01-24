@@ -310,10 +310,12 @@ export class BackendService {
             otherAttributes: {},
             relationshipTemplates: topologyTemplate.relationshipTemplates.map(relationship => {
                 delete relationship.state;
+                return relationship;
             }),
             // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
             nodeTemplates: topologyTemplate.nodeTemplates.map(nodeTemplate => {
                 nodeTemplate.deleteStateAndVisuals();
+                return nodeTemplate;
             })
         };
 
