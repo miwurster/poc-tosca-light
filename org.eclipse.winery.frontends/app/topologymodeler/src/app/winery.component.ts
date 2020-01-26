@@ -305,8 +305,6 @@ export class WineryComponent implements OnInit, AfterViewInit {
             if (topologyData.length === 7 && !isNullOrUndefined(topologyData[5]) && !isNullOrUndefined(topologyData[6])) {
                 this.topologyDifferences = [topologyData[5], topologyData[6]];
             }
-            // init the NodeTemplates and RelationshipTemplates to start their rendering
-            this.initTopologyTemplateForRendering(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
 
             // init YAML policies if they exist
             if (topologyTemplate.policies) {
@@ -338,6 +336,9 @@ export class WineryComponent implements OnInit, AfterViewInit {
 
             // Version Elements
             this.initEntityType(JSON[10], 'versionElements');
+
+            // init the NodeTemplates and RelationshipTemplates to start their rendering
+            this.initTopologyTemplateForRendering(topologyTemplate.nodeTemplates, topologyTemplate.relationshipTemplates);
 
             this.triggerLoaded('everything');
         });

@@ -26,7 +26,6 @@ export class CapabilityModel {
     public type: string;
     public validSourceTypes: string[];
     public properties?: any;
-
     static fromCapabilityDefinitionModel(def: CapabilityDefinitionModel): CapabilityModel {
         const result = new CapabilityModel();
         result.any = def.any;

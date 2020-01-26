@@ -21,6 +21,8 @@ import { WineryActions } from '../redux/actions/winery.actions';
 import { CapabilityDefinitionModel } from './capabilityDefinitionModel';
 import { EntityTypesModel } from './entityTypesModel';
 import { CapabilityModel } from './capabilityModel';
+import { RequirementDefinitionModel } from './requirementDefinitonModel';
+import { RequirementModel } from './requirementModel';
 
 export class TopologyTemplateUtil {
 
@@ -73,27 +75,36 @@ export class TopologyTemplateUtil {
                 console.error('The required entity types model is not available! Unexpected behavior');
             }
             // look for missing capabilities and add them
-            const capDefs = this.getCapabilityDefinitionsOfNodeType(node.type, types);
-
+            const capDefs: CapabilityDefinitionModel[] = this.getCapabilityDefinitionsOfNodeType(node.type, types);
             if (!node.capabilities || !node.capabilities.capability) {
                 node.capabilities = { capability: [] };
             }
             capDefs.forEach(def => {
-                const capAssignments = node.capabilities.capability.filter(capAssignment => capAssignment.name === def.name);
-                let cap;
+                const capAssignment = node.capabilities.capability.find(capAss => capAss.name === def.name);
+                const cap = CapabilityModel.fromCapabilityDefinitionModel(def);
 
-                if (capAssignments.length > 0) {
-                    cap = capAssignments[0];
-                } else {
-                    cap = CapabilityModel.fromCapabilityDefinitionModel(def);
-                    node.capabilities.capability.push(cap);
+                if (capAssignment) {
+                    const capAssignmentIndex = node.capabilities.capability.indexOf(capAssignment);
+                    cap.properties = capAssignment.properties;
+                    node.capabilities.capability.splice(capAssignmentIndex, 1);
                 }
+
+                node.capabilities.capability.push(cap);
 
                 cap.id = `${node.id}_${cap.name}`;
             });
 
             if (node.requirements && node.requirements.requirement) {
                 node.requirements.requirement.forEach(req => req.id = `${node.id}_${req.name}`);
+            } else {
+                // If the requirements are not found in the yaml representation (therefore not available here),
+                // they are acquired from the inheritance hierarchy.
+                const reqDefs: RequirementDefinitionModel[] = this.getCapabilityDefinitionsOfNodeType(node.type, types);
+                // TODO: Check whenever there exists a case where the requirement is not initialized.
+                node.requirements.requirement = [];
+                for (const reqDef of reqDefs) {
+                    node.requirements.requirement.push(RequirementModel.fromRequirementDefinition(reqDef));
+                }
             }
         }
 
@@ -119,24 +130,39 @@ export class TopologyTemplateUtil {
     }
 
     static getCapabilityDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): CapabilityDefinitionModel[] {
-        const allNodeTypes = [];
-        entityTypes.groupedNodeTypes.forEach(group => group.children.forEach(nt => allNodeTypes.push(nt)));
-        const match = allNodeTypes
-            .filter(nt => nt.id === nodeType)
-            .filter(nt =>
-                nt.full &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation.length > 0 &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition.length > 0
-            );
-
-        if (match && match.length > 0) {
-            return match[0].full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition;
+        const listOfEffectiveCapabilityDefinitions: CapabilityDefinitionModel[] = [];
+        const listOfBequeathingNodeTypes = TopologyTemplateUtil.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
+        for (const currentNodeType of listOfBequeathingNodeTypes) {
+            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
+                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition) {
+                for (const capabilityDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+                    .capabilityDefinitions.capabilityDefinition) {
+                    if (!listOfEffectiveCapabilityDefinitions
+                        .some(value => value.name === capabilityDefinition.name)) {
+                        listOfEffectiveCapabilityDefinitions.push(capabilityDefinition);
+                    }
+                }
+            }
         }
+        return listOfEffectiveCapabilityDefinitions;
+    }
 
-        return [];
+    static getRequirementDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): RequirementDefinitionModel[] {
+        const listOfEffectiveRequirementDefinitions: RequirementDefinitionModel[] = [];
+        const listOfBequeathingNodeTypes = TopologyTemplateUtil.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
+        for (const currentNodeType of listOfBequeathingNodeTypes) {
+            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
+                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition) {
+                for (const requirementDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+                    .requirementDefinitions.requirementDefinition) {
+                    if (!listOfEffectiveRequirementDefinitions
+                        .some(value => value.name === requirementDefinition.name)) {
+                        listOfEffectiveRequirementDefinitions.push(requirementDefinition);
+                    }
+                }
+            }
+        }
+        return listOfEffectiveRequirementDefinitions;
     }
 
     static createTRelationshipTemplateFromObject(relationship: TRelationshipTemplate, state?: DifferenceStates) {
