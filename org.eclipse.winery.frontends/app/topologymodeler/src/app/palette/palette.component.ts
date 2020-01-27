@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,6 +25,7 @@ import { EntityTypesModel } from '../models/entityTypesModel';
 import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
 import { Visuals } from '../models/visuals';
 import { BackendService } from '../services/backend.service';
+import { InheritanceUtils } from '../models/InheritanceUtils';
 
 /**
  * This is the left sidebar, where nodes can be created from.
@@ -199,7 +200,7 @@ export class PaletteComponent implements OnDestroy {
                     return {
                         id: this.backendService.configuration.idPrefix + newId,
                         type: type,
-                        properties: TopologyTemplateUtil.getDefaultPropertiesFromEntityTypes(name, this.entityTypes.unGroupedNodeTypes)
+                        properties: InheritanceUtils.getDefaultPropertiesFromEntityTypes(name, this.entityTypes.unGroupedNodeTypes)
                     };
                 }
             }
@@ -223,7 +224,7 @@ export class PaletteComponent implements OnDestroy {
                     const result = {
                         id: this.backendService.configuration.idPrefix + node.id,
                         type: node.qName,
-                        properties: TopologyTemplateUtil.getDefaultPropertiesFromEntityTypes(name, this.entityTypes.unGroupedNodeTypes)
+                        properties: InheritanceUtils.getDefaultPropertiesFromEntityTypes(name, this.entityTypes.unGroupedNodeTypes)
                     };
                     return result;
                 }

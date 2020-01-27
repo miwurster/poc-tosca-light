@@ -356,12 +356,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.requirements.properties = currentNodeData.currentRequirement.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.requirements.properties = TopologyTemplateUtil.getKVProperties(reqType);
+                                        this.requirements.properties = InheritanceUtils.getKVProperties(reqType);
                                         this.setDefaultReqKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.requirements.properties = TopologyTemplateUtil.getKVProperties(reqType);
+                                    this.requirements.properties = InheritanceUtils.getKVProperties(reqType);
                                     this.setDefaultReqKVProperties();
                                     return true;
                                 }
@@ -438,12 +438,12 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                         this.capabilities.properties = currentNodeData.currentCapability.properties.kvproperties;
                                         return true;
                                     } else {
-                                        this.capabilities.properties = TopologyTemplateUtil.getKVProperties(capType);
+                                        this.capabilities.properties = InheritanceUtils.getKVProperties(capType);
                                         this.setDefaultCapKVProperties();
                                         return true;
                                     }
                                 } else {
-                                    this.capabilities.properties = TopologyTemplateUtil.getKVProperties(capType);
+                                    this.capabilities.properties = InheritanceUtils.getKVProperties(capType);
                                     this.setDefaultCapKVProperties();
                                     return true;
                                 }
@@ -675,7 +675,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.capabilities.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.capabilities.properties = TopologyTemplateUtil.getKVProperties(cap);
+                    this.capabilities.properties = InheritanceUtils.getKVProperties(cap);
                     // if propertiesDefinition is defined it's a XML property
                 } else if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
                     if (cap.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
@@ -781,7 +781,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0) {
                     this.requirements.propertyType = 'KV';
                     this.showDefaultProperties = true;
-                    this.requirements.properties = TopologyTemplateUtil.getKVProperties(req);
+                    this.requirements.properties = InheritanceUtils.getKVProperties(req);
                     return true;
                     // if propertiesDefinition is defined it's a XML property
                 } else if (req.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition) {
@@ -1874,7 +1874,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             if (reqData) {
                 reqData.forEach(reqDef => {
                     const reqModel = RequirementModel.fromRequirementDefinition(reqDef);
-                    reqModel.id = `${this.newNode.id}_req_${reqModel.name}`;
+                    reqModel.id = TopologyTemplateUtil.generateYAMLRequirementID(this.newNode, reqModel.name);
                     this.newNode.requirements.requirement.push(reqModel);
                 });
             }
@@ -1882,7 +1882,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             if (capData) {
                 capData.forEach(capDef => {
                     const capModel = CapabilityModel.fromCapabilityDefinitionModel(capDef);
-                    capModel.id = `${this.newNode.id}_cap_${capModel.name}`;
+                    capModel.id = TopologyTemplateUtil.generateYAMLCapabilityID(this.newNode, capModel.name);
                     this.newNode.capabilities.capability.push(capModel);
                 });
             }
@@ -2163,7 +2163,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             this.selectedRelationshipType.name,
                             relationshipId,
                             this.selectedRelationshipType.qName,
-                            TopologyTemplateUtil.getDefaultPropertiesFromEntityTypes(this.selectedRelationshipType.name, this.entityTypes.relationshipTypes),
+                            InheritanceUtils.getDefaultPropertiesFromEntityTypes(this.selectedRelationshipType.name, this.entityTypes.relationshipTypes),
                             [],
                             [],
                             {}
@@ -2221,7 +2221,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                 this.selectedRelationshipType.name,
                                 relationshipId,
                                 this.selectedRelationshipType.qName,
-                                TopologyTemplateUtil.getDefaultPropertiesFromEntityTypes(this.selectedRelationshipType.name,
+                                InheritanceUtils.getDefaultPropertiesFromEntityTypes(this.selectedRelationshipType.name,
                                     this.entityTypes.relationshipTypes),
                                 [],
                                 [],

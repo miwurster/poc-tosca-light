@@ -50,10 +50,11 @@ import org.w3c.dom.Element;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class TRelationshipTemplate extends TEntityTemplate implements HasPolicies {
 
-    @XmlElement(name = "SourceElement", required = true)
+    // We remove the required attribute because of the YAML support
+    @XmlElement(name = "SourceElement")
     // AD: We need to combine source or target due to multi-inheritance
     protected TRelationshipTemplate.@NonNull SourceOrTargetElement sourceElement;
-    @XmlElement(name = "TargetElement", required = true)
+    @XmlElement(name = "TargetElement")
     protected TRelationshipTemplate.@NonNull SourceOrTargetElement targetElement;
     @XmlElement(name = "RelationshipConstraints")
     protected TRelationshipTemplate.RelationshipConstraints relationshipConstraints;
@@ -96,15 +97,15 @@ public class TRelationshipTemplate extends TEntityTemplate implements HasPolicie
         return Objects.hash(super.hashCode(), sourceElement, targetElement, relationshipConstraints, name);
     }
 
-    public TRelationshipTemplate.@NonNull SourceOrTargetElement getSourceElement() {
+    public SourceOrTargetElement getSourceElement() {
         return sourceElement;
     }
 
-    public void setSourceElement(TRelationshipTemplate.@NonNull SourceOrTargetElement value) {
+    public void setSourceElement(SourceOrTargetElement value) {
         this.sourceElement = Objects.requireNonNull(value);
     }
 
-    public void setSourceNodeTemplate(@NonNull TNodeTemplate value) {
+    public void setSourceNodeTemplate(TNodeTemplate value) {
         Objects.requireNonNull(value);
         SourceOrTargetElement sourceElement = new SourceOrTargetElement();
         sourceElement.setRef(value);
@@ -117,11 +118,11 @@ public class TRelationshipTemplate extends TEntityTemplate implements HasPolicie
         this.targetElement = targetElement;
     }
 
-    public TRelationshipTemplate.@NonNull SourceOrTargetElement getTargetElement() {
+    public SourceOrTargetElement getTargetElement() {
         return targetElement;
     }
 
-    public void setTargetElement(TRelationshipTemplate.@NonNull SourceOrTargetElement value) {
+    public void setTargetElement(SourceOrTargetElement value) {
         this.targetElement = Objects.requireNonNull(value);
     }
 

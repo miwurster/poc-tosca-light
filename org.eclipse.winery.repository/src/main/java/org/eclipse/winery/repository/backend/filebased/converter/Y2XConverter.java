@@ -273,7 +273,7 @@ public class Y2XConverter {
 
     /**
      * converts TOSCA YAML constraints to Winery XML constraints
-     * 
+     *
      * @param constraints TOSCA YAML constraints
      * @return Winery XML constraints
      */
@@ -857,93 +857,12 @@ public class Y2XConverter {
         if (node == null) {
             return null;
         }
-        // First, we find the source node template
-        TNodeTemplate sourceNT = this.nodeTemplateMap
-            .values()
-            .stream()
-            .filter(nodeTemplate -> nodeTemplate.getRequirements() != null &&
-                nodeTemplate
-                    .getRequirements()
-                    .getRequirement()
-                    .stream()
-                    .anyMatch(req -> req.getRelationship() != null && req.getRelationship().equals(id))
-            )
-            .findFirst()
-            .orElse(null);
-        if (sourceNT != null) {
-            // now we get the source requirement
-            assert sourceNT.getRequirements() != null;
-            TRequirement requirement = sourceNT
-                .getRequirements()
-                .getRequirement()
-                .stream()
-                .filter(req -> req.getRelationship() != null && req.getRelationship().equals(id))
-                .findFirst()
-                .orElse(null);
 
-            if (requirement != null) {
-                // now lets get the target capability
-                if (requirement.getNode() != null && requirement.getCapability() != null) {
-                    if (this.nodeTemplateMap.containsKey(requirement.getNode())) {
-                        TNodeTemplate targetNT = this.nodeTemplateMap.get(requirement.getNode());
-                        TCapability capability;
-
-                        if (targetNT.getCapabilities() != null &&
-                            targetNT.getCapabilities()
-                                .getCapability()
-                                .stream()
-                                .anyMatch(cap -> cap.getName().equals(requirement.getCapability()))) {
-                            capability =
-                                targetNT.getCapabilities()
-                                    .getCapability()
-                                    .stream()
-                                    .filter(cap -> cap.getName().equals(requirement.getCapability()))
-                                    .findFirst()
-                                    .orElse(null);
-                        } else {
-                            // the capability is not present in the node template. We take the default one from the node type!
-                            QName nodeTyp = targetNT.getType();
-                            TCapabilityDefinition capDef = this.getCapabilityDefinitionOfCapabilityName(requirement.getCapability(), nodeTyp);
-
-                            if (capDef != null) {
-                                String capId = targetNT.getName() + "_" + capDef.getName();
-                                capability = new TCapability
-                                    .Builder(capId, capDef.getCapabilityType(), capDef.getName())
-                                    .build();
-                                if (targetNT.getCapabilities() == null) {
-                                    targetNT.setCapabilities(new TNodeTemplate.Capabilities());
-                                }
-                                targetNT.getCapabilities().getCapability().add(capability);
-                            } else {
-                                LOGGER.error("The capability {} referenced by the relationship {} cannot be found!",
-                                    requirement.getCapability(), requirement.getName());
-                                throw new RuntimeException("Unable to convert relationship template: " + id);
-                            }
-                        }
-                        assert capability != null;
-                        TRelationshipTemplate.SourceOrTargetElement sourceElement = new TRelationshipTemplate.SourceOrTargetElement();
-                        sourceElement.setRef(requirement);
-                        TRelationshipTemplate.SourceOrTargetElement targetElement = new TRelationshipTemplate.SourceOrTargetElement();
-                        targetElement.setRef(capability);
-                        return new TRelationshipTemplate.Builder(id, node.getType(), sourceElement, targetElement)
-                            .setName(node.getType().getLocalPart())
-                            .setProperties(new TEntityTemplate.Properties())
-                            .build();
-                    } else {
-                        LOGGER.error("the node {} specified by the requirement {} cannot be found!", requirement.getNode().toString(),
-                            requirement.getName());
-                    }
-                } else {
-                    LOGGER.error("requirement {} has no node or capability specified!", requirement.getName());
-                }
-            } else {
-                LOGGER.error("The source requirement for the relationship {} cannot be deteremined.", id);
-            }
-        } else {
-            LOGGER.error("The source node template for the relationship {} cannot be determined.", id);
-        }
-
-        throw new RuntimeException("Unable to convert relationship template: " + id);
+        // the topology modeler finds the source and target of relationships
+        return new TRelationshipTemplate.Builder(id, node.getType(), null, null)
+            .setName(node.getType().getLocalPart())
+            .setProperties(new TEntityTemplate.Properties())
+            .build();
     }
 
     /**
@@ -1064,7 +983,6 @@ public class Y2XConverter {
         appliesTo.getNodeTypeReference().addAll(references);
         return appliesTo;
     }
-    
 
     /**
      * Converts TOSCA YAML ArtifactDefinitions to TOSCA XML NodeTypeImplementations and ArtifactTemplates
