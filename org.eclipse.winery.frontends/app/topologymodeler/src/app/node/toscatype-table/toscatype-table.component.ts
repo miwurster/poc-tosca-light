@@ -223,19 +223,23 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     // TODO: Problem with this right now: the requirments that are queried for, are already the inherited ones,
     //  this doesnt work right now...
     private getRequirementDefinition(req: RequirementModel): RequirementDefinitionModel {
-        const nodeTypeString = this.currentNodeData.nodeTemplate.type;
-        const listOfBequeathingNodeTypes = TopologyTemplateUtil.getInheritanceAncestry(nodeTypeString, this.entityTypes.unGroupedNodeTypes);
+        const listOfBequeathingNodeTypes = TopologyTemplateUtil
+            .getInheritanceAncestry(this.currentNodeData.nodeTemplate.type, this.entityTypes.unGroupedNodeTypes);
         // TODO: This originaly searches for each requirement the node type, this did not work for inherited requirements. This was tried to be fixed.
         //  Talk about this solution with Ghareeb.
         for (const nodeType of listOfBequeathingNodeTypes) {
-            const requirementDefinition = nodeType
-                .full
-                .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-                .requirementDefinitions
-                .requirementDefinition
-                .find((reqDef: RequirementDefinitionModel) => reqDef.name === req.name);
-            if (requirementDefinition) {
-                return requirementDefinition;
+            if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0] &&
+                nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
+                nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition) {
+                const requirementDefinition = nodeType
+                    .full
+                    .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+                    .requirementDefinitions
+                    .requirementDefinition
+                    .find((reqDef: RequirementDefinitionModel) => reqDef.name === req.name);
+                if (requirementDefinition) {
+                    return requirementDefinition;
+                }
             }
         }
         return undefined;
