@@ -276,16 +276,38 @@ export class TopologyTemplateUtil {
         return newKVProperies;
     }
 
-    static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>,
+    static generateYAMLRequirementID(nodeTemplate: TNodeTemplate, requirement: string): string {
+        return `${nodeTemplate.name}_req_${requirement}`;
+    }
+
+    static generateYAMLCapabilityID(nodeTemplate: TNodeTemplate, capability: string): string {
+        return `${nodeTemplate.name}_cap_${capability}`;
+    }
+
+    static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>, nodeTemplateArray: Array<TNodeTemplate>,
                                  topologyDifferences?: [ToscaDiff, TTopologyTemplate]): Array<TRelationshipTemplate> {
         const relationshipTemplates: TRelationshipTemplate[] = [];
         if (relationshipTemplateArray.length > 0) {
             relationshipTemplateArray.forEach(relationship => {
-                const state = topologyDifferences ? DifferenceStates.UNCHANGED : null;
-                relationshipTemplates.push(
-                    TopologyTemplateUtil.createTRelationshipTemplateFromObject(relationship, state)
-                );
-            });
+                    for (const nodeTemplate of nodeTemplateArray) {
+                        const foundRequirement: RequirementModel = nodeTemplate.requirements.requirement
+                            .find(requirement => requirement.relationship.type === relationship.name);
+                        if (foundRequirement) {
+                            relationship.sourceElement.ref = this.generateYAMLRequirementID(nodeTemplate, foundRequirement.name);
+                            const targetNodeTemplate = nodeTemplateArray.find(nt => nt.name === foundRequirement.node);
+                            if (targetNodeTemplate) {
+                                const targetCapability = foundRequirement.capability;
+                                relationship.targetElement.ref = this.generateYAMLCapabilityID(targetNodeTemplate, targetCapability);
+                                break;
+                            }
+                        }
+                    }
+                    const state = topologyDifferences ? DifferenceStates.UNCHANGED : null;
+                    relationshipTemplates.push(
+                        TopologyTemplateUtil.createTRelationshipTemplateFromObject(relationship, state)
+                    );
+                }
+            );
         }
 
         return relationshipTemplates;
@@ -310,7 +332,7 @@ export class TopologyTemplateUtil {
             .forEach(
                 node => ngRedux.dispatch(wineryActions.saveNodeTemplate(node))
             );
-        TopologyTemplateUtil.initRelationTemplates(topology.relationshipTemplates)
+        TopologyTemplateUtil.initRelationTemplates(topology.relationshipTemplates, topology.nodeTemplates)
             .forEach(
                 relationship => ngRedux.dispatch(wineryActions.saveRelationship(relationship))
             );
