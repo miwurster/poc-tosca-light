@@ -55,7 +55,8 @@ export enum ServiceTemplateTemplateTypes {
 
 export enum StartNamespaces {
     LocalStorageEntry = 'defaultNamespace',
-    DefaultStartNamespace = 'http://www.example.org/tosca'
+    DefaultStartNamespace = 'http://www.example.org/tosca',
+    DefaultStartNamespaceYaml= 'example.org.tosca'
 }
 
 /**
