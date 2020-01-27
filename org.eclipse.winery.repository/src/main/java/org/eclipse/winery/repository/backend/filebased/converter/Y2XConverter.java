@@ -593,7 +593,7 @@ public class Y2XConverter {
             .setName(id)
             .setX(node.getMetadata().getOrDefault(Defaults.X_COORD, "0"))
             .setY(node.getMetadata().getOrDefault(Defaults.Y_COORD, "0"))
-            .setProperties(new TEntityTemplate.Properties())
+            .setProperties(convertPropertyAssignments(node.getProperties()))
             .addRequirements(convert(node.getRequirements()))
             .addCapabilities(convert(node.getCapabilities()))
             .setDeploymentArtifacts(convertDeploymentArtifacts(node.getArtifacts()));
@@ -861,7 +861,7 @@ public class Y2XConverter {
         // the topology modeler finds the source and target of relationships
         return new TRelationshipTemplate.Builder(id, node.getType(), null, null)
             .setName(node.getType().getLocalPart())
-            .setProperties(new TEntityTemplate.Properties())
+            .setProperties(convertPropertyAssignments(node.getProperties()))
             .build();
     }
 
