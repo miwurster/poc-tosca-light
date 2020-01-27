@@ -16,6 +16,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 @Injectable()
-export class ConfigService {
-    constructor(private http: HttpClient) { }
+export class HttpServiceTemplates {
+    constructor(private http: HttpClient) {}
+    public getServiceTemplates() {
+        return this.http.get('localhost:8080/winery/servicecompositions/servicetemplates');
+    }
 }
