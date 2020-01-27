@@ -91,11 +91,11 @@ export class TopologyTemplateUtil {
 
                 node.capabilities.capability.push(cap);
 
-                cap.id = `${node.id}_${cap.name}`;
+                cap.id = `${node.id}_cap_${cap.name}`;
             });
 
             if (node.requirements && node.requirements.requirement) {
-                node.requirements.requirement.forEach(req => req.id = `${node.id}_${req.name}`);
+                node.requirements.requirement.forEach(req => req.id = `${node.id}_req_${req.name}`);
             } else {
                 // If the requirements are not found in the yaml representation (therefore not available here),
                 // they are acquired from the inheritance hierarchy.

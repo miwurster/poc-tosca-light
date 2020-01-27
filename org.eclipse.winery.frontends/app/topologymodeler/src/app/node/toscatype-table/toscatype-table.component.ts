@@ -220,13 +220,9 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
         }
     }
 
-    // TODO: Problem with this right now: the requirments that are queried for, are already the inherited ones,
-    //  this doesnt work right now...
     private getRequirementDefinition(req: RequirementModel): RequirementDefinitionModel {
         const listOfBequeathingNodeTypes = TopologyTemplateUtil
             .getInheritanceAncestry(this.currentNodeData.nodeTemplate.type, this.entityTypes.unGroupedNodeTypes);
-        // TODO: This originaly searches for each requirement the node type, this did not work for inherited requirements. This was tried to be fixed.
-        //  Talk about this solution with Ghareeb.
         for (const nodeType of listOfBequeathingNodeTypes) {
             if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0] &&
                 nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
@@ -242,14 +238,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
                 }
             }
         }
-        return undefined;
-        /*return this.entityTypes.unGroupedNodeTypes
-            .find(nt => nt.qName === nodeTypeString)
-            .full
-            .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-            .requirementDefinitions
-            .requirementDefinition
-            .find((reqDef: RequirementDefinitionModel) => reqDef.name === req.name);*/
+        return null;
     }
 
     getAllowedRelationshipTypes(req: RequirementModel): VisualEntityType[] {
