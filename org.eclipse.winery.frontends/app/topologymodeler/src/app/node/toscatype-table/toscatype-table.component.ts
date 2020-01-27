@@ -26,6 +26,7 @@ import { RequirementModel } from '../../models/requirementModel';
 import { RequirementDefinitionModel } from '../../models/requirementDefinitonModel';
 import { VisualEntityType } from '../../models/ttopology-template';
 import { TPolicy } from '../../models/policiesModalData';
+import { InheritanceUtils } from '../../models/InheritanceUtils';
 
 @Component({
     selector: 'winery-toscatype-table',
@@ -220,14 +221,24 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     }
 
     private getRequirementDefinition(req: RequirementModel): RequirementDefinitionModel {
-        const nodeTypeString = this.currentNodeData.nodeTemplate.type;
-        return this.entityTypes.unGroupedNodeTypes
-            .find(nt => nt.qName === nodeTypeString)
-            .full
-            .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-            .requirementDefinitions
-            .requirementDefinition
-            .find((reqDef: RequirementDefinitionModel) => reqDef.name === req.name);
+        const listOfBequeathingNodeTypes = InheritanceUtils
+            .getInheritanceAncestry(this.currentNodeData.nodeTemplate.type, this.entityTypes.unGroupedNodeTypes);
+        for (const nodeType of listOfBequeathingNodeTypes) {
+            if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0] &&
+                nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
+                nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition) {
+                const requirementDefinition = nodeType
+                    .full
+                    .serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+                    .requirementDefinitions
+                    .requirementDefinition
+                    .find((reqDef: RequirementDefinitionModel) => reqDef.name === req.name);
+                if (requirementDefinition) {
+                    return requirementDefinition;
+                }
+            }
+        }
+        return null;
     }
 
     getAllowedRelationshipTypes(req: RequirementModel): VisualEntityType[] {

@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
-import { EntityType, TNodeTemplate, TPolicyType, TRelationshipTemplate, TTopologyTemplate } from './ttopology-template';
+import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from './ttopology-template';
 import { QName } from './qname';
 import { DifferenceStates, ToscaDiff, VersionUtils } from './ToscaDiff';
 import { Visuals } from './visuals';
@@ -21,6 +21,9 @@ import { WineryActions } from '../redux/actions/winery.actions';
 import { CapabilityDefinitionModel } from './capabilityDefinitionModel';
 import { EntityTypesModel } from './entityTypesModel';
 import { CapabilityModel } from './capabilityModel';
+import { RequirementDefinitionModel } from './requirementDefinitonModel';
+import { RequirementModel } from './requirementModel';
+import { InheritanceUtils } from './InheritanceUtils';
 
 export class TopologyTemplateUtil {
 
@@ -73,27 +76,42 @@ export class TopologyTemplateUtil {
                 console.error('The required entity types model is not available! Unexpected behavior');
             }
             // look for missing capabilities and add them
-            const capDefs = this.getCapabilityDefinitionsOfNodeType(node.type, types);
-
+            const capDefs: CapabilityDefinitionModel[] = InheritanceUtils.getCapabilityDefinitionsOfNodeType(node.type, types);
             if (!node.capabilities || !node.capabilities.capability) {
                 node.capabilities = { capability: [] };
             }
             capDefs.forEach(def => {
-                const capAssignments = node.capabilities.capability.filter(capAssignment => capAssignment.name === def.name);
-                let cap;
+                const capAssignment = node.capabilities.capability.find(capAss => capAss.name === def.name);
+                const cap = CapabilityModel.fromCapabilityDefinitionModel(def);
 
-                if (capAssignments.length > 0) {
-                    cap = capAssignments[0];
-                } else {
-                    cap = CapabilityModel.fromCapabilityDefinitionModel(def);
-                    node.capabilities.capability.push(cap);
+                if (capAssignment) {
+                    const capAssignmentIndex = node.capabilities.capability.indexOf(capAssignment);
+                    cap.properties = capAssignment.properties;
+                    node.capabilities.capability.splice(capAssignmentIndex, 1);
                 }
 
-                cap.id = `${node.id}_${cap.name}`;
+                cap.id = this.generateYAMLCapabilityID(node, cap.name);
+                node.capabilities.capability.push(cap);
             });
 
+            // we assume that either all requirements are in the template, or none are (and therefore must be retrieved from the type hierarchy)
             if (node.requirements && node.requirements.requirement) {
-                node.requirements.requirement.forEach(req => req.id = `${node.id}_${req.name}`);
+                node.requirements.requirement.forEach(req => req.id = this.generateYAMLRequirementID(node, req.name));
+            } else {
+                // If the requirements are not found in the template, they are acquired from the inheritance hierarchy.
+                const reqDefs: RequirementDefinitionModel[] = InheritanceUtils.getRequirementDefinitionsOfNodeType(node.type, types);
+
+                if (reqDefs && reqDefs.length > 0) {
+                    node.requirements.requirement = reqDefs
+                        .map(reqDef => RequirementModel.fromRequirementDefinition(reqDef))
+                        .map(reqDef => {
+                            reqDef.id = this.generateYAMLRequirementID(node, reqDef.name);
+                            return reqDef;
+                        })
+                        .filter(reqDef => reqDef !== null);
+                } else {
+                    node.requirements.requirement = [];
+                }
             }
         }
 
@@ -116,27 +134,6 @@ export class TopologyTemplateUtil {
             node.policies ? node.policies : {},
             state
         );
-    }
-
-    static getCapabilityDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): CapabilityDefinitionModel[] {
-        const allNodeTypes = [];
-        entityTypes.groupedNodeTypes.forEach(group => group.children.forEach(nt => allNodeTypes.push(nt)));
-        const match = allNodeTypes
-            .filter(nt => nt.id === nodeType)
-            .filter(nt =>
-                nt.full &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation.length > 0 &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition &&
-                nt.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition.length > 0
-            );
-
-        if (match && match.length > 0) {
-            return match[0].full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition;
-        }
-
-        return [];
     }
 
     static createTRelationshipTemplateFromObject(relationship: TRelationshipTemplate, state?: DifferenceStates) {
@@ -191,177 +188,43 @@ export class TopologyTemplateUtil {
         return nodeTemplates;
     }
 
-    /**
-     * Generates default properties from node types or relationshipTypes
-     * The assumption appears to be that types only add new properties and never change existing ones (e.g., change type or default value)
-     * todo why name not qname?
-     * todo use the 'getInheritanceAncestry' method
-     * @param name
-     * @param entities
-     * @return properties
-     */
-    static getDefaultPropertiesFromEntityTypes(name: string, entities: EntityType[]): any {
-        for (const element of entities) {
-            if (element.name === name) {
-                // if propertiesDefinition is defined it's a XML property
-                if (element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition
-                    && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element) {
-                    return {
-                        any: element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].propertiesDefinition.element
-                    };
-                } else { // otherwise KV properties or no properties at all
-                    let inheritedProperties = {};
-                    if (this.hasParentType(element)) {
-                        let parent = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.typeRef;
-                        let continueFlag;
+    static generateYAMLRequirementID(nodeTemplate: TNodeTemplate, requirement: string): string {
+        return `${nodeTemplate.id}_req_${requirement}`;
+    }
 
-                        while (parent) {
-                            continueFlag = false;
-                            for (const parentElement of entities) {
-                                if (parentElement.qName === parent) {
-                                    if (this.hasKVPropDefinition(parentElement)) {
-                                        inheritedProperties = {
-                                            ...inheritedProperties, ...TopologyTemplateUtil.getKVProperties(parentElement)
-                                        };
-                                    }
-                                    if (this.hasParentType(parentElement)) {
-                                        parent = parentElement.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.typeRef;
-                                        continueFlag = true;
-                                    }
-                                    break;
-                                }
-                            }
-                            if (continueFlag) {
-                                continue;
-                            }
-                            parent = null;
-                        }
-                    }
+    static generateYAMLCapabilityID(nodeTemplate: TNodeTemplate, capability: string): string {
+        return `${nodeTemplate.id}_cap_${capability}`;
+    }
 
-                    let typeProperties = {};
-                    if (this.hasKVPropDefinition(element)) {
-                        typeProperties = TopologyTemplateUtil.getKVProperties(element);
-                    }
-
-                    const mergedProperties = { ...inheritedProperties, ...typeProperties };
-
-                    return {
-                        kvproperties: { ...mergedProperties }
-                    };
+    static handleYamlRelationship(relationship: TRelationshipTemplate, nodeTemplateArray: Array<TNodeTemplate>) {
+        // First, we look for the source node template / requirement
+        for (const nodeTemplate of nodeTemplateArray) {
+            const foundRequirement: RequirementModel = nodeTemplate.requirements.requirement
+                .find(requirement => requirement.relationship === relationship.id);
+            if (foundRequirement) {
+                // the id was calculated before by the init node template method
+                relationship.sourceElement = { ref: foundRequirement.id };
+                // now we look for the target node template / capability.
+                const targetNodeTemplate = nodeTemplateArray.find(nt => nt.name === foundRequirement.node);
+                if (targetNodeTemplate) {
+                    const targetCapability = targetNodeTemplate.capabilities.capability
+                        .find(cap => cap.name === foundRequirement.capability);
+                    // the id was calculated before by the init node template method
+                    relationship.targetElement = { ref: targetCapability.id };
+                    break;
                 }
             }
         }
     }
 
-    static hasKVPropDefinition(element: EntityType): boolean {
-        return (element && element.full &&
-            element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any &&
-            element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any.length > 0 &&
-            element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList
-        );
-    }
-
-    static hasParentType(element: EntityType): boolean {
-        return (element && element.full
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom
-        );
-    }
-
-    /**
-     * This function gets KV properties of a type and sets their default values
-     * @param any type: the element type, e.g. capabilityType, requirementType etc.
-     * @returns newKVProperties: KV Properties as Object
-     */
-    static getKVProperties(type: any): any {
-        const newKVProperies = {};
-        const kvProperties = type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].any[0].propertyDefinitionKVList;
-        for (const obj of kvProperties) {
-            const key = obj.key;
-            let value;
-            if (!obj.value && obj.defaultValue) {
-                value = obj.defaultValue;
-            } else if (!obj.value) {
-                // TODO quick hack: set a "system" default
-                value = 'N/A';
-            } else {
-                value = obj.value;
-            }
-            newKVProperies[key] = value;
-        }
-        return newKVProperies;
-    }
-
-    static getParent(element: EntityType, entities: EntityType[]): EntityType {
-        if (this.hasParentType(element)) {
-            const parentQName = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.type;
-            return entities.find(entity => entity.qName === parentQName);
-        }
-        return null;
-    }
-
-    static getInheritanceAncestry(entityType: string, entityTypes: EntityType[]): EntityType[] {
-        const entity = entityTypes.find(type => type.qName === entityType);
-        const result = [];
-
-        if (entity) {
-            result.push(entity);
-            let parent = this.getParent(entity, entityTypes);
-
-            while (parent) {
-                result.push(parent);
-                parent = this.getParent(parent, entityTypes);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Gets the active set of allowed target node types for this YAML policy type
-     * i.e., returns the targets array which is the lowest possible.
-     * @param policyTypeQName
-     * @param policyTypes
-     */
-    static getActiveTargetsOfYamlPolicyType(policyTypeQName: string, policyTypes: TPolicyType[]): string[] {
-        const hierarchy = this.getInheritanceAncestry(policyTypeQName, policyTypes);
-        let result = [];
-
-        for (const type of hierarchy) {
-            if ((<TPolicyType>type).targets) {
-                result = (<TPolicyType>type).targets;
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    static getActiveKVPropertiesOfTemplateElement(templateElementProperties: any, typeQName: string, entityTypes: EntityType[]): any {
-        const typeName = new QName(typeQName).localName;
-        const defaultTypeProperties = this.getDefaultPropertiesFromEntityTypes(typeName, entityTypes);
-        const result = {};
-
-        if (defaultTypeProperties && defaultTypeProperties.kvproperties) {
-            Object.keys(defaultTypeProperties.kvproperties).forEach(currentPropKey => {
-
-                if (templateElementProperties && templateElementProperties.kvproperties &&
-                    Object.keys(templateElementProperties.kvproperties).some(tempPropertyKey => tempPropertyKey === currentPropKey)) {
-                    result[currentPropKey] = templateElementProperties.kvproperties[currentPropKey];
-                } else {
-                    result[currentPropKey] = defaultTypeProperties.kvproperties[currentPropKey];
-                }
-            });
-        }
-
-        return { kvproperties: result };
-    }
-
-    static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>,
+    static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>, nodeTemplateArray: Array<TNodeTemplate>, isYaml: boolean,
                                  topologyDifferences?: [ToscaDiff, TTopologyTemplate]): Array<TRelationshipTemplate> {
         const relationshipTemplates: TRelationshipTemplate[] = [];
         if (relationshipTemplateArray.length > 0) {
             relationshipTemplateArray.forEach(relationship => {
+                if (isYaml) {
+                    this.handleYamlRelationship(relationship, nodeTemplateArray);
+                }
                 const state = topologyDifferences ? DifferenceStates.UNCHANGED : null;
                 relationshipTemplates.push(
                     TopologyTemplateUtil.createTRelationshipTemplateFromObject(relationship, state)
@@ -391,7 +254,7 @@ export class TopologyTemplateUtil {
             .forEach(
                 node => ngRedux.dispatch(wineryActions.saveNodeTemplate(node))
             );
-        TopologyTemplateUtil.initRelationTemplates(topology.relationshipTemplates)
+        TopologyTemplateUtil.initRelationTemplates(topology.relationshipTemplates, topology.nodeTemplates, isYaml)
             .forEach(
                 relationship => ngRedux.dispatch(wineryActions.saveRelationship(relationship))
             );
