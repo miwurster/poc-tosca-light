@@ -19,7 +19,7 @@ ui:
     repositoryUiUrl: http://{{ .Env.WINERY_HOSTNAME }}:{{ .Env.WINERY_PORT }}/#
     edmmTransformationTool: http://{{ .Env.EDMM_TRANSFORMATION_HOSTNAME }}:{{ .Env.EDMM_TRANSFORMATION_PORT }}/plugins/check-model-support
 repository:
-  provider: file
+  provider: {{ .Env.WINERY_REPOSITORY_PROVIDER }}
   repositoryRoot: {{ .Env.WINERY_REPOSITORY_PATH }}
   git:
     clientSecret: secret
