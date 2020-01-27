@@ -11,7 +11,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
-import { EntityType, TNodeTemplate, TPolicyType, TRelationshipTemplate, TTopologyTemplate } from './ttopology-template';
+import { EntityType, TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from './ttopology-template';
 import { QName } from './qname';
 import { DifferenceStates, ToscaDiff, VersionUtils } from './ToscaDiff';
 import { Visuals } from './visuals';
@@ -23,6 +23,7 @@ import { EntityTypesModel } from './entityTypesModel';
 import { CapabilityModel } from './capabilityModel';
 import { RequirementDefinitionModel } from './requirementDefinitonModel';
 import { RequirementModel } from './requirementModel';
+import { InheritanceUtils } from './InheritanceUtils';
 
 export class TopologyTemplateUtil {
 
@@ -75,7 +76,7 @@ export class TopologyTemplateUtil {
                 console.error('The required entity types model is not available! Unexpected behavior');
             }
             // look for missing capabilities and add them
-            const capDefs: CapabilityDefinitionModel[] = this.getCapabilityDefinitionsOfNodeType(node.type, types);
+            const capDefs: CapabilityDefinitionModel[] = InheritanceUtils.getCapabilityDefinitionsOfNodeType(node.type, types);
             if (!node.capabilities || !node.capabilities.capability) {
                 node.capabilities = { capability: [] };
             }
@@ -99,7 +100,7 @@ export class TopologyTemplateUtil {
             } else {
                 // If the requirements are not found in the yaml representation (therefore not available here),
                 // they are acquired from the inheritance hierarchy.
-                const reqDefs: RequirementDefinitionModel[] = this.getCapabilityDefinitionsOfNodeType(node.type, types);
+                const reqDefs: RequirementDefinitionModel[] = InheritanceUtils.getCapabilityDefinitionsOfNodeType(node.type, types);
                 // TODO: Check whenever there exists a case where the requirement is not initialized.
                 node.requirements.requirement = [];
                 for (const reqDef of reqDefs) {
@@ -127,42 +128,6 @@ export class TopologyTemplateUtil {
             node.policies ? node.policies : {},
             state
         );
-    }
-
-    static getCapabilityDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): CapabilityDefinitionModel[] {
-        const listOfEffectiveCapabilityDefinitions: CapabilityDefinitionModel[] = [];
-        const listOfBequeathingNodeTypes = TopologyTemplateUtil.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
-        for (const currentNodeType of listOfBequeathingNodeTypes) {
-            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
-                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition) {
-                for (const capabilityDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-                    .capabilityDefinitions.capabilityDefinition) {
-                    if (!listOfEffectiveCapabilityDefinitions
-                        .some(value => value.name === capabilityDefinition.name)) {
-                        listOfEffectiveCapabilityDefinitions.push(capabilityDefinition);
-                    }
-                }
-            }
-        }
-        return listOfEffectiveCapabilityDefinitions;
-    }
-
-    static getRequirementDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): RequirementDefinitionModel[] {
-        const listOfEffectiveRequirementDefinitions: RequirementDefinitionModel[] = [];
-        const listOfBequeathingNodeTypes = TopologyTemplateUtil.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
-        for (const currentNodeType of listOfBequeathingNodeTypes) {
-            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
-                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition) {
-                for (const requirementDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-                    .requirementDefinitions.requirementDefinition) {
-                    if (!listOfEffectiveRequirementDefinitions
-                        .some(value => value.name === requirementDefinition.name)) {
-                        listOfEffectiveRequirementDefinitions.push(requirementDefinition);
-                    }
-                }
-            }
-        }
-        return listOfEffectiveRequirementDefinitions;
     }
 
     static createTRelationshipTemplateFromObject(relationship: TRelationshipTemplate, state?: DifferenceStates) {
@@ -237,7 +202,7 @@ export class TopologyTemplateUtil {
                     };
                 } else { // otherwise KV properties or no properties at all
                     let inheritedProperties = {};
-                    if (this.hasParentType(element)) {
+                    if (InheritanceUtils.hasParentType(element)) {
                         let parent = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.typeRef;
                         let continueFlag;
 
@@ -250,7 +215,7 @@ export class TopologyTemplateUtil {
                                             ...inheritedProperties, ...TopologyTemplateUtil.getKVProperties(parentElement)
                                         };
                                     }
-                                    if (this.hasParentType(parentElement)) {
+                                    if (InheritanceUtils.hasParentType(parentElement)) {
                                         parent = parentElement.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.typeRef;
                                         continueFlag = true;
                                     }
@@ -287,13 +252,6 @@ export class TopologyTemplateUtil {
         );
     }
 
-    static hasParentType(element: EntityType): boolean {
-        return (element && element.full
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom
-        );
-    }
-
     /**
      * This function gets KV properties of a type and sets their default values
      * @param any type: the element type, e.g. capabilityType, requirementType etc.
@@ -316,71 +274,6 @@ export class TopologyTemplateUtil {
             newKVProperies[key] = value;
         }
         return newKVProperies;
-    }
-
-    static getParent(element: EntityType, entities: EntityType[]): EntityType {
-        if (this.hasParentType(element)) {
-            const parentQName = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.type;
-            return entities.find(entity => entity.qName === parentQName);
-        }
-        return null;
-    }
-
-    static getInheritanceAncestry(entityType: string, entityTypes: EntityType[]): EntityType[] {
-        const entity = entityTypes.find(type => type.qName === entityType);
-        const result = [];
-
-        if (entity) {
-            result.push(entity);
-            let parent = this.getParent(entity, entityTypes);
-
-            while (parent) {
-                result.push(parent);
-                parent = this.getParent(parent, entityTypes);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Gets the active set of allowed target node types for this YAML policy type
-     * i.e., returns the targets array which is the lowest possible.
-     * @param policyTypeQName
-     * @param policyTypes
-     */
-    static getActiveTargetsOfYamlPolicyType(policyTypeQName: string, policyTypes: TPolicyType[]): string[] {
-        const hierarchy = this.getInheritanceAncestry(policyTypeQName, policyTypes);
-        let result = [];
-
-        for (const type of hierarchy) {
-            if ((<TPolicyType>type).targets) {
-                result = (<TPolicyType>type).targets;
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    static getActiveKVPropertiesOfTemplateElement(templateElementProperties: any, typeQName: string, entityTypes: EntityType[]): any {
-        const typeName = new QName(typeQName).localName;
-        const defaultTypeProperties = this.getDefaultPropertiesFromEntityTypes(typeName, entityTypes);
-        const result = {};
-
-        if (defaultTypeProperties && defaultTypeProperties.kvproperties) {
-            Object.keys(defaultTypeProperties.kvproperties).forEach(currentPropKey => {
-
-                if (templateElementProperties && templateElementProperties.kvproperties &&
-                    Object.keys(templateElementProperties.kvproperties).some(tempPropertyKey => tempPropertyKey === currentPropKey)) {
-                    result[currentPropKey] = templateElementProperties.kvproperties[currentPropKey];
-                } else {
-                    result[currentPropKey] = defaultTypeProperties.kvproperties[currentPropKey];
-                }
-            });
-        }
-
-        return { kvproperties: result };
     }
 
     static initRelationTemplates(relationshipTemplateArray: Array<TRelationshipTemplate>,

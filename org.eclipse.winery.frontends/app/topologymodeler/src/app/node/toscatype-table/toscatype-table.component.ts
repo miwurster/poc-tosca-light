@@ -26,7 +26,7 @@ import { RequirementModel } from '../../models/requirementModel';
 import { RequirementDefinitionModel } from '../../models/requirementDefinitonModel';
 import { VisualEntityType } from '../../models/ttopology-template';
 import { TPolicy } from '../../models/policiesModalData';
-import { TopologyTemplateUtil } from '../../models/topologyTemplateUtil';
+import { InheritanceUtils } from '../../models/InheritanceUtils';
 
 @Component({
     selector: 'winery-toscatype-table',
@@ -221,7 +221,7 @@ export class ToscatypeTableComponent implements OnInit, OnChanges {
     }
 
     private getRequirementDefinition(req: RequirementModel): RequirementDefinitionModel {
-        const listOfBequeathingNodeTypes = TopologyTemplateUtil
+        const listOfBequeathingNodeTypes = InheritanceUtils
             .getInheritanceAncestry(this.currentNodeData.nodeTemplate.type, this.entityTypes.unGroupedNodeTypes);
         for (const nodeType of listOfBequeathingNodeTypes) {
             if (nodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0] &&

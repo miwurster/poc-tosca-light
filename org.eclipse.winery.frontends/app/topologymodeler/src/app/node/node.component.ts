@@ -34,8 +34,8 @@ import { VersionsComponent } from './versions/versions.component';
 import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
 import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
-import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 import { Subscription } from 'rxjs';
+import { InheritanceUtils } from '../models/InheritanceUtils';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -553,12 +553,12 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     private getAllowedPolicies() {
         // get the ancestry of the node type
-        const nodeTypeAncestry = TopologyTemplateUtil.getInheritanceAncestry(this.nodeTemplate.type, this.entityTypes.unGroupedNodeTypes);
+        const nodeTypeAncestry = InheritanceUtils.getInheritanceAncestry(this.nodeTemplate.type, this.entityTypes.unGroupedNodeTypes);
         const result = [];
         // check each potential yaml policy
         this.entityTypes.yamlPolicies.forEach(policy => {
             // get the node types allowed as targets to this current policy
-            const allowedNodeTypes = TopologyTemplateUtil.getActiveTargetsOfYamlPolicyType(policy.policyType, this.entityTypes.policyTypes);
+            const allowedNodeTypes = InheritanceUtils.getEffectiveTargetsOfYamlPolicyType(policy.policyType, this.entityTypes.policyTypes);
 
             if (allowedNodeTypes.length > 0) {
                 // if the two sets of node types intersect, the current policy is allowed.
