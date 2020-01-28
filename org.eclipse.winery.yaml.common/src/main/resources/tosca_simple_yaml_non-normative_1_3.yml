@@ -1,8 +1,8 @@
-tosca_definitions_version: tosca_simple_yaml_1_1
+tosca_definitions_version: tosca_simple_yaml_1_3
 
 description: >
   Non-normative type definitions from Chapter 9 of TOSCA Simple Profile in
-  YAML Version 1.1 - Candidate OASIS Standard 01.
+  YAML Version 1.3 - Candidate OASIS Standard 01.
 
 #---------------------------------------------------------------------------------------------------------------------#
 #

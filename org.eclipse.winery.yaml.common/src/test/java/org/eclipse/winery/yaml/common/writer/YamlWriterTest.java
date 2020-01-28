@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -50,7 +50,7 @@ public class YamlWriterTest extends AbstractTest {
     @DisplayName("Test read and write single round trip")
     @ParameterizedTest(name = "{index} name=''{0}''")
     @ValueSource(strings = {
-        "example_16-topology_templates-1_1"
+        "example_16-topology_templates-1_3"
     })
     public void roundTripSingleTest(String file) throws Exception {
         Path fileName = getYamlFile(file);

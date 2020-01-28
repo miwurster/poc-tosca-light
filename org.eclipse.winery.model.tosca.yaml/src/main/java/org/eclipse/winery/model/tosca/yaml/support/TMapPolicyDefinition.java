@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.eclipse.winery.model.tosca.yaml.TPolicyDefinition;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "tMapPolicyDefinition", namespace = " http://docs.oasis-open.org/tosca/ns/simple/yaml/1.0", propOrder = {
+@XmlType(name = "tMapPolicyDefinition", namespace = " http://docs.oasis-open.org/tosca/ns/simple/yaml/1.3", propOrder = {
     "map"
 })
 public class TMapPolicyDefinition implements Map<String, TPolicyDefinition> {
