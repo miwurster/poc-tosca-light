@@ -21,7 +21,7 @@ import javax.xml.namespace.QName;
 
 public class Defaults {
     public static final String TOSCA_NORMATIVE_TYPES = "tosca_simple_yaml_1_3.yml";
-    public static final String TOSCA_NONNORMATIVE_TYPES = "tosca_simple_yaml_non-normative_1_1.yml";
+    public static final String TOSCA_NONNORMATIVE_TYPES = "tosca_simple_yaml_non-normative_1_3.yml";
     public static final List<String> YAML_TYPES = new ArrayList<>(Arrays.asList("string", "integer", "float", "boolean", "timestamp", "null"));
     public static final List<String> TOSCA_TYPES = new ArrayList<>(Arrays.asList("list", "map"));
     public static final String TOSCA_DEFINITIONS_VERSION_PATTERN = "tosca_simple_yaml_\\d_\\d|http://docs\\.oasis-open\\.org/tosca/ns/simple/yaml/\\d\\.\\d";

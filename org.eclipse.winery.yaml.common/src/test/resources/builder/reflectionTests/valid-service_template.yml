@@ -387,13 +387,13 @@ topology_template:
       properties:
         gt1.prt1: Property value
   policies:
-    plc1:
-      type: plt1
-      description: Policy definition
-      metadata:
-        md1: Metadata value
-      properties:
-        plc1.prt1: Property value
+    - plc1:
+        type: plt1
+        description: Policy definition
+        metadata:
+          md1: Metadata value
+        properties:
+          plc1.prt1: Property value
   outputs:
     opt1: 
       type: integer
