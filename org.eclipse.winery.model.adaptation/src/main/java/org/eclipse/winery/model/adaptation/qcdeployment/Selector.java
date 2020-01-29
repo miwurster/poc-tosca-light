@@ -16,27 +16,19 @@ package org.eclipse.winery.model.adaptation.qcdeployment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.SortedSet;
 
 import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
-import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
-import org.eclipse.winery.common.ids.definitions.NodeTypeId;
-import org.eclipse.winery.common.interfaces.QNameAlreadyExistsException;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
-import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.jvm.hotspot.oops.ObjArrayKlass;
 
 public class Selector {
 
