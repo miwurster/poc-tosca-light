@@ -64,6 +64,13 @@ export class InheritanceUtils {
         return null;
     }
 
+    static hasParentType(element: EntityType): boolean {
+        return (element && element.full
+            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom
+        );
+    }
+
     static getInheritanceAncestry(entityType: string, entityTypes: EntityType[]): EntityType[] {
         const entity = entityTypes.find(type => type.qName === entityType);
         const result = [];
@@ -81,11 +88,19 @@ export class InheritanceUtils {
         return result;
     }
 
-    static hasParentType(element: EntityType): boolean {
-        return (element && element.full
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom
-        );
+    static getDescendantsOfEntityType<T extends EntityType>(entityType: string, entityTypes: T[]): T[] {
+        const listOfDescendants: T[] = [];
+        listOfDescendants.push(entityTypes.find(et => et.qName === entityType));
+        // Look for any entityTypes, that have the given entityType somewhere along their inheritance hierarchy.
+        for (const entType of entityTypes) {
+            if (entType.qName !== entityType) {
+                if (this.getInheritanceAncestry(entType.qName, entityTypes).find(candidate => candidate.qName === entityType)) {
+                    // Those elements are the descendants
+                    listOfDescendants.push(entType);
+                }
+            }
+        }
+        return listOfDescendants;
     }
 
     /**
@@ -221,5 +236,4 @@ export class InheritanceUtils {
             }
         }
     }
-
 }
