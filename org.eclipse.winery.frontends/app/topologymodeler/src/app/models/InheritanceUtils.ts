@@ -236,4 +236,17 @@ export class InheritanceUtils {
             }
         }
     }
+
+    static getValidSourceTypes(capabilityDefinition: CapabilityDefinitionModel, capabilityTypes: EntityType[]): string[] {
+        if (capabilityDefinition.validSourceTypes) {
+            return capabilityDefinition.validSourceTypes;
+        } else {
+            for (const capabilityType of InheritanceUtils.getInheritanceAncestry(capabilityDefinition.capabilityType, capabilityTypes)) {
+                const listOfValidSourceTypes = capabilityType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].validNodeTypes;
+                if (listOfValidSourceTypes) {
+                    return listOfValidSourceTypes;
+                }
+            }
+        }
+    }
 }
