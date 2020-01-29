@@ -19,7 +19,6 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import org.eclipse.winery.model.tosca.TArtifactTemplate;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 

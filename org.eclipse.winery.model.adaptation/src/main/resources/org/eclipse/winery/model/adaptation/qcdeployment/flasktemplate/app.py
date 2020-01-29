@@ -5,7 +5,7 @@ $MODULE_IMPORT$
 app = Flask(__name__)
 
 SERVICE_NAME = $SERVICE_NAME$
-$IMPLEMENTATIONS$
+IMPLEMENTATIONS = $IMPLEMENTATIONS$
 PARAMETERS = $PARAMETERS$
 
 
@@ -18,7 +18,7 @@ def service():
         params = request.get_json()
         impl_id = params.get("impl_id")
         try:
-            $MAIN$
+            result = $MAIN$
         except (ValueError, TypeError) as e:
             return Response(str(e), status=400)
         except Exception as e:

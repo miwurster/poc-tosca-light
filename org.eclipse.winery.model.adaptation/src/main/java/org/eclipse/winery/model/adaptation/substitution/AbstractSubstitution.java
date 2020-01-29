@@ -53,8 +53,8 @@ public class AbstractSubstitution {
     }
 
     /**
-     * Creates a new version of the given Service Template for the substitution.
-     * If no new version can be created, the given Service Template will be returned.
+     * Creates a new version of the given Service Template for the substitution. If no new version can be created, the
+     * given Service Template will be returned.
      *
      * @param serviceTemplateId the Service Template containing abstract types to be substituted
      * @return the new Id of the Service Template
