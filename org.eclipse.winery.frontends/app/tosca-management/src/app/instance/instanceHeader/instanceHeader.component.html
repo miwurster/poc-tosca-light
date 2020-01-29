@@ -45,6 +45,10 @@
                 <li *ngIf="showEdmmExport">
                     <a target="_blank" href="{{ toscaComponent.edmmExportPath }}">Export to EDMM</a>
                 </li>
+                <li class="divider dropdown-divider"></li>
+                <li *ngIf="showQCExport">
+                    <a target="_blank" href="{{ toscaComponent.qcExportPath }}">Generate QC-API</a>
+                </li>
             </ul>
         </div>
         <winery-version class="col-lg-4" [versions]="versions"></winery-version>

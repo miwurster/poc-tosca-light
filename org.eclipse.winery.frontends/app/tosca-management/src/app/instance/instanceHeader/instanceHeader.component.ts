@@ -52,6 +52,7 @@ export class InstanceHeaderComponent implements OnInit {
     showManagementButtons = true;
     accountabilityEnabled: boolean;
     showEdmmExport: boolean;
+    showQCExport: boolean;
 
     constructor(private router: Router, private accountabilityConfig: ConfigurationService,
                 public sharedData: InstanceService,
@@ -70,6 +71,9 @@ export class InstanceHeaderComponent implements OnInit {
         }
 
         this.showEdmmExport = this.toscaComponent.toscaType === ToscaTypes.ServiceTemplate && this.configurationService.configuration.features.edmmModeling;
+
+        // TODO only show when containing QC components
+        this.showQCExport = true;
     }
 
     removeConfirmed() {

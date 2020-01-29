@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-6">
+        <form action="javascript:onSubmit()">
+            <div class="card">
+                <div class="card-header">Input Parameters</div>
+                <div class="card-body">
+                    {% if implementations|length > 1 %}
+                    <div class="form-group">
+                        <label for="impl_id">Implementation</label>
+                        <select class="form-control" id="impl_id" required>
+                            {% for impl in implementations %}
+                            <option value="{{ impl.id }}"
+                                    {% if loop.index== 0 %}selected{% endif %}>{{ impl.name }} ({{ impl.fw }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="form-group">
+                        <label for="impl_id_show">Implementation</label>
+                        <input id="impl_id_show" class="form-control"
+                               value="{{ implementations.0.name }} ({{ implementations.0.fw }})" disabled readonly>
+                    </div>
+                    {% endif %}
+                    {% for param in parameters %}
+                    {% if param.type == "checkbox" %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="{{ param.type }}" value="" id="{{ param.name }}">
+                        <label class="form-check-label" for="{{ param.name }}">{{ param.name }}</label>
+                        <small id="{{ param.name }}" class="form-text text-muted">{{ param.description }}</small>
+                    </div>
+                    {% else %}
+                    <div class="form-group">
+                        <label for="{{ param.name }}">{{ param.name }}</label>
+                        <input class="form-control" id="{{ param.name }}" type="{{ param.type }}">
+                        <small id="{{ param.name }}" class="form-text text-muted">{{ param.description }}</small>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <button id="button" class="btn btn-primary float-right" type="submit">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<br>
+<div id="spinner" class="row justify-content-center" hidden>
+    <div class="spinner-grow m-5" role="status"></div>
+</div>
+<div id="resultRow" class="row justify-content-center" hidden>
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">Output</div>
+            <div id="resultBody" class="card-body"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(".form-control").each(function () {
+        if ($(this).attr("type") === "number") {
+            $(this).attr("step", "any");
+            $(this).val(0);
+        }
+    });
+
+    function onSubmit() {
+        $("#button").attr("disabled", true);
+        $("#resultRow").attr("hidden", true);
+        $("#spinner").attr("hidden", false);
+
+        let data = {};
+        $(".form-control, .form-check-input").each(function () {
+            if ($(this).attr("type") === "checkbox") {
+                data[$(this).attr("id")] = $(this).prop("checked");
+            } else if ($(this).attr("type") === "number") {
+                data[$(this).attr("id")] = parseFloat($(this).val());
+            } else {
+                if ($(this).attr("id") !== "impl_id_show") {
+                    data[$(this).attr("id")] = $(this).val();
+                }
+            }
+        });
+
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/',
+            dataType: 'html',
+            data: JSON.stringify(data),
+            success: function (res) {
+                $("#resultBody").html(JSON.parse(res));
+                $("#button").attr("disabled", false);
+                $("#spinner").attr("hidden", true);
+                $("#resultRow").attr("hidden", false);
+            },
+            error: function (res) {
+                $("#resultBody").html(res.status + " " + res.statusText + ": " + res.responseText);
+                $("#button").attr("disabled", false);
+                $("#spinner").attr("hidden", true);
+                $("#resultRow").attr("hidden", false);
+            }
+        });
+    }
+</script>
+
+{% endblock %}

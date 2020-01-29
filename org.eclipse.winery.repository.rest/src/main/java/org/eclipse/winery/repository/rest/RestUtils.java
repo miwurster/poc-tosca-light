@@ -68,6 +68,7 @@ import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.common.ids.elements.ToscaElementId;
 import org.eclipse.winery.common.version.VersionUtils;
 import org.eclipse.winery.common.version.WineryVersion;
+import org.eclipse.winery.model.adaptation.qcdeployment.APIGenerator;
 import org.eclipse.winery.model.selfservice.Application;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.HasType;
@@ -325,6 +326,24 @@ public class RestUtils {
             .type(MimeTypes.MIMETYPE_YAML)
             .entity(stringWriter.toString())
             .build();
+    }
+
+    public static Response getQcServiceWrapper(TServiceTemplate element) {
+        //QCDeployment.deploy(element);
+        APIGenerator apiGenerator = new APIGenerator(element);
+
+//        String contentDisposition = String.format("attachment;filename=\"%s.py\"", element.getId());
+
+        StreamingOutput so = apiGenerator::generate;
+
+        String sb = "attachment;filename=\"test.zip\"";
+        return Response.ok().header("Content-Disposition", sb).type(MimeTypes.MIMETYPE_ZIP).entity(so).build();
+
+//        return Response.ok()
+//            .header("Content-Disposition", contentDisposition)
+//            .type(MediaType.TEXT_PLAIN_TYPE)
+//            .entity(string)
+//            .build();
     }
 
     /**

@@ -258,6 +258,7 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         @QueryParam(value = "csar") String csar,
         @QueryParam(value = "yaml") String yaml,
         @QueryParam(value = "edmm") String edmm,
+        @QueryParam(value = "qcAPI") String qcAPI,
         @QueryParam(value = "addToProvenance") String addToProvenance,
         @Context UriInfo uriInfo
     ) {
@@ -268,6 +269,10 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
 
         if (edmm != null && this.element instanceof TServiceTemplate) {
             return RestUtils.getEdmmModel((TServiceTemplate) this.element);
+        }
+        
+        if (qcAPI != null && this.element instanceof TServiceTemplate) {
+            return RestUtils.getQcServiceWrapper((TServiceTemplate) this.element);
         }
 
         // TODO: It should be possible to specify ?yaml&csar to retrieve a CSAR and ?yaml to retrieve the .yaml representation
@@ -294,14 +299,15 @@ public abstract class AbstractComponentInstanceResource implements Comparable<Ab
         @QueryParam(value = "csar") String csar,
         @QueryParam(value = "yaml") String yaml,
         @QueryParam(value = "edmm") String edmm,
+        @QueryParam(value = "qcAPI") String qcAPI,
         @QueryParam(value = "addToProvenance") String addToProvenance,
         @QueryParam(value = "xml") String xml,
         @Context UriInfo uriInfo) {
         // in case there is an URL requested directly via the browser UI, the accept cannot be put at the link.
         // thus, there is the hack with ?csar and ?yaml
         // the hack is implemented at getDefinitionsAsResponse
-        if ((csar != null) || (yaml != null) || (xml != null) || (edmm != null)) {
-            return this.getDefinitionsAsResponse(csar, yaml, edmm, addToProvenance, uriInfo);
+        if ((csar != null) || (yaml != null) || (xml != null) || (edmm != null) || (qcAPI != null)) {
+            return this.getDefinitionsAsResponse(csar, yaml, edmm, qcAPI, addToProvenance, uriInfo);
         }
         String repositoryUiUrl = Environments.getUiConfig().getEndpoints().get("repositoryUiUrl");
         String uiUrl = uriInfo.getAbsolutePath().toString().replaceAll(Environments.getUiConfig().getEndpoints().get("repositoryApiUrl"), repositoryUiUrl);
