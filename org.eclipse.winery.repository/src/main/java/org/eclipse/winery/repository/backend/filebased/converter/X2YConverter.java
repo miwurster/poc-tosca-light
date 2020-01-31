@@ -127,7 +127,7 @@ public class X2YConverter {
      * Converts TOSCA XML Definitions to TOSCA YAML ServiceTemplates
      */
     @NonNull
-    public TServiceTemplate convert(Definitions node) throws MultiException {
+    public TServiceTemplate convert(Definitions node) {
 
         LOGGER.debug("Convert TServiceTemplate: {}", node.getIdFromIdOrNameField());
 
@@ -141,13 +141,8 @@ public class X2YConverter {
 
         if (node.getServiceTemplates().size() == 1) {
             builder.setTopologyTemplate(convert(node.getServiceTemplates().get(0)));
-//            if (Objects.nonNull(node.getServiceTemplates().get(0).getName())) {
-//                tmpName = new QName(node.getServiceTemplates().get(0).getName());
-//            }
             builder.addMetadata("targetNamespace", node.getTargetNamespace());
         }
-
-        builder.setImports(convertImports());
 
         return builder.build();
     }
