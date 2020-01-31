@@ -15,5 +15,5 @@ package org.eclipse.winery.model.tosca.yaml.support;
 
 public class Defaults {
     public static final String DEFAULT_NS = "http://www.eclipse.org/winery/ns/simple/yaml/1.3/default";
-    public static final String TOSCA_DEFINITIONS_VERSION = "tosca_simple_yaml_1_2";
+    public static final String TOSCA_DEFINITIONS_VERSION = "tosca_simple_yaml_1_3";
 }
