@@ -122,11 +122,16 @@ public class X2YConverter {
         this.importDefinitions = new LinkedHashMap<>();
     }
 
+    @NonNull
+    public TServiceTemplate convert(Definitions node) {
+        return convert(node, false);
+    }
+
     /**
      * Converts TOSCA XML Definitions to TOSCA YAML ServiceTemplates
      */
     @NonNull
-    public TServiceTemplate convert(Definitions node) {
+    public TServiceTemplate convert(Definitions node, boolean convertImports) {
 
         LOGGER.debug("Convert TServiceTemplate: {}", node.getIdFromIdOrNameField());
 
@@ -141,6 +146,10 @@ public class X2YConverter {
         if (node.getServiceTemplates().size() == 1) {
             builder.setTopologyTemplate(convert(node.getServiceTemplates().get(0)));
             builder.addMetadata("targetNamespace", node.getTargetNamespace());
+        }
+
+        if (convertImports) {
+            builder.setImports(convertImports());
         }
 
         return builder.build();
