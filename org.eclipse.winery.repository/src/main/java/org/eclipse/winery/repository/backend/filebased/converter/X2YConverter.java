@@ -100,7 +100,6 @@ import org.eclipse.winery.model.tosca.yaml.support.TMapRequirementDefinition;
 import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 import org.eclipse.winery.repository.backend.filebased.converter.support.Namespaces;
 import org.eclipse.winery.repository.backend.filebased.converter.support.ValueConverter;
-import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
 import org.eclipse.winery.repository.backend.filebased.converter.support.xml.TypeConverter;
 
 import org.eclipse.collections.impl.bimap.mutable.HashBiMap;
