@@ -14,7 +14,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { JsPlumbService } from './services/jsPlumb.service';
+import { HttpModule } from '@angular/http';
+
 
 import { AppComponent } from './app.component';
 import { TopBarComponent } from './component/top-bar/top-bar.component';
@@ -28,9 +31,10 @@ import { SideBarComponent } from './component/side-bar/side-bar.component';
   ],
   imports: [
     BrowserModule,
-      HttpClientModule
+      HttpClientModule,
+      HttpModule
   ],
-  providers: [],
+  providers: [JsPlumbService, HttpClientModule],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
