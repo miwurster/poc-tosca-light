@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,18 +12,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#skipArtifactTemplateInput, #createArtifactTemplateInput, #linkArtifactTemplateInput {
-    margin-right: .5em;
-}
+package org.eclipse.winery.repository.datatypes.ids.elements;
 
-.form-group-grouping {
-    padding: 1em;
-    background-color: #dddddd;
-}
+import org.eclipse.winery.common.ids.GenericId;
 
-.btn-link.btn-anchor {
-    outline: none !important;
-    padding: 0;
-    border: 0;
-    vertical-align: baseline;
+public class GenericDirectoryId extends DirectoryId {
+    public GenericDirectoryId(GenericId parent, String directoryId) {
+        super(parent, directoryId);
+    }
+
+    public GenericDirectoryId(GenericId parent, String directoryId, boolean URLencoded) {
+        super(parent, directoryId, URLencoded);
+    }
 }

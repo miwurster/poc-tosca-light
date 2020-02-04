@@ -15,6 +15,7 @@ package org.eclipse.winery.repository.converter;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,10 @@ import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationI
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TAppliesTo;
+import org.eclipse.winery.model.tosca.TArtifact;
 import org.eclipse.winery.model.tosca.TArtifactReference;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TArtifacts;
 import org.eclipse.winery.model.tosca.TBoolean;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TCapability;
@@ -236,7 +239,7 @@ public class X2YConverter {
                 .setMetadata(meta)
                 .setRequirements(convert(node.getRequirements()))
                 .setCapabilities(convert(node.getCapabilities()))
-                .setArtifacts(convert(node.getDeploymentArtifacts()))
+                .setArtifacts(convert(node.getArtifacts()))
                 .build()
         );
     }
@@ -295,9 +298,13 @@ public class X2YConverter {
     }
 
     public Map<String, TArtifactType> convert(org.eclipse.winery.model.tosca.TArtifactType node) {
+        TArtifactType.Builder builder = new TArtifactType.Builder()
+            .setMimeType(node.getMimeType())
+            .setFileExt(node.getFileExtensions());
+
         return Collections.singletonMap(
             node.getIdFromIdOrNameField(),
-            convert(node, new TArtifactType.Builder(), org.eclipse.winery.model.tosca.TArtifactType.class).build()
+            convert(node, builder, org.eclipse.winery.model.tosca.TArtifactType.class).build()
         );
     }
 
@@ -786,6 +793,7 @@ public class X2YConverter {
         return convertArtifactTemplate(node);
     }
 
+    @Deprecated
     public TArtifactDefinition convertArtifactTemplate(TArtifactTemplate node) {
         List<String> files = new ArrayList<>();
         TArtifactTemplate.ArtifactReferences artifactReferences = node.getArtifactReferences();
@@ -803,7 +811,7 @@ public class X2YConverter {
             new ArtifactTypeId(node.getType()),
             node.getType().getNamespaceURI(),
             node.getType().getLocalPart()
-        ), files)
+        ), files.size() > 0 ? files.get(0) : null)
             .build();
     }
 
@@ -923,6 +931,22 @@ public class X2YConverter {
         return TypeConverter.INSTANCE.convert(type);
     }
 
+    public Map<String, TArtifactDefinition> convert(TArtifacts node) {
+        if (Objects.isNull(node))
+            return null;
+
+        if (Objects.isNull(node.getArtifact()))
+            return new HashMap<>();
+
+        return node.getArtifact().stream()
+            .filter(Objects::nonNull)
+            .map(this::convert)
+            .filter(Objects::nonNull)
+            .flatMap(map -> map.entrySet().stream())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     public Map<String, TCapabilityAssignment> convert(org.eclipse.winery.model.tosca.TNodeTemplate.Capabilities node) {
         if (Objects.isNull(node)) return null;
         return node.getCapability().stream()
@@ -932,6 +956,17 @@ public class X2YConverter {
             .flatMap(map -> map.entrySet().stream())
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public Map<String, TArtifactDefinition> convert(TArtifact node) {
+        if (Objects.isNull(node)) return null;
+
+        return Collections.singletonMap(
+            node.getName(),
+            new TArtifactDefinition.Builder(this.convert(node.getType(), new ArtifactTypeId(node.getType())), node.getFile())
+                .setDeployPath(node.getTargetLocation())
+                .build()
+        );
     }
 
     public Map<String, TCapabilityAssignment> convert(TCapability node) {

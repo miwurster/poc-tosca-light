@@ -1,5 +1,5 @@
-/*******************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+/********************************************************************************
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -335,11 +335,8 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             .printKeyValue("repository", node.getRepository())
             .printKeyValue("description", node.getDescription())
             .printKeyValue("deploy_path", node.getDeployPath());
-        if (node.getFiles() != null) {
-            if (!node.getFiles().isEmpty()) {
-                output.printKeyValue("file", node.getFile())
-                    .printKeyValue("files", node.getFiles());
-            }
+        if (node.getFile() != null) {
+            output.printKeyValue("file", node.getFile());
         }
         return output;
     }

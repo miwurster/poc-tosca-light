@@ -16,6 +16,7 @@ package org.eclipse.winery.repository.converter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TAppliesTo;
+import org.eclipse.winery.model.tosca.TArtifact;
 import org.eclipse.winery.model.tosca.TArtifactReference;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
 import org.eclipse.winery.model.tosca.TArtifactType;
@@ -321,12 +323,9 @@ public class Y2XConverter {
         if (node == null) return null;
         TArtifactType.Builder builder = new TArtifactType.Builder(id);
         convert(node, builder);
-        if (node.getFileExt() != null) {
-            builder.addTags("file_ext", "[" + node.getFileExt().stream().map(Object::toString)
-                .collect(Collectors.joining(",")) + "]");
-        }
+        builder.setFileExtensions(node.getFileExt());
         if (node.getMimeType() != null) {
-            builder.addTags("mime_type", node.getMimeType());
+            builder.setMimeType(node.getMimeType());
         }
         return builder.build();
     }
@@ -338,15 +337,11 @@ public class Y2XConverter {
      * @return TOSCA XML ArtifactTemplate
      */
     @NonNull
+    @Deprecated
     private TArtifactTemplate convert(TArtifactDefinition node, String id) {
         TArtifactTemplate.Builder builder = new TArtifactTemplate.Builder(id, node.getType());
-        if (node.getFiles() != null) {
-            builder.addArtifactReferences(node.getFiles().stream()
-                .filter(Objects::nonNull)
-                // TODO change filepath
-                .map(file -> new TArtifactReference.Builder(file).build())
-                .collect(Collectors.toList())
-            );
+        if (node.getFile() != null) {
+            builder.addArtifactReferences(Collections.singletonList(new TArtifactReference.Builder(node.getFile()).build()));
         }
         if (node.getProperties() != null) {
             builder.setProperties(new TEntityTemplate.Properties());
@@ -355,11 +350,31 @@ public class Y2XConverter {
     }
 
     /**
+     * Converts a TOSCA YAML ArtifactDefinition to a non-TOSCA XML TArtifact
+     *
+     * @param node TOSCA YAML ArtifactDefinition
+     * @return TOSCA XML ArtifactTemplate
+     */
+    @NonNull
+    private TArtifact convertToTArtifact(TArtifactDefinition node, String id) {
+        TArtifact.Builder builder = new TArtifact.Builder(id, node.getType())
+            .setTargetLocation(node.getDeployPath())
+            .setFile(node.getFile());
+
+        if (node.getProperties() != null) {
+            builder.setProperties(convertPropertyAssignments(node.getProperties()));
+        }
+
+        return new TArtifact(builder);
+    }
+
+    /**
      * Converts TOSCA YAML ArtifactDefinitions to TOSCA XML DeploymentArtifacts
      *
      * @param artifactDefinitionMap map of TOSCA YAML ArtifactDefinitions
      * @return TOSCA XML DeploymentArtifacts
      */
+    @Deprecated
     private TDeploymentArtifacts convertDeploymentArtifacts(@NonNull Map<String, TArtifactDefinition> artifactDefinitionMap, String targetNamespace) {
         if (artifactDefinitionMap.isEmpty()) return null;
         return new TDeploymentArtifacts.Builder(artifactDefinitionMap.entrySet().stream()
@@ -381,6 +396,7 @@ public class Y2XConverter {
      * @param artifactDefinitionMap map of TOSCA YAML ArtifactDefinitions
      * @return TOSCA XML DeploymentArtifacts
      */
+    @Deprecated
     private TDeploymentArtifacts convertDeploymentArtifacts(@NonNull Map<String, TArtifactDefinition> artifactDefinitionMap) {
         if (artifactDefinitionMap.isEmpty()) return null;
         return new TDeploymentArtifacts.Builder(artifactDefinitionMap.entrySet().stream()
@@ -427,6 +443,7 @@ public class Y2XConverter {
      * @param artifactDefinitionMap map of TOSCA YAML ArtifactDefinitions
      * @return TOSCA XML ImplementationArtifacts
      */
+    @Deprecated
     private TImplementationArtifacts convertImplementationArtifact(@NonNull Map<String, TArtifactDefinition> artifactDefinitionMap, String targetNamespace) {
         if (artifactDefinitionMap.isEmpty()) return null;
         TImplementationArtifacts output = new TImplementationArtifacts.Builder(artifactDefinitionMap.entrySet().stream()
@@ -598,7 +615,8 @@ public class Y2XConverter {
             .setProperties(convertPropertyAssignments(node.getProperties()))
             .addRequirements(convert(node.getRequirements()))
             .addCapabilities(convert(node.getCapabilities()))
-            .setDeploymentArtifacts(convertDeploymentArtifacts(node.getArtifacts()));
+            // .setDeploymentArtifacts(convertDeploymentArtifacts(node.getArtifacts()));
+            .setArtifacts(convert(node.getArtifacts()));
         TNodeTemplate nodeTemplate = builder.build();
         this.nodeTemplateMap.put(id, nodeTemplate);
 
@@ -1001,7 +1019,7 @@ public class Y2XConverter {
         }
         TNodeTypeImplementation.Builder builder = (new TNodeTypeImplementation.Builder(type + "_impl", new QName(targetNamespace, type))
             .setTargetNamespace(targetNamespace)
-            .setDeploymentArtifacts(convertDeploymentArtifacts(deplArtifacts, targetNamespace))
+            // .setDeploymentArtifacts(convertDeploymentArtifacts(deplArtifacts, targetNamespace))
         );
         TImplementationArtifacts implementationArtifacts = convertImplementationArtifact(implArtifacts, targetNamespace);
         builder.setImplementationArtifacts(implementationArtifacts);
@@ -1148,7 +1166,7 @@ public class Y2XConverter {
                 } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TArtifactType) {
                     return convert((org.eclipse.winery.model.tosca.yaml.TArtifactType) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TArtifactDefinition) {
-                    return convert((TArtifactDefinition) entry.getValue(), entry.getKey());
+                    return convertToTArtifact((TArtifactDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TCapabilityType) {
                     return convert((org.eclipse.winery.model.tosca.yaml.TCapabilityType) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TCapabilityDefinition) {

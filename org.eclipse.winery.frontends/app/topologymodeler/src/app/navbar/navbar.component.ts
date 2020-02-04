@@ -25,7 +25,8 @@ import { TopologyRendererState } from '../redux/reducers/topologyRenderer.reduce
 import { WineryActions } from '../redux/actions/winery.actions';
 import { StatefulAnnotationsService } from '../services/statefulAnnotations.service';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
-import { TPolicy } from '../models/policiesModalData';
+import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
+import { TTopologyTemplate } from '../models/ttopology-template';
 
 /**
  * The navbar of the topologymodeler.
@@ -55,7 +56,7 @@ export class NavbarComponent implements OnDestroy {
     private exportCsarButtonRef: ElementRef;
 
     navbarButtonsState: TopologyRendererState;
-    unformattedTopologyTemplate;
+    currentTopologyTemplate: TTopologyTemplate;
     subscriptions: Array<Subscription> = [];
     exportCsarUrl: string;
     splittingOngoing: boolean;
@@ -69,11 +70,12 @@ export class NavbarComponent implements OnDestroy {
                 private wineryActions: WineryActions,
                 private backendService: BackendService,
                 private statefulService: StatefulAnnotationsService,
-                private hotkeysService: HotkeysService) {
+                private hotkeysService: HotkeysService,
+                private configurationService: WineryRepositoryConfigurationService) {
         this.subscriptions.push(ngRedux.select(state => state.topologyRendererState)
             .subscribe(newButtonsState => this.setButtonsState(newButtonsState)));
         this.subscriptions.push(ngRedux.select(currentState => currentState.wineryState.currentJsonTopology)
-            .subscribe(topologyTemplate => this.unformattedTopologyTemplate = topologyTemplate));
+            .subscribe(topologyTemplate => this.currentTopologyTemplate = topologyTemplate));
         this.hotkeysService.add(new Hotkey('mod+s', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             this.saveTopologyTemplateToRepository();
@@ -245,31 +247,8 @@ export class NavbarComponent implements OnDestroy {
      * Calls the BackendService's saveTopologyTemplate method and displays a success message if successful.
      */
     saveTopologyTemplateToRepository() {
-        // Initialization
-        const topologySkeleton = {
-            documentation: [],
-            any: [],
-            otherAttributes: {},
-            relationshipTemplates: [],
-            nodeTemplates: [],
-            policies: { policy: new Array<TPolicy>() }
-        };
-        // Prepare for saving by updating the existing topology with the current topology state inside the Redux store
-        topologySkeleton.nodeTemplates = this.unformattedTopologyTemplate.nodeTemplates;
-        topologySkeleton.relationshipTemplates = this.unformattedTopologyTemplate.relationshipTemplates;
-        topologySkeleton.relationshipTemplates.map(relationship => {
-            delete relationship.state;
-        });
-        // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
-        topologySkeleton.nodeTemplates.map(nodeTemplate => {
-            delete nodeTemplate.visuals;
-            delete nodeTemplate._state;
-        });
-        topologySkeleton.policies = this.unformattedTopologyTemplate.policies;
-        const topologyToBeSaved = topologySkeleton;
-        console.log(topologyToBeSaved);
         // The topology gets saved here.
-        this.backendService.saveTopologyTemplate(topologyToBeSaved)
+        this.backendService.saveTopologyTemplate(this.currentTopologyTemplate)
             .subscribe(res => {
                 res.ok === true ? this.alert.success('<p>Saved the topology!<br>' + 'Response Status: '
                     + res.statusText + ' ' + res.status + '</p>')

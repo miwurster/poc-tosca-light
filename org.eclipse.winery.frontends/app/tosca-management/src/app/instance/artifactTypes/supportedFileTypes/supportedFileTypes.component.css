@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,18 +12,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#skipArtifactTemplateInput, #createArtifactTemplateInput, #linkArtifactTemplateInput {
-    margin-right: .5em;
+.left {
+    float: left;
 }
 
-.form-group-grouping {
-    padding: 1em;
-    background-color: #dddddd;
+.right {
+    float: right;
 }
 
-.btn-link.btn-anchor {
-    outline: none !important;
-    padding: 0;
-    border: 0;
-    vertical-align: baseline;
+.width-100-percent {
+    width: 100%;
+}
+
+.localLoader {
+    padding-top: 180px;
 }

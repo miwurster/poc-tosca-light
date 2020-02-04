@@ -63,15 +63,14 @@ public class DefinitionValidator extends ExceptionVisitor<Result, Parameter> {
 
     @Override
     public Result visit(TArtifactDefinition node, Parameter parameter) {
-        node.getFiles().forEach(file -> {
-                if (!Files.exists(path.resolve(file))) {
-                    setException(new UndefinedFile(
-                        "Artifact file '{}' is undefined",
-                        path.resolve(file)
-                    ));
-                }
-            }
-        );
+        String file = node.getFile();
+        if (!Files.exists(path.resolve(file))) {
+            setException(new UndefinedFile(
+                "Artifact file '{}' is undefined",
+                path.resolve(file)
+            ));
+        }
+
         return super.visit(node, parameter);
     }
 
