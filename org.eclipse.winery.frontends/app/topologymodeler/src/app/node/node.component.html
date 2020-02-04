@@ -231,15 +231,23 @@
                    [ngClass]="{'fa-chevron-down': policiesgroup?.isOpen, 'fa-chevron-right': !policiesgroup?.isOpen}">
                 </i>
             </div>
-            <winery-policies
-                [readonly]="readonly"
-                (toggleModalHandler)="sendToggleAction($event)"
-                [currentNodeData]="{currentNodeId: nodeTemplate.id,
+            <winery-policies *wineryRepositoryShowOnFeature="'yaml'"
+                             [readonly]="readonly"
+                             (toggleModalHandler)="sendToggleAction($event)"
+                             [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'POLICIES',
                                     currentProperties: nodeTemplate}"
-                [policies]="policiesOfNode"
-                [entityTypes]="entityTypes"
-                (showYamlPolicyManagementModal)="handleShowYamlPolicyManagementModal()">
+                             [policies]="policiesOfNode"
+                             [entityTypes]="entityTypes"
+                             (showYamlPolicyManagementModal)="handleShowYamlPolicyManagementModal()">
+            </winery-policies>
+            <winery-policies *wineryRepositoryHideOnFeature="'yaml'"
+                             [readonly]="readonly"
+                             (toggleModalHandler)="sendToggleAction($event)"
+                             [currentNodeData]="{currentNodeId: nodeTemplate.id,
+                                    currentNodePart: 'POLICIES',
+                                    currentProperties: nodeTemplate}"
+                             [policies]="nodeTemplate.policies?.policy">
             </winery-policies>
         </accordion-group>
 

@@ -44,13 +44,12 @@ export class InstanceService {
         switch (this.toscaComponent.toscaType) {
             case ToscaTypes.NodeType:
                 if (this.configurationService.isYaml()) {
-                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.interfaces,
-                        SubMenuItems.requirementDefinitionsYaml, SubMenuItems.capabilityDefinitions,
-                        SubMenuItems.propertiesDefinition, SubMenuItems.inheritance];
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.interfaces, SubMenuItems.inheritance,
+                        SubMenuItems.requirementDefinitionsYaml, SubMenuItems.capabilityDefinitions, SubMenuItems.propertiesDefinition];
                 } else {
                     subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.instanceStates, SubMenuItems.interfaces,
-                        SubMenuItems.implementations, SubMenuItems.requirementDefinitions, SubMenuItems.capabilityDefinitions,
-                        SubMenuItems.propertiesDefinition, SubMenuItems.inheritance, SubMenuItems.tags, SubMenuItems.documentation, SubMenuItems.xml];
+                        SubMenuItems.implementations, SubMenuItems.inheritance, SubMenuItems.requirementDefinitions, SubMenuItems.capabilityDefinitions,
+                        SubMenuItems.propertiesDefinition, SubMenuItems.tags, SubMenuItems.documentation, SubMenuItems.xml];
                 }
                 break;
             case ToscaTypes.ServiceTemplate:
