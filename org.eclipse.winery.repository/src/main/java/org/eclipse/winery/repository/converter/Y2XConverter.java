@@ -609,7 +609,7 @@ public class Y2XConverter {
         TNodeTemplate.Builder builder = new TNodeTemplate.Builder(id, node.getType())
             .addDocumentation(node.getDescription())
             .addDocumentation(node.getMetadata())
-            .setName(id)
+            .setName(node.getMetadata().getOrDefault(Defaults.DISPLAY_NAME, id))
             .setX(node.getMetadata().getOrDefault(Defaults.X_COORD, "0"))
             .setY(node.getMetadata().getOrDefault(Defaults.Y_COORD, "0"))
             .setProperties(convertPropertyAssignments(node.getProperties()))

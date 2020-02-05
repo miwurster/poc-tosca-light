@@ -228,6 +228,10 @@ public class X2YConverter {
             meta.add(org.eclipse.winery.repository.converter.support.Defaults.Y_COORD, node.getY());
         }
 
+        if (Objects.nonNull(node.getName())) {
+            meta.add(org.eclipse.winery.repository.converter.support.Defaults.DISPLAY_NAME, node.getName());
+        }
+
         return Collections.singletonMap(
             node.getIdFromIdOrNameField(),
             new TNodeTemplate.Builder(
