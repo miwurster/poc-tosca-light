@@ -259,8 +259,8 @@ public class Y2XConverter {
         PropertyDefinitionKVList wineryProperties = new PropertyDefinitionKVList();
         for (Map.Entry<String, TPropertyDefinition> property : properties.entrySet()) {
             TPropertyDefinition propDef = property.getValue();
-            String type = "xsd:" + (propDef.getType() == null ? "inherited" : propDef.getType().getLocalPart());
-            String defaultValue = propDef.getDefault() != null ? propDef.getDefault().toString() : null;
+            String type = (propDef.getType() == null ? "inherited" : propDef.getType().getLocalPart());
+            String defaultValue = propDef.getDefaultAsString();
             wineryProperties.add(
                 new PropertyDefinitionKV(property.getKey(),
                     type,

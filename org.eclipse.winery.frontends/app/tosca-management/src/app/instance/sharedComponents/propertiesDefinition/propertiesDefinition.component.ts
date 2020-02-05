@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -98,6 +98,12 @@ export class PropertiesDefinitionComponent implements OnInit {
                 if (property.constraints.indexOf(constraint) !== property.constraints.length - 1) {
                     constraintsString += ', ';
                 }
+            }
+            if (!property.defaultValue) {
+                property.defaultValue = '';
+            }
+            if (!property.description) {
+                property.description = '';
             }
             this.tableData.push(new PropertiesTableData(property.key, property.type, property.required, property.defaultValue, property.description
                 , constraintsString));

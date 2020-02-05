@@ -51,6 +51,7 @@ export class SubMenuItems {
     static readonly oneToOneEDMMMappings: SubMenuItem = { displayName: '1 to 1 EDMM Mappings', urlFragment: '1to1edmmmappings' };
     static readonly planLanguages: SubMenuItem = { displayName: 'Plan Languages', urlFragment: 'planlanguages' };
     static readonly plans: SubMenuItem = { displayName: 'Plans', urlFragment: 'plans' };
+    static readonly parameters: SubMenuItem = { displayName: 'Parameters', urlFragment: 'parameters' };
     static readonly planTypes: SubMenuItem = { displayName: 'Plan Types', urlFragment: 'plantypes' };
     static readonly properties: SubMenuItem = { displayName: 'Properties', urlFragment: 'properties' };
     static readonly propertiesDefinition: SubMenuItem = { displayName: 'Properties Definition', urlFragment: 'propertiesdefinition' };

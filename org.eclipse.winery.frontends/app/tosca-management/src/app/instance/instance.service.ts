@@ -54,6 +54,9 @@ export class InstanceService {
                 break;
             case ToscaTypes.ServiceTemplate:
                 subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.topologyTemplate];
+                if (this.configurationService.isYaml()) {
+                    subMenu.push(SubMenuItems.parameters);
+                }
                 if (!this.configurationService.isYaml()) {
                     subMenu.push(SubMenuItems.plans, SubMenuItems.selfServicePortal,
                         SubMenuItems.boundaryDefinitions, SubMenuItems.tags, SubMenuItems.constraintChecking,

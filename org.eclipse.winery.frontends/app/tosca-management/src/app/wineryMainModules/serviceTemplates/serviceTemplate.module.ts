@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,7 +15,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ServiceTemplateRouterModule } from './serviceTemplateRouter.module';
-import { TopologyTemplateComponent } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.component';
 import { PlansComponent } from '../../instance/serviceTemplates/plans/plans.component';
 import { WineryLoaderModule } from '../../wineryLoader/wineryLoader.module';
 import { WineryModalModule } from '../../wineryModalModule/winery.modal.module';
@@ -36,6 +35,7 @@ import { ConstraintCheckingComponent } from '../../instance/serviceTemplates/con
 import { WineryEditorModule } from '../../wineryEditorModule/wineryEditor.module';
 import { TopologyTemplateModule } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.module';
 import { ThreatAssessmentComponent } from '../../instance/serviceTemplates/threatAssessment/threatAssessment.component';
+import { ParametersComponent } from '../../instance/serviceTemplates/parameters/parameters.component';
 
 @NgModule({
     imports: [
@@ -61,6 +61,7 @@ import { ThreatAssessmentComponent } from '../../instance/serviceTemplates/threa
     ],
     declarations: [
         PlansComponent,
+        ParametersComponent,
         ConstraintCheckingComponent,
         ThreatAssessmentComponent
     ]
