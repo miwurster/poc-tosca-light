@@ -66,6 +66,7 @@ import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.kvproperties.ConstraintClauseKVList;
+import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinition;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
@@ -80,6 +81,7 @@ import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
 import org.eclipse.winery.model.tosca.yaml.TNodeTemplate;
 import org.eclipse.winery.model.tosca.yaml.TNodeType;
 import org.eclipse.winery.model.tosca.yaml.TOperationDefinition;
+import org.eclipse.winery.model.tosca.yaml.TParameterDefinition;
 import org.eclipse.winery.model.tosca.yaml.TPolicyDefinition;
 import org.eclipse.winery.model.tosca.yaml.TPolicyType;
 import org.eclipse.winery.model.tosca.yaml.TPropertyAssignment;
@@ -204,6 +206,8 @@ public class X2YConverter {
             .setNodeTemplates(convert(topologyTemplate.getNodeTemplates(), topologyTemplate.getRelationshipTemplates()))
             .setRelationshipTemplates(convert(topologyTemplate.getRelationshipTemplates()))
             .setPolicies(topologyTemplate.getPolicies() == null ? null : convert(topologyTemplate.getPolicies()))
+            .setInputs(convert(topologyTemplate.getInputs()))
+            .setOutputs(convert(topologyTemplate.getOutputs()))
             // TODO substitution mappings are currently not converted
             //.setSubstitutionMappings(convert(boundary))
             .build();
@@ -1050,12 +1054,29 @@ public class X2YConverter {
                     return convert((org.eclipse.winery.model.tosca.TPolicyType) node).entrySet().stream();
                 } else if (node instanceof TPolicy) {
                     return convert((TPolicy) node).entrySet().stream();
+                } else if (node instanceof ParameterDefinition) {
+                    return convert((ParameterDefinition) node).entrySet().stream();
                 }
                 throw new AssertionError();
             })
             .peek(entry -> LOGGER.debug("entry: {}", entry))
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(Map.Entry::getKey, entry -> (K) entry.getValue()));
+    }
+
+    private Map<String, TParameterDefinition> convert(ParameterDefinition node) {
+        if (Objects.isNull(node)) return new HashMap<>();
+        return Collections.singletonMap(
+            node.getKey(),
+            new TParameterDefinition.Builder()
+                .setType(node.getType())
+                .setDescription(node.getDescription())
+                .setRequired(node.getRequired())
+                .setDefault(node.getDefaultValue())
+                .setConstraints(convert(node.getConstraintList()))
+                .setValue(node.getValue())
+                .build()
+        );
     }
 
     private String getNamespacePrefix(String uri) {

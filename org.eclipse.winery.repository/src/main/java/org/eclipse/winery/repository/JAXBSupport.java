@@ -22,6 +22,8 @@ import javax.xml.bind.Unmarshaller;
 import org.eclipse.winery.model.selfservice.Application;
 import org.eclipse.winery.model.tosca.TDefinitions;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
+import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinition;
+import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinitionList;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.repository.backend.MockXMLElement;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
@@ -86,6 +88,7 @@ public class JAXBSupport {
             // For winery classes, eventually the package+jaxb.index method could be better. See http://stackoverflow.com/a/3628525/873282
             // @formatter:off
             context = JAXBContext.newInstance(
+                ParameterDefinitionList.class,
                 //InjectorReplaceData.class,
                 TDefinitions.class, // all other elements are referred by "@XmlSeeAlso"
                 WinerysPropertiesDefinition.class,

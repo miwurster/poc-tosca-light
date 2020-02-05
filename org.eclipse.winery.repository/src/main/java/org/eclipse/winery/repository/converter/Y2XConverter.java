@@ -66,6 +66,8 @@ import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.kvproperties.ConstraintClauseKV;
 import org.eclipse.winery.model.tosca.kvproperties.ConstraintClauseKVList;
+import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinition;
+import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinitionList;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKVList;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
@@ -77,6 +79,7 @@ import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceType;
 import org.eclipse.winery.model.tosca.yaml.TOperationDefinition;
+import org.eclipse.winery.model.tosca.yaml.TParameterDefinition;
 import org.eclipse.winery.model.tosca.yaml.TPolicyDefinition;
 import org.eclipse.winery.model.tosca.yaml.TPropertyAssignment;
 import org.eclipse.winery.model.tosca.yaml.TPropertyAssignmentOrDefinition;
@@ -809,6 +812,8 @@ public class Y2XConverter {
         builder.setNodeTemplates(convert(node.getNodeTemplates()));
         builder.setRelationshipTemplates(convert(node.getRelationshipTemplates()));
         builder.setPolicies(new TPolicies(convert(node.getPolicies())));
+        builder.setInputs(new ParameterDefinitionList(convert(node.getInputs())));
+        builder.setOutputs(new ParameterDefinitionList(convert(node.getOutputs())));
 
         return builder.build();
     }
@@ -954,6 +959,20 @@ public class Y2XConverter {
             policies.add(policy);
             this.policies.put(target, policies);
         }
+    }
+
+    private ParameterDefinition convert(TParameterDefinition node, String name) {
+        if (node == null) {
+            return null;
+        }
+        ParameterDefinition p = new ParameterDefinition();
+        p.setKey(name);
+        p.setType(node.getType());
+        p.setDescription(node.getDescription());
+        p.setRequired(node.getRequired());
+        p.setDefaultValue(node.getDefaultAsString());
+        p.setValue(node.getValueAsString());
+        return p;
     }
 
     /**
@@ -1197,6 +1216,8 @@ public class Y2XConverter {
                     return convert((org.eclipse.winery.model.tosca.yaml.TPolicyDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TCapabilityAssignment) {
                     return convert((TCapabilityAssignment) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TParameterDefinition) {
+                    return convert((TParameterDefinition) entry.getValue(), entry.getKey());
                 } else {
                     V v = entry.getValue();
                     System.err.println(v);

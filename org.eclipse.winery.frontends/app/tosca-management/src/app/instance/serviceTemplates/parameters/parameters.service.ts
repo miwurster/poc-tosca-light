@@ -12,8 +12,30 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { backendBaseURL } from '../../../configuration';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { PropertiesDefinitionKVElement } from '../../sharedComponents/propertiesDefinition/propertiesDefinitionsResourceApiData';
 
 @Injectable()
 export class ParametersService {
 
+    private readonly path: string;
+
+    constructor(private http: HttpClient, private route: Router) {
+        this.path = backendBaseURL + this.route.url + '/';
+    }
+
+    public getInputParameters(): Observable<PropertiesDefinitionKVElement[]> {
+        return this.getJson(this.path + '/inputs');
+    }
+
+    public getOutputParameters(): Observable<PropertiesDefinitionKVElement[]> {
+        return this.getJson(this.path + '/outputs');
+    }
+
+    private getJson<T>(path: string): Observable<T> {
+        return this.http.get<T>(path);
+    }
 }

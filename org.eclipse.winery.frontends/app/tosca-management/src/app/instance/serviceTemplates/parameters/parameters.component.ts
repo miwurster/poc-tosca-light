@@ -12,12 +12,22 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 import { Component } from '@angular/core';
+import { ParametersService } from './parameters.service';
 
 @Component({
     selector: 'winery-parameters',
-    templateUrl: 'parameters.component.html'
+    templateUrl: 'parameters.component.html',
+    providers: [ParametersService]
 })
 export class ParametersComponent {
-    constructor() {
+
+    constructor(private parametersService: ParametersService) {
+    }
+
+    ngOnInit() {
+        this.parametersService.getInputParameters()
+            .subscribe(data => console.log(data), error => console.log(error));
+        this.parametersService.getOutputParameters()
+            .subscribe(data => console.log(data), error => console.log(error));
     }
 }
