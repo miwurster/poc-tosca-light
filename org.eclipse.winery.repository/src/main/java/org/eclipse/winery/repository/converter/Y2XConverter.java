@@ -11,7 +11,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-
 package org.eclipse.winery.repository.converter;
 
 import java.io.File;
@@ -92,7 +91,6 @@ import org.eclipse.winery.model.tosca.yaml.TRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.TTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.ValueHelper;
-import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.InheritanceUtils;
 import org.eclipse.winery.repository.converter.support.Defaults;
 import org.eclipse.winery.repository.converter.support.Namespaces;
