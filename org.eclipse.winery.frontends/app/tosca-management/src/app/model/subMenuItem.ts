@@ -78,4 +78,5 @@ export class SubMenuItems {
     static readonly capabilityTypeConstraints: SubMenuItem = { displayName: 'Constraints', urlFragment: 'constraints' };
     static readonly supportedFiles: SubMenuItem = { displayName: 'Supported File Types', urlFragment: 'supportedfiles' };
     static readonly xml: SubMenuItem = { displayName: 'XML', urlFragment: 'xml' };
+    static readonly attributes: SubMenuItem = { displayName: 'Attributes', urlFragment: 'attributes' };
 }

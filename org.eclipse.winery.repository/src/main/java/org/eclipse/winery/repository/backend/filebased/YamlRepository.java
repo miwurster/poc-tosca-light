@@ -866,6 +866,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
         oldNodeType.setRequirements(newNodeType.getRequirements());
         oldNodeType.setCapabilities(newNodeType.getCapabilities());
         oldNodeType.setInterfaces(replaceInterfaceDefinitions(oldNodeType.getInterfaces(), newNodeType.getInterfaces()));
+        oldNodeType.setAttributes(newNodeType.getAttributes());
         oldData.getNodeTypes().entrySet().iterator().next().setValue(oldNodeType);
         return oldData;
     }

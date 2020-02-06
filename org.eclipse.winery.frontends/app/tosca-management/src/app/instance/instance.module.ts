@@ -24,6 +24,7 @@ import { FormsModule } from '@angular/forms';
 import { AlertModule, BsDropdownModule } from 'ngx-bootstrap';
 import { WineryAddVersionModule } from '../wineryVersionModule/wineryVersion.module';
 import { WineryFeatureToggleModule } from '../wineryFeatureToggleModule/winery-feature-toggle.module';
+import { AttributesModule } from './sharedComponents/attributes/attributes.module';
 
 @NgModule({
     imports: [
@@ -37,6 +38,7 @@ import { WineryFeatureToggleModule } from '../wineryFeatureToggleModule/winery-f
         AlertModule.forRoot(),
         WineryFeatureToggleModule,
         BsDropdownModule.forRoot(),
+        AttributesModule,
     ],
     exports: [InstanceComponent],
     declarations: [

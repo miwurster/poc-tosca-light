@@ -65,12 +65,15 @@ import org.eclipse.winery.model.tosca.TRequirementType;
 import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
+import org.eclipse.winery.model.tosca.kvproperties.AttributeDefinition;
+import org.eclipse.winery.model.tosca.kvproperties.AttributeDefinitionList;
 import org.eclipse.winery.model.tosca.kvproperties.ConstraintClauseKVList;
 import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinition;
 import org.eclipse.winery.model.tosca.kvproperties.PropertyDefinitionKV;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactType;
+import org.eclipse.winery.model.tosca.yaml.TAttributeDefinition;
 import org.eclipse.winery.model.tosca.yaml.TCapabilityAssignment;
 import org.eclipse.winery.model.tosca.yaml.TCapabilityDefinition;
 import org.eclipse.winery.model.tosca.yaml.TCapabilityType;
@@ -109,6 +112,7 @@ import org.eclipse.winery.repository.converter.support.xml.TypeConverter;
 
 import org.eclipse.collections.impl.bimap.mutable.HashBiMap;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -269,7 +273,8 @@ public class X2YConverter {
             .addMetadata("targetNamespace", node.getTargetNamespace())
             .addMetadata("abstract", node.getAbstract().value())
             .addMetadata("final", node.getFinal().value())
-            .setProperties(convert(node, node.getPropertiesDefinition()));
+            .setProperties(convert(node, node.getPropertiesDefinition()))
+            .setAttributes(convert(node, node.getAttributeDefinitions()));
     }
 
     public Map<String, TPropertyDefinition> convert(TEntityType type, TEntityType.PropertiesDefinition node) {
@@ -288,6 +293,17 @@ public class X2YConverter {
                     .addConstraints(convert(entry.getConstraints()))
                     .build()
             ));
+    }
+
+    public Map<String, TAttributeDefinition> convert(TEntityType node, @Nullable AttributeDefinitionList attributes) {
+        if (Objects.isNull(node) || Objects.isNull(attributes)) return new HashMap<>();
+        return attributes.stream().collect(Collectors.toMap(
+            AttributeDefinition::getKey,
+            entry -> new TAttributeDefinition.Builder(entry.getType())
+                .setDescription(entry.getDescription())
+                .setDefault(entry.getDefaultValue())
+                .build()
+        ));
     }
 
     public List<TConstraintClause> convert(ConstraintClauseKVList constraints) {
