@@ -198,6 +198,7 @@ public class X2YConverter {
     }
 
     public TTopologyTemplateDefinition convert(org.eclipse.winery.model.tosca.TServiceTemplate node) {
+        // TODO substitution mappings are currently not converted
         if (Objects.isNull(node)) return null;
         TTopologyTemplate topologyTemplate = node.getTopologyTemplate();
         if (Objects.isNull(topologyTemplate)) return null;
@@ -205,11 +206,9 @@ public class X2YConverter {
             .setDescription(convertDocumentation(topologyTemplate.getDocumentation()))
             .setNodeTemplates(convert(topologyTemplate.getNodeTemplates(), topologyTemplate.getRelationshipTemplates()))
             .setRelationshipTemplates(convert(topologyTemplate.getRelationshipTemplates()))
-            .setPolicies(topologyTemplate.getPolicies() == null ? null : convert(topologyTemplate.getPolicies()))
+            .setPolicies(convert(topologyTemplate.getPolicies()))
             .setInputs(convert(topologyTemplate.getInputs()))
             .setOutputs(convert(topologyTemplate.getOutputs()))
-            // TODO substitution mappings are currently not converted
-            //.setSubstitutionMappings(convert(boundary))
             .build();
     }
 
@@ -1037,6 +1036,7 @@ public class X2YConverter {
     }
 
     private <T, K> Map<String, K> convert(List<T> nodes) {
+        if (Objects.isNull(nodes)) return null;
         return nodes.stream()
             .filter(Objects::nonNull)
             .flatMap(node -> {
@@ -1073,7 +1073,6 @@ public class X2YConverter {
                 .setDescription(node.getDescription())
                 .setRequired(node.getRequired())
                 .setDefault(node.getDefaultValue())
-                .setConstraints(convert(node.getConstraintList()))
                 .setValue(node.getValue())
                 .build()
         );

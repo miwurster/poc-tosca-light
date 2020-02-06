@@ -36,6 +36,7 @@ import { WineryEditorModule } from '../../wineryEditorModule/wineryEditor.module
 import { TopologyTemplateModule } from '../../instance/sharedComponents/topologyTemplate/topologyTemplate.module';
 import { ThreatAssessmentComponent } from '../../instance/serviceTemplates/threatAssessment/threatAssessment.component';
 import { ParametersComponent } from '../../instance/serviceTemplates/parameters/parameters.component';
+import { WineryDuplicateValidatorModule } from '../../wineryValidators/wineryDuplicateValidator.module';
 
 @NgModule({
     imports: [
@@ -57,13 +58,14 @@ import { ParametersComponent } from '../../instance/serviceTemplates/parameters/
         WineryTableModule,
         ServiceTemplateRouterModule,
         WineryReadmeModule,
-        WineryLicenseModule
+        WineryLicenseModule,
+        WineryDuplicateValidatorModule,
     ],
     declarations: [
         PlansComponent,
         ParametersComponent,
         ConstraintCheckingComponent,
-        ThreatAssessmentComponent
+        ThreatAssessmentComponent,
     ]
 })
 export class ServiceTemplateModule {

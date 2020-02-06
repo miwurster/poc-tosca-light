@@ -419,7 +419,7 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             .printKeyValue("status", node.getStatus())
             .print(printList("constraints", node.getConstraints(), parameter))
             .print(printVisitorNode(node.getEntrySchema(), parameter))
-            .printKeyObject(parameter.getKey(), node.getValue());
+            .printKeyObject("value", node.getValue());
     }
     
     public YamlPrinter visit(TConstraintClause node, Parameter parameter) {
@@ -506,7 +506,7 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
 
     private <T> YamlPrinter printList(String keyValue, List<T> list, Parameter parameter) {
         YamlPrinter printer = new YamlPrinter(parameter.getIndent());
-        if (!list.isEmpty()) {
+        if (list != null && !list.isEmpty()) {
             printer.printKey(keyValue)
                 .print(list.stream()
                     .map(entry -> ((VisitorNode) entry).accept(this, new Parameter(parameter.getIndent() + INDENT_SIZE)))

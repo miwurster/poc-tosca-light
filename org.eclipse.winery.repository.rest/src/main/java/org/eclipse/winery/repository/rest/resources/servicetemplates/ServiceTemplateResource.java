@@ -52,7 +52,6 @@ import org.eclipse.winery.model.tosca.TPlans;
 import org.eclipse.winery.model.tosca.TRequirement;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
-import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinitionList;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.YamlArtifactsSynchronizer;
@@ -387,17 +386,11 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
         BackendUtils.synchronizeReferences((ServiceTemplateId) this.id);
     }
 
-    @GET
-    @Path("parameters/inputs")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ParameterDefinitionList getInputParameters(@Context UriInfo uriInfo) {
-        return this.getServiceTemplate().getTopologyTemplate().getInputs();
-    }
-
-    @GET
-    @Path("parameters/outputs")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ParameterDefinitionList getOutputParameters(@Context UriInfo uriInfo) {
-        return this.getServiceTemplate().getTopologyTemplate().getOutputs();
+    @Path("parameters")
+    public ParameterResource getParameterResource() {
+        if (this.getServiceTemplate().getTopologyTemplate() == null) {
+            this.getServiceTemplate().setTopologyTemplate(new TTopologyTemplate());
+        }
+        return new ParameterResource(this, this.getServiceTemplate().getTopologyTemplate());
     }
 }

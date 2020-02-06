@@ -14,9 +14,9 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { backendBaseURL } from '../../../configuration';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { PropertiesDefinitionKVElement } from '../../sharedComponents/propertiesDefinition/propertiesDefinitionsResourceApiData';
+import { Parameter } from '../../../model/parameters';
 
 @Injectable()
 export class ParametersService {
@@ -27,15 +27,36 @@ export class ParametersService {
         this.path = backendBaseURL + this.route.url + '/';
     }
 
-    public getInputParameters(): Observable<PropertiesDefinitionKVElement[]> {
+    public getInputParameters(): Observable<Parameter[]> {
         return this.getJson(this.path + '/inputs');
     }
 
-    public getOutputParameters(): Observable<PropertiesDefinitionKVElement[]> {
+    public putInputParameters(data: Parameter[]): void {
+        this.putJson(this.path + '/inputs', data)
+            .subscribe(() => {
+            }, error => console.log(error));
+    }
+
+    public getOutputParameters(): Observable<Parameter[]> {
         return this.getJson(this.path + '/outputs');
+    }
+
+    public putOutputParameters(data: Parameter[]): void {
+        this.putJson(this.path + '/outputs', data)
+            .subscribe(() => {
+            }, error => console.log(error));
     }
 
     private getJson<T>(path: string): Observable<T> {
         return this.http.get<T>(path);
+    }
+
+    private putJson<T>(path: string, data: Parameter[]): Observable<HttpResponse<string>> {
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.put(path, data, {
+            headers: headers,
+            observe: 'response',
+            responseType: 'text'
+        });
     }
 }

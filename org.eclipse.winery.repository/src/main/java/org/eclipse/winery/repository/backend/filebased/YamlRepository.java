@@ -632,13 +632,6 @@ public class YamlRepository extends AbstractFileBasedRepository {
      **/
     @Override
     public void putContentToFile(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) throws IOException {
-//        if (mediaType == null) {
-//            // quick hack for storing mime type called this method
-//            assert (ref.getFileName().endsWith(Constants.SUFFIX_MIMETYPE));
-//            // we do not need to store the mime type of the file containing the mime type information
-//        } else {
-//            this.setMimeType(ref, mediaType);
-//        }
         Path targetPath = this.ref2AbsolutePath(ref);
         inputStream = convertToServiceTemplate(ref, inputStream, mediaType);
         writeInputStreamToPath(targetPath, inputStream);
