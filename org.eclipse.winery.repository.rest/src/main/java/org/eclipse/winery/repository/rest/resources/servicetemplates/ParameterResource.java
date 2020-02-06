@@ -19,6 +19,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinitionList;
@@ -44,11 +45,9 @@ public class ParameterResource {
     @PUT
     @Path("inputs")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ParameterDefinitionList putInputParameters(ParameterDefinitionList parameters) {
+    public Response putInputParameters(ParameterDefinitionList parameters) {
         this.topologyTemplate.setInputs(parameters);
-        RestUtils.persist(this.parent);
-        return this.topologyTemplate.getInputs();
+        return RestUtils.persist(this.parent);
     }
 
     @GET
@@ -61,10 +60,8 @@ public class ParameterResource {
     @PUT
     @Path("outputs")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ParameterDefinitionList putOutputParameters(ParameterDefinitionList parameters) {
+    public Response putOutputParameters(ParameterDefinitionList parameters) {
         this.topologyTemplate.setOutputs(parameters);
-        RestUtils.persist(this.parent);
-        return this.topologyTemplate.getOutputs();
+        return RestUtils.persist(this.parent);
     }
 }

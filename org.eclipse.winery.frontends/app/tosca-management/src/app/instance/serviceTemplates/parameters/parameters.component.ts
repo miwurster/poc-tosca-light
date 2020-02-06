@@ -136,10 +136,10 @@ export class ParametersComponent implements OnInit {
 
     saveParameters(mode: ParameterMode) {
         if (mode === ParameterMode.INPUT) {
-            this.parametersService.putInputParameters(this.inputParameters);
+            this.parametersService.updateInputParameters(this.inputParameters);
         }
         if (mode === ParameterMode.OUTPUT) {
-            this.parametersService.putOutputParameters(this.outputParameters);
+            this.parametersService.updateOutputParameters(this.outputParameters);
         }
     }
 }

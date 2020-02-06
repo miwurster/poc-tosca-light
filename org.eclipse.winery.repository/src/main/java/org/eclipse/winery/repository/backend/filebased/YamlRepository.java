@@ -79,8 +79,10 @@ import org.slf4j.LoggerFactory;
 
 public class YamlRepository extends AbstractFileBasedRepository {
 
-    public static QName ROOT_TYPE_QNAME = new QName("tosca.entity", "Root");
+    public static final QName ROOT_TYPE_QNAME = new QName("tosca.entity", "Root");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlRepository.class);
+
     private final Pattern namePattern;
 
     public YamlRepository(Path repositoryRoot) {
@@ -866,6 +868,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
         oldNodeType.setRequirements(newNodeType.getRequirements());
         oldNodeType.setCapabilities(newNodeType.getCapabilities());
         oldNodeType.setInterfaces(replaceInterfaceDefinitions(oldNodeType.getInterfaces(), newNodeType.getInterfaces()));
+        oldNodeType.setAttributes(newNodeType.getAttributes());
         oldData.getNodeTypes().entrySet().iterator().next().setValue(oldNodeType);
         return oldData;
     }

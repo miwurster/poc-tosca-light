@@ -11,7 +11,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-
 package org.eclipse.winery.repository.converter;
 
 import java.io.File;
@@ -64,6 +63,8 @@ import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.TTag;
 import org.eclipse.winery.model.tosca.TTags;
 import org.eclipse.winery.model.tosca.TTopologyTemplate;
+import org.eclipse.winery.model.tosca.kvproperties.AttributeDefinition;
+import org.eclipse.winery.model.tosca.kvproperties.AttributeDefinitionList;
 import org.eclipse.winery.model.tosca.kvproperties.ConstraintClauseKV;
 import org.eclipse.winery.model.tosca.kvproperties.ConstraintClauseKVList;
 import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinition;
@@ -74,6 +75,8 @@ import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.yaml.TArtifactDefinition;
 import org.eclipse.winery.model.tosca.yaml.TAttributeDefinition;
 import org.eclipse.winery.model.tosca.yaml.TCapabilityAssignment;
+import org.eclipse.winery.model.tosca.yaml.TDataType;
+import org.eclipse.winery.model.tosca.yaml.TGroupType;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
@@ -87,6 +90,7 @@ import org.eclipse.winery.model.tosca.yaml.TPropertyDefinition;
 import org.eclipse.winery.model.tosca.yaml.TRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.TTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
+import org.eclipse.winery.model.tosca.yaml.support.ValueHelper;
 import org.eclipse.winery.repository.backend.InheritanceUtils;
 import org.eclipse.winery.repository.converter.support.Defaults;
 import org.eclipse.winery.repository.converter.support.Namespaces;
@@ -235,7 +239,8 @@ public class Y2XConverter {
         builder.addDocumentation(node.getDescription())
             .setDerivedFrom(node.getDerivedFrom())
             .addTags(convertMetadata(node.getMetadata()))
-            .setTargetNamespace(node.getMetadata().get("targetNamespace"));
+            .setTargetNamespace(node.getMetadata().get("targetNamespace"))
+            .setAttributeDefinitions(new AttributeDefinitionList(convert(node.getAttributes())));
 
         if (node.getVersion() != null) {
             TTag tag = new TTag();
@@ -263,7 +268,7 @@ public class Y2XConverter {
         for (Map.Entry<String, TPropertyDefinition> property : properties.entrySet()) {
             TPropertyDefinition propDef = property.getValue();
             String type = (propDef.getType() == null ? "inherited" : propDef.getType().getLocalPart());
-            String defaultValue = propDef.getDefaultAsString();
+            String defaultValue = ValueHelper.toString(propDef.getDefault());
             wineryProperties.add(
                 new PropertyDefinitionKV(property.getKey(),
                     type,
@@ -970,8 +975,8 @@ public class Y2XConverter {
         p.setType(node.getType());
         p.setDescription(node.getDescription());
         p.setRequired(node.getRequired());
-        p.setDefaultValue(node.getDefaultAsString());
-        p.setValue(node.getValueAsString());
+        p.setDefaultValue(ValueHelper.toString(node.getDefault()));
+        p.setValue(ValueHelper.toString(node.getValue()));
         return p;
     }
 
@@ -1128,8 +1133,13 @@ public class Y2XConverter {
         ).build();
     }
 
-    public void convert(TAttributeDefinition node, String id) {
-        // Attributes are not converted
+    public AttributeDefinition convert(TAttributeDefinition node, String name) {
+        AttributeDefinition attribute = new AttributeDefinition();
+        attribute.setKey(name);
+        attribute.setType(node.getType());
+        attribute.setDescription(node.getDescription());
+        attribute.setDefaultValue(ValueHelper.toString(node.getDefault()));
+        return attribute;
     }
 
     private Object convert(org.eclipse.winery.model.tosca.yaml.TGroupType node, String name) {
@@ -1204,20 +1214,22 @@ public class Y2XConverter {
                     return convert((TOperationDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TNodeTemplate) {
                     return convert((org.eclipse.winery.model.tosca.yaml.TNodeTemplate) entry.getValue(), entry.getKey());
-                } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TDataType) {
-                    return convert((org.eclipse.winery.model.tosca.yaml.TDataType) entry.getValue(), entry.getKey());
-                } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TGroupType) {
-                    return convert((org.eclipse.winery.model.tosca.yaml.TGroupType) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TDataType) {
+                    return convert((TDataType) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TGroupType) {
+                    return convert((TGroupType) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TNodeType) {
                     return convert((org.eclipse.winery.model.tosca.yaml.TNodeType) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TImportDefinition) {
                     return convert((TImportDefinition) entry.getValue(), entry.getKey());
-                } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TPolicyDefinition) {
-                    return convert((org.eclipse.winery.model.tosca.yaml.TPolicyDefinition) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TPolicyDefinition) {
+                    return convert((TPolicyDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TCapabilityAssignment) {
                     return convert((TCapabilityAssignment) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TParameterDefinition) {
                     return convert((TParameterDefinition) entry.getValue(), entry.getKey());
+                } else if (entry.getValue() instanceof TAttributeDefinition) {
+                    return convert((TAttributeDefinition) entry.getValue(), entry.getKey());
                 } else {
                     V v = entry.getValue();
                     System.err.println(v);
@@ -1234,8 +1246,8 @@ public class Y2XConverter {
                         v instanceof TInterfaceDefinition ||
                         v instanceof TOperationDefinition ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TNodeTemplate ||
-                        v instanceof org.eclipse.winery.model.tosca.yaml.TDataType ||
-                        v instanceof org.eclipse.winery.model.tosca.yaml.TGroupType ||
+                        v instanceof TDataType ||
+                        v instanceof TGroupType ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TNodeType ||
                         v instanceof TImportDefinition ||
                         v instanceof TPolicyDefinition

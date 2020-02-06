@@ -16,33 +16,23 @@ import { Observable } from 'rxjs';
 import { backendBaseURL } from '../../../configuration';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Parameter } from '../../../model/parameters';
+import { AttributeDefinition } from '../../../model/attribute';
 
 @Injectable()
-export class ParametersService {
+export class AttributesService {
 
     private readonly path: string;
 
     constructor(private http: HttpClient, private route: Router) {
-        this.path = backendBaseURL + this.route.url + '/';
+        this.path = backendBaseURL + this.route.url;
     }
 
-    public getInputParameters(): Observable<Parameter[]> {
-        return this.getJson(this.path + '/inputs');
+    public getAttributes(): Observable<AttributeDefinition[]> {
+        return this.getJson(this.path);
     }
 
-    public updateInputParameters(data: Parameter[]): void {
-        this.putJson(this.path + '/inputs', data)
-            .subscribe(() => {
-            }, error => console.log(error));
-    }
-
-    public getOutputParameters(): Observable<Parameter[]> {
-        return this.getJson(this.path + '/outputs');
-    }
-
-    public updateOutputParameters(data: Parameter[]): void {
-        this.putJson(this.path + '/outputs', data)
+    public updateAttributes(data: AttributeDefinition[]): void {
+        this.putJson(this.path, data)
             .subscribe(() => {
             }, error => console.log(error));
     }
