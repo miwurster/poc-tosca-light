@@ -250,8 +250,9 @@ export class InheritanceUtils {
         if (capabilityDefinition.validSourceTypes) {
             return capabilityDefinition.validSourceTypes;
         } else {
-            for (const capabilityType of InheritanceUtils.getInheritanceAncestry(capabilityDefinition.capabilityType, capabilityTypes)) {
-                const listOfValidSourceTypes = capabilityType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].validNodeTypes;
+            const ancestry: EntityType[] = InheritanceUtils.getInheritanceAncestry(capabilityDefinition.capabilityType, capabilityTypes);
+            for (const ancestor of ancestry) {
+                const listOfValidSourceTypes = ancestor.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].validNodeTypes;
                 if (listOfValidSourceTypes) {
                     return listOfValidSourceTypes;
                 }
