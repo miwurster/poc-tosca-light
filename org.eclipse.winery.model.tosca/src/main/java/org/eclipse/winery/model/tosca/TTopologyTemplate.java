@@ -36,7 +36,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "tTopologyTemplate", propOrder = {
-    "nodeTemplateOrRelationshipTemplate", "policies", "inputs", "outputs"
+    "nodeTemplateOrRelationshipTemplate",
+    "policies",
+    "inputs",
+    "outputs"
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TTopologyTemplate extends TExtensibleElements {

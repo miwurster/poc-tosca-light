@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "ParameterDefinitions")
 public class ParameterDefinitionList extends ArrayList<ParameterDefinition> implements Serializable {
 
-    private static final long serialVersionUID = -6442031858597987094L;
-
     public ParameterDefinitionList() {
     }
 

@@ -87,10 +87,10 @@ public class JAXBSupport {
             // For winery classes, eventually the package+jaxb.index method could be better.
             // See http://stackoverflow.com/a/3628525/873282
             context = JAXBContext.newInstance(
-                ParameterDefinitionList.class,
-                WinerysPropertiesDefinition.class,
-                Application.class,
                 TDefinitions.class, // all other elements are referred by "@XmlSeeAlso"
+                WinerysPropertiesDefinition.class,
+                ParameterDefinitionList.class,
+                Application.class,
                 MockXMLElement.class // MockXMLElement is added for testing purposes only.
             );
         } catch (JAXBException e) {
