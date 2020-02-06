@@ -80,8 +80,8 @@ import org.slf4j.LoggerFactory;
 public class YamlRepository extends AbstractFileBasedRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlRepository.class);
-
     private final Pattern namePattern;
+    public static QName ROOT_TYPE_QNAME = new QName("tosca.entity", "Root");
 
     public YamlRepository(Path repositoryRoot) {
         super(repositoryRoot);
