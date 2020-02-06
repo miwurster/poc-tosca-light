@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -67,11 +67,11 @@ import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
 import org.eclipse.winery.repository.JAXBSupport;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.constants.MediaTypes;
-import org.eclipse.winery.repository.backend.filebased.converter.X2YConverter;
-import org.eclipse.winery.repository.backend.filebased.converter.Y2XConverter;
-import org.eclipse.winery.repository.backend.filebased.converter.support.exception.MultiException;
-import org.eclipse.winery.repository.backend.filebased.converter.support.reader.yaml.Reader;
-import org.eclipse.winery.repository.backend.filebased.converter.support.writer.yaml.Writer;
+import org.eclipse.winery.repository.converter.X2YConverter;
+import org.eclipse.winery.repository.converter.Y2XConverter;
+import org.eclipse.winery.repository.converter.support.exception.MultiException;
+import org.eclipse.winery.repository.converter.support.reader.YamlReader;
+import org.eclipse.winery.repository.converter.support.writer.YamlWriter;
 
 import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
@@ -330,7 +330,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
                     } else {
                         nodeType.getRelationshipTypes().entrySet().iterator().next().setValue(removeRelationshipArtifact(nodeType.getRelationshipTypes().entrySet().iterator().next().getValue(), targetArtifactName));
                     }
-                    Writer writer = new Writer();
+                    YamlWriter writer = new YamlWriter();
                     InputStream output = writer.writeToInputStream(nodeType);
                     writeInputStreamToPath(targetPath, output);
                 } catch (Exception e) {
@@ -571,7 +571,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
      **/
     private TServiceTemplate readServiceTemplate(Path targetPath) throws IOException, MultiException {
         InputStream in = newInputStream(targetPath);
-        return new Reader().parse(in);
+        return new YamlReader().parse(in);
     }
 
     /**
@@ -583,7 +583,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
     private TServiceTemplate readServiceTemplate(RepositoryFileReference ref) throws IOException, MultiException {
         Path targetPath = ref2AbsolutePath(ref);
         InputStream in = newInputStream(targetPath);
-        return new Reader().parse(in);
+        return new YamlReader().parse(in);
     }
 
     /**
@@ -632,13 +632,6 @@ public class YamlRepository extends AbstractFileBasedRepository {
      **/
     @Override
     public void putContentToFile(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) throws IOException {
-//        if (mediaType == null) {
-//            // quick hack for storing mime type called this method
-//            assert (ref.getFileName().endsWith(Constants.SUFFIX_MIMETYPE));
-//            // we do not need to store the mime type of the file containing the mime type information
-//        } else {
-//            this.setMimeType(ref, mediaType);
-//        }
         Path targetPath = this.ref2AbsolutePath(ref);
         inputStream = convertToServiceTemplate(ref, inputStream, mediaType);
         writeInputStreamToPath(targetPath, inputStream);
@@ -715,7 +708,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
                 } else {
                     serviceTemplate = converter.convert(definitions);
                 }
-                Writer writer = new Writer();
+                YamlWriter writer = new YamlWriter();
                 return writer.writeToInputStream(serviceTemplate);
             } catch (Exception e) {
                 LOGGER.error("Error converting service template. Reason: {}", e.getMessage(), e);
@@ -735,7 +728,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
      * @return edited interfaces
      **/
     private Map<String, TInterfaceDefinition> addArtifactToInterfaces(Map<String, TInterfaceDefinition> interfaces, TArtifactDefinition artifact, String id) {
-        if (artifact.getFiles().isEmpty()) {
+        if (artifact.getFile() == null) {
             return interfaces;
         }
         for (Map.Entry<String, TInterfaceDefinition> interfaceDefinitionEntry : interfaces.entrySet()) {
@@ -757,7 +750,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
         for (Map.Entry<String, TOperationDefinition> operation : operations.entrySet()) {
             if (operation.getKey().equalsIgnoreCase(target)) {
                 TImplementation implementation = operation.getValue().getImplementation();
-                implementation.setPrimary(new QName(artifact.getFiles().get(0)));
+                implementation.setPrimary(new QName(artifact.getFile()));
                 TOperationDefinition operationDefinition = operation.getValue();
                 operationDefinition.setImplementation(implementation);
                 operation.setValue(operationDefinition);
@@ -767,7 +760,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
                     if (operationDefinition.getImplementation().getPrimary() != null) {
                         if (operationDefinition.getImplementation().getPrimary().getLocalPart().equalsIgnoreCase(target)) {
                             TImplementation implementation = operationDefinition.getImplementation();
-                            implementation.setPrimary(new QName(artifact.getFiles().get(0)));
+                            implementation.setPrimary(new QName(artifact.getFile()));
                             operationDefinition.setImplementation(implementation);
                         }
                     }

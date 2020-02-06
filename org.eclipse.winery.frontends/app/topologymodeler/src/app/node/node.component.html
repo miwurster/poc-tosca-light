@@ -44,7 +44,7 @@
     <div *ngIf="nodeClass !== 'pattern'; else showPattern"
          class="row rounded col-sm-12 node-template-header"
          (click)="openSidebar($event); closeConnectorEndpoints($event)">
-        <div class="col-sm-1" style="padding: 0;">
+        <div class="col-sm-1" style="padding: 0;" *wineryRepositoryHideOnFeature="'yaml'">
             <table class="table table-responsive table-active table-border--grey table-sm">
                 <tr style="padding: 0">
                     <td class="td-maxinstances"
@@ -160,7 +160,7 @@
             panelClass="accordionGroupPanel"
             *ngIf="navbarButtonsState.buttonsState.deploymentArtifactsButton">
             <div accordion-heading>
-                Deployment Artifacts
+                {{this.configurationService.isYaml() ? 'Artifacts' : 'Deployment Artifacts'}}
                 <i class="pull-sm-0 float-sm-right fa icon-styling padding-top--2px"
                    [ngClass]="{'fa-chevron-down': deploymentartifactsgroup?.isOpen,
                    'fa-chevron-right': !deploymentartifactsgroup?.isOpen}"
@@ -172,7 +172,8 @@
                 [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'DEPLOYMENT_ARTIFACTS',
                                     currentProperties: nodeTemplate}"
-                [deploymentArtifacts]="nodeTemplate.deploymentArtifacts?.deploymentArtifact">
+                [deploymentArtifacts]="nodeTemplate.deploymentArtifacts?.deploymentArtifact"
+                [yamlArtifacts]="nodeTemplate.artifacts?.artifact">
             </winery-deployment-artifacts>
         </accordion-group>
 
@@ -230,15 +231,23 @@
                    [ngClass]="{'fa-chevron-down': policiesgroup?.isOpen, 'fa-chevron-right': !policiesgroup?.isOpen}">
                 </i>
             </div>
-            <winery-policies
-                [readonly]="readonly"
-                (toggleModalHandler)="sendToggleAction($event)"
-                [currentNodeData]="{currentNodeId: nodeTemplate.id,
+            <winery-policies *wineryRepositoryShowOnFeature="'yaml'"
+                             [readonly]="readonly"
+                             (toggleModalHandler)="sendToggleAction($event)"
+                             [currentNodeData]="{currentNodeId: nodeTemplate.id,
                                     currentNodePart: 'POLICIES',
                                     currentProperties: nodeTemplate}"
-                [policies]="policiesOfNode"
-                [entityTypes]="entityTypes"
-                (showYamlPolicyManagementModal)="handleShowYamlPolicyManagementModal()">
+                             [policies]="policiesOfNode"
+                             [entityTypes]="entityTypes"
+                             (showYamlPolicyManagementModal)="handleShowYamlPolicyManagementModal()">
+            </winery-policies>
+            <winery-policies *wineryRepositoryHideOnFeature="'yaml'"
+                             [readonly]="readonly"
+                             (toggleModalHandler)="sendToggleAction($event)"
+                             [currentNodeData]="{currentNodeId: nodeTemplate.id,
+                                    currentNodePart: 'POLICIES',
+                                    currentProperties: nodeTemplate}"
+                             [policies]="nodeTemplate.policies?.policy">
             </winery-policies>
         </accordion-group>
 

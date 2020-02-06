@@ -44,17 +44,19 @@ export class InstanceService {
         switch (this.toscaComponent.toscaType) {
             case ToscaTypes.NodeType:
                 if (this.configurationService.isYaml()) {
-                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.instanceStates, SubMenuItems.interfaces,
-                        SubMenuItems.implementations, SubMenuItems.requirementDefinitionsYaml, SubMenuItems.capabilityDefinitions,
-                        SubMenuItems.propertiesDefinition, SubMenuItems.inheritance];
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.interfaces, SubMenuItems.inheritance,
+                        SubMenuItems.requirementDefinitionsYaml, SubMenuItems.capabilityDefinitions, SubMenuItems.propertiesDefinition];
                 } else {
                     subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.instanceStates, SubMenuItems.interfaces,
-                        SubMenuItems.implementations, SubMenuItems.requirementDefinitions, SubMenuItems.capabilityDefinitions,
-                        SubMenuItems.propertiesDefinition, SubMenuItems.inheritance, SubMenuItems.tags, SubMenuItems.documentation, SubMenuItems.xml];
+                        SubMenuItems.implementations, SubMenuItems.inheritance, SubMenuItems.requirementDefinitions, SubMenuItems.capabilityDefinitions,
+                        SubMenuItems.propertiesDefinition, SubMenuItems.tags, SubMenuItems.documentation, SubMenuItems.xml];
                 }
                 break;
             case ToscaTypes.ServiceTemplate:
                 subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.topologyTemplate];
+                if (this.configurationService.isYaml()) {
+                    subMenu.push(SubMenuItems.parameters);
+                }
                 if (!this.configurationService.isYaml()) {
                     subMenu.push(SubMenuItems.plans, SubMenuItems.selfServicePortal,
                         SubMenuItems.boundaryDefinitions, SubMenuItems.tags, SubMenuItems.constraintChecking,
@@ -63,7 +65,6 @@ export class InstanceService {
                         subMenu.push(SubMenuItems.threatModeling);
                     }
                 }
-
                 break;
             case ToscaTypes.RelationshipType:
                 subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.instanceStates, SubMenuItems.sourceInterfaces,
@@ -71,8 +72,13 @@ export class InstanceService {
                     SubMenuItems.propertiesDefinition, SubMenuItems.inheritance, SubMenuItems.documentation, SubMenuItems.xml];
                 break;
             case ToscaTypes.ArtifactType:
-                subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.propertiesDefinition, SubMenuItems.inheritance, SubMenuItems.templates,
-                    SubMenuItems.documentation, SubMenuItems.xml];
+                if (this.configurationService.isYaml()) {
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.propertiesDefinition, SubMenuItems.inheritance,
+                        SubMenuItems.supportedFiles, SubMenuItems.documentation];
+                } else {
+                    subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.propertiesDefinition, SubMenuItems.inheritance, SubMenuItems.templates,
+                        SubMenuItems.documentation, SubMenuItems.xml];
+                }
                 break;
             case ToscaTypes.ArtifactTemplate:
                 subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.files, SubMenuItems.source, SubMenuItems.properties,
@@ -129,8 +135,7 @@ export class InstanceService {
                 break;
             default: // assume Admin
                 if (this.configurationService.isYaml()) {
-                    subMenu = [SubMenuItems.namespaces, SubMenuItems.repository, SubMenuItems.planLanguages, SubMenuItems.planTypes,
-                        SubMenuItems.consistencyCheck, SubMenuItems.log, SubMenuItems.configuration];
+                    subMenu = [SubMenuItems.namespaces, SubMenuItems.repository, SubMenuItems.log, SubMenuItems.configuration];
                 } else {
                     // YAML 1.2 does not contain Constraint Types
                     subMenu = [SubMenuItems.namespaces, SubMenuItems.repository, SubMenuItems.planLanguages, SubMenuItems.planTypes,

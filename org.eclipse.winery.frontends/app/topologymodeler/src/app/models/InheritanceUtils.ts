@@ -20,55 +20,12 @@ import { QName } from './qname';
 
 export class InheritanceUtils {
 
-    static getCapabilityDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): CapabilityDefinitionModel[] {
-        const listOfEffectiveCapabilityDefinitions: CapabilityDefinitionModel[] = [];
-        const listOfBequeathingNodeTypes = this.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
-        for (const currentNodeType of listOfBequeathingNodeTypes) {
-            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
-                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition) {
-                for (const capabilityDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-                    .capabilityDefinitions.capabilityDefinition) {
-                    if (!listOfEffectiveCapabilityDefinitions
-                        .some(value => value.name === capabilityDefinition.name)) {
-                        listOfEffectiveCapabilityDefinitions.push(capabilityDefinition);
-                    }
-                }
-            }
-        }
-        return listOfEffectiveCapabilityDefinitions;
-    }
-
-    static getRequirementDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): RequirementDefinitionModel[] {
-        const listOfEffectiveRequirementDefinitions: RequirementDefinitionModel[] = [];
-        const listOfBequeathingNodeTypes = this.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
-        for (const currentNodeType of listOfBequeathingNodeTypes) {
-            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
-                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition) {
-                for (const requirementDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-                    .requirementDefinitions.requirementDefinition) {
-                    if (!listOfEffectiveRequirementDefinitions
-                        .some(value => value.name === requirementDefinition.name)) {
-                        listOfEffectiveRequirementDefinitions.push(requirementDefinition);
-                    }
-                }
-            }
-        }
-        return listOfEffectiveRequirementDefinitions;
-    }
-
     static getParent(element: EntityType, entities: EntityType[]): EntityType {
         if (this.hasParentType(element)) {
             const parentQName = element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom.type;
             return entities.find(entity => entity.qName === parentQName);
         }
         return null;
-    }
-
-    static hasParentType(element: EntityType): boolean {
-        return (element && element.full
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
-            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom
-        );
     }
 
     static getInheritanceAncestry(entityType: string, entityTypes: EntityType[]): EntityType[] {
@@ -88,6 +45,68 @@ export class InheritanceUtils {
         return result;
     }
 
+    static hasParentType(element: EntityType): boolean {
+        return (element && element.full
+            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+            && element.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom
+        );
+    }
+
+    /**
+     * Retrieves the effective value of a given field of an entity type by traversing the type ancestry upwards and getting the first occurrence found of
+     * this field. For example, you can get the effictive mime_type of an artifact type using this method.
+     * @param typeName the type of the entity as a qname string e.g., '{tosca.nodes}.Compute'.
+     * @param fieldName the name of the field we are interested in, e.g., 'documentation'.
+     * @param allTypes the set of all types of this specific entity type, e.g., the linear set of all node types.
+     */
+    static getEffectiveSingleFieldValueOfAnEntityType(typeName: string, fieldName: string, allTypes: EntityType[]) {
+        const ancestry = this.getInheritanceAncestry(typeName, allTypes);
+
+        for (const entityType of ancestry) {
+            if (entityType[fieldName]) {
+                return entityType[fieldName];
+            }
+        }
+
+        return undefined;
+    }
+
+    static getEffectiveCapabilityDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): CapabilityDefinitionModel[] {
+        const listOfEffectiveCapabilityDefinitions: CapabilityDefinitionModel[] = [];
+        const listOfBequeathingNodeTypes = this.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
+        for (const currentNodeType of listOfBequeathingNodeTypes) {
+            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions &&
+                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].capabilityDefinitions.capabilityDefinition) {
+                for (const capabilityDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+                    .capabilityDefinitions.capabilityDefinition) {
+                    if (!listOfEffectiveCapabilityDefinitions
+                        .some(value => value.name === capabilityDefinition.name)) {
+                        listOfEffectiveCapabilityDefinitions.push(capabilityDefinition);
+                    }
+                }
+            }
+        }
+        return listOfEffectiveCapabilityDefinitions;
+    }
+
+    static getEffectiveRequirementDefinitionsOfNodeType(nodeType: string, entityTypes: EntityTypesModel): RequirementDefinitionModel[] {
+        const listOfEffectiveRequirementDefinitions: RequirementDefinitionModel[] = [];
+        const listOfBequeathingNodeTypes = this.getInheritanceAncestry(nodeType, entityTypes.unGroupedNodeTypes);
+        for (const currentNodeType of listOfBequeathingNodeTypes) {
+            if (currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions &&
+                currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].requirementDefinitions.requirementDefinition) {
+                for (const requirementDefinition of currentNodeType.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0]
+                    .requirementDefinitions.requirementDefinition) {
+                    if (!listOfEffectiveRequirementDefinitions
+                        .some(value => value.name === requirementDefinition.name)) {
+                        listOfEffectiveRequirementDefinitions.push(requirementDefinition);
+                    }
+                }
+            }
+        }
+        return listOfEffectiveRequirementDefinitions;
+    }
+    
     static getDescendantsOfEntityType<T extends EntityType>(entityType: string, entityTypes: T[]): T[] {
         const listOfDescendants: T[] = [];
         listOfDescendants.push(entityTypes.find(et => et.qName === entityType));
@@ -157,8 +176,7 @@ export class InheritanceUtils {
             if (!obj.value && obj.defaultValue) {
                 value = obj.defaultValue;
             } else if (!obj.value) {
-                // TODO quick hack: set a "system" default
-                value = 'N/A';
+                value = '';
             } else {
                 value = obj.value;
             }

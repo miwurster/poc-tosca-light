@@ -48,11 +48,12 @@ export class TNodeTemplate extends AbstractTTemplate {
                 otherAttributes?: any,
                 public x?: number,
                 public y?: number,
-                public capabilities?: any,
-                public requirements?: any,
+                public capabilities?: { capability: any[] },
+                public requirements?: { requirement: any[] },
                 public deploymentArtifacts?: any,
-                public policies?: any,
-                private _state?: DifferenceStates) {
+                public policies?: { policy: any[] },
+                public artifacts?: { artifact: Array<TArtifact> },
+                public _state?: DifferenceStates) {
         super(documentation, any, otherAttributes);
     }
 
@@ -67,7 +68,7 @@ export class TNodeTemplate extends AbstractTTemplate {
     generateNewNodeTemplateWithUpdatedAttribute(updatedAttribute: string, updatedValue: any): TNodeTemplate {
         const nodeTemplate = new TNodeTemplate(this.properties, this.id, this.type, this.name, this.minInstances, this.maxInstances,
             this.visuals, this.documentation, this.any, this.otherAttributes, this.x, this.y, this.capabilities,
-            this.requirements, this.deploymentArtifacts, this.policies);
+            this.requirements, this.deploymentArtifacts, this.policies, this.artifacts);
         if (updatedAttribute === 'coordinates') {
             nodeTemplate.x = updatedValue.x;
             nodeTemplate.y = updatedValue.y;
@@ -173,6 +174,19 @@ export class TPolicyType extends EntityType {
     }
 }
 
+export class TArtifactType extends EntityType {
+    constructor(id: string,
+                qName: string,
+                name: string,
+                namespace: string,
+                full?: any,
+                properties?: any,
+                public mimeType?: string,
+                public fileExtensions?: string[]) {
+        super(id, qName, name, namespace, properties, full);
+    }
+}
+
 /**
  * This is the datamodel for relationship templates
  */
@@ -208,3 +222,17 @@ export class TRelationshipTemplate extends AbstractTTemplate {
     }
 
 }
+
+export class TArtifact extends AbstractTTemplate {
+    constructor(public id: string,
+                public type: string,
+                public file: string,
+                public targetLocation?: string,
+                public properties?: any,
+                public documentation?: any,
+                public any?: any,
+                public otherAttributes?: any) {
+        super(documentation, any, otherAttributes);
+    }
+}
+
