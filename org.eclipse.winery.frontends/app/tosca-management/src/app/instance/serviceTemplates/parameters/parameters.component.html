@@ -1,0 +1,105 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2020 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+<winery-table [title]="'Input Parameters'"
+              [data]="inputParameters"
+              [columns]="columnsInputParameters"
+              [disableFiltering]="true"
+              [disableButtons]="!instanceService?.currentVersion?.editable"
+              (addBtnClicked)="openParameterModal(modeType.INPUT)"
+              (removeBtnClicked)="openConfirmRemoveModal($event, modeType.INPUT)">
+</winery-table>
+<button class="btn btn-primary" name="save"
+        [disabled]="!instanceService?.currentVersion?.editable"
+        (click)="saveParameters(modeType.INPUT)">
+    Save
+</button>
+<hr>
+<winery-table [title]="'Output Parameters'"
+              [data]="outputParameters"
+              [columns]="columnsOutputParameters"
+              [disableFiltering]="true"
+              [disableButtons]="!instanceService?.currentVersion?.editable"
+              (addBtnClicked)="openParameterModal(modeType.OUTPUT)"
+              (removeBtnClicked)="openConfirmRemoveModal($event, modeType.OUTPUT)">
+</winery-table>
+<button class="btn btn-primary" name="save"
+        [disabled]="!instanceService?.currentVersion?.editable"
+        (click)="saveParameters(modeType.OUTPUT)">
+    Save
+</button>
+
+<winery-modal bsModal #parameterModal="bs-modal" [modalRef]="parameterModal"
+              (onShown)="onModalShown();" (onHide)="form.reset(); mode = null;">
+    <winery-modal-header [title]="parameterModalTitle"></winery-modal-header>
+    <winery-modal-body>
+        <form #form="ngForm" id="inputParameterForm">
+            <div class="form-group">
+                <label class="control-label" for="key">Name</label>
+                <input type="text" #nameInput #propName="ngModel" id="key" name="key" autocomplete=off required
+                       class="form-control" [(ngModel)]="param.key" [wineryDuplicateValidator]="validatorObject"/>
+                <div *ngIf="propName.errors && (propName.dirty || propName.touched)"
+                     class="alert alert-danger">
+                    <div [hidden]="!propName.errors.wineryDuplicateValidator">No duplicates allowed!</div>
+                    <div [hidden]="!propName.errors.required">Name is required</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="type">Type</label>
+                <select name="type" id="type" class="form-control" [(ngModel)]="param.type">
+                    <option value="string">string</option>
+                    <option value="integer">integer</option>
+                    <option value="float">float</option>
+                    <option value="boolean">boolean</option>
+                    <option value="timestamp">timestamp</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" name="required" id="required" style="margin-right: 7px"
+                       [(ngModel)]="param.required"/>
+                <label class="control-label" for="required">Required</label>
+            </div>
+            <div class="form-group" *ngIf="mode == modeType.INPUT">
+                <label class="control-label" for="defaultValue">Default Value</label>
+                <input type="text" name="defaultValue" id="defaultValue" class="form-control"
+                       [(ngModel)]="param.defaultValue"/>
+            </div>
+            <div class="form-group" *ngIf="mode == modeType.OUTPUT">
+                <label class="control-label" for="value">Value</label>
+                <input type="text" name="value" id="value" class="form-control"
+                       [(ngModel)]="param.value"/>
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="description">Description</label>
+                <input type="text" name="description" id="description" class="form-control"
+                       [(ngModel)]="param.description"/>
+            </div>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer
+        [disableOkButton]="!form?.form.valid"
+        (onOk)="addParameter(param); form.reset();"
+        [closeButtonLabel]="'Cancel'" [okButtonLabel]="'Add'">
+    </winery-modal-footer>
+</winery-modal>
+
+<winery-modal bsModal #confirmRemoveModal="bs-modal" [modalRef]="confirmRemoveModal">
+    <winery-modal-header [title]="'Delete Parameter'"></winery-modal-header>
+    <winery-modal-body>
+        <p *ngIf="selectedParam">
+            Do you want to delete parameter <span style="font-weight:bold;">{{ selectedParam.key }}</span>?
+        </p>
+    </winery-modal-body>
+    <winery-modal-footer (onOk)="removeParameter()" [closeButtonLabel]="'Cancel'"
+                         [okButtonLabel]="'Delete'"></winery-modal-footer>
+</winery-modal>

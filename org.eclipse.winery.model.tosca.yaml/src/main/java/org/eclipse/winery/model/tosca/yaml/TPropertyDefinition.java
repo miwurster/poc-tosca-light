@@ -15,7 +15,9 @@ package org.eclipse.winery.model.tosca.yaml;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -134,6 +136,19 @@ public class TPropertyDefinition extends TPropertyAssignmentOrDefinition {
     @Nullable
     public Object getDefault() {
         return defaultValue;
+    }
+
+    public String getDefaultAsString() {
+        Object o = getDefault();
+        if (o == null) return "";
+        // First try to parse intrinsic function defs
+        if (o instanceof LinkedHashMap) {
+            Map<String, Object> map = (Map<String, Object>) o;
+            Map.Entry<String, Object> entry = map.entrySet().stream().findFirst().get();
+            return "{ " + entry.getKey() + ": " + entry.getValue().toString() + " }";
+        } else {
+            return o.toString();
+        }
     }
 
     public void setDefault(String defaultValue) {
