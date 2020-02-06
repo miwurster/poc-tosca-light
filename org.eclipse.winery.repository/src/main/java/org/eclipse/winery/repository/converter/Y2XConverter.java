@@ -29,6 +29,7 @@ import javax.xml.namespace.QName;
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.HasInheritance;
 import org.eclipse.winery.model.tosca.TAppliesTo;
 import org.eclipse.winery.model.tosca.TArtifact;
 import org.eclipse.winery.model.tosca.TArtifactReference;
@@ -42,7 +43,6 @@ import org.eclipse.winery.model.tosca.TDeploymentArtifact;
 import org.eclipse.winery.model.tosca.TDeploymentArtifacts;
 import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TEntityType;
-import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.TInterface;
@@ -87,7 +87,7 @@ import org.eclipse.winery.model.tosca.yaml.TPropertyDefinition;
 import org.eclipse.winery.model.tosca.yaml.TRequirementAssignment;
 import org.eclipse.winery.model.tosca.yaml.TTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
-import org.eclipse.winery.repository.backend.RepositoryFactory;
+import org.eclipse.winery.repository.backend.InheritanceUtils;
 import org.eclipse.winery.repository.converter.support.Defaults;
 import org.eclipse.winery.repository.converter.support.Namespaces;
 import org.eclipse.winery.repository.converter.support.yaml.AssignmentBuilder;
@@ -701,24 +701,24 @@ public class Y2XConverter {
         return builder.build();
     }
 
+    /**
+     * Gets a Capability Definition corresponding to the passed capName such that it is the lowest in the type ancestry
+     * of the corresponding nodeType. If no such Capability Definition is found, it returns null.
+     */
     private TCapabilityDefinition getCapabilityDefinitionOfCapabilityName(String capName, QName nodeType) {
-        // todo this has to search the entire nodeType hierarchy!!
-        Definitions nodeTypes = RepositoryFactory.getRepository().getDefinitions(new NodeTypeId(nodeType));
-        TExtensibleElements theNodeType = nodeTypes
-            .getServiceTemplateOrNodeTypeOrNodeTypeImplementation()
-            .stream()
-            .findFirst()
-            .orElse(null);
+        List<HasInheritance> ancestry = InheritanceUtils.getInheritanceHierarchy(new NodeTypeId(nodeType));
+        List<TCapabilityDefinition> currentCapDefs;
 
-        if (theNodeType instanceof TNodeType) {
-            if (((TNodeType) theNodeType).getCapabilityDefinitions() != null) {
+        for (HasInheritance currentNT : ancestry) {
+            assert currentNT instanceof TNodeType;
+            if (((TNodeType) currentNT).getCapabilityDefinitions() != null) {
+                currentCapDefs = ((TNodeType) currentNT).getCapabilityDefinitions().getCapabilityDefinition();
 
-                return ((TNodeType) theNodeType)
-                    .getCapabilityDefinitions()
-                    .getCapabilityDefinition()
-                    .stream()
-                    .filter(capDef -> capDef.getName().equals(capName))
-                    .findFirst().orElse(null);
+                for (TCapabilityDefinition currentDef : currentCapDefs) {
+                    if (currentDef.getName().equals(capName)) {
+                        return currentDef;
+                    }
+                }
             }
         }
 
