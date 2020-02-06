@@ -237,6 +237,15 @@ export class InheritanceUtils {
         }
     }
 
+    /**
+     * Returns a list of valid source types for the given capability definition.
+     *
+     * If the capabilities definition itself has a list of valid source types it is used.
+     * Otherwise the valid source types of the closest capability type regarding ancestry is used.
+     *
+     * @param capabilityDefinition The capability definition for which the valid source types list is queried.
+     * @param capabilityTypes The list of all Capability Types
+     */
     static getValidSourceTypes(capabilityDefinition: CapabilityDefinitionModel, capabilityTypes: EntityType[]): string[] {
         if (capabilityDefinition.validSourceTypes) {
             return capabilityDefinition.validSourceTypes;
