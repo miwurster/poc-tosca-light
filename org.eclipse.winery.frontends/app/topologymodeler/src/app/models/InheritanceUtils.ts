@@ -106,7 +106,7 @@ export class InheritanceUtils {
         }
         return listOfEffectiveRequirementDefinitions;
     }
-    
+
     static getDescendantsOfEntityType<T extends EntityType>(entityType: string, entityTypes: T[]): T[] {
         const listOfDescendants: T[] = [];
         listOfDescendants.push(entityTypes.find(et => et.qName === entityType));
