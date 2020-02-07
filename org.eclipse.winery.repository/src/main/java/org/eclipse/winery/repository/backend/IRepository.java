@@ -812,8 +812,9 @@ public interface IRepository extends IWineryRepositoryCommon {
                             }
                         }
                     }
-
-                    getReferencedRequirementTypeIds(ids, n);
+                    
+                    // TODO: this information is also collected from NodeTypes
+                    /*getReferencedRequirementTypeIds(ids, n);
                     TNodeTemplate.Capabilities capabilities = n.getCapabilities();
                     if (capabilities != null) {
                         for (TCapability cap : capabilities.getCapability()) {
@@ -821,7 +822,7 @@ public interface IRepository extends IWineryRepositoryCommon {
                             CapabilityTypeId ctId = new CapabilityTypeId(type);
                             ids.add(ctId);
                         }
-                    }
+                    }*/
 
                     // crawl through policies
                     TPolicies policies = n.getPolicies();
