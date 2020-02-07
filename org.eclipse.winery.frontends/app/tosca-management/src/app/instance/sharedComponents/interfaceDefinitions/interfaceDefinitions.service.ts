@@ -16,31 +16,14 @@ import { Observable } from 'rxjs';
 import { backendBaseURL } from '../../../configuration';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Parameter } from '../../../model/parameters';
 
 @Injectable()
-export class ParametersService {
+export class InterfaceDefinitionsService {
 
     private readonly path: string;
 
     constructor(private http: HttpClient, private route: Router) {
-        this.path = backendBaseURL + this.route.url + '/';
-    }
-
-    public getInputParameters(): Observable<Parameter[]> {
-        return this.getJson(this.path + '/inputs');
-    }
-
-    public updateInputParameters(data: Parameter[]): Observable<HttpResponse<string>> {
-        return this.putJson(this.path + '/inputs', data);
-    }
-
-    public getOutputParameters(): Observable<Parameter[]> {
-        return this.getJson(this.path + '/outputs');
-    }
-
-    public updateOutputParameters(data: Parameter[]): Observable<HttpResponse<string>> {
-        return this.putJson(this.path + '/outputs', data);
+        this.path = backendBaseURL + this.route.url;
     }
 
     private getJson<T>(path: string): Observable<T> {

@@ -44,6 +44,8 @@ export class AttributesComponent implements OnInit {
     attr: AttributeDefinition = new AttributeDefinition();
     selectedAttr: AttributeDefinition;
 
+    loading = false;
+
     constructor(private attributeService: AttributesService, public instanceService: InstanceService) {
     }
 
@@ -89,6 +91,11 @@ export class AttributesComponent implements OnInit {
     }
 
     save() {
-        this.attributeService.updateAttributes(this.attributes);
+        this.loading = true;
+        this.attributeService.updateAttributes(this.attributes)
+            .subscribe(
+                () => this.loading = false,
+                error => console.log(error)
+            );
     }
 }

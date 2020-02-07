@@ -25,6 +25,8 @@ import { AlertModule, BsDropdownModule } from 'ngx-bootstrap';
 import { WineryAddVersionModule } from '../wineryVersionModule/wineryVersion.module';
 import { WineryFeatureToggleModule } from '../wineryFeatureToggleModule/winery-feature-toggle.module';
 import { AttributesModule } from './sharedComponents/attributes/attributes.module';
+import { InterfaceDefinitionsModule } from './sharedComponents/interfaceDefinitions/interfaceDefinitions.module';
+import { ParametersModule } from './sharedComponents/parameters/parameters.module';
 
 @NgModule({
     imports: [
@@ -39,6 +41,8 @@ import { AttributesModule } from './sharedComponents/attributes/attributes.modul
         WineryFeatureToggleModule,
         BsDropdownModule.forRoot(),
         AttributesModule,
+        InterfaceDefinitionsModule,
+        ParametersModule,
     ],
     exports: [InstanceComponent],
     declarations: [

@@ -11,33 +11,38 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<winery-table [title]="'Input Parameters'"
-              [data]="inputParameters"
-              [columns]="columnsInputParameters"
-              [disableFiltering]="true"
-              [disableButtons]="!instanceService?.currentVersion?.editable"
-              (addBtnClicked)="openParameterModal(modeType.INPUT)"
-              (removeBtnClicked)="openConfirmRemoveModal($event, modeType.INPUT)">
-</winery-table>
-<button class="btn btn-primary" name="save"
-        [disabled]="!instanceService?.currentVersion?.editable"
-        (click)="saveParameters(modeType.INPUT)">
-    Save
-</button>
-<hr>
-<winery-table [title]="'Output Parameters'"
-              [data]="outputParameters"
-              [columns]="columnsOutputParameters"
-              [disableFiltering]="true"
-              [disableButtons]="!instanceService?.currentVersion?.editable"
-              (addBtnClicked)="openParameterModal(modeType.OUTPUT)"
-              (removeBtnClicked)="openConfirmRemoveModal($event, modeType.OUTPUT)">
-</winery-table>
-<button class="btn btn-primary" name="save"
-        [disabled]="!instanceService?.currentVersion?.editable"
-        (click)="saveParameters(modeType.OUTPUT)">
-    Save
-</button>
+<div *ngIf="loading" style="margin-top: 179px">
+    <winery-loader></winery-loader>
+</div>
+<div *ngIf="!loading">
+    <winery-table [title]="'Input Parameters'"
+                  [data]="inputParameters"
+                  [columns]="columnsInputParameters"
+                  [disableFiltering]="true"
+                  [disableButtons]="!instanceService?.currentVersion?.editable"
+                  (addBtnClicked)="openParameterModal(modeType.INPUT)"
+                  (removeBtnClicked)="openConfirmRemoveModal($event, modeType.INPUT)">
+    </winery-table>
+    <button class="btn btn-primary" name="save"
+            [disabled]="!instanceService?.currentVersion?.editable"
+            (click)="save(modeType.INPUT)">
+        Save
+    </button>
+    <hr>
+    <winery-table [title]="'Output Parameters'"
+                  [data]="outputParameters"
+                  [columns]="columnsOutputParameters"
+                  [disableFiltering]="true"
+                  [disableButtons]="!instanceService?.currentVersion?.editable"
+                  (addBtnClicked)="openParameterModal(modeType.OUTPUT)"
+                  (removeBtnClicked)="openConfirmRemoveModal($event, modeType.OUTPUT)">
+    </winery-table>
+    <button class="btn btn-primary" name="save"
+            [disabled]="!instanceService?.currentVersion?.editable"
+            (click)="save(modeType.OUTPUT)">
+        Save
+    </button>
+</div>
 
 <winery-modal bsModal #parameterModal="bs-modal" [modalRef]="parameterModal"
               (onShown)="onModalShown();" (onHide)="form.reset(); mode = null;">
