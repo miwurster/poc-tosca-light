@@ -68,7 +68,7 @@ import org.eclipse.winery.repository.datatypes.ids.elements.SelfServiceMetaDataI
 import org.eclipse.winery.repository.datatypes.ids.elements.ServiceTemplateSelfServiceFilesDirectoryId;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
 import org.eclipse.winery.repository.export.entries.CsarEntry;
-import org.eclipse.winery.repository.export.entries.DefinitionsBasedCsarEntry;
+import org.eclipse.winery.repository.export.entries.XMLDefinitionsBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.DocumentBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.RepositoryRefBasedCsarEntry;
 
@@ -260,8 +260,8 @@ public class CsarExporter {
      * @param fileProperties Describing the path to the file inside the archive
      * @throws IOException thrown when the temporary directory can not be created
      */
-    private void addArtifactTemplateToZipFile(ZipOutputStream zos, RepositoryRefBasedCsarEntry csarEntry,
-                                              CsarContentProperties fileProperties) throws IOException {
+    protected void addArtifactTemplateToZipFile(ZipOutputStream zos, RepositoryRefBasedCsarEntry csarEntry,
+                                                CsarContentProperties fileProperties) throws IOException {
         GitInfo gitInfo = BackendUtils.getGitInformation((DirectoryId) csarEntry.getReference().getParent());
 
         if (gitInfo == null) {
@@ -519,7 +519,7 @@ public class CsarExporter {
         }
     }
 
-    private void addLicenseAndReadmeFiles(IRepository repository, DefinitionsChildId entryId, Map<CsarContentProperties, CsarEntry> refMap) {
+    protected void addLicenseAndReadmeFiles(IRepository repository, DefinitionsChildId entryId, Map<CsarContentProperties, CsarEntry> refMap) {
         final RepositoryFileReference licenseRef = new RepositoryFileReference(entryId, Constants.LICENSE_FILE_NAME);
         if (repository.exists(licenseRef)) {
             refMap.put(new CsarContentProperties(BackendUtils.getPathInsideRepo(licenseRef)), new RepositoryRefBasedCsarEntry(licenseRef));
@@ -551,7 +551,7 @@ public class CsarExporter {
     }
 
     private String addManifest(IRepository repository, DefinitionsChildId id, Map<CsarContentProperties, CsarEntry> refMap,
-                               ZipOutputStream out, Map<String, Object> exportConfiguration) throws IOException {
+                                 ZipOutputStream out, Map<String, Object> exportConfiguration) throws IOException {
         String entryDefinitionsReference = CsarExporter.getDefinitionsPathInsideCSAR(repository, id);
 
         out.putNextEntry(new ZipEntry("TOSCA-Metadata/TOSCA.meta"));
@@ -587,7 +587,7 @@ public class CsarExporter {
 
             if (csarEntry instanceof DocumentBasedCsarEntry) {
                 mimeType = MimeTypes.MIMETYPE_XSD;
-            } else if (csarEntry instanceof DefinitionsBasedCsarEntry) {
+            } else if (csarEntry instanceof XMLDefinitionsBasedCsarEntry) {
                 mimeType = MimeTypes.MIMETYPE_TOSCA_DEFINITIONS;
             } else {
                 mimeType = repository.getMimeType(((RepositoryRefBasedCsarEntry) csarEntry).getReference());

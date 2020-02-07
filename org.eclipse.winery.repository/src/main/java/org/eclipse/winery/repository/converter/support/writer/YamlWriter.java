@@ -101,8 +101,9 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             String output = this.visit(serviceTemplate, new Parameter(0)).toString();
             return new ByteArrayInputStream(output.getBytes());
         } catch (Exception e) {
-            return null;
+            LOGGER.error(e.getLocalizedMessage());
         }
+        return null;
     }
 
     public void write(TServiceTemplate serviceTemplate, Path fileName) {
@@ -421,7 +422,7 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             .print(printVisitorNode(node.getEntrySchema(), parameter))
             .printKeyObject(parameter.getKey(), node.getValue());
     }
-    
+
     public YamlPrinter visit(TConstraintClause node, Parameter parameter) {
         if (node.getValue() != null) {
             return new YamlPrinter(parameter.getIndent())

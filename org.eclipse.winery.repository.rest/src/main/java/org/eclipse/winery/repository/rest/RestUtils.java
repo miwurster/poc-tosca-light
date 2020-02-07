@@ -94,6 +94,7 @@ import org.eclipse.winery.repository.backend.xsd.NamespaceAndDefinedLocalNames;
 import org.eclipse.winery.repository.export.CsarExportOptions;
 import org.eclipse.winery.repository.export.CsarExporter;
 import org.eclipse.winery.repository.export.ToscaExportUtil;
+import org.eclipse.winery.repository.export.YamlExporter;
 import org.eclipse.winery.repository.rest.datatypes.LocalNameForAngular;
 import org.eclipse.winery.repository.rest.datatypes.NamespaceAndDefinedLocalNamesForAngular;
 import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResource;
@@ -269,6 +270,29 @@ public class RestUtils {
     }
 
     public static Response getYamlCSARofSelectedResource(final AbstractComponentInstanceResource resource) {
+        LocalDateTime start = LocalDateTime.now();
+        final YamlExporter exporter = new YamlExporter();
+        Map<String, Object> exportConfiguration = new HashMap<>();
+
+        StreamingOutput so = output -> {
+            try {
+                exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
+                LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+            } catch (Exception e) {
+                LOGGER.error("Error while exporting CSAR", e);
+                throw new WebApplicationException(e);
+            }
+        };
+        String contentDisposition = String.format("attachment;filename=\"%s%s\"",
+            resource.getXmlId().getEncoded(),
+            Constants.SUFFIX_CSAR);
+
+        return Response.ok()
+            .header("Content-Disposition", contentDisposition)
+            .type(MimeTypes.MIMETYPE_ZIP)
+            .entity(so)
+            .build();
+
         // TODO
 //        final Converter converter = new Converter();
 //        StreamingOutput so = output -> {
@@ -294,7 +318,7 @@ public class RestUtils {
 //        sb.append(Constants.SUFFIX_CSAR);
 //        sb.append("\"");
 //        return Response.ok().header("Content-Disposition", sb.toString()).type(MimeTypes.MIMETYPE_ZIP).entity(so).build();
-        return Response.noContent().build();
+        // return Response.noContent().build();
     }
 
     public static Response getEdmmModel(TServiceTemplate element) {
