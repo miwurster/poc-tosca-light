@@ -116,9 +116,17 @@ export class EntityComponent implements OnInit {
     exportComponent(event: MouseEvent) {
         event.stopPropagation();
         if (event.ctrlKey) {
-            window.open(this.backendLink + '?xml', '_blank');
+            if (!this.configurationService.isYaml()) {
+                window.open(this.backendLink + '?xml', '_blank');
+            } else {
+                window.open(this.backendLink + '?yaml', '_blank');
+            }
         } else {
-            window.open(this.backendLink + '?csar', '_blank');
+            if (!this.configurationService.isYaml()) {
+                window.open(this.backendLink + '?csar', '_blank');
+            } else {
+                window.open(this.backendLink + '?yaml&csar', '_blank');
+            }
         }
     }
 

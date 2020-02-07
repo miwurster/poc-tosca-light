@@ -37,8 +37,14 @@
         <div *ngIf="data.id && showButtons" class="buttonContainer">
             <a *ngIf="showTargetAllocationButton" class="targetAllocationButton" (click)="targetAllocation($event)"
                tooltip="Allocate to cloud providers"></a>
-            <a class="exportButton" (click)="exportComponent($event)"
+            <a *ngIf="!this.configurationService.isYaml(); else yamlExport" class="exportButton" (click)="exportComponent($event)"
                tooltip="Export CSAR. Hold CTRL to export XML."></a>
+            <ng-template #yamlExport>
+                <a class="exportButton" (click)="exportComponent($event)"
+                   tooltip="Export CSAR. Hold CTRL to export YAML."></a>
+            </ng-template>
+            
+            
             <a class="editButton" (click)="editComponent($event)"
                tooltip="{{editButtonToolTip}}"></a>
             <a class="deleteButton" (click)="showRemoveDialog($event)" tooltip="Delete"></a>
