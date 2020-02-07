@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,7 +68,6 @@ import org.eclipse.winery.model.tosca.yaml.TTopologyTemplateDefinition;
 import org.eclipse.winery.model.tosca.yaml.TVersion;
 import org.eclipse.winery.model.tosca.yaml.support.Metadata;
 import org.eclipse.winery.model.tosca.yaml.support.TListString;
-import org.eclipse.winery.model.tosca.yaml.support.TMapImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapObject;
 import org.eclipse.winery.model.tosca.yaml.support.TMapPolicyDefinition;
 import org.eclipse.winery.model.tosca.yaml.support.TMapPropertyFilterDefinition;
@@ -134,8 +134,8 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
             .printKeyValue("tosca_definitions_version", node.getToscaDefinitionsVersion())
             .printNewLine()
             .print(node.getMetadata().accept(this, parameter))
-            .print(printListMap("imports",
-                node.getImports().stream().map(TMapImportDefinition::getMap).collect(Collectors.toList()),
+            .print(printList("imports",
+                node.getImports().stream().map(m -> m.getMap().values()).flatMap(Collection::stream).collect(Collectors.toList()),
                 parameter))
             .printKeyValue("description", node.getDescription())
             .print(printMapObject("dsl_definitions", node.getDslDefinitions(), parameter))
@@ -194,10 +194,10 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
 
     public YamlPrinter visit(TImportDefinition node, Parameter parameter) {
         return new YamlPrinter(parameter.getIndent())
-            .printKeyValue("file", node.getFile())
-            .printKeyValue("repository", node.getRepository())
-            .printKeyValue("namespace_uri", node.getNamespaceUri(), !node.getNamespaceUri().equals(Namespaces.DEFAULT_NS))
-            .printKeyValue("namespace_prefix", node.getNamespacePrefix());
+            .printKeyValue("- file", node.getFile())
+            .printKeyValue("  repository", node.getRepository())
+            .printKeyValue("  namespace_uri", node.getNamespaceUri(), !node.getNamespaceUri().equals(Namespaces.DEFAULT_NS))
+            .printKeyValue("  namespace_prefix", node.getNamespacePrefix());
     }
 
     public YamlPrinter visit(TArtifactType node, Parameter parameter) {

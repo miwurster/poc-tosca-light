@@ -35,7 +35,7 @@ public class YAMLDefinitionsBasedCsarEntry implements CsarEntry {
     public YAMLDefinitionsBasedCsarEntry(Definitions definitions) {
         assert (definitions != null);
         X2YConverter c = new X2YConverter((YamlRepository) RepositoryFactory.getRepository());
-        this.definitions = c.convert(definitions);
+        this.definitions = c.convert(definitions, true);
     }
 
     @Override
