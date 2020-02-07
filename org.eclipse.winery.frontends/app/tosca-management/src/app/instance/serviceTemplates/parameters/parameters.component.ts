@@ -25,7 +25,6 @@ export enum ParameterMode {
 }
 
 @Component({
-    selector: 'winery-parameters',
     templateUrl: 'parameters.component.html',
     providers: [ParametersService]
 })
@@ -62,6 +61,8 @@ export class ParametersComponent implements OnInit {
 
     param: Parameter = new Parameter();
     selectedParam: Parameter;
+
+    loading = false;
 
     constructor(private parametersService: ParametersService, public instanceService: InstanceService) {
     }
@@ -134,12 +135,21 @@ export class ParametersComponent implements OnInit {
         this.mode = null;
     }
 
-    saveParameters(mode: ParameterMode) {
+    save(mode: ParameterMode) {
+        this.loading = true;
         if (mode === ParameterMode.INPUT) {
-            this.parametersService.updateInputParameters(this.inputParameters);
+            this.parametersService.updateInputParameters(this.inputParameters)
+                .subscribe(
+                    () => this.loading = false,
+                    error => console.log(error)
+                );
         }
         if (mode === ParameterMode.OUTPUT) {
-            this.parametersService.updateOutputParameters(this.outputParameters);
+            this.parametersService.updateOutputParameters(this.outputParameters)
+                .subscribe(
+                    () => this.loading = false,
+                    error => console.log(error)
+                );
         }
     }
 }
