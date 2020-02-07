@@ -812,17 +812,19 @@ public interface IRepository extends IWineryRepositoryCommon {
                             }
                         }
                     }
-                    
-                    // TODO: this information is also collected from NodeTypes
-                    /*getReferencedRequirementTypeIds(ids, n);
-                    TNodeTemplate.Capabilities capabilities = n.getCapabilities();
-                    if (capabilities != null) {
-                        for (TCapability cap : capabilities.getCapability()) {
-                            QName type = cap.getType();
-                            CapabilityTypeId ctId = new CapabilityTypeId(type);
-                            ids.add(ctId);
+
+                    // TODO: this information is also collected from NodeTypes -> not needed for YAML mode
+                    if (!Environments.getUiConfig().getFeatures().get("yaml")) {
+                        getReferencedRequirementTypeIds(ids, n);
+                        TNodeTemplate.Capabilities capabilities = n.getCapabilities();
+                        if (capabilities != null) {
+                            for (TCapability cap : capabilities.getCapability()) {
+                                QName type = cap.getType();
+                                CapabilityTypeId ctId = new CapabilityTypeId(type);
+                                ids.add(ctId);
+                            }
                         }
-                    }*/
+                    }
 
                     // crawl through policies
                     TPolicies policies = n.getPolicies();
