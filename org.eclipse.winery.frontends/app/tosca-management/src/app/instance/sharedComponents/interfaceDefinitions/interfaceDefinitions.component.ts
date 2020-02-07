@@ -17,6 +17,8 @@ import { Interface, Operation } from '../../../model/interfaces';
 import { ModalDirective } from 'ngx-bootstrap';
 import { WineryValidatorObject } from '../../../wineryValidators/wineryDuplicateValidator.directive';
 import { SelectableListComponent } from '../interfaces/selectableList/selectableList.component';
+import { InterfaceDefinitionsService } from './interfaceDefinitions.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'winery-interfaces',
@@ -39,15 +41,34 @@ export class InterfaceDefinitionsComponent implements OnInit {
     @ViewChild('interfacesList') interfacesListComponent: SelectableListComponent;
     @ViewChild('operationsList') operationsListComponent: SelectableListComponent;
 
-    constructor(public instanceService: InstanceService) {
+    constructor(private interfaceService: InterfaceDefinitionsService, public instanceService: InstanceService) {
     }
 
     ngOnInit() {
+        this.loading = true;
+        this.interfaceService.getInterfaces()
+            .subscribe(
+                data => {
+                    this.interfaces = [];
+                    data.forEach(item => this.interfaces.push(Object.assign(new Interface(), item)));
+                    this.loading = false;
+                },
+                error => this.handleError(error)
+            );
+    }
 
+    private handleError(error: HttpErrorResponse) {
+        console.error(error);
+        this.loading = false;
     }
 
     save() {
-
+        this.loading = true;
+        this.interfaceService.updateInterfaces(this.interfaces)
+            .subscribe(
+                () => this.loading = false,
+                error => this.handleError(error)
+            );
     }
 
     onAddInterface() {
@@ -64,8 +85,6 @@ export class InterfaceDefinitionsComponent implements OnInit {
         this.modalTitle = 'Interface';
         this.removeModalElement = this.selectedInterface.name;
         this.removeModal.show();
-
-        //     this.interfaceComponent.selectItem(lifecycle);
     }
 
     addInterface(name: string) {

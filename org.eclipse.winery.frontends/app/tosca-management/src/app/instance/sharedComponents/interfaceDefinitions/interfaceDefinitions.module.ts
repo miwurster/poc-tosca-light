@@ -22,6 +22,7 @@ import { WineryTableModule } from '../../../wineryTableModule/wineryTable.module
 import { InterfaceDefinitionsComponent } from './interfaceDefinitions.component';
 import { SelectableListModule } from '../interfaces/selectableList/selectableList.module';
 import { ParametersModule } from '../parameters/parameters.module';
+import { InterfaceDefinitionsService } from './interfaceDefinitions.service';
 
 @NgModule({
     imports: [
@@ -39,7 +40,9 @@ import { ParametersModule } from '../parameters/parameters.module';
     declarations: [
         InterfaceDefinitionsComponent,
     ],
-    providers: [],
+    providers: [
+        InterfaceDefinitionsService,
+    ],
 })
 export class InterfaceDefinitionsModule {
 }

@@ -16,6 +16,7 @@ import { Observable } from 'rxjs';
 import { backendBaseURL } from '../../../configuration';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Interface } from '../../../model/interfaces';
 
 @Injectable()
 export class InterfaceDefinitionsService {
@@ -24,6 +25,14 @@ export class InterfaceDefinitionsService {
 
     constructor(private http: HttpClient, private route: Router) {
         this.path = backendBaseURL + this.route.url;
+    }
+
+    public getInterfaces(): Observable<Interface[]> {
+        return this.getJson(this.path);
+    }
+
+    public updateInterfaces(interfaces: Interface[]): Observable<HttpResponse<string>> {
+        return this.putJson(this.path, interfaces);
     }
 
     private getJson<T>(path: string): Observable<T> {
