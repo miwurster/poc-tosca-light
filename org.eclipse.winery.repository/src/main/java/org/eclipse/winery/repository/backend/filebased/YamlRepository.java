@@ -79,6 +79,8 @@ import org.slf4j.LoggerFactory;
 
 public class YamlRepository extends AbstractFileBasedRepository {
 
+    public static final QName ROOT_TYPE_QNAME = new QName("tosca.entity", "Root");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlRepository.class);
 
     private final Pattern namePattern;
@@ -632,13 +634,6 @@ public class YamlRepository extends AbstractFileBasedRepository {
      **/
     @Override
     public void putContentToFile(RepositoryFileReference ref, InputStream inputStream, MediaType mediaType) throws IOException {
-//        if (mediaType == null) {
-//            // quick hack for storing mime type called this method
-//            assert (ref.getFileName().endsWith(Constants.SUFFIX_MIMETYPE));
-//            // we do not need to store the mime type of the file containing the mime type information
-//        } else {
-//            this.setMimeType(ref, mediaType);
-//        }
         Path targetPath = this.ref2AbsolutePath(ref);
         inputStream = convertToServiceTemplate(ref, inputStream, mediaType);
         writeInputStreamToPath(targetPath, inputStream);
@@ -873,6 +868,7 @@ public class YamlRepository extends AbstractFileBasedRepository {
         oldNodeType.setRequirements(newNodeType.getRequirements());
         oldNodeType.setCapabilities(newNodeType.getCapabilities());
         oldNodeType.setInterfaces(replaceInterfaceDefinitions(oldNodeType.getInterfaces(), newNodeType.getInterfaces()));
+        oldNodeType.setAttributes(newNodeType.getAttributes());
         oldData.getNodeTypes().entrySet().iterator().next().setValue(oldNodeType);
         return oldData;
     }

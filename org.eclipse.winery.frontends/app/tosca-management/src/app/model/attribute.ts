@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,34 +11,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { YesNoEnum } from './enums';
 
-export class InputParameters {
-    inputParameter: InterfaceParameter[] = [];
-}
-
-export class OutputParameters {
-    outputParameter: InterfaceParameter[] = [];
-}
-
-export class InterfaceParameter {
-
-    name: string;
-    type: string;
-    required: YesNoEnum;
-
-    constructor(name: string, type: string, required: YesNoEnum) {
-        this.name = name;
-        this.type = type;
-        this.required = required;
-    }
-}
-
-export class Parameter {
+export class AttributeDefinition {
     key: string = null;
     type: string = null;
     description = '';
-    required = false;
     defaultValue = '';
-    value = '';
 }
