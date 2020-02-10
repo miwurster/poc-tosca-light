@@ -299,7 +299,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "servicecompositionmodeler:build"
+            "browserTarget": "servicecompositionmodeler:build", 
+              "port": 8081
           },
           "configurations": {
             "production": {
