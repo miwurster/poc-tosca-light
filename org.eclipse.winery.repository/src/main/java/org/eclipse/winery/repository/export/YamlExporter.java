@@ -46,7 +46,6 @@ import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.filebased.YamlRepository;
-import org.eclipse.winery.repository.converter.X2YConverter;
 import org.eclipse.winery.repository.converter.Y2XConverter;
 import org.eclipse.winery.repository.converter.support.Utils;
 import org.eclipse.winery.repository.converter.support.exception.MultiException;
@@ -76,12 +75,12 @@ import static org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttribute
 public class YamlExporter extends CsarExporter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlExporter.class);
-    private static final String DEFINITONS_PATH_PREFIX = "definitions/";
+    private static final String DEFINITONS_PATH_PREFIX = "_definitions/";
 
-    private final YamlRepository repository;
+    private final IRepository repository;
 
     public YamlExporter() {
-        this.repository = (YamlRepository) RepositoryFactory.getRepository();
+        this.repository = RepositoryFactory.getRepository();
     }
 
     public YamlExporter(YamlRepository repository) {
@@ -91,7 +90,7 @@ public class YamlExporter extends CsarExporter {
     /**
      * Returns a unique name for the given definitions to be used as filename
      */
-    private static String getDefinitionsName(IRepository repository, DefinitionsChildId id) {
+    public static String getDefinitionsName(IRepository repository, DefinitionsChildId id) {
         // the prefix is globally unique and the id locally in a namespace
         // therefore a concatenation of both is also unique
         return repository.getNamespaceManager().getPrefix(id.getNamespace()) + "__" + id.getXmlId().getEncoded();
@@ -119,13 +118,14 @@ public class YamlExporter extends CsarExporter {
         do {
             String definitionsPathInsideCSAR = getDefinitionsPathInsideCSAR(repository, currentId);
             CsarContentProperties definitionsFileProperties = new CsarContentProperties(definitionsPathInsideCSAR);
-            referencedIds = exporter.processTOSCA(repository, currentId, definitionsFileProperties, refMap, exportConfiguration);
+            if (!YamlRepository.ROOT_TYPE_QNAME.equals(currentId.getQName())) {
+                referencedIds = exporter.processTOSCA(repository, currentId, definitionsFileProperties, refMap, exportConfiguration);
+                // for each entryId add license and readme files (if they exist) to the refMap
+                addLicenseAndReadmeFiles(repository, currentId, refMap);
 
-            // for each entryId add license and readme files (if they exist) to the refMap
-            addLicenseAndReadmeFiles(repository, currentId, refMap);
-
-            exportedState.flagAsExported(currentId);
-            exportedState.flagAsExportRequired(referencedIds);
+                exportedState.flagAsExported(currentId);
+                exportedState.flagAsExportRequired(referencedIds);
+            }
 
             currentId = exportedState.pop();
         } while (currentId != null);
@@ -150,7 +150,7 @@ public class YamlExporter extends CsarExporter {
         }
     }
 
-    private String getDefinitionsPathInsideCSAR(IRepository repository, DefinitionsChildId id) {
+    public static String getDefinitionsPathInsideCSAR(IRepository repository, DefinitionsChildId id) {
         return DEFINITONS_PATH_PREFIX
             .concat(getDefinitionsName(repository, id))
             .concat(Constants.SUFFIX_TOSCA_DEFINITIONS);
@@ -270,7 +270,7 @@ public class YamlExporter extends CsarExporter {
     }
 
     public void convertX2Y(Definitions definitions, Path outPath) throws MultiException {
-        new X2YConverter(this.repository).convert(definitions/*, outPath*/);
+        // new X2YConverter(this.repository).convert(definitions/*, outPath*/);
     }
 
     private String addManifest(IRepository repository, DefinitionsChildId id, Map<CsarContentProperties, CsarEntry> refMap,

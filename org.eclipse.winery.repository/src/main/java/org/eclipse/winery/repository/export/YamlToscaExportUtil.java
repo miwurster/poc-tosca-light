@@ -15,20 +15,15 @@
 package org.eclipse.winery.repository.export;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.eclipse.winery.common.RepositoryFileReference;
-import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
-import org.eclipse.winery.common.ids.definitions.imports.GenericImportId;
 import org.eclipse.winery.model.tosca.Definitions;
-import org.eclipse.winery.model.tosca.TEntityType;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
@@ -53,42 +48,6 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
         this.getPrepareForExport(repository, tcId);
 
         Definitions entryDefinitions = repository.getDefinitions(tcId);
-
-        // BEGIN: Definitions modification
-        // the "imports" collection contains the imports of Definitions, not of other definitions
-        // the other definitions are stored in entryDefinitions.getImport()
-        // we modify the internal definitions object directly. It is not written back to the storage. Therefore, we do not need to clone it
-
-        // the imports (pointing to not-definitions (xsd, wsdl, ...)) already have a correct relative URL. (quick hack)
-        URI uri = (URI) super.exportConfiguration.get(ToscaExportUtil.ExportProperties.REPOSITORY_URI.toString());
-        if (uri != null) {
-            // we are in the plain-XML mode, the URLs of the imports have to be adjusted
-            for (TImport i : entryDefinitions.getImport()) {
-                String loc = i.getLocation();
-                if (!loc.startsWith("../")) {
-                    LOGGER.warn("Location is not relative for id " + tcId.toReadableString());
-                }
-                ;
-                loc = loc.substring(3);
-                loc = uri + loc;
-                // now the location is an absolute URL
-                i.setLocation(loc);
-            }
-        }
-
-        // files of imports have to be added to the CSAR, too
-        for (TImport i : entryDefinitions.getImport()) {
-            String loc = i.getLocation();
-            if (Util.isRelativeURI(loc)) {
-                // locally stored, add to CSAR
-                GenericImportId iid = new GenericImportId(i);
-                String fileName = Util.getLastURIPart(loc);
-                fileName = Util.URLdecode(fileName);
-                RepositoryFileReference ref = new RepositoryFileReference(iid, fileName);
-                putRefAsReferencedItemInCsar(ref);
-            }
-        }
-
         Collection<DefinitionsChildId> referencedDefinitionsChildIds = repository.getReferencedDefinitionsChildIds(tcId);
 
         // adjust imports: add imports of definitions to it
@@ -96,12 +55,7 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
         for (DefinitionsChildId id : referencedDefinitionsChildIds) {
             this.addToImports(repository, id, imports);
         }
-
         entryDefinitions.getImport().addAll(imports);
-
-        if (entryDefinitions.getElement() instanceof TEntityType) {
-            exportEntityType(entryDefinitions, uri, tcId);
-        }
 
         // END: Definitions modification
 

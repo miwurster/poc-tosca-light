@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
 import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
@@ -109,6 +110,7 @@ import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 import org.eclipse.winery.repository.converter.support.Namespaces;
 import org.eclipse.winery.repository.converter.support.ValueConverter;
 import org.eclipse.winery.repository.converter.support.xml.TypeConverter;
+import org.eclipse.winery.repository.export.YamlExporter;
 
 import org.eclipse.collections.impl.bimap.mutable.HashBiMap;
 import org.eclipse.jdt.annotation.NonNull;
@@ -168,7 +170,7 @@ public class X2YConverter {
         List<TMapImportDefinition> imports = new ArrayList<>();
         TMapImportDefinition tMapImportDefinition = new TMapImportDefinition();
         for (Map.Entry<DefinitionsChildId, Definitions> importDefinition : importDefinitions.entrySet()) {
-            TImportDefinition tImportDefinition = new TImportDefinition.Builder(repository.id2AbsolutePath(importDefinition.getKey()).toString())
+            TImportDefinition tImportDefinition = new TImportDefinition.Builder(YamlExporter.getDefinitionsName(repository, importDefinition.getKey()).concat(Constants.SUFFIX_TOSCA_DEFINITIONS))
                 .setNamespacePrefix(getNamespacePrefix(importDefinition.getKey().getQName().getNamespaceURI()))
                 .setNamespaceUri(importDefinition.getKey().getQName().getNamespaceURI())
                 .build();
