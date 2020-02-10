@@ -326,7 +326,7 @@ public class ToscaExportUtil {
     /**
      * Synchronizes the plan model references and adds the plans to the csar (putRefAsReferencedItemInCsar)
      */
-    protected void prepareForExport(IRepository repository, ServiceTemplateId id) throws IOException {
+    private void prepareForExport(IRepository repository, ServiceTemplateId id) throws IOException {
         // ensure that the plans stored locally are the same ones as stored in the definitions
         BackendUtils.synchronizeReferences(id);
 

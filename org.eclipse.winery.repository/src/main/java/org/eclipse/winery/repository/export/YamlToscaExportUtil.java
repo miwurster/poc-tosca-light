@@ -17,14 +17,18 @@ package org.eclipse.winery.repository.export;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
-import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.TArtifacts;
 import org.eclipse.winery.model.tosca.TImport;
+import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TServiceTemplate;
+import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
 import org.eclipse.winery.repository.export.entries.YAMLDefinitionsBasedCsarEntry;
@@ -68,16 +72,31 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
      * Prepares the given id for export. Mostly, the contained files are added to the CSAR.
      */
     private void getPrepareForExport(IRepository repository, DefinitionsChildId id) throws RepositoryCorruptException, IOException {
-        // prepareForExport adds the contained files to the CSAR, not the referenced ones.
-        // These are added later
         if (id instanceof ServiceTemplateId) {
             this.prepareForExport(repository, (ServiceTemplateId) id);
         } else if (id instanceof RelationshipTypeId) {
             this.addVisualAppearanceToCSAR(repository, (RelationshipTypeId) id);
         } else if (id instanceof NodeTypeId) {
             this.addVisualAppearanceToCSAR(repository, (NodeTypeId) id);
-        } else if (id instanceof ArtifactTemplateId) {
-            this.prepareForExport(repository, (ArtifactTemplateId) id);
+        }
+    }
+
+    /**
+     * Synchronizes the plan model references and adds the plans to the csar (putRefAsReferencedItemInCsar)
+     */
+    private void prepareForExport(IRepository repository, ServiceTemplateId id) throws IOException {
+        // ensure that the plans stored locally are the same ones as stored in the definitions
+        BackendUtils.synchronizeReferences(id);
+        TServiceTemplate st = repository.getElement(id);
+
+        for (TNodeTemplate n : st.getTopologyTemplate().getNodeTemplates()) {
+            TArtifacts artifacts = n.getArtifacts();
+            if (Objects.nonNull(artifacts)) {
+                artifacts.getArtifact().forEach(a -> {
+                    // TODO create entries for all artifacts 
+                    a.getFile();
+                });
+            }
         }
     }
 }

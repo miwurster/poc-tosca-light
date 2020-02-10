@@ -65,6 +65,7 @@ import org.eclipse.winery.model.tosca.HasInheritance;
 import org.eclipse.winery.model.tosca.HasType;
 import org.eclipse.winery.model.tosca.TAppliesTo;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TArtifacts;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TCapabilityDefinition;
@@ -801,20 +802,21 @@ public interface IRepository extends IWineryRepositoryCommon {
                     ids.add(new NodeTypeId(qname));
                     TNodeTemplate n = (TNodeTemplate) entityTemplate;
 
-                    // crawl through deployment artifacts
-                    TDeploymentArtifacts deploymentArtifacts = n.getDeploymentArtifacts();
-                    if (deploymentArtifacts != null) {
-                        List<TDeploymentArtifact> das = deploymentArtifacts.getDeploymentArtifact();
-                        for (TDeploymentArtifact da : das) {
-                            ids.add(new ArtifactTypeId(da.getArtifactType()));
-                            if ((qname = da.getArtifactRef()) != null) {
-                                ids.add(new ArtifactTemplateId(qname));
+                    if (!Environments.getUiConfig().getFeatures().get("yaml")) {
+                        // TODO: this information is collected differently for YAML and XML modes         
+                        // crawl through deployment artifacts
+                        TDeploymentArtifacts deploymentArtifacts = n.getDeploymentArtifacts();
+                        if (deploymentArtifacts != null) {
+                            List<TDeploymentArtifact> das = deploymentArtifacts.getDeploymentArtifact();
+                            for (TDeploymentArtifact da : das) {
+                                ids.add(new ArtifactTypeId(da.getArtifactType()));
+                                if ((qname = da.getArtifactRef()) != null) {
+                                    ids.add(new ArtifactTemplateId(qname));
+                                }
                             }
                         }
-                    }
 
-                    // TODO: this information is also collected from NodeTypes -> not needed for YAML mode
-                    if (!Environments.getUiConfig().getFeatures().get("yaml")) {
+                        // TODO: this information is also collected from NodeTypes -> not needed for YAML mode                    
                         getReferencedRequirementTypeIds(ids, n);
                         TNodeTemplate.Capabilities capabilities = n.getCapabilities();
                         if (capabilities != null) {
@@ -824,21 +826,27 @@ public interface IRepository extends IWineryRepositoryCommon {
                                 ids.add(ctId);
                             }
                         }
-                    }
 
-                    // crawl through policies
-                    TPolicies policies = n.getPolicies();
-                    if (policies != null) {
-                        for (TPolicy pol : policies.getPolicy()) {
-                            QName type = pol.getPolicyType();
-                            PolicyTypeId ctId = new PolicyTypeId(type);
-                            ids.add(ctId);
+                        // crawl through policies
+                        TPolicies policies = n.getPolicies();
+                        if (policies != null) {
+                            for (TPolicy pol : policies.getPolicy()) {
+                                QName type = pol.getPolicyType();
+                                PolicyTypeId ctId = new PolicyTypeId(type);
+                                ids.add(ctId);
 
-                            QName template = pol.getPolicyRef();
-                            if (template != null) {
-                                PolicyTemplateId policyTemplateId = new PolicyTemplateId(template);
-                                ids.add(policyTemplateId);
+                                QName template = pol.getPolicyRef();
+                                if (template != null) {
+                                    PolicyTemplateId policyTemplateId = new PolicyTemplateId(template);
+                                    ids.add(policyTemplateId);
+                                }
                             }
+                        }
+                    } else {
+                        // Store all referenced artifact types 
+                        TArtifacts artifacts = n.getArtifacts();
+                        if (Objects.nonNull(artifacts)) {
+                            artifacts.getArtifact().forEach(a -> ids.add(new ArtifactTypeId(a.getType())));
                         }
                     }
                 } else {
