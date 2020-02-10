@@ -25,6 +25,7 @@ import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.TParameter;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.jdt.annotation.NonNull;
 
 @XmlRootElement(name = "ServiceCompositionData")
@@ -49,6 +50,7 @@ public class ServiceCompositionServiceTemplateData implements Serializable {
         public List<TParameter> outputParameters;
 
         @XmlAttribute(name = "id", required = true)
+        @JsonProperty("id")
         @NonNull
         protected QName id;
         
