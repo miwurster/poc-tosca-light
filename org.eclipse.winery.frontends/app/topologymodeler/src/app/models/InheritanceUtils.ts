@@ -107,6 +107,14 @@ export class InheritanceUtils {
         return listOfEffectiveRequirementDefinitions;
     }
 
+    /**
+     * Returns a list of decendants of an entity type.
+     *
+     * Returns a list of all decendants of the entity type in no particular order.
+     * The list contains the entity type itself at position 0.
+     * @param entityType
+     * @param entityTypes
+     */
     static getDescendantsOfEntityType<T extends EntityType>(entityType: string, entityTypes: T[]): T[] {
         const listOfDescendants: T[] = [];
         listOfDescendants.push(entityTypes.find(et => et.qName === entityType));
