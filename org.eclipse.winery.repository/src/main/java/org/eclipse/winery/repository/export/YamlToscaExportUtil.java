@@ -14,16 +14,19 @@
 
 package org.eclipse.winery.repository.export;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
+import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.Definitions;
+import org.eclipse.winery.model.tosca.TArtifact;
 import org.eclipse.winery.model.tosca.TArtifacts;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -93,10 +96,23 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
             TArtifacts artifacts = n.getArtifacts();
             if (Objects.nonNull(artifacts)) {
                 artifacts.getArtifact().forEach(a -> {
-                    // TODO create entries for all artifacts 
-                    a.getFile();
+                    RepositoryFileReference ref = new RepositoryFileReference(id, getRelativeArtifactPath(n, a));
+                    if (repository.exists(ref)) {
+                        putRefAsReferencedItemInCsar(ref);
+                    }
                 });
             }
         }
+    }
+
+    private String getRelativeArtifactPath(TNodeTemplate nodeTemplate, TArtifact a) {
+        final String filesFolder = "files";
+        return filesFolder +
+            File.separator +
+            nodeTemplate.getName() +
+            File.separator +
+            a.getId() +
+            File.separator +
+            a.getFile();
     }
 }
