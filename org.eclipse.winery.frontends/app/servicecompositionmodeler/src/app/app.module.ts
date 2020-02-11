@@ -16,7 +16,7 @@ import { NgModule } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { JsPlumbService } from './services/jsPlumb.service';
-import { HttpModule } from '@angular/http';
+import { HttpServiceTemplates } from './services/httpClient';
 
 
 import { AppComponent } from './app.component';
@@ -32,9 +32,8 @@ import { SideBarComponent } from './component/side-bar/side-bar.component';
   imports: [
     BrowserModule,
       HttpClientModule,
-      HttpModule
   ],
-  providers: [JsPlumbService, HttpClientModule],
+  providers: [JsPlumbService, HttpServiceTemplates],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

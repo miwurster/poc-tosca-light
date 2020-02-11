@@ -14,26 +14,39 @@
 
 import { Component, OnInit } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import {products} from '../../serviceTemplates';
-import {HttpServiceTemplates} from '../../services/httpClient';
+import { HttpServiceTemplates } from '../../services/httpClient';
+import { ServiceTemplates } from '../../serviceTemplates';
+import { assertLessThan } from '@angular/core/src/render3/assert';
+import { Router } from '@angular/router';
+
 
 @Component({
-  selector: 'winery-side-bar',
-  templateUrl: './side-bar.component.html',
-  styleUrls: ['./side-bar.component.css']
+    selector: 'winery-side-bar',
+    templateUrl: './side-bar.component.html',
+    styleUrls: ['./side-bar.component.css']
 })
 export class SideBarComponent implements OnInit {
-    products = products;
-    serviceTemplates: any;
-  constructor(private httpServiceTemplates: HttpServiceTemplates ) {}
+    public allServiceTemplates: ServiceTemplates;
 
-  ngOnInit() {
-      this.httpServiceTemplates.getServiceTemplates().subscribe((data: any) => {
-          console.log(data);
-          this.serviceTemplates = data['ServiceTemplates']; }); }
+
+    constructor(private httpServiceTemplates: HttpServiceTemplates) {
+    }
+
+    ngOnInit() {
+        this.httpServiceTemplates.getServiceTemplates().subscribe(data => this.allServiceTemplates = data['serviceTemplates']);
+        /* this.httpServiceTemplates.getTest().subscribe((data) => {
+            console.log(data);
+            this.allServiceTemplates = data['serviceTemplates'];
+        }); */
+    }
     /*
     drop(event: CdkDragDrop<string[]>) {
         moveItemInArray(this.products, event.previousIndex, event.currentIndex);
     }
     */
+    public test() {
+        console.log(this.allServiceTemplates);
+        console.log(this.allServiceTemplates[0].id);
+        console.log(this.allServiceTemplates[0].inputParameters[0].name);
+    }
 }

@@ -12,11 +12,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 -->
 <div class=" side-bar">
-    <div class="example-box"  *ngFor="let product of serviceTemplates" >
+    <div class="example-box"  *ngFor="let product of allServiceTemplates; index as productId" >
         <h2>
-            {{ product }}
+            {{product.id}}
         </h2>
+      
         
     </div>
+    <button (click)="test()" > Save </button>
+
 </div>
 

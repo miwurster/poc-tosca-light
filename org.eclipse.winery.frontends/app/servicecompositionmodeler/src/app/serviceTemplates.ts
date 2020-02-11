@@ -12,5 +12,21 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-// tslint:disable-next-line:max-line-length
-export const products = ['template1', 'template2', 'template3', 'template4', 'template5'];
+
+export interface ServiceTemplates {
+    id: String;
+    inputParameters: InputParameter;
+    outputParameters: OutputParameter;
+}
+interface InputParameter {
+    name: string;
+    type: string;
+    required: boolean;
+}
+
+interface OutputParameter {
+    name: string;
+    type: string;
+    required: boolean;
+}
+

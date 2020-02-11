@@ -14,13 +14,18 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ServiceTemplates } from '../serviceTemplates';
 
 @Injectable({
     providedIn: 'root',
 })
 export class HttpServiceTemplates {
     constructor(private http: HttpClient) {}
-    public getServiceTemplates() {
+    getServiceTemplates(): Observable<ServiceTemplates> {
+        return this.http.get<ServiceTemplates>('http://localhost:8080/winery/servicecompositions/servicetemplates');
+    }
+    getTest() {
         return this.http.get('http://localhost:8080/winery/servicecompositions/servicetemplates');
     }
 }
