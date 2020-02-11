@@ -11,19 +11,24 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<winery-table [title]="'Attributes'"
-              [data]="attributes"
-              [columns]="columns"
-              [disableFiltering]="true"
-              [disableButtons]="!instanceService?.currentVersion?.editable"
-              (addBtnClicked)="openModal()"
-              (removeBtnClicked)="openConfirmModal($event)">
-</winery-table>
-<button class="btn btn-primary" name="save"
-        [disabled]="!instanceService?.currentVersion?.editable"
-        (click)="save()">
-    Save
-</button>
+<div *ngIf="loading" style="margin-top: 179px">
+    <winery-loader></winery-loader>
+</div>
+<div *ngIf="!loading">
+    <winery-table [title]="'Attributes'"
+                  [data]="attributes"
+                  [columns]="columns"
+                  [disableFiltering]="true"
+                  [disableButtons]="!instanceService?.currentVersion?.editable"
+                  (addBtnClicked)="openModal()"
+                  (removeBtnClicked)="openConfirmModal($event)">
+    </winery-table>
+    <button class="btn btn-primary" name="save"
+            [disabled]="!instanceService?.currentVersion?.editable"
+            (click)="save()">
+        Save
+    </button>
+</div>
 
 <winery-modal bsModal #modal="bs-modal" [modalRef]="modal"
               (onShown)="onModalShown()" (onHide)="form.reset()">

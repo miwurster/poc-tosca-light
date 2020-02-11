@@ -31,10 +31,8 @@ export class AttributesService {
         return this.getJson(this.path);
     }
 
-    public updateAttributes(data: AttributeDefinition[]): void {
-        this.putJson(this.path, data)
-            .subscribe(() => {
-            }, error => console.log(error));
+    public updateAttributes(data: AttributeDefinition[]): Observable<HttpResponse<string>> {
+        return this.putJson(this.path, data);
     }
 
     private getJson<T>(path: string): Observable<T> {

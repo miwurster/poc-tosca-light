@@ -54,7 +54,7 @@ export class SubMenuItems {
     static readonly parameters: SubMenuItem = { displayName: 'Parameters', urlFragment: 'parameters' };
     static readonly planTypes: SubMenuItem = { displayName: 'Plan Types', urlFragment: 'plantypes' };
     static readonly properties: SubMenuItem = { displayName: 'Properties', urlFragment: 'properties' };
-    static readonly propertiesDefinition: SubMenuItem = { displayName: 'Properties Definition', urlFragment: 'propertiesdefinition' };
+    static readonly propertiesDefinition: SubMenuItem = { displayName: 'Property Definitions', urlFragment: 'propertiesdefinition' };
     static readonly propertyConstraints: SubMenuItem = { displayName: 'Property Constraints', urlFragment: 'propertyconstraints' };
     static readonly readme: SubMenuItem = { displayName: 'README', urlFragment: 'readme' };
     static readonly refinementStructure: SubMenuItem = { displayName: 'Refinement Structure', urlFragment: 'refinementstructure' };
@@ -78,5 +78,6 @@ export class SubMenuItems {
     static readonly capabilityTypeConstraints: SubMenuItem = { displayName: 'Constraints', urlFragment: 'constraints' };
     static readonly supportedFiles: SubMenuItem = { displayName: 'Supported File Types', urlFragment: 'supportedfiles' };
     static readonly xml: SubMenuItem = { displayName: 'XML', urlFragment: 'xml' };
-    static readonly attributes: SubMenuItem = { displayName: 'Attributes', urlFragment: 'attributes' };
+    static readonly attributes: SubMenuItem = { displayName: 'Attribute Definitions', urlFragment: 'attributes' };
+    static readonly interfacedefinitions: SubMenuItem = { displayName: 'Interfaces', urlFragment: 'interfacedefinitions' };
 }

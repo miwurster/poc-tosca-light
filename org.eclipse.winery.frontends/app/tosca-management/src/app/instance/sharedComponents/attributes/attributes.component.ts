@@ -18,6 +18,7 @@ import { ModalDirective } from 'ngx-bootstrap';
 import { WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
 import { WineryValidatorObject } from '../../../wineryValidators/wineryDuplicateValidator.directive';
 import { AttributeDefinition } from '../../../model/attribute';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     selector: 'winery-attributes',
@@ -44,14 +45,35 @@ export class AttributesComponent implements OnInit {
     attr: AttributeDefinition = new AttributeDefinition();
     selectedAttr: AttributeDefinition;
 
+    loading = false;
+
     constructor(private attributeService: AttributesService, public instanceService: InstanceService) {
     }
 
     ngOnInit() {
+        this.loading = true;
         this.attributeService.getAttributes()
             .subscribe(
-                data => data.forEach(item => this.attributes.push(Object.assign(new AttributeDefinition(), item))),
-                error => console.error(error)
+                data => {
+                    this.attributes = [];
+                    data.forEach(item => this.attributes.push(Object.assign(new AttributeDefinition(), item)));
+                    this.loading = false;
+                },
+                error => this.handleError(error)
+            );
+    }
+
+    private handleError(error: HttpErrorResponse) {
+        console.error(error);
+        this.loading = false;
+    }
+
+    save() {
+        this.loading = true;
+        this.attributeService.updateAttributes(this.attributes)
+            .subscribe(
+                () => this.loading = false,
+                error => this.handleError(error)
             );
     }
 
@@ -86,9 +108,5 @@ export class AttributesComponent implements OnInit {
         }
         this.confirmModal.hide();
         this.selectedAttr = null;
-    }
-
-    save() {
-        this.attributeService.updateAttributes(this.attributes);
     }
 }
