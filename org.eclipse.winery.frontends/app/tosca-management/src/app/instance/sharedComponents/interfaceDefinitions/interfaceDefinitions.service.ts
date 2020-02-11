@@ -21,18 +21,15 @@ import { Interface } from '../../../model/interfaces';
 @Injectable()
 export class InterfaceDefinitionsService {
 
-    private readonly path: string;
-
     constructor(private http: HttpClient, private route: Router) {
-        this.path = backendBaseURL + this.route.url;
     }
 
     public getInterfaces(): Observable<Interface[]> {
-        return this.getJson(this.path);
+        return this.getJson(backendBaseURL + this.route.url);
     }
 
     public updateInterfaces(interfaces: Interface[]): Observable<HttpResponse<string>> {
-        return this.putJson(this.path, interfaces);
+        return this.putJson(backendBaseURL + this.route.url, interfaces);
     }
 
     private getJson<T>(path: string): Observable<T> {

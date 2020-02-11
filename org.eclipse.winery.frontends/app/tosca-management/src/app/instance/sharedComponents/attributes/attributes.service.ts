@@ -21,18 +21,15 @@ import { AttributeDefinition } from '../../../model/attribute';
 @Injectable()
 export class AttributesService {
 
-    private readonly path: string;
-
     constructor(private http: HttpClient, private route: Router) {
-        this.path = backendBaseURL + this.route.url;
     }
 
     public getAttributes(): Observable<AttributeDefinition[]> {
-        return this.getJson(this.path);
+        return this.getJson(backendBaseURL + this.route.url);
     }
 
     public updateAttributes(data: AttributeDefinition[]): Observable<HttpResponse<string>> {
-        return this.putJson(this.path, data);
+        return this.putJson(backendBaseURL + this.route.url, data);
     }
 
     private getJson<T>(path: string): Observable<T> {

@@ -23,12 +23,14 @@ import { InterfaceDefinitionsComponent } from './interfaceDefinitions.component'
 import { SelectableListModule } from '../interfaces/selectableList/selectableList.module';
 import { ParametersModule } from '../parameters/parameters.module';
 import { InterfaceDefinitionsService } from './interfaceDefinitions.service';
+import { SelectModule } from 'ng2-select';
 
 @NgModule({
     imports: [
         CommonModule,
         BrowserModule,
         FormsModule,
+        SelectModule,
         WineryLoaderModule,
         WineryModalModule,
         WineryTableModule,

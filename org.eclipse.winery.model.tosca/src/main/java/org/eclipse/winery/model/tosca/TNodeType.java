@@ -34,7 +34,8 @@ import org.eclipse.jdt.annotation.Nullable;
     "requirementDefinitions",
     "capabilityDefinitions",
     "instanceStates",
-    "interfaces"
+    "interfaces",
+    "interfaceDefinitions",
 })
 public class TNodeType extends TEntityType {
     @XmlElement(name = "RequirementDefinitions")
@@ -46,6 +47,9 @@ public class TNodeType extends TEntityType {
     @XmlElement(name = "Interfaces")
     protected TInterfaces interfaces;
 
+    // added to support TOSCA YAML 
+    protected List<TInterfaceDefinition> interfaceDefinitions;
+
     public TNodeType() {
     }
 
@@ -55,6 +59,7 @@ public class TNodeType extends TEntityType {
         this.capabilityDefinitions = builder.capabilityDefinitions;
         this.instanceStates = builder.instanceStates;
         this.interfaces = builder.interfaces;
+        this.interfaceDefinitions = builder.interfaceDefinitions;
     }
 
     @Override
@@ -105,6 +110,15 @@ public class TNodeType extends TEntityType {
 
     public void setInterfaces(@Nullable TInterfaces value) {
         this.interfaces = value;
+    }
+
+    @Nullable
+    public List<TInterfaceDefinition> getInterfaceDefinitions() {
+        return interfaceDefinitions;
+    }
+
+    public void setInterfaceDefinitions(List<TInterfaceDefinition> interfaceDefinitions) {
+        this.interfaceDefinitions = interfaceDefinitions;
     }
 
     @Override
@@ -179,6 +193,7 @@ public class TNodeType extends TEntityType {
         private CapabilityDefinitions capabilityDefinitions;
         private TTopologyElementInstanceStates instanceStates;
         private TInterfaces interfaces;
+        private List<TInterfaceDefinition> interfaceDefinitions;
 
         public Builder(String name) {
             super(name);
@@ -305,6 +320,11 @@ public class TNodeType extends TEntityType {
             TInterfaces tmp = new TInterfaces();
             tmp.getInterface().add(interfaces);
             return addInterfaces(tmp);
+        }
+
+        public Builder setInterfaceDefinitions(List<TInterfaceDefinition> interfaceDefinitions) {
+            this.interfaceDefinitions = interfaceDefinitions;
+            return self();
         }
 
         @Override
