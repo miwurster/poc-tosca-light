@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
 import { Parameter } from '../../../model/parameters';
 
 @Injectable()
-export class ParametersService {
+export class InputOutputParametersService {
 
     constructor(private http: HttpClient, private route: Router) {
     }

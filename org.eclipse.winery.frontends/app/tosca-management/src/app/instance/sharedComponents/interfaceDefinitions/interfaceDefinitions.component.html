@@ -44,7 +44,8 @@
                 <input type="text" id="selectedInterface.type" name="type" class="form-control"
                        [(ngModel)]="selectedInterface.type" disabled/>
             </div>
-            <winery-parameters [title]="'Input'" [parameters]="selectedInterface.inputs"></winery-parameters>
+            <winery-parameters [tableTitle]="'Inputs'" [modalTitle]="'Input'"
+                               [parameters]="selectedInterface.inputs"></winery-parameters>
         </div>
     </div>
     <div class="row" *ngIf="selectedInterface">
@@ -69,8 +70,10 @@
                 <input type="text" id="selectedOperation.description" name="name" autocomplete=off class="form-control"
                        [(ngModel)]="selectedOperation.description"/>
             </div>
-            <winery-parameters [title]="'Input Parameter'" [parameters]="selectedOperation.inputs"></winery-parameters>
-            <winery-parameters [title]="'Output Parameter'" [parameters]="selectedOperation.outputs"></winery-parameters>
+            <winery-parameters [tableTitle]="'Input Parameters'" [modalTitle]="'Input Parameter'"
+                               [parameters]="selectedOperation.inputs"></winery-parameters>
+            <winery-parameters [tableTitle]="'Output Parameters'" [modalTitle]="'Output Parameter'"
+                               [parameters]="selectedOperation.outputs"></winery-parameters>
         </div>
     </div>
 </div>
@@ -89,11 +92,10 @@
             </div>
         </form>
     </winery-modal-body>
-    <winery-modal-footer
-            (onOk)="addInterface(type.value[0])"
-            [closeButtonLabel]="'Cancel'"
-            [okButtonLabel]="'Add'"
-            [disableOkButton]="type.invalid">
+    <winery-modal-footer (onOk)="addInterface(type.value[0])"
+                         [closeButtonLabel]="'Cancel'"
+                         [okButtonLabel]="'Add'"
+                         [disableOkButton]="type.invalid">
     </winery-modal-footer>
 </winery-modal>
 
@@ -119,11 +121,10 @@
             </div>
         </form>
     </winery-modal-body>
-    <winery-modal-footer
-            (onOk)="addOperation(name.value)"
-            [closeButtonLabel]="'Cancel'"
-            [okButtonLabel]="'Add'"
-            [disableOkButton]="!form?.form.valid">
+    <winery-modal-footer (onOk)="addOperation(name.value)"
+        [closeButtonLabel]="'Cancel'"
+        [okButtonLabel]="'Add'"
+        [disableOkButton]="!form?.form.valid">
     </winery-modal-footer>
 </winery-modal>
 

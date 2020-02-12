@@ -14,7 +14,7 @@
 
 export class AttributeDefinition {
     key: string = null;
-    type: string = null;
+    type = 'string';
     description = '';
     defaultValue = '';
 }

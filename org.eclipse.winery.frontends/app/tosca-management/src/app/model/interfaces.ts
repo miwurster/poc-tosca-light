@@ -45,7 +45,7 @@ export class Artifact {
 
 export const StandardInterface: Interface = {
     name: 'Standard', type: '{tosca.interfaces.node.lifecycle}Standard', inputs: [], operations: [
-        Object.assign(new Operation(), { name: 'create', description: 'create' }),
+        Object.assign(new Operation(), { name: 'create' }),
         Object.assign(new Operation(), { name: 'configure' }),
         Object.assign(new Operation(), { name: 'start' }),
         Object.assign(new Operation(), { name: 'stop' }),

@@ -282,6 +282,7 @@ export class PropertiesDefinitionComponent implements OnInit {
         });
         this.addModal.hide();
         this.copyToTable();
+        this.save();
     }
 
     addConstraint(selectedConstraintKey: string, constraintValue: string) {
@@ -298,6 +299,7 @@ export class PropertiesDefinitionComponent implements OnInit {
         this.deleteItemFromPropertyDefinitionKvList(this.elementToRemove);
         this.elementToRemove = null;
         this.copyToTable();
+        this.save();
     }
 
     onAddModalShown() {
