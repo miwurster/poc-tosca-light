@@ -11,10 +11,10 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-<winery-table [title]="title + 's'"
+<winery-table [title]="tableTitle"
               [data]="parameters"
               [columns]="columns"
-              [disableFiltering]="true"
+              [disableFiltering]="!enableFiltering"
               [disableButtons]="!instanceService?.currentVersion?.editable"
               (addBtnClicked)="openModal()"
               (removeBtnClicked)="openConfirmRemoveModal($event)">
@@ -22,7 +22,7 @@
 
 <winery-modal bsModal #modal="bs-modal" [modalRef]="modal"
               (onShown)="nameInput.focus()" (onHide)="form.reset()">
-    <winery-modal-header [title]="'Add ' + title"></winery-modal-header>
+    <winery-modal-header [title]="'Add ' + modalTitle"></winery-modal-header>
     <winery-modal-body>
         <form #form="ngForm">
             <div class="form-group">
@@ -75,7 +75,7 @@
 </winery-modal>
 
 <winery-modal bsModal #confirmRemoveModal="bs-modal" [modalRef]="confirmRemoveModal">
-    <winery-modal-header [title]="'Delete ' + title"></winery-modal-header>
+    <winery-modal-header [title]="'Delete ' + modalTitle"></winery-modal-header>
     <winery-modal-body>
         <p *ngIf="selectedParam">
             Do you want to delete parameter <span style="font-weight:bold;">{{ selectedParam.key }}</span>?

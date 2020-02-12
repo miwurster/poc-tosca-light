@@ -273,9 +273,14 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
     }
 
     public YamlPrinter visit(TImplementation node, Parameter parameter) {
-        return new YamlPrinter(parameter.getIndent())
-            .printKeyValue("primary", node.getPrimary())
-            .printKeyValue("dependencies", node.getDependencies());
+        YamlPrinter printer = new YamlPrinter(parameter.getIndent())
+            .printKeyValue("primary", node.getPrimaryArtifactName())
+            .printKeyValue("dependencies", node.getDependencyArtifactNames())
+            .printKeyValue("operation_host", node.getOperationHost());
+        if (node.getTimeout() != null) {
+            printer.printKeyValue("timeout", node.getTimeout().toString());
+        }
+        return printer;
     }
 
     public YamlPrinter visit(TRelationshipType node, Parameter parameter) {
@@ -288,13 +293,16 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
         return new YamlPrinter(parameter.getIndent())
             .printKeyValue("type", node.getType())
             .print(printMap("inputs", node.getInputs(), parameter))
-            .print(node.getOperations().entrySet().stream()
-                .filter(entry -> Objects.nonNull(entry) && Objects.nonNull(entry.getValue()))
-                .map(entry ->
-                    printVisitorNode(entry.getValue(), new Parameter(parameter.getIndent()).addContext(entry.getKey()))
-                )
-                .reduce(YamlPrinter::print)
-            );
+            
+            .print(printMap("operations", node.getOperations(), parameter));
+            
+//            .print(node.getOperations().entrySet().stream()
+//                .filter(entry -> Objects.nonNull(entry) && Objects.nonNull(entry.getValue()))
+//                .map(entry ->
+//                    printVisitorNode(entry.getValue(), new Parameter(parameter.getIndent()).addContext(entry.getKey()))
+//                )
+//                .reduce(YamlPrinter::print)
+//            );
     }
 
     public YamlPrinter visit(TNodeType node, Parameter parameter) {

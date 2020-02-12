@@ -13,12 +13,14 @@
  *******************************************************************************/
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { InstanceService } from '../../instance.service';
-import { Interface, Operation } from '../../../model/interfaces';
+import { ConfigureInterface, Interface, Operation, StandardInterface } from '../../../model/interfaces';
 import { ModalDirective } from 'ngx-bootstrap';
 import { WineryValidatorObject } from '../../../wineryValidators/wineryDuplicateValidator.directive';
 import { SelectableListComponent } from '../interfaces/selectableList/selectableList.component';
 import { InterfaceDefinitionsService } from './interfaceDefinitions.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { SelectData } from '../../../model/selectData';
+import { SelectItem } from 'ng2-select';
 
 @Component({
     selector: 'winery-interfaces',
@@ -33,13 +35,19 @@ export class InterfaceDefinitionsComponent implements OnInit {
     selectedOperation: Operation;
 
     validatorObject: WineryValidatorObject;
-    @ViewChild('addModal') addModal: ModalDirective;
+    @ViewChild('addInterfaceModal') addInterfaceModal: ModalDirective;
+    @ViewChild('addOperationModal') addOperationModal: ModalDirective;
     @ViewChild('removeModal') removeModal: ModalDirective;
     modalTitle: string;
     removeModalElement: string;
 
     @ViewChild('interfacesList') interfacesListComponent: SelectableListComponent;
     @ViewChild('operationsList') operationsListComponent: SelectableListComponent;
+
+    readonly interfaceTypes: SelectData[] = [
+        { text: '{tosca.interfaces.node.lifecycle}Standard', id: 'Standard' },
+        { text: '{tosca.interfaces.relationship}Configure', id: 'Configure' },
+    ];
 
     constructor(private interfaceService: InterfaceDefinitionsService, public instanceService: InstanceService) {
     }
@@ -72,9 +80,8 @@ export class InterfaceDefinitionsComponent implements OnInit {
     }
 
     onAddInterface() {
-        this.modalTitle = 'Interface';
         this.validatorObject = new WineryValidatorObject(this.interfaces, 'name');
-        this.addModal.show();
+        this.addInterfaceModal.show();
     }
 
     onInterfaceSelected(selectedInterface: Interface) {
@@ -87,8 +94,11 @@ export class InterfaceDefinitionsComponent implements OnInit {
         this.removeModal.show();
     }
 
-    addInterface(name: string) {
-        const int = Object.assign(new Interface(), { name: name });
+    addInterface(item: SelectData) {
+        let int = Object.assign(new Interface(), StandardInterface);
+        if (item.id === 'Configure') {
+            int = Object.assign(new Interface(), ConfigureInterface);
+        }
         this.interfaces.push(int);
         this.interfacesListComponent.selectItem(int);
     }
@@ -103,9 +113,8 @@ export class InterfaceDefinitionsComponent implements OnInit {
     }
 
     onAddOperation() {
-        this.modalTitle = 'Operation';
         this.validatorObject = new WineryValidatorObject(this.selectedInterface.operations, 'name');
-        this.addModal.show();
+        this.addOperationModal.show();
     }
 
     onOperationSelected(selectedOperation: Operation) {

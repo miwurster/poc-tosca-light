@@ -36,7 +36,7 @@ export class InterfaceParameter {
 
 export class Parameter {
     key: string = null;
-    type: string = null;
+    type = 'string';
     description = '';
     required = false;
     defaultValue = '';

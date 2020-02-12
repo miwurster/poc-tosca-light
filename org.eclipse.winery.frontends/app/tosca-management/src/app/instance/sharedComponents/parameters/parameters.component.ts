@@ -27,7 +27,8 @@ export class ParametersComponent {
     /* tslint:disable no-bitwise */
     uuid: string = (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 
-    @Input() title = '';
+    @Input() tableTitle = 'Parameters';
+    @Input() modalTitle = 'Parameter';
     @Input() parameters: Parameter[] = [];
     @Input() columns: Array<WineryTableColumn> = [
         { title: 'Name', name: 'key', sort: true },
@@ -37,6 +38,7 @@ export class ParametersComponent {
         { title: 'Value', name: 'value', sort: false },
         { title: 'Description', name: 'description', sort: false },
     ];
+    @Input() enableFiltering = false;
 
     @Output() onParameterAdded = new EventEmitter<Parameter>();
     @Output() onParameterRemoved = new EventEmitter<Parameter>();

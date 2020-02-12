@@ -42,13 +42,13 @@ import org.eclipse.winery.model.tosca.TDeploymentArtifact;
 import org.eclipse.winery.model.tosca.TDeploymentArtifacts;
 import org.eclipse.winery.model.tosca.TEntityTemplate;
 import org.eclipse.winery.model.tosca.TEntityType;
+import org.eclipse.winery.model.tosca.TImplementation;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.TInterface;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
-import org.eclipse.winery.model.tosca.TOperation;
 import org.eclipse.winery.model.tosca.TParameter;
 import org.eclipse.winery.model.tosca.TPolicies;
 import org.eclipse.winery.model.tosca.TPolicy;
@@ -77,7 +77,6 @@ import org.eclipse.winery.model.tosca.yaml.TAttributeDefinition;
 import org.eclipse.winery.model.tosca.yaml.TCapabilityAssignment;
 import org.eclipse.winery.model.tosca.yaml.TDataType;
 import org.eclipse.winery.model.tosca.yaml.TGroupType;
-import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceType;
@@ -489,35 +488,32 @@ public class Y2XConverter {
      * Inserts operation output definitions defined in attributes "{ get_operation_output: [ SELF, interfaceName,
      * operationName, propertyName ] }" into interfaceDefinitions
      */
-    private Map<String, TInterfaceDefinition> refactor(Map<String, TInterfaceDefinition> map, org.eclipse.winery.model.tosca.yaml.TNodeType node) {
-        if (Objects.isNull(map) || map.isEmpty() || node.getAttributes().isEmpty()) return map;
-
-        // Extract Outputs from Attributes and attach them to the Operations (if possible)
-        // Template: attribute.default: { get_operation_output: [ SELF, interfaceName, operationName, propertyName ] }
-        for (Map.Entry<String, TAttributeDefinition> entry : node.getAttributes().entrySet()) {
-            TAttributeDefinition attr = entry.getValue();
-            if (attr.getDefault() != null && attr.getDefault() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> aDefault = (Map<String, Object>) attr.getDefault();
-                if (aDefault != null && aDefault.containsKey("get_operation_output")) {
-                    @SuppressWarnings("unchecked")
-                    List<String> values = (List<String>) aDefault.get("get_operation_output");
-                    if (values.size() == 4 &&
-                        values.get(0).equals("SELF") &&
-                        map.containsKey(values.get(1)) &&
-                        map.get(values.get(1)).getOperations().containsKey(values.get(2)) &&
-                        !map.get(values.get(1)).getOperations().get(values.get(2)).getOutputs().containsKey(values.get(3))
-                    ) {
-                        TPropertyDefinition.Builder pBuilder = new TPropertyDefinition.Builder(attr.getType());
-                        map.get(values.get(1)).getOperations().get(values.get(2)).getOutputs().put(values.get(3), pBuilder.build());
-                    }
-                }
-            }
-        }
-
-        return map;
-    }
-
+//    private Map<String, TInterfaceDefinition> refactor(Map<String, TInterfaceDefinition> map, org.eclipse.winery.model.tosca.yaml.TNodeType node) {
+//        if (Objects.isNull(map) || map.isEmpty() || node.getAttributes().isEmpty()) return map;
+//        // Extract Outputs from Attributes and attach them to the Operations (if possible)
+//        // Template: attribute.default: { get_operation_output: [ SELF, interfaceName, operationName, propertyName ] }
+//        for (Map.Entry<String, TAttributeDefinition> entry : node.getAttributes().entrySet()) {
+//            TAttributeDefinition attr = entry.getValue();
+//            if (attr.getDefault() != null && attr.getDefault() instanceof Map) {
+//                @SuppressWarnings("unchecked")
+//                Map<String, Object> aDefault = (Map<String, Object>) attr.getDefault();
+//                if (aDefault != null && aDefault.containsKey("get_operation_output")) {
+//                    @SuppressWarnings("unchecked")
+//                    List<String> values = (List<String>) aDefault.get("get_operation_output");
+//                    if (values.size() == 4 &&
+//                        values.get(0).equals("SELF") &&
+//                        map.containsKey(values.get(1)) &&
+//                        map.get(values.get(1)).getOperations().containsKey(values.get(2)) &&
+//                        !map.get(values.get(1)).getOperations().get(values.get(2)).getOutputs().containsKey(values.get(3))
+//                    ) {
+//                        TPropertyDefinition.Builder pBuilder = new TPropertyDefinition.Builder(attr.getType());
+//                        map.get(values.get(1)).getOperations().get(values.get(2)).getOutputs().put(values.get(3), pBuilder.build());
+//                    }
+//                }
+//            }
+//        }
+//        return map;
+//    }
     private Map<String, TArtifactDefinition> refactorDeploymentArtifacts(Map<String, TArtifactDefinition> map) {
         return map.entrySet().stream()
             // Filter for deployment artifacts
@@ -539,13 +535,12 @@ public class Y2XConverter {
                 .forEach(operation -> {
                     String interfaceName = entry.getKey();
                     String operationName = operation.getKey();
-                    TImplementation implementation = operation.getValue().getImplementation();
-                    List<QName> list = implementation.getDependencies();
-                    if (implementation.getPrimary() != null) {
-                        list.add(implementation.getPrimary());
+                    org.eclipse.winery.model.tosca.yaml.TImplementation implementation = operation.getValue().getImplementation();
+                    List<String> list = implementation.getDependencyArtifactNames();
+                    if (implementation.getPrimaryArtifactName() != null) {
+                        list.add(implementation.getPrimaryArtifactName());
                     }
-                    for (QName artifactQName : list) {
-                        String artifactName = artifactQName.getLocalPart();
+                    for (String artifactName : list) {
                         if (implementationArtifacts.containsKey(artifactName)) {
                             TImplementationArtifactDefinition.Builder iABuilder = new TImplementationArtifactDefinition.Builder(implementationArtifacts.get(artifactName));
                             TArtifactDefinition old = implementationArtifacts.get(artifactName);
@@ -591,7 +586,7 @@ public class Y2XConverter {
         TNodeType.Builder builder = convert(node, new TNodeType.Builder(id))
             .addRequirementDefinitions(convert(node.getRequirements()))
             .addCapabilityDefinitions(convert(node.getCapabilities()))
-            .addInterfaces(convert(refactor(node.getInterfaces(), node)));
+            .setInterfaceDefinitions(convert(node.getInterfaces()));
         TNodeType output = builder.build();
         convertNodeTypeImplementation(
             refactorImplementationArtifacts(node.getArtifacts(), node),
@@ -779,24 +774,15 @@ public class Y2XConverter {
         return result;
     }
 
-    /**
-     * Converts TOSCA YAML InterfaceDefinitions to TOSCA XML Interface Additional TOSCA YAML element input with
-     * PropertyAssignment or PropertyDefinition is not converted
-     *
-     * @param node TOSCA YAML InterfaceDefinition
-     * @return TOSCA XML Interface
-     */
-    private TInterface convert(TInterfaceDefinition node, String id) {
-        List<TOperation> operation = new ArrayList<>();
-        if (this.interfaceTypes.containsKey(node.getType())) {
-            operation.addAll(convert(this.interfaceTypes.get(node.getType()).getOperations()));
-        }
-
-        operation.addAll(convert(node.getOperations()));
-
-        TInterface.Builder builder = new TInterface.Builder(id, operation);
-
-        return builder.build();
+    private org.eclipse.winery.model.tosca.TInterfaceDefinition convert(TInterfaceDefinition node, String id) {
+        if (Objects.isNull(node)) return null;
+        org.eclipse.winery.model.tosca.TInterfaceDefinition def = new org.eclipse.winery.model.tosca.TInterfaceDefinition();
+        def.setId(id);
+        def.setName(id);
+        def.setType(node.getType());
+        def.setInputs(convert(node.getInputs()));
+        def.setOperations(convert(node.getOperations()));
+        return def;
     }
 
     /**
@@ -839,7 +825,7 @@ public class Y2XConverter {
             .setValidSource(convertValidTargetSource(node.getValidTargetTypes(), true))
             .setValidTarget(convertValidTargetSource(node.getValidTargetTypes(), false))
             .build();
-        convertRelationshipTypeImplementation(node.getInterfaces(), id, node.getMetadata().get("targetNamespace"));
+        // convertRelationshipTypeImplementation(node.getInterfaces(), id, node.getMetadata().get("targetNamespace"));
         return output;
     }
 
@@ -866,10 +852,10 @@ public class Y2XConverter {
         List<TInterface> output = new ArrayList<>();
         for (Map.Entry<String, TInterfaceDefinition> node : nodes.entrySet()) {
             if (type == null && node.getValue().getType() == null) {
-                output.add(convert(node.getValue(), node.getKey()));
+                //output.add(convert(node.getValue(), node.getKey()));
             } else if (type != null && node.getValue().getType() != null) {
                 if (node.getValue().getType().getLocalPart().equalsIgnoreCase(type)) {
-                    output.add(convert(node.getValue(), node.getKey()));
+                    //output.add(convert(node.getValue(), node.getKey()));
                 }
             }
         }
@@ -1050,69 +1036,81 @@ public class Y2XConverter {
         this.nodeTypeImplementations.add(builder.build());
     }
 
-    /**
-     * Converts TOSCA YAML ArtifactDefinitions to TOSCA XML NodeTypeImplementations and ArtifactTemplates
-     */
-    private void convertRelationshipTypeImplementation(
-        Map<String, TInterfaceDefinition> implArtifacts, String type, String targetNamespace) {
-        this.relationshipTypeImplementations.add(new TRelationshipTypeImplementation.Builder(type + "_impl", new QName(targetNamespace, type))
-            .setTargetNamespace(targetNamespace)
-            .addImplementationArtifacts(convertImplmentationsFromInterfaces(implArtifacts, targetNamespace))
-            .build()
-        );
+//    private void convertRelationshipTypeImplementation(
+//        Map<String, TInterfaceDefinition> implArtifacts, String type, String targetNamespace) {
+//        this.relationshipTypeImplementations.add(new TRelationshipTypeImplementation.Builder(type + "_impl", new QName(targetNamespace, type))
+//            .setTargetNamespace(targetNamespace)
+//            .addImplementationArtifacts(convertImplmentationsFromInterfaces(implArtifacts, targetNamespace))
+//            .build()
+//        );
+//    }
+
+//    private List<TImplementationArtifacts.ImplementationArtifact> convertImplmentationsFromInterfaces(Map<String, TInterfaceDefinition> interfaces, String targetNamespace) {
+//        QName type = new QName("http://opentosca.org/artifacttypes", "ScriptArtifact");
+//        List<TImplementationArtifacts.ImplementationArtifact> output = new ArrayList<>();
+//        for (Map.Entry<String, TInterfaceDefinition> interfaceDefinitionEntry : interfaces.entrySet()) {
+//            if (interfaceDefinitionEntry.getValue() != null) {
+//                if (interfaceDefinitionEntry.getValue().getOperations() != null) {
+//                    for (Map.Entry<String, TOperationDefinition> operation : interfaceDefinitionEntry.getValue().getOperations().entrySet()) {
+//                        if (operation.getValue().getImplementation() != null) {
+//                            if (operation.getValue().getImplementation().getPrimary() != null) {
+//                                if (operation.getValue().getImplementation().getPrimary().getLocalPart().contains("/")) {
+//                                    TArtifactTemplate artifactTemplate = new TArtifactTemplate.Builder(operation.getKey(), type)
+//                                        .addArtifactReferences((new TArtifactReference.Builder(operation.getValue().getImplementation().getPrimary().getLocalPart())).build())
+//                                        .build();
+//                                    this.artifactTemplates.put(operation.getKey(), artifactTemplate);
+//                                    output.add(new TImplementationArtifacts.ImplementationArtifact.Builder(artifactTemplate.getType())
+//                                        .setName(operation.getKey())
+//                                        .setArtifactRef(new QName(targetNamespace, artifactTemplate.getId()))
+//                                        .setInterfaceName(interfaceDefinitionEntry.getKey())
+//                                        .setOperationName(operation.getKey())
+//                                        .build());
+//                                } else if (!operation.getValue().getImplementation().getPrimary().getLocalPart().equalsIgnoreCase("null")) {
+//                                    TArtifactTemplate artifactTemplate = new TArtifactTemplate.Builder(operation.getValue().getImplementation().getPrimary().getLocalPart(), type)
+//                                        .build();
+//                                    this.artifactTemplates.put(operation.getValue().getImplementation().getPrimary().getLocalPart(), artifactTemplate);
+//                                    output.add(new TImplementationArtifacts.ImplementationArtifact.Builder(artifactTemplate.getType())
+//                                        .setName(operation.getKey())
+//                                        .setArtifactRef(new QName(targetNamespace, artifactTemplate.getId()))
+//                                        .setInterfaceName(interfaceDefinitionEntry.getKey())
+//                                        .setOperationName(operation.getKey())
+//                                        .build());
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        if (output.isEmpty()) {
+//            return null;
+//        }
+//        return output;
+//    }
+
+    private org.eclipse.winery.model.tosca.TOperationDefinition convert(TOperationDefinition node, String id) {
+        if (Objects.isNull(node)) return null;
+        org.eclipse.winery.model.tosca.TOperationDefinition def = new org.eclipse.winery.model.tosca.TOperationDefinition();
+        def.setId(id);
+        def.setName(id);
+        def.setDescription(node.getDescription());
+        def.setInputs(convert(node.getInputs()));
+        def.setOutputs(convert(node.getOutputs()));
+        def.setImplementation(convert(node.getImplementation()));
+        return def;
     }
 
-    private List<TImplementationArtifacts.ImplementationArtifact> convertImplmentationsFromInterfaces(Map<String, TInterfaceDefinition> interfaces, String targetNamespace) {
-        QName type = new QName("http://opentosca.org/artifacttypes", "ScriptArtifact");
-        List<TImplementationArtifacts.ImplementationArtifact> output = new ArrayList<>();
-        for (Map.Entry<String, TInterfaceDefinition> interfaceDefinitionEntry : interfaces.entrySet()) {
-            if (interfaceDefinitionEntry.getValue() != null) {
-                if (interfaceDefinitionEntry.getValue().getOperations() != null) {
-                    for (Map.Entry<String, TOperationDefinition> operation : interfaceDefinitionEntry.getValue().getOperations().entrySet()) {
-                        if (operation.getValue().getImplementation() != null) {
-                            if (operation.getValue().getImplementation().getPrimary() != null) {
-                                if (operation.getValue().getImplementation().getPrimary().getLocalPart().contains("/")) {
-                                    TArtifactTemplate artifactTemplate = new TArtifactTemplate.Builder(operation.getKey(), type)
-                                        .addArtifactReferences((new TArtifactReference.Builder(operation.getValue().getImplementation().getPrimary().getLocalPart())).build())
-                                        .build();
-                                    this.artifactTemplates.put(operation.getKey(), artifactTemplate);
-                                    output.add(new TImplementationArtifacts.ImplementationArtifact.Builder(artifactTemplate.getType())
-                                        .setName(operation.getKey())
-                                        .setArtifactRef(new QName(targetNamespace, artifactTemplate.getId()))
-                                        .setInterfaceName(interfaceDefinitionEntry.getKey())
-                                        .setOperationName(operation.getKey())
-                                        .build());
-                                } else if (!operation.getValue().getImplementation().getPrimary().getLocalPart().equalsIgnoreCase("null")) {
-                                    TArtifactTemplate artifactTemplate = new TArtifactTemplate.Builder(operation.getValue().getImplementation().getPrimary().getLocalPart(), type)
-                                        .build();
-                                    this.artifactTemplates.put(operation.getValue().getImplementation().getPrimary().getLocalPart(), artifactTemplate);
-                                    output.add(new TImplementationArtifacts.ImplementationArtifact.Builder(artifactTemplate.getType())
-                                        .setName(operation.getKey())
-                                        .setArtifactRef(new QName(targetNamespace, artifactTemplate.getId()))
-                                        .setInterfaceName(interfaceDefinitionEntry.getKey())
-                                        .setOperationName(operation.getKey())
-                                        .build());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (output.isEmpty()) {
-            return null;
-        }
-        return output;
+    private TImplementation convert(org.eclipse.winery.model.tosca.yaml.TImplementation node) {
+        if (Objects.isNull(node)) return null;
+        TImplementation def = new TImplementation();
+        def.setPrimary(node.getPrimaryArtifactName());
+        def.setDependencies(node.getDependencyArtifactNames());
+        def.setTimeout(node.getTimeout());
+        def.setOperationHost(node.getOperationHost());
+        return def;
     }
 
-    private TOperation convert(TOperationDefinition node, String id) {
-        return new TOperation.Builder(id)
-            .addDocumentation(node.getDescription())
-            .addInputParameters(convertParameters(node.getInputs()))
-            .addOutputParameters(convertParameters(node.getOutputs()))
-            .build();
-    }
-
+    @Deprecated
     private List<TParameter> convertParameters(Map<String, TPropertyAssignmentOrDefinition> node) {
         return node.entrySet().stream()
             .map(entry -> {
@@ -1125,6 +1123,7 @@ public class Y2XConverter {
             .collect(Collectors.toList());
     }
 
+    @Deprecated
     private TParameter convertParameter(TPropertyDefinition node, String id) {
         return new TParameter.Builder(
             id,

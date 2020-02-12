@@ -23,11 +23,11 @@ import javax.ws.rs.core.Response;
 import org.eclipse.winery.model.tosca.kvproperties.AttributeDefinitionList;
 import org.eclipse.winery.repository.rest.RestUtils;
 
-public class AttributeDefinitionResource {
+public class AttributeDefinitionsResource {
 
     private final EntityTypeResource parent;
 
-    public AttributeDefinitionResource(EntityTypeResource parent) {
+    public AttributeDefinitionsResource(EntityTypeResource parent) {
         this.parent = parent;
     }
 

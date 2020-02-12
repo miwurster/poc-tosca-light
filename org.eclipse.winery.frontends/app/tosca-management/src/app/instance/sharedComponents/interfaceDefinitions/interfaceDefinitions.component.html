@@ -39,7 +39,13 @@
                 <input type="text" id="selectedInterface.name" name="name" autocomplete=off class="form-control"
                        [(ngModel)]="selectedInterface.name"/>
             </div>
-            <winery-parameters [title]="'Input'" [parameters]="selectedInterface.inputs"></winery-parameters>
+            <div class="form-group">
+                <label class="control-label" for="selectedInterface.type">Type</label>
+                <input type="text" id="selectedInterface.type" name="type" class="form-control"
+                       [(ngModel)]="selectedInterface.type" disabled/>
+            </div>
+            <winery-parameters [tableTitle]="'Inputs'" [modalTitle]="'Input'"
+                               [parameters]="selectedInterface.inputs"></winery-parameters>
         </div>
     </div>
     <div class="row" *ngIf="selectedInterface">
@@ -64,15 +70,39 @@
                 <input type="text" id="selectedOperation.description" name="name" autocomplete=off class="form-control"
                        [(ngModel)]="selectedOperation.description"/>
             </div>
-            <winery-parameters [title]="'Input Parameter'" [parameters]="selectedOperation.inputs"></winery-parameters>
-            <winery-parameters [title]="'Output Parameter'" [parameters]="selectedOperation.output"></winery-parameters>
+            <winery-parameters [tableTitle]="'Input Parameters'" [modalTitle]="'Input Parameter'"
+                               [parameters]="selectedOperation.inputs"></winery-parameters>
+            <winery-parameters [tableTitle]="'Output Parameters'" [modalTitle]="'Output Parameter'"
+                               [parameters]="selectedOperation.outputs"></winery-parameters>
         </div>
     </div>
 </div>
 
-<winery-modal bsModal #addModal="bs-modal" [modalRef]="addModal"
+<winery-modal bsModal #addInterfaceModal="bs-modal" [modalRef]="addInterfaceModal"
+              (onShow)="form.reset(); type.reset()">
+    <winery-modal-header [title]="'Interface'"></winery-modal-header>
+    <winery-modal-body>
+        <form #form="ngForm">
+            <div class="form-group">
+                <label for="type" class="control-label">Type</label>
+                <ng-select id="type" name="type" #type="ngModel" ngModel required
+                           [disabled]="!instanceService?.currentVersion?.editable"
+                           [items]="interfaceTypes">
+                </ng-select>
+            </div>
+        </form>
+    </winery-modal-body>
+    <winery-modal-footer (onOk)="addInterface(type.value[0])"
+                         [closeButtonLabel]="'Cancel'"
+                         [okButtonLabel]="'Add'"
+                         [disableOkButton]="type.invalid">
+    </winery-modal-footer>
+</winery-modal>
+
+
+<winery-modal bsModal #addOperationModal="bs-modal" [modalRef]="addOperationModal"
               (onShow)="form.reset()">
-    <winery-modal-header [title]="modalTitle"></winery-modal-header>
+    <winery-modal-header [title]="'Operation'"></winery-modal-header>
     <winery-modal-body>
         <form #form="ngForm">
             <div class="form-group">
@@ -91,8 +121,7 @@
             </div>
         </form>
     </winery-modal-body>
-    <winery-modal-footer
-        (onOk)="modalTitle === 'Interface' ? addInterface(name.value) : addOperation(name.value);"
+    <winery-modal-footer (onOk)="addOperation(name.value)"
         [closeButtonLabel]="'Cancel'"
         [okButtonLabel]="'Add'"
         [disableOkButton]="!form?.form.valid">

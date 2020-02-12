@@ -98,6 +98,7 @@ export class AttributesComponent implements OnInit {
     addAttribute(attr: AttributeDefinition) {
         const o = Object.assign(new AttributeDefinition(), attr);
         this.attributes.push(o);
+        this.save();
     }
 
     removeAttribute() {
@@ -108,5 +109,6 @@ export class AttributesComponent implements OnInit {
         }
         this.confirmModal.hide();
         this.selectedAttr = null;
+        this.save();
     }
 }

@@ -19,28 +19,25 @@ import { Router } from '@angular/router';
 import { Parameter } from '../../../model/parameters';
 
 @Injectable()
-export class ParametersService {
-
-    private readonly path: string;
+export class InputOutputParametersService {
 
     constructor(private http: HttpClient, private route: Router) {
-        this.path = backendBaseURL + this.route.url + '/';
     }
 
     public getInputParameters(): Observable<Parameter[]> {
-        return this.getJson(this.path + '/inputs');
+        return this.getJson(backendBaseURL + this.route.url + '/' + '/inputs');
     }
 
     public updateInputParameters(data: Parameter[]): Observable<HttpResponse<string>> {
-        return this.putJson(this.path + '/inputs', data);
+        return this.putJson(backendBaseURL + this.route.url + '/' + '/inputs', data);
     }
 
     public getOutputParameters(): Observable<Parameter[]> {
-        return this.getJson(this.path + '/outputs');
+        return this.getJson(backendBaseURL + this.route.url + '/' + '/outputs');
     }
 
     public updateOutputParameters(data: Parameter[]): Observable<HttpResponse<string>> {
-        return this.putJson(this.path + '/outputs', data);
+        return this.putJson(backendBaseURL + this.route.url + '/' + '/outputs', data);
     }
 
     private getJson<T>(path: string): Observable<T> {
