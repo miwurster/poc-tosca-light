@@ -1705,18 +1705,18 @@ public class BackendUtils {
             if (gitRepo.hasChangesInFile(BackendUtils.getRefOfDefinitions(id))) {
                 changesInFile = true;
             }
-            if (!current[0].isLatestVersion()) {
-                // The current version may still be releasable, if it's the latest WIP version of a component version.
-                List<WineryVersion> collect = versionList.stream()
-                    .filter(version -> version.getComponentVersion().equals(current[0].getComponentVersion()))
-                    .sorted(Comparator.reverseOrder())
-                    .collect(Collectors.toList());
-                current[0].setReleasable(collect.get(0).isCurrentVersion());
-                // And if there are changes, it's also editable.
-                current[0].setEditable(changesInFile && current[0].isReleasable());
-            } else {
-                current[0].setEditable(changesInFile);
-            }
+        }
+        if (!current[0].isLatestVersion()) {
+            // The current version may still be releasable, if it's the latest WIP version of a component version.
+            List<WineryVersion> collect = versionList.stream()
+                .filter(version -> version.getComponentVersion().equals(current[0].getComponentVersion()))
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+            current[0].setReleasable(collect.get(0).isCurrentVersion());
+            // And if there are changes, it's also editable.
+            current[0].setEditable(changesInFile && current[0].isReleasable());
+        } else {
+            current[0].setEditable(changesInFile);
         }
 
         return versionList;

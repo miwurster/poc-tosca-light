@@ -2270,8 +2270,11 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         if (this.configuration.isYaml()) {
             // we assume the relationship type is correct
             // check the conditions set by the requirement definition
-            if (this.matchType(reqDefinition.node, targetNodeType.qName, this.entityTypes.unGroupedNodeTypes) &&
-                this.matchType(reqDefinition.capability, capDefinition.capabilityType, this.entityTypes.capabilityTypes)) {
+            let nodeCompatible = true;
+            if (reqDefinition.node && !this.matchType(reqDefinition.node, targetNodeType.qName, this.entityTypes.unGroupedNodeTypes)) {
+                nodeCompatible = false;
+            }
+            if (nodeCompatible && this.matchType(reqDefinition.capability, capDefinition.capabilityType, this.entityTypes.capabilityTypes)) {
 
                 if (cap.validSourceTypes) {
                     if (cap.validSourceTypes.some(e => this.matchType(e, sourceNodeType.qName, this.entityTypes.unGroupedNodeTypes))) {
@@ -2317,12 +2320,18 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
      * @param targetElementTypeSet
      */
     matchType(requiredType: string, targetElementType: string, targetElementTypeSet: EntityType[]) {
-        if (requiredType) {
-            const typeAncestry = InheritanceUtils.getInheritanceAncestry(targetElementType, targetElementTypeSet);
-            return typeAncestry.some(type => type.qName === requiredType);
-        } else {
-            // if there is no required type, we assume all target types are valid!
+        if (requiredType === targetElementType) {
             return true;
+        } else {
+            const parentType = targetElementTypeSet
+                .filter(type => type.qName === targetElementType)
+                .map(type => type.full.serviceTemplateOrNodeTypeOrNodeTypeImplementation[0].derivedFrom);
+
+            if (parentType && parentType.length > 0 && parentType[0]) {
+                return this.matchType(requiredType, parentType[0].type, targetElementTypeSet);
+            }
+
+            return false;
         }
     }
 

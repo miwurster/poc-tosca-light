@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -40,6 +40,7 @@ import javax.xml.namespace.QName;
 import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.configuration.Environments;
+import org.eclipse.winery.common.configuration.RepositoryConfigurationObject;
 import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.Namespace;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
@@ -602,11 +603,11 @@ public interface IRepository extends IWineryRepositoryCommon {
 
         final TNodeType nodeType = this.getElement(id);
 
-        // add all referenced requirement types, but only in XML mode. YAML does not have requirement types
-        if (!Environments.getUiConfig().getFeatures().get("yaml")) {
-            TNodeType.RequirementDefinitions reqDefsContainer = nodeType.getRequirementDefinitions();
-            if (reqDefsContainer != null) {
-                List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
+        // add all referenced requirement types
+        TNodeType.RequirementDefinitions reqDefsContainer = nodeType.getRequirementDefinitions();
+        if (reqDefsContainer != null) {
+            List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
+            if (Environments.getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.FILE) {
                 for (TRequirementDefinition reqDef : reqDefs) {
                     RequirementTypeId reqTypeId = new RequirementTypeId(reqDef.getRequirementType());
                     ids.add(reqTypeId);
@@ -814,6 +815,7 @@ public interface IRepository extends IWineryRepositoryCommon {
                     }
 
                     getReferencedRequirementTypeIds(ids, n);
+
                     TNodeTemplate.Capabilities capabilities = n.getCapabilities();
                     if (capabilities != null) {
                         for (TCapability cap : capabilities.getCapability()) {

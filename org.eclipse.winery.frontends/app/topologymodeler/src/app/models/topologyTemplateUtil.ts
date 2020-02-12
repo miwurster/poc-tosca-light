@@ -102,6 +102,7 @@ export class TopologyTemplateUtil {
                 const reqDefs: RequirementDefinitionModel[] = InheritanceUtils.getEffectiveRequirementDefinitionsOfNodeType(node.type, types);
 
                 if (reqDefs && reqDefs.length > 0) {
+                    node.requirements = { requirement: [] };
                     node.requirements.requirement = reqDefs
                         .map(reqDef => RequirementModel.fromRequirementDefinition(reqDef))
                         .map(reqDef => {
