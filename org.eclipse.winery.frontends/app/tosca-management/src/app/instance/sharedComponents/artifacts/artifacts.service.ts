@@ -32,7 +32,9 @@ export class ArtifactsService {
     }
 
     getArtifacts() {
-        return this.getJson<Artifact[]>(backendBaseURL + this.route.url);
+        const tokens = this.route.url.split('/');
+        tokens.pop();
+        return this.getJson<Artifact[]>(backendBaseURL + tokens.join('/') + '/artifacts');
     }
 
     createArtifact(artifact: Artifact, file: File) {
