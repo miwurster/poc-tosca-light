@@ -2271,7 +2271,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             // we assume the relationship type is correct
             // check the conditions set by the requirement definition
             let nodeCompatible = true;
-            if (reqDefinition.node && !this.matchType(reqDefinition.node, targetNodeType.qName, this.entityTypes.unGroupedNodeTypes)) {
+            if (reqDefinition.node && !pe(reqDefinition.node, targetNodeType.qName, this.entityTypes.unGroupedNodeTypes)) {
                 nodeCompatible = false;
             }
             if (nodeCompatible && this.matchType(reqDefinition.capability, capDefinition.capabilityType, this.entityTypes.capabilityTypes)) {
