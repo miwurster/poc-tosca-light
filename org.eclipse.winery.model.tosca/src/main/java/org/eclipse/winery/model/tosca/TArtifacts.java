@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,7 +28,8 @@ import javax.xml.bind.annotation.XmlType;
     "artifact"
 })
 public class TArtifacts {
-    @XmlElement(name = "Policy", required = true)
+
+    @XmlElement(name = "Artifact", required = true)
     List<TArtifact> artifact;
 
     public TArtifacts() {
@@ -39,11 +41,21 @@ public class TArtifacts {
     }
 
     public List<TArtifact> getArtifact() {
+        if (artifact == null) {
+            artifact = new ArrayList<>();
+        }
         return artifact;
     }
 
     public void setArtifact(List<TArtifact> artifact) {
         this.artifact = artifact;
+    }
+
+    public void addArtifact(TArtifact artifact) {
+        if (this.artifact == null) {
+            this.artifact = new ArrayList<>();
+        }
+        this.artifact.add(artifact);
     }
 
     @Override

@@ -27,6 +27,7 @@ export class SubMenuItems {
     static readonly appearance: SubMenuItem = { displayName: 'Appearance', urlFragment: 'appearance' };
     static readonly appliesTo: SubMenuItem = { displayName: 'Applies To', urlFragment: 'appliesto' };
     static readonly attributeMappings: SubMenuItem = { displayName: 'Attribute Mappings', urlFragment: 'attributemappings' };
+    static readonly artifacts: SubMenuItem = { displayName: 'Artifacts', urlFragment: 'artifacts' };
     static readonly boundaryDefinitions: SubMenuItem = { displayName: 'Boundary Definitions', urlFragment: 'boundarydefinitions' };
     static readonly capabilityDefinitions: SubMenuItem = { displayName: 'Capability Definitions', urlFragment: 'capabilitydefinitions' };
     static readonly configuration: SubMenuItem = { displayName: 'Configuration', urlFragment: 'configuration' };
@@ -51,9 +52,10 @@ export class SubMenuItems {
     static readonly oneToOneEDMMMappings: SubMenuItem = { displayName: '1 to 1 EDMM Mappings', urlFragment: '1to1edmmmappings' };
     static readonly planLanguages: SubMenuItem = { displayName: 'Plan Languages', urlFragment: 'planlanguages' };
     static readonly plans: SubMenuItem = { displayName: 'Plans', urlFragment: 'plans' };
+    static readonly parameters: SubMenuItem = { displayName: 'Parameters', urlFragment: 'parameters' };
     static readonly planTypes: SubMenuItem = { displayName: 'Plan Types', urlFragment: 'plantypes' };
     static readonly properties: SubMenuItem = { displayName: 'Properties', urlFragment: 'properties' };
-    static readonly propertiesDefinition: SubMenuItem = { displayName: 'Properties Definition', urlFragment: 'propertiesdefinition' };
+    static readonly propertiesDefinition: SubMenuItem = { displayName: 'Property Definitions', urlFragment: 'propertiesdefinition' };
     static readonly propertyConstraints: SubMenuItem = { displayName: 'Property Constraints', urlFragment: 'propertyconstraints' };
     static readonly readme: SubMenuItem = { displayName: 'README', urlFragment: 'readme' };
     static readonly refinementStructure: SubMenuItem = { displayName: 'Refinement Structure', urlFragment: 'refinementstructure' };
@@ -77,4 +79,6 @@ export class SubMenuItems {
     static readonly capabilityTypeConstraints: SubMenuItem = { displayName: 'Constraints', urlFragment: 'constraints' };
     static readonly supportedFiles: SubMenuItem = { displayName: 'Supported File Types', urlFragment: 'supportedfiles' };
     static readonly xml: SubMenuItem = { displayName: 'XML', urlFragment: 'xml' };
+    static readonly attributes: SubMenuItem = { displayName: 'Attribute Definitions', urlFragment: 'attributes' };
+    static readonly interfacedefinitions: SubMenuItem = { displayName: 'Interfaces', urlFragment: 'interfacedefinitions' };
 }
