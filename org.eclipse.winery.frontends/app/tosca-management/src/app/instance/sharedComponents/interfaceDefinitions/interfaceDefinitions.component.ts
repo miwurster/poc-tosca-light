@@ -13,14 +13,16 @@
  *******************************************************************************/
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { InstanceService } from '../../instance.service';
-import { ConfigureInterface, Interface, Operation, StandardInterface } from '../../../model/interfaces';
+import { ConfigureInterface, Interface, Operation, OperationImplementation, StandardInterface } from '../../../model/interfaces';
 import { ModalDirective } from 'ngx-bootstrap';
 import { WineryValidatorObject } from '../../../wineryValidators/wineryDuplicateValidator.directive';
 import { SelectableListComponent } from '../interfaces/selectableList/selectableList.component';
 import { InterfaceDefinitionsService } from './interfaceDefinitions.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SelectData } from '../../../model/selectData';
-import { SelectItem } from 'ng2-select';
+import { WineryTableColumn } from '../../../wineryTableModule/wineryTable.component';
+import { ArtifactsService } from '../artifacts/artifacts.service';
+import { Artifact } from '../../../model/artifact';
 
 @Component({
     selector: 'winery-interfaces',
@@ -33,6 +35,21 @@ export class InterfaceDefinitionsComponent implements OnInit {
     interfaces: Interface[] = [];
     selectedInterface: Interface;
     selectedOperation: Operation;
+
+    columnsInputParameters: Array<WineryTableColumn> = [
+        { title: 'Name', name: 'key', sort: true },
+        { title: 'Type', name: 'type', sort: false },
+        { title: 'Required', name: 'required', sort: false },
+        { title: 'Default Value', name: 'defaultValue', sort: false },
+        { title: 'Description', name: 'description', sort: false },
+    ];
+    columnsOutputParameters: Array<WineryTableColumn> = [
+        { title: 'Name', name: 'key', sort: true },
+        { title: 'Type', name: 'type', sort: false },
+        { title: 'Required', name: 'required', sort: false },
+        { title: 'Value', name: 'value', sort: false },
+        { title: 'Description', name: 'description', sort: false },
+    ];
 
     validatorObject: WineryValidatorObject;
     @ViewChild('addInterfaceModal') addInterfaceModal: ModalDirective;
@@ -48,8 +65,11 @@ export class InterfaceDefinitionsComponent implements OnInit {
         { text: '{tosca.interfaces.node.lifecycle}Standard', id: 'Standard' },
         { text: '{tosca.interfaces.relationship}Configure', id: 'Configure' },
     ];
+    selectableArtifacts: Artifact[] = [];
+    selectedArtifact: Artifact[];
 
-    constructor(private interfaceService: InterfaceDefinitionsService, public instanceService: InstanceService) {
+    constructor(private interfaceService: InterfaceDefinitionsService, public instanceService: InstanceService,
+                private artifactsService: ArtifactsService) {
     }
 
     ngOnInit() {
@@ -58,11 +78,14 @@ export class InterfaceDefinitionsComponent implements OnInit {
             .subscribe(
                 data => {
                     this.interfaces = [];
-                    data.forEach(item => this.interfaces.push(Object.assign(new Interface(), item)));
+                    data.forEach(item => this.interfaces.push({ ...new Interface(), ...item }));
                     this.loading = false;
                 },
                 error => this.handleError(error)
             );
+        this.artifactsService.getArtifacts().subscribe(data => {
+            data.forEach(item => this.selectableArtifacts.push({ ...item, ...{ id: item.name, text: `${item.name} / ${item.type}` } }));
+        });
     }
 
     private handleError(error: HttpErrorResponse) {
@@ -118,7 +141,15 @@ export class InterfaceDefinitionsComponent implements OnInit {
     }
 
     onOperationSelected(selectedOperation: Operation) {
+        this.selectedArtifact = [];
         this.selectedOperation = selectedOperation;
+        console.log(this.selectedOperation);
+        if (this.selectedOperation.implementation) {
+            const id = this.selectedOperation.implementation.primary;
+            const artifact = this.selectableArtifacts.find(item => item.name === id);
+            console.log(artifact);
+            this.selectedArtifact.push(artifact);
+        }
     }
 
     onRemoveOperation() {
@@ -143,5 +174,13 @@ export class InterfaceDefinitionsComponent implements OnInit {
             }
         }
         this.selectedOperation = null;
+    }
+
+    onArtifactSelected(data: SelectData) {
+        if (!this.selectedOperation) {
+            return;
+        }
+        this.selectedOperation.implementation = new OperationImplementation();
+        this.selectedOperation.implementation.primary = data.id;
     }
 }

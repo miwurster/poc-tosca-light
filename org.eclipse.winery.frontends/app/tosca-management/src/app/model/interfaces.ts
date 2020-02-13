@@ -30,17 +30,10 @@ export class Operation {
 }
 
 export class OperationImplementation {
-    primary: Artifact;
-    dependencies: Artifact[] = [];
+    primary: string;
+    dependencies: string[];
     operationHost: string;
-    timeout = 0;
-}
-
-export class Artifact {
-    key: string = null;
-    type: string = null;
-    description = '';
-    file: string = null;
+    timeout: number;
 }
 
 export const StandardInterface: Interface = {

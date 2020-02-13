@@ -36,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
     "instanceStates",
     "interfaces",
     "interfaceDefinitions",
+    "artifacts"
 })
 public class TNodeType extends TEntityType {
     @XmlElement(name = "RequirementDefinitions")
@@ -46,6 +47,8 @@ public class TNodeType extends TEntityType {
     protected TTopologyElementInstanceStates instanceStates;
     @XmlElement(name = "Interfaces")
     protected TInterfaces interfaces;
+    @XmlElement(name = "Artifacts")
+    protected TArtifacts artifacts;
 
     // added to support TOSCA YAML 
     protected List<TInterfaceDefinition> interfaceDefinitions;
@@ -60,6 +63,7 @@ public class TNodeType extends TEntityType {
         this.instanceStates = builder.instanceStates;
         this.interfaces = builder.interfaces;
         this.interfaceDefinitions = builder.interfaceDefinitions;
+        this.artifacts = builder.artifacts;
     }
 
     @Override
@@ -71,7 +75,8 @@ public class TNodeType extends TEntityType {
         return Objects.equals(requirementDefinitions, tNodeType.requirementDefinitions) &&
             Objects.equals(capabilityDefinitions, tNodeType.capabilityDefinitions) &&
             Objects.equals(instanceStates, tNodeType.instanceStates) &&
-            Objects.equals(interfaces, tNodeType.interfaces);
+            Objects.equals(interfaces, tNodeType.interfaces) &&
+            Objects.equals(artifacts, tNodeType.artifacts);
     }
 
     @Override
@@ -119,6 +124,14 @@ public class TNodeType extends TEntityType {
 
     public void setInterfaceDefinitions(List<TInterfaceDefinition> interfaceDefinitions) {
         this.interfaceDefinitions = interfaceDefinitions;
+    }
+
+    public @Nullable TArtifacts getArtifacts() {
+        return artifacts;
+    }
+
+    public void setArtifacts(@Nullable TArtifacts value) {
+        this.artifacts = value;
     }
 
     @Override
@@ -194,6 +207,7 @@ public class TNodeType extends TEntityType {
         private TTopologyElementInstanceStates instanceStates;
         private TInterfaces interfaces;
         private List<TInterfaceDefinition> interfaceDefinitions;
+        private TArtifacts artifacts;
 
         public Builder(String name) {
             super(name);
@@ -220,6 +234,11 @@ public class TNodeType extends TEntityType {
 
         public Builder setInterfaces(TInterfaces interfaces) {
             this.interfaces = interfaces;
+            return this;
+        }
+
+        public Builder setArtifacts(TArtifacts artifacts) {
+            this.artifacts = artifacts;
             return this;
         }
 
@@ -325,6 +344,29 @@ public class TNodeType extends TEntityType {
         public Builder setInterfaceDefinitions(List<TInterfaceDefinition> interfaceDefinitions) {
             this.interfaceDefinitions = interfaceDefinitions;
             return self();
+        }
+
+        public Builder addArtifacts(TArtifacts artifacts) {
+            if (artifacts == null || artifacts.getArtifact().isEmpty()) {
+                return this;
+            }
+
+            if (this.artifacts == null) {
+                this.artifacts = artifacts;
+            } else {
+                this.artifacts.getArtifact().addAll(artifacts.getArtifact());
+            }
+            return this;
+        }
+
+        public Builder addArtifacts(List<TArtifact> artifacts) {
+            if (artifacts == null) {
+                return this;
+            }
+
+            TArtifacts tmp = new TArtifacts();
+            tmp.getArtifact().addAll(artifacts);
+            return addArtifacts(tmp);
         }
 
         @Override

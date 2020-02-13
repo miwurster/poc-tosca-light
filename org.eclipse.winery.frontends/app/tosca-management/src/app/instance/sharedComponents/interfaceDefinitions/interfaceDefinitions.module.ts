@@ -24,6 +24,7 @@ import { SelectableListModule } from '../interfaces/selectableList/selectableLis
 import { ParametersModule } from '../parameters/parameters.module';
 import { InterfaceDefinitionsService } from './interfaceDefinitions.service';
 import { SelectModule } from 'ng2-select';
+import { ArtifactsModule } from '../artifacts/artifacts.module';
 
 @NgModule({
     imports: [
@@ -37,8 +38,11 @@ import { SelectModule } from 'ng2-select';
         SelectableListModule,
         WineryDuplicateValidatorModule,
         ParametersModule,
+        ArtifactsModule,
     ],
-    exports: [],
+    exports: [
+        InterfaceDefinitionsComponent,
+    ],
     declarations: [
         InterfaceDefinitionsComponent,
     ],

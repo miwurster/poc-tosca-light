@@ -45,7 +45,8 @@
                        [(ngModel)]="selectedInterface.type" disabled/>
             </div>
             <winery-parameters [tableTitle]="'Inputs'" [modalTitle]="'Input'"
-                               [parameters]="selectedInterface.inputs"></winery-parameters>
+                               [parameters]="selectedInterface.inputs"
+                               [columns]="columnsInputParameters"></winery-parameters>
         </div>
     </div>
     <div class="row" *ngIf="selectedInterface">
@@ -70,10 +71,18 @@
                 <input type="text" id="selectedOperation.description" name="name" autocomplete=off class="form-control"
                        [(ngModel)]="selectedOperation.description"/>
             </div>
+            <div class="form-group">
+                <label for="artifact" class="control-label">Artifact</label>
+                <ng-select id="artifact" [items]="selectableArtifacts" (selected)="onArtifactSelected($event)"
+                           [active]="selectedArtifact" [disabled]="!instanceService?.currentVersion?.editable">
+                </ng-select>
+            </div>
             <winery-parameters [tableTitle]="'Input Parameters'" [modalTitle]="'Input Parameter'"
-                               [parameters]="selectedOperation.inputs"></winery-parameters>
+                               [parameters]="selectedOperation.inputs" [columns]="columnsInputParameters">
+            </winery-parameters>
             <winery-parameters [tableTitle]="'Output Parameters'" [modalTitle]="'Output Parameter'"
-                               [parameters]="selectedOperation.outputs"></winery-parameters>
+                               [parameters]="selectedOperation.outputs" [columns]="columnsOutputParameters">
+            </winery-parameters>
         </div>
     </div>
 </div>
@@ -99,7 +108,6 @@
     </winery-modal-footer>
 </winery-modal>
 
-
 <winery-modal bsModal #addOperationModal="bs-modal" [modalRef]="addOperationModal"
               (onShow)="form.reset()">
     <winery-modal-header [title]="'Operation'"></winery-modal-header>
@@ -122,9 +130,9 @@
         </form>
     </winery-modal-body>
     <winery-modal-footer (onOk)="addOperation(name.value)"
-        [closeButtonLabel]="'Cancel'"
-        [okButtonLabel]="'Add'"
-        [disableOkButton]="!form?.form.valid">
+                         [closeButtonLabel]="'Cancel'"
+                         [okButtonLabel]="'Add'"
+                         [disableOkButton]="!form?.form.valid">
     </winery-modal-footer>
 </winery-modal>
 

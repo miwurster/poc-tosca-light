@@ -45,7 +45,7 @@ export class InstanceService {
             case ToscaTypes.NodeType:
                 if (this.configurationService.isYaml()) {
                     subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.inheritance,
-                        SubMenuItems.interfacedefinitions, SubMenuItems.requirementDefinitionsYaml, SubMenuItems.capabilityDefinitions,
+                        SubMenuItems.artifacts, SubMenuItems.interfacedefinitions, SubMenuItems.requirementDefinitionsYaml, SubMenuItems.capabilityDefinitions,
                         SubMenuItems.propertiesDefinition, SubMenuItems.attributes];
                 } else {
                     subMenu = [SubMenuItems.readme, SubMenuItems.license, SubMenuItems.appearance, SubMenuItems.instanceStates, SubMenuItems.interfaces,

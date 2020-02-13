@@ -365,7 +365,8 @@ public class Y2XConverter {
     @NonNull
     private TArtifact convertToTArtifact(TArtifactDefinition node, String id) {
         TArtifact.Builder builder = new TArtifact.Builder(id, node.getType())
-            .setTargetLocation(node.getDeployPath())
+            .setDescription(node.getDescription())
+            .setDeployPath(node.getDeployPath())
             .setFile(node.getFile());
 
         if (node.getProperties() != null) {
@@ -586,14 +587,9 @@ public class Y2XConverter {
         TNodeType.Builder builder = convert(node, new TNodeType.Builder(id))
             .addRequirementDefinitions(convert(node.getRequirements()))
             .addCapabilityDefinitions(convert(node.getCapabilities()))
-            .setInterfaceDefinitions(convert(node.getInterfaces()));
-        TNodeType output = builder.build();
-        convertNodeTypeImplementation(
-            refactorImplementationArtifacts(node.getArtifacts(), node),
-            refactorDeploymentArtifacts(node.getArtifacts()),
-            id, output.getTargetNamespace()
-        );
-        return output;
+            .setInterfaceDefinitions(convert(node.getInterfaces()))
+            .addArtifacts(convert(node.getArtifacts()));
+        return builder.build();
     }
 
     /**
