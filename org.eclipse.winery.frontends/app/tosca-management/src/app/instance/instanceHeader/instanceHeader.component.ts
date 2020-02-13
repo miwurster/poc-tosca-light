@@ -67,7 +67,8 @@ export class InstanceHeaderComponent implements OnInit {
 
         if (this.configurationService.isYaml()) {
             if (this.toscaComponent.toscaType === ToscaTypes.ServiceTemplate
-                || this.toscaComponent.toscaType === ToscaTypes.Admin) {
+                || this.toscaComponent.toscaType === ToscaTypes.Admin
+                || this.toscaComponent.toscaType === ToscaTypes.PolicyType) {
                 this.needTwoLines = true;
             }
         }
