@@ -14,8 +14,9 @@
 
 package org.eclipse.winery.repository.export;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -26,7 +27,6 @@ import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
 import org.eclipse.winery.model.tosca.Definitions;
-import org.eclipse.winery.model.tosca.TArtifact;
 import org.eclipse.winery.model.tosca.TArtifacts;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -52,9 +52,9 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
             throw new RepositoryCorruptException(error);
         }
 
-        this.getPrepareForExport(repository, tcId);
-
         Definitions entryDefinitions = repository.getDefinitions(tcId);
+        this.getPrepareForExport(repository, tcId, entryDefinitions);
+
         Collection<DefinitionsChildId> referencedDefinitionsChildIds = repository.getReferencedDefinitionsChildIds(tcId);
 
         // adjust imports: add imports of definitions to it
@@ -74,9 +74,9 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
     /**
      * Prepares the given id for export. Mostly, the contained files are added to the CSAR.
      */
-    private void getPrepareForExport(IRepository repository, DefinitionsChildId id) throws RepositoryCorruptException, IOException {
+    private void getPrepareForExport(IRepository repository, DefinitionsChildId id, Definitions entryDefinitions) throws IOException {
         if (id instanceof ServiceTemplateId) {
-            this.prepareForExport(repository, (ServiceTemplateId) id);
+            this.prepareForExport(repository, (ServiceTemplateId) id, entryDefinitions);
         } else if (id instanceof RelationshipTypeId) {
             this.addVisualAppearanceToCSAR(repository, (RelationshipTypeId) id);
         } else if (id instanceof NodeTypeId) {
@@ -87,32 +87,41 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
     /**
      * Synchronizes the plan model references and adds the plans to the csar (putRefAsReferencedItemInCsar)
      */
-    private void prepareForExport(IRepository repository, ServiceTemplateId id) throws IOException {
+    private void prepareForExport(IRepository repository, ServiceTemplateId id, Definitions entryDefinitions) throws IOException {
         // ensure that the plans stored locally are the same ones as stored in the definitions
         BackendUtils.synchronizeReferences(id);
         TServiceTemplate st = repository.getElement(id);
 
-        for (TNodeTemplate n : st.getTopologyTemplate().getNodeTemplates()) {
-            TArtifacts artifacts = n.getArtifacts();
-            if (Objects.nonNull(artifacts)) {
-                artifacts.getArtifact().forEach(a -> {
-                    RepositoryFileReference ref = new RepositoryFileReference(id, getRelativeArtifactPath(n, a));
-                    if (repository.exists(ref)) {
-                        putRefAsReferencedItemInCsar(ref);
-                    }
-                });
+        if (Objects.nonNull(st.getTopologyTemplate())) {
+            for (TNodeTemplate n : st.getTopologyTemplate().getNodeTemplates()) {
+                TArtifacts artifacts = n.getArtifacts();
+
+                if (Objects.nonNull(artifacts)) {
+                    artifacts.getArtifact().forEach(a -> {
+                        Path p = Paths.get("files", n.getName(), a.getId());
+                        RepositoryFileReference ref = new RepositoryFileReference(id, p, a.getFile());
+                        if (repository.exists(ref)) {
+                            putRefAsReferencedItemInCsar(ref);
+                            entryDefinitions.getServiceTemplates()
+                                .stream().filter(Objects::nonNull)
+                                .findFirst()
+                                .ifPresent(s -> {
+                                    if (Objects.nonNull(s.getTopologyTemplate())) {
+                                        s.getTopologyTemplate()
+                                            .getNodeTemplates()
+                                            .stream()
+                                            .filter(node -> node.getId().equals(n.getId()))
+                                            .forEach(node -> node.getArtifacts()
+                                                .getArtifact()
+                                                .stream()
+                                                .filter(art -> art.getFile().equals(a.getFile()))
+                                                .forEach(art -> art.setFile(BackendUtils.getPathInsideRepo(ref))));
+                                    }
+                                });
+                        }
+                    });
+                }
             }
         }
-    }
-
-    private String getRelativeArtifactPath(TNodeTemplate nodeTemplate, TArtifact a) {
-        final String filesFolder = "files";
-        return filesFolder +
-            File.separator +
-            nodeTemplate.getName() +
-            File.separator +
-            a.getId() +
-            File.separator +
-            a.getFile();
     }
 }
