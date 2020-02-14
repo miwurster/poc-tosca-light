@@ -14,6 +14,7 @@
 package org.eclipse.winery.repository.importing;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +49,11 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.eclipse.winery.accountability.AccountabilityManager;
+import org.eclipse.winery.accountability.AccountabilityManagerFactory;
+import org.eclipse.winery.accountability.exceptions.AccountabilityException;
+import org.eclipse.winery.accountability.model.ProvenanceVerification;
+import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.XmlId;
@@ -85,11 +91,6 @@ import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.utils.ModelUtilities;
-import org.eclipse.winery.provenance.Provenance;
-import org.eclipse.winery.provenance.ProvenanceFactory;
-import org.eclipse.winery.provenance.exceptions.ProvenanceException;
-import org.eclipse.winery.provenance.model.ProvenanceVerification;
-import org.eclipse.winery.repository.Constants;
 import org.eclipse.winery.repository.JAXBSupport;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.NamespaceManager;
@@ -107,8 +108,8 @@ import org.eclipse.winery.repository.datatypes.ids.elements.SelfServiceMetaDataI
 import org.eclipse.winery.repository.datatypes.ids.elements.VisualAppearanceId;
 import org.eclipse.winery.repository.export.CsarExporter;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
@@ -148,7 +149,7 @@ public class CsarImporter {
      * @param options the set of options applicable for importing the csar
      */
     public ImportMetaInformation readCSAR(InputStream in, CsarImportOptions options)
-        throws IOException, ProvenanceException, ExecutionException, InterruptedException {
+        throws IOException, AccountabilityException, ExecutionException, InterruptedException {
         // we have to extract the file to a temporary directory as
         // the .definitions file does not necessarily have to be the first entry in the archive
         Path csarDir = Files.createTempDirectory("winery");
@@ -171,8 +172,8 @@ public class CsarImporter {
             }
 
             return this.importFromDir(csarDir, options, fileMap);
-        } catch (ProvenanceException e) {
-            LOGGER.debug("Error while checking the provenance of the CSAR");
+        } catch (AccountabilityException e) {
+            LOGGER.debug("Error while checking the accountability of the CSAR");
             throw e;
         } catch (IOException e) {
             CsarImporter.LOGGER.debug("Could not import CSAR", e);
@@ -188,10 +189,11 @@ public class CsarImporter {
      *
      * @param path    the root path of an extracted CSAR file
      * @param options the set of options applicable while importing a CSAR
-     * @param fileMap Contains all files which were extracted from the CSAR and have to be validated using the provenance layer
+     * @param fileMap Contains all files which were extracted from the CSAR and have to be validated using the
+     *                accountability layer
      */
     private ImportMetaInformation importFromDir(final Path path, CsarImportOptions options,
-                                                Map<String, File> fileMap) throws IOException, ProvenanceException, ExecutionException, InterruptedException {
+                                                Map<String, File> fileMap) throws IOException, AccountabilityException, ExecutionException, InterruptedException {
         final ImportMetaInformation importMetaInformation = new ImportMetaInformation();
         Path toscaMetaPath = path.resolve("TOSCA-Metadata/TOSCA.meta");
         if (!Files.exists(toscaMetaPath)) {
@@ -213,6 +215,7 @@ public class CsarImporter {
 
             // we assume that the entry definition identifies the provenance element
             if (Objects.nonNull(fileMap)) {
+
                 if (!(importMetaInformation.valid = this.isValid(importMetaInformation, fileMap))) {
                     return importMetaInformation;
                 }
@@ -266,18 +269,18 @@ public class CsarImporter {
     }
 
     private boolean isValid(ImportMetaInformation metaInformation, Map<String, File> fileMap)
-        throws ExecutionException, InterruptedException, ProvenanceException {
+        throws ExecutionException, InterruptedException, AccountabilityException {
         ServiceTemplateId entryServiceTemplate = metaInformation.entryServiceTemplate;
         metaInformation.verificationMap = new HashMap<>();
 
         if (Objects.nonNull(entryServiceTemplate)) {
-            Provenance provenance = ProvenanceFactory.getProvenance();
+            AccountabilityManager accountabilityManager = AccountabilityManagerFactory.getAccountabilityManager();
             String provenanceIdentifier = VersionUtils.getQNameWithComponentVersionOnly(entryServiceTemplate);
 
-            metaInformation.verificationMap = provenance
+            metaInformation.verificationMap = accountabilityManager
                 .verify(provenanceIdentifier, "TOSCA-Metadata/TOSCA.meta", fileMap)
                 .exceptionally(e -> {
-                    LOGGER.debug("provenance.verify completed exceptionally", e);
+                    LOGGER.debug("accountabilityManager.verify completed exceptionally", e);
                     return null;
                 })
                 .get();
@@ -303,11 +306,11 @@ public class CsarImporter {
             NamespaceManager localNamespaceManager;
 
             if (Files.exists(properties)) {
-                PropertiesConfiguration pconf;
-                try {
-                    pconf = new PropertiesConfiguration(properties.toFile());
+                PropertiesConfiguration pconf = new PropertiesConfiguration();
+                try (final BufferedReader propertyReader = Files.newBufferedReader(properties)) {
+                    pconf.read(propertyReader);
                     localNamespaceManager = new ConfigurationBasedNamespaceManager(pconf);
-                } catch (ConfigurationException e) {
+                } catch (IOException | ConfigurationException e) {
                     CsarImporter.LOGGER.debug(e.getMessage(), e);
                     return;
                 }
@@ -832,9 +835,6 @@ public class CsarImporter {
                 // We have to do nothing
                 continue;
             }
-
-            // we remove the current element as it will be handled during the export
-            iterator.remove();
 
             Path path = rootPath.resolve(reference);
             if (!Files.exists(path)) {

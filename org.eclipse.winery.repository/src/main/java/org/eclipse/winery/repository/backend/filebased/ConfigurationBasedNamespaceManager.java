@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,7 +13,6 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.backend.filebased;
 
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,9 +24,7 @@ import java.util.Set;
 import org.eclipse.winery.model.tosca.constants.Namespaces;
 import org.eclipse.winery.repository.backend.AbstractNamespaceManager;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.Configuration;
 
 @Deprecated
 public class ConfigurationBasedNamespaceManager extends AbstractNamespaceManager {
@@ -156,15 +153,17 @@ public class ConfigurationBasedNamespaceManager extends AbstractNamespaceManager
     }
 
     @Override
-    public void saveToOutputStream(OutputStream outputStream) throws ConfigurationException {
-        if (this.configuration instanceof PropertiesConfiguration) {
-            PropertiesConfiguration config = (PropertiesConfiguration) this.configuration;
-            config.save(outputStream);
-        }
+    public boolean isPatternNamespace(String namespace) {
+        return false;
     }
 
     @Override
-    public boolean isPatternNamespace(String namespace) {
+    public boolean isSecureCollection(String namespace) {
+        return false;
+    }
+
+    @Override
+    public boolean isGeneratedNamespace(String namespace) {
         return false;
     }
 }

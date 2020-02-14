@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,6 +29,8 @@ public class NamespaceProperties implements Serializable, Comparable<NamespacePr
      */
     private String upstreamRepository = "";
     private boolean isPatternCollection = false;
+    private boolean isSecureCollection = false;
+    private boolean isGeneratedNamespace = false;
 
     /**
      * This constructor must not be used. It is only required for serialization.
@@ -87,6 +89,22 @@ public class NamespaceProperties implements Serializable, Comparable<NamespacePr
 
     public void setPatternCollection(boolean patternCollection) {
         isPatternCollection = patternCollection;
+    }
+
+    public boolean isSecureCollection() {
+        return isSecureCollection;
+    }
+
+    public void setSecureCollection(boolean secureCollection) {
+        isSecureCollection = secureCollection;
+    }
+
+    public boolean isGeneratedNamespace() {
+        return isGeneratedNamespace;
+    }
+
+    public void setGeneratedNamespace(boolean generatedNamespace) {
+        isGeneratedNamespace = generatedNamespace;
     }
 
     @Override

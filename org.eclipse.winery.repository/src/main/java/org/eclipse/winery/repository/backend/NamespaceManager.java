@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,7 +13,6 @@
  *******************************************************************************/
 package org.eclipse.winery.repository.backend;
 
-import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -33,9 +32,9 @@ public interface NamespaceManager {
     }
 
     /**
-     * Returns a prefix for the given namespace. With two different namespaces, to different prefixes are returned.
-     * The returned prefixes are not persistest. Thus, two instances of a NamespaceManager might return different
-     * prefixes when called in another order.
+     * Returns a prefix for the given namespace. With two different namespaces, to different prefixes are returned. The
+     * returned prefixes are not persistest. Thus, two instances of a NamespaceManager might return different prefixes
+     * when called in another order.
      */
     String getPrefix(String namespace);
 
@@ -77,7 +76,9 @@ public interface NamespaceManager {
      */
     void clear();
 
-    void saveToOutputStream(OutputStream outputStream) throws Exception;
-
     boolean isPatternNamespace(String namespace);
+
+    boolean isSecureCollection(String namespace);
+
+    boolean isGeneratedNamespace(String namespace);
 }

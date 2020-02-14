@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -44,12 +46,14 @@ import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.HasInheritanceId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
+import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.PolicyTemplateId;
 import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeId;
 import org.eclipse.winery.common.ids.definitions.RelationshipTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.RequirementTypeId;
 import org.eclipse.winery.common.ids.definitions.ServiceTemplateId;
+import org.eclipse.winery.common.ids.definitions.TestRefinementModelId;
 import org.eclipse.winery.common.ids.definitions.imports.GenericImportId;
 import org.eclipse.winery.common.ids.elements.ToscaElementId;
 import org.eclipse.winery.common.interfaces.IWineryRepositoryCommon;
@@ -73,6 +77,7 @@ import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
+import org.eclipse.winery.model.tosca.TPolicies;
 import org.eclipse.winery.model.tosca.TPolicy;
 import org.eclipse.winery.model.tosca.TPolicyTemplate;
 import org.eclipse.winery.model.tosca.TPolicyType;
@@ -233,6 +238,15 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
             .stream()
             .flatMap(idClass -> this.getAllDefinitionsChildIds(idClass).stream())
             .collect(Collectors.toCollection(() -> new TreeSet<>()));
+    }
+
+    default <T extends DefinitionsChildId, S extends TExtensibleElements> Map<QName, S> getQNameToElementMapping(Class<T> idClass) {
+        Map<QName, S> elements = new HashMap<>();
+        getAllDefinitionsChildIds(idClass)
+            .forEach(id ->
+                elements.put(id.getQName(), getElement(id))
+            );
+        return elements;
     }
 
     /**
@@ -593,7 +607,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
 
         TBoundaryDefinitions boundaryDefs;
         if ((boundaryDefs = serviceTemplate.getBoundaryDefinitions()) != null) {
-            TBoundaryDefinitions.Policies policies = boundaryDefs.getPolicies();
+            TPolicies policies = boundaryDefs.getPolicies();
             if (policies != null) {
                 for (TPolicy policy : policies.getPolicy()) {
                     PolicyTypeId policyTypeId = new PolicyTypeId(policy.getPolicyType());
@@ -644,7 +658,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                     }
 
                     // crawl through policies
-                    org.eclipse.winery.model.tosca.TNodeTemplate.Policies policies = n.getPolicies();
+                    TPolicies policies = n.getPolicies();
                     if (policies != null) {
                         for (TPolicy pol : policies.getPolicy()) {
                             QName type = pol.getPolicyType();
@@ -666,6 +680,16 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         }
 
         return ids;
+    }
+
+    default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(PatternRefinementModelId id) {
+        // TODO
+        return new HashSet<>();
+    }
+
+    default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(TestRefinementModelId id) {
+        // TODO
+        return new HashSet<>();
     }
 
     default Collection<DefinitionsChildId> getReferencedDefinitionsChildIds(ComplianceRuleId id) {
@@ -715,7 +739,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
                     }
 
                     // crawl through policies
-                    org.eclipse.winery.model.tosca.TNodeTemplate.Policies policies = n.getPolicies();
+                    TPolicies policies = n.getPolicies();
                     if (policies != null) {
                         for (TPolicy pol : policies.getPolicy()) {
                             QName type = pol.getPolicyType();
@@ -768,6 +792,10 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
             referencedDefinitionsChildIds = new ArrayList();
         } else if (id instanceof ComplianceRuleId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ComplianceRuleId) id);
+        } else if (id instanceof PatternRefinementModelId) {
+            referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((PatternRefinementModelId) id);
+        } else if (id instanceof TestRefinementModelId) {
+            referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((TestRefinementModelId) id);
         } else {
             throw new IllegalStateException("Unhandled id class " + id.getClass());
         }
@@ -873,7 +901,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
     }
 
     default Collection<DefinitionsChildId> getReferencingDefinitionsChildIds(PolicyTemplateId id) {
-        // ServiceTemplates > BoundaryDefinitions > Policies
+        // ServiceTemplates > BoundaryDefinitions > TPolicies
         return new HashSet<>(this.getAllElementsReferencingGivenType(ServiceTemplateId.class, id.getQName()));
     }
 
@@ -884,7 +912,7 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
         ids.addAll(this.getAllElementsReferencingGivenType(PolicyTemplateId.class, id.getQName()));
         // PolicyTypes
         ids.addAll(this.getAllElementsReferencingGivenType(PolicyTypeId.class, id.getQName()));
-        // ServiceTemplates > BoundaryDefinitions > Policies
+        // ServiceTemplates > BoundaryDefinitions > TPolicies
         // ids.addAll(this.getAllElementsReferencingGivenType(ServiceTemplateId.class, id.getQName()));
 
         return ids;
@@ -962,6 +990,8 @@ public interface IGenericRepository extends IWineryRepositoryCommon {
     }
 
     NamespaceManager getNamespaceManager();
+
+    EdmmManager getEdmmManager();
 
     XsdImportManager getXsdImportManager();
 

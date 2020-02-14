@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -42,21 +43,22 @@ import org.w3c.dom.Element;
 @XmlType(name = "tRelationshipTemplate", propOrder = {
     "sourceElement",
     "targetElement",
-    "relationshipConstraints"
+    "relationshipConstraints",
+    "policies"
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class TRelationshipTemplate extends TEntityTemplate {
+public class TRelationshipTemplate extends TEntityTemplate implements HasPolicies {
 
     @XmlElement(name = "SourceElement", required = true)
     // AD: We need to combine source or target due to multi-inheritance
     protected TRelationshipTemplate.@NonNull SourceOrTargetElement sourceElement;
-
     @XmlElement(name = "TargetElement", required = true)
     protected TRelationshipTemplate.@NonNull SourceOrTargetElement targetElement;
-
     @XmlElement(name = "RelationshipConstraints")
     protected TRelationshipTemplate.RelationshipConstraints relationshipConstraints;
+    @XmlElement(name = "Policies")
+    protected TPolicies policies;
 
     @XmlAttribute(name = "name")
     protected String name;
@@ -136,7 +138,7 @@ public class TRelationshipTemplate extends TEntityTemplate {
         return name;
     }
 
-    public void setName(@Nullable  String value) {
+    public void setName(@Nullable String value) {
         this.name = value;
     }
 
@@ -148,7 +150,7 @@ public class TRelationshipTemplate extends TEntityTemplate {
     @XmlType(name = "", propOrder = {
         "relationshipConstraint"
     })
-    public static class RelationshipConstraints {
+    public static class RelationshipConstraints implements Serializable {
 
         @XmlElement(name = "RelationshipConstraint", required = true)
         protected List<TRelationshipTemplate.RelationshipConstraints.RelationshipConstraint> relationshipConstraint;
@@ -164,7 +166,7 @@ public class TRelationshipTemplate extends TEntityTemplate {
         @XmlType(name = "", propOrder = {
             "any"
         })
-        public static class RelationshipConstraint {
+        public static class RelationshipConstraint implements Serializable {
 
             @XmlAnyElement(lax = true)
             protected Object any;
@@ -243,7 +245,7 @@ public class TRelationshipTemplate extends TEntityTemplate {
 
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "RelationshipSourceOrTaget")
-    public static class SourceOrTargetElement {
+    public static class SourceOrTargetElement implements Serializable {
 
         // We serialize XML and JSON differently. Solution for JSON taken from https://stackoverflow.com/a/17583175/873282
         @XmlAttribute(name = "ref", required = true)
@@ -273,6 +275,14 @@ public class TRelationshipTemplate extends TEntityTemplate {
         public int hashCode() {
             return Objects.hash(ref);
         }
+    }
+
+    public TPolicies getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(TPolicies policies) {
+        this.policies = policies;
     }
 
     public static class Builder extends TEntityTemplate.Builder<Builder> {

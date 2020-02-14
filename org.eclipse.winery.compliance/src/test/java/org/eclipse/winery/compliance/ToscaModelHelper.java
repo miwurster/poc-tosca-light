@@ -19,10 +19,10 @@ import javax.xml.namespace.QName;
 
 import org.eclipse.winery.common.ids.definitions.ComplianceRuleId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
-import org.eclipse.winery.topologygraph.matching.model.ToscaEdge;
-import org.eclipse.winery.topologygraph.matching.model.ToscaGraph;
-import org.eclipse.winery.topologygraph.matching.model.ToscaNode;
-import org.eclipse.winery.topologygraph.matching.transformation.ToscaTransformer;
+import org.eclipse.winery.topologygraph.model.ToscaEdge;
+import org.eclipse.winery.topologygraph.model.ToscaGraph;
+import org.eclipse.winery.topologygraph.model.ToscaNode;
+import org.eclipse.winery.topologygraph.transformation.ToscaTransformer;
 import org.eclipse.winery.model.tosca.TComplianceRule;
 import org.eclipse.winery.model.tosca.TEntityType;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -71,7 +71,7 @@ public class ToscaModelHelper {
     }
 
     public static ToscaEdge addEdge(ToscaGraph graph, ToscaNode source, ToscaNode target, String id, String name) {
-        ToscaEdge edge = graph.getEdgeFactory().createEdge(source, target);
+        ToscaEdge edge = new ToscaEdge(source, target);
         edge.setId(id);
         graph.addEdge(source, target, edge);
         TRelationshipTemplate template = new TRelationshipTemplate();
@@ -91,7 +91,7 @@ public class ToscaModelHelper {
     public static ToscaNode createTOSCANodeOnlyProperties(ToscaModelPropertiesBuilder bldr) {
         ToscaNode node = new ToscaNode();
         node.setNodeTemplate(new TNodeTemplate());
-        node.getNodeTemplate().setProperties(bldr.build());
+        node.getTemplate().setProperties(bldr.build());
         return node;
     }
 

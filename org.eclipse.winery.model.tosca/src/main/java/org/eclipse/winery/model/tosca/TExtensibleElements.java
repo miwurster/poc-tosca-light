@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -62,7 +63,8 @@ import org.eclipse.jdt.annotation.NonNull;
     TDefinitions.class
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public abstract class TExtensibleElements {
+public abstract class TExtensibleElements implements Serializable {
+
     public static final String NS_SUFFIX_PROPERTIESDEFINITION_WINERY = "propertiesdefinition/winery";
 
     protected List<TDocumentation> documentation;

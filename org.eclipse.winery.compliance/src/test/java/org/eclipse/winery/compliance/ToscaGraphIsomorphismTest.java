@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2018-2019 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -39,11 +39,6 @@ import org.eclipse.winery.compliance.checking.ComplianceRuleChecker;
 import org.eclipse.winery.compliance.checking.ServiceTemplateCheckingResult;
 import org.eclipse.winery.compliance.checking.ServiceTemplateComplianceRuleRuleChecker;
 import org.eclipse.winery.compliance.checking.ToscaComplianceRuleMatcher;
-import org.eclipse.winery.topologygraph.matching.ToscaIsomorphismMatcher;
-import org.eclipse.winery.topologygraph.matching.model.ToscaEdge;
-import org.eclipse.winery.topologygraph.matching.model.ToscaEdgeFactory;
-import org.eclipse.winery.topologygraph.matching.model.ToscaGraph;
-import org.eclipse.winery.topologygraph.matching.model.ToscaNode;
 import org.eclipse.winery.model.tosca.TComplianceRule;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
@@ -55,13 +50,16 @@ import org.eclipse.winery.model.tosca.TTopologyTemplate;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.filebased.FilebasedRepository;
-import org.eclipse.winery.repository.configuration.FileBasedRepositoryConfiguration;
+import org.eclipse.winery.common.configuration.FileBasedRepositoryConfiguration;
+import org.eclipse.winery.topologygraph.matching.ToscaIsomorphismMatcher;
+import org.eclipse.winery.topologygraph.model.ToscaEdge;
+import org.eclipse.winery.topologygraph.model.ToscaGraph;
+import org.eclipse.winery.topologygraph.model.ToscaNode;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jgrapht.GraphMapping;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.eclipse.winery.compliance.ToscaModelHelper.TEST_TARGET_NAMESPACE;
@@ -78,10 +76,10 @@ import static org.eclipse.winery.compliance.ToscaModelHelper.createTRelationship
 import static org.eclipse.winery.compliance.ToscaModelHelper.createTServiceTemplate;
 import static org.eclipse.winery.compliance.ToscaModelHelper.createTTopologyTemplate;
 import static org.eclipse.winery.compliance.ToscaModelHelper.setDerivedFrom;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ToscaGraphIsomorphismTest {
 
@@ -98,8 +96,7 @@ public class ToscaGraphIsomorphismTest {
         }
     }
 
-    @Before
-    @After
+    @BeforeEach
     public void cleanUp() {
         repository.doClear();
     }
@@ -527,9 +524,8 @@ public class ToscaGraphIsomorphismTest {
 
     @Test
     public void testTOSCADefaultMatcher() {
-        ToscaEdgeFactory ef = new ToscaEdgeFactory();
-        ToscaGraph queryGraph = new ToscaGraph(ef);
-        ToscaGraph searchInGraph = new ToscaGraph(ef);
+        ToscaGraph queryGraph = new ToscaGraph();
+        ToscaGraph searchInGraph = new ToscaGraph();
 
         ToscaNode node1 = createTOSCANode("node_01", "A");
         ToscaNode node2 = createTOSCANode("node_02", "B");
@@ -599,9 +595,9 @@ public class ToscaGraphIsomorphismTest {
         ServiceTemplateComplianceRuleRuleChecker checker = new ServiceTemplateComplianceRuleRuleChecker(tServiceTemplate);
         List<ComplianceRuleId> ruleIds = checker.getRuleIds(tServiceTemplate);
 
-        assertTrue(ruleIds.stream().filter(id -> id.equals(crId1)).findFirst().isPresent());
-        assertTrue(ruleIds.stream().filter(id -> id.equals(crId2)).findFirst().isPresent());
-        assertTrue(ruleIds.stream().filter(id -> id.equals(crId3)).findFirst().isPresent());
-        assertFalse(ruleIds.stream().filter(id -> id.equals(crId4)).findFirst().isPresent());
+        assertTrue(ruleIds.stream().anyMatch(id -> id.equals(crId1)));
+        assertTrue(ruleIds.stream().anyMatch(id -> id.equals(crId2)));
+        assertTrue(ruleIds.stream().anyMatch(id -> id.equals(crId3)));
+        assertFalse(ruleIds.stream().anyMatch(id -> id.equals(crId4)));
     }
 }

@@ -14,6 +14,7 @@
 
 package org.eclipse.winery.model.tosca;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,7 +38,8 @@ import org.eclipse.jdt.annotation.Nullable;
     "policies",
     "interfaces"
 })
-public class TBoundaryDefinitions {
+public class TBoundaryDefinitions implements Serializable {
+
     @XmlElement(name = "Properties")
     protected TBoundaryDefinitions.Properties properties;
     @XmlElement(name = "PropertyConstraints")
@@ -47,7 +49,7 @@ public class TBoundaryDefinitions {
     @XmlElement(name = "Capabilities")
     protected TBoundaryDefinitions.Capabilities capabilities;
     @XmlElement(name = "Policies")
-    protected TBoundaryDefinitions.Policies policies;
+    protected TPolicies policies;
     @XmlElement(name = "Interfaces")
     protected TBoundaryDefinitions.Interfaces interfaces;
 
@@ -114,11 +116,11 @@ public class TBoundaryDefinitions {
         this.capabilities = value;
     }
 
-    public TBoundaryDefinitions.@Nullable Policies getPolicies() {
+    public @Nullable TPolicies getPolicies() {
         return policies;
     }
 
-    public void setPolicies(TBoundaryDefinitions.@Nullable Policies value) {
+    public void setPolicies(@Nullable TPolicies value) {
         this.policies = value;
     }
 
@@ -138,7 +140,7 @@ public class TBoundaryDefinitions {
     @XmlType(name = "", propOrder = {
         "capability"
     })
-    public static class Capabilities {
+    public static class Capabilities implements Serializable {
 
         @XmlElement(name = "Capability", required = true)
         protected List<TCapabilityRef> capability;
@@ -156,7 +158,7 @@ public class TBoundaryDefinitions {
     @XmlType(name = "", propOrder = {
         "_interface"
     })
-    public static class Interfaces {
+    public static class Interfaces implements Serializable {
 
         @XmlElement(name = "Interface", required = true)
         protected List<TExportedInterface> _interface;
@@ -167,24 +169,6 @@ public class TBoundaryDefinitions {
                 _interface = new ArrayList<TExportedInterface>();
             }
             return this._interface;
-        }
-    }
-
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "policy"
-    })
-    public static class Policies {
-
-        @XmlElement(name = "Policy", required = true)
-        protected List<TPolicy> policy;
-
-        @NonNull
-        public List<TPolicy> getPolicy() {
-            if (policy == null) {
-                policy = new ArrayList<TPolicy>();
-            }
-            return this.policy;
         }
     }
 
@@ -210,7 +194,7 @@ public class TBoundaryDefinitions {
         @XmlType(name = "", propOrder = {
             "propertyMapping"
         })
-        public static class PropertyMappings {
+        public static class PropertyMappings implements Serializable {
 
             @XmlElement(name = "PropertyMapping", required = true)
             protected List<TPropertyMapping> propertyMapping;
@@ -229,7 +213,7 @@ public class TBoundaryDefinitions {
     @XmlType(name = "", propOrder = {
         "propertyConstraint"
     })
-    public static class PropertyConstraints {
+    public static class PropertyConstraints implements Serializable {
 
         @XmlElement(name = "PropertyConstraint", required = true)
         protected List<TPropertyConstraint> propertyConstraint;
@@ -247,7 +231,7 @@ public class TBoundaryDefinitions {
     @XmlType(name = "", propOrder = {
         "requirement"
     })
-    public static class Requirements {
+    public static class Requirements implements Serializable {
 
         @XmlElement(name = "Requirement", required = true)
         protected List<TRequirementRef> requirement;
@@ -266,7 +250,7 @@ public class TBoundaryDefinitions {
         private PropertyConstraints propertyConstraints;
         private Requirements requirements;
         private Capabilities capabilities;
-        private Policies policies;
+        private TPolicies policies;
         private Interfaces interfaces;
 
         public Builder() {
@@ -293,7 +277,7 @@ public class TBoundaryDefinitions {
             return this;
         }
 
-        public Builder setPolicies(Policies policies) {
+        public Builder setPolicies(TPolicies policies) {
             this.policies = policies;
             return this;
         }
@@ -303,7 +287,7 @@ public class TBoundaryDefinitions {
             return this;
         }
 
-        public Builder addPolicies(TBoundaryDefinitions.Policies policies) {
+        public Builder addPolicies(TPolicies policies) {
             if (policies == null || policies.getPolicy().isEmpty()) {
                 return this;
             }
@@ -321,7 +305,7 @@ public class TBoundaryDefinitions {
                 return this;
             }
 
-            TBoundaryDefinitions.Policies tmp = new TBoundaryDefinitions.Policies();
+            TPolicies tmp = new TPolicies();
             tmp.getPolicy().addAll(policies);
             return this.addPolicies(tmp);
         }
@@ -331,7 +315,7 @@ public class TBoundaryDefinitions {
                 return this;
             }
 
-            TBoundaryDefinitions.Policies tmp = new TBoundaryDefinitions.Policies();
+            TPolicies tmp = new TPolicies();
             tmp.getPolicy().add(policies);
             return this.addPolicies(tmp);
         }
