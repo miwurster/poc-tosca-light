@@ -1,15 +1,16 @@
 .side-bar {
     height: 100%;/* Full-height: remove this if you want "auto" height */
-    width: 200px; /* Set the width of the sidebar */
+    width: 250px; /* Set the width of the sidebar */
 
     position: fixed; /* Fixed Sidebar (stay in place on scroll) */
     border: solid 1px #ccc;
     background-color: #F0F8FF;
     display: block;
     border-radius: 4px;
-    overflow-x: auto;
     cursor: move;
     padding-top: 10px;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
 }
 
 
@@ -37,6 +38,8 @@
     justify-content: space-between;
     box-sizing: border-box;
     cursor: move;
+    overflow-x: scroll;
+    scroll-behavior: smooth;
     background-color: #F0F8FF;
     font-size: 100px;
 }
