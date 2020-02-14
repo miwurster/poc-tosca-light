@@ -28,9 +28,9 @@ import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 
-import org.eclipse.winery.model.tosca.kvproperties.WinerysPropertiesDefinition;
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.adr.embedded.ADR;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -50,7 +50,7 @@ import org.eclipse.jdt.annotation.Nullable;
     TPolicyType.class
 })
 public abstract class TEntityType extends TExtensibleElements implements HasName, HasInheritance, HasTargetNamespace {
-    
+
     @XmlElement(name = "Tags")
     protected TTags tags;
     @XmlElement(name = "DerivedFrom")
