@@ -23,7 +23,6 @@ import { BsModalRef, BsModalService, ModalDirective } from 'ngx-bootstrap';
 import { ToscaTypes } from '../model/enums';
 import { WineryUploaderComponent } from '../wineryUploader/wineryUploader.component';
 import { WineryAddComponent } from '../wineryAddComponentModule/addComponent.component';
-import { isNullOrUndefined } from 'util';
 import { Utils } from '../wineryUtils/utils';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ImportMetaInformation } from '../model/importMetaInformation';
@@ -33,6 +32,7 @@ import { AccountabilityService } from '../instance/admin/accountability/accounta
 import { FileProvenanceElement } from '../model/provenance';
 import { WineryVersion } from '../model/wineryVersion';
 import { FeatureEnum } from '../wineryFeatureToggleModule/wineryRepository.feature.direct';
+import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 const showAll = 'Show all Items';
 const showGrouped = 'Group by Namespace';
@@ -92,7 +92,8 @@ export class SectionComponent implements OnInit, OnDestroy {
                 private notify: WineryNotificationService,
                 private accountabilityConfig: ConfigurationService,
                 protected accountability: AccountabilityService,
-                private modalService: BsModalService) {
+                private modalService: BsModalService,
+                private configurationService: WineryRepositoryConfigurationService) {
     }
 
     /**
@@ -124,7 +125,9 @@ export class SectionComponent implements OnInit, OnDestroy {
             this.showNamespace = 'group';
         }
 
-        localStorage.setItem(this.toscaType + '_showNamespace', this.showNamespace);
+        if (!this.configurationService.isYaml()) {
+            localStorage.setItem(this.toscaType + '_showNamespace', this.showNamespace);
+        }
     }
 
     onAdd() {
@@ -239,11 +242,11 @@ export class SectionComponent implements OnInit, OnDestroy {
 
                 if (last.version.componentVersion === container.version.componentVersion &&
                     last.version.wineryVersion === container.version.wineryVersion) {
-                    if (isNullOrUndefined(last.versionInstances)) {
+                    if (last.versionInstances === null || last.versionInstances === undefined) {
                         const copy = (new SectionData()).createCopy(last);
                         last.hasChildren = true;
                         const wip = last.id.match(/(-wip[0-9]*$)/);
-                        if (!isNullOrUndefined(wip)) {
+                        if (!(wip === null || wip === undefined)) {
                             last.id = last.id.substr(0, wip.index);
                             last.name = last.name.substr(0, wip.index);
                         }
@@ -261,7 +264,7 @@ export class SectionComponent implements OnInit, OnDestroy {
             }
         });
 
-        if (!this.showSpecificNamespaceOnly() && (this.componentData.length > 50)) {
+        if (!this.showSpecificNamespaceOnly() && (this.componentData.length > 50 && !this.configurationService.isYaml())) {
             this.showNamespace = 'group';
             this.changeViewButtonTitle = showAll;
         } else if (!this.showSpecificNamespaceOnly()) {
@@ -282,11 +285,10 @@ export class SectionComponent implements OnInit, OnDestroy {
     }
 
     getVerificationClass(value: string): string {
-        switch (value) {
-            case 'VERIFIED':
-                return 'green';
-            default:
-                return 'red';
+        if (value === 'VERIFIED') {
+            return 'green';
+        } else {
+            return 'red';
         }
     }
 
