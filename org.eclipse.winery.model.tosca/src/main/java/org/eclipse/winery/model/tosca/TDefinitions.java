@@ -70,7 +70,8 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         @XmlElement(name = "PolicyType", type = TPolicyType.class),
         @XmlElement(name = "ComplianceRule", type = TComplianceRule.class),
         @XmlElement(name = "PatternRefinementModel", type = TPatternRefinementModel.class),
-        @XmlElement(name = "TestRefinementModel", type = TTestRefinementModel.class)
+        @XmlElement(name = "TestRefinementModel", type = TTestRefinementModel.class),
+        @XmlElement(name = "TInterfaceType", type = TInterfaceType.class)
     })
     protected List<TExtensibleElements> serviceTemplateOrNodeTypeOrNodeTypeImplementation;
 
@@ -237,6 +238,15 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
 
     @JsonIgnore
     @NonNull
+    public List<TInterfaceType> getInterfaceTypes() {
+        return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
+            .filter(x -> x instanceof TInterfaceType)
+            .map(TInterfaceType.class::cast)
+            .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    @NonNull
     public List<TNodeType> getNodeTypes() {
         return getServiceTemplateOrNodeTypeOrNodeTypeImplementation().stream()
             .filter(x -> x instanceof TNodeType)
@@ -385,6 +395,7 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         private List<TArtifactType> artifactTypes;
         private List<TArtifactTemplate> artifactTemplates;
         private List<TPolicyType> policyTypes;
+        private List<TInterfaceType> interfaceTypes;
         private List<TPolicyTemplate> policyTemplate;
         private String name;
 
@@ -767,6 +778,19 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return self();
         }
 
+        public T addInterfaceTypes(List<TInterfaceType> interfaceTypes) {
+            if (interfaceTypes == null || interfaceTypes.isEmpty()) {
+                return self();
+            }
+
+            if (this.interfaceTypes == null) {
+                this.interfaceTypes = interfaceTypes;
+            } else {
+                this.interfaceTypes.addAll(interfaceTypes);
+            }
+            return self();
+        }
+
         public T addPolicyTypes(TPolicyType policyTypes) {
             if (policyTypes == null) {
                 return self();
@@ -824,6 +848,7 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             Optional.ofNullable(artifactTemplates).ifPresent(tmp::addAll);
             Optional.ofNullable(policyTypes).ifPresent(tmp::addAll);
             Optional.ofNullable(policyTemplate).ifPresent(tmp::addAll);
+            Optional.ofNullable(interfaceTypes).ifPresent(tmp::addAll);
             return tmp;
         }
     }

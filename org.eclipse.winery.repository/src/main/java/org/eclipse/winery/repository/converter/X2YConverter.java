@@ -82,6 +82,7 @@ import org.eclipse.winery.model.tosca.yaml.TConstraintClause;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
+import org.eclipse.winery.model.tosca.yaml.TInterfaceType;
 import org.eclipse.winery.model.tosca.yaml.TNodeTemplate;
 import org.eclipse.winery.model.tosca.yaml.TNodeType;
 import org.eclipse.winery.model.tosca.yaml.TOperationDefinition;
@@ -152,7 +153,8 @@ public class X2YConverter {
             .setCapabilityTypes(convert(node.getCapabilityTypes()))
             .setRelationshipTypes(convert(node.getRelationshipTypes()))
             .setNodeTypes(convert(node.getNodeTypes()))
-            .setPolicyTypes(convert(node.getPolicyTypes()));
+            .setPolicyTypes(convert(node.getPolicyTypes()))
+            .setInterfaceTypes(convert(node.getInterfaceTypes()));
 
         if (node.getServiceTemplates().size() == 1) {
             builder.setTopologyTemplate(convert(node.getServiceTemplates().get(0)));
@@ -913,6 +915,17 @@ public class X2YConverter {
         );
     }
 
+    public Map<String, TInterfaceType> convert(org.eclipse.winery.model.tosca.TInterfaceType node) {
+        if (Objects.isNull(node)) return null;
+
+        return Collections.singletonMap(
+            node.getName(),
+            new TInterfaceType.Builder()
+                .setDescription(node.getDescription())
+                .build()
+        );
+    }
+
     public Map<String, TCapabilityAssignment> convert(TCapability node) {
         if (Objects.isNull(node)) return null;
 
@@ -999,6 +1012,8 @@ public class X2YConverter {
                     return convert((org.eclipse.winery.model.tosca.TOperationDefinition) node).entrySet().stream();
                 } else if (node instanceof org.eclipse.winery.model.tosca.TArtifact) {
                     return convert((org.eclipse.winery.model.tosca.TArtifact) node).entrySet().stream();
+                } else if (node instanceof org.eclipse.winery.model.tosca.TInterfaceType) {
+                    return convert((org.eclipse.winery.model.tosca.TInterfaceType) node).entrySet().stream();
                 }
                 throw new AssertionError();
             })

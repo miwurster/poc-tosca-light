@@ -48,6 +48,7 @@ import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.ComplianceRuleId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.HasInheritanceId;
+import org.eclipse.winery.common.ids.definitions.InterfaceTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
@@ -848,6 +849,16 @@ public interface IRepository extends IWineryRepositoryCommon {
                         if (Objects.nonNull(artifacts)) {
                             artifacts.getArtifact().forEach(a -> ids.add(new ArtifactTypeId(a.getType())));
                         }
+
+                        this.getElement(new NodeTypeId(qname))
+                            .getInterfaceDefinitions()
+                            .stream()
+                            .filter(Objects::nonNull)
+                            .forEach(iDef -> {
+                                if (Objects.nonNull(iDef.getType())) {
+                                    ids.add(new InterfaceTypeId(iDef.getType()));
+                                }
+                            });
                     }
                 } else {
                     assert (entityTemplate instanceof TRelationshipTemplate);
@@ -966,7 +977,7 @@ public interface IRepository extends IWineryRepositoryCommon {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ArtifactTemplateId) id);
         } else if (id instanceof PolicyTemplateId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((PolicyTemplateId) id);
-        } else if (id instanceof ArtifactTypeId || id instanceof GenericImportId || id instanceof PolicyTypeId || id instanceof CapabilityTypeId) {
+        } else if (id instanceof ArtifactTypeId || id instanceof GenericImportId || id instanceof PolicyTypeId || id instanceof CapabilityTypeId || id instanceof InterfaceTypeId) {
             // in case of artifact types, imports, policy types, and capability types, there are no other ids referenced
             // Collections.emptyList() cannot be used as we add elements later on in the case of inheritance
             referencedDefinitionsChildIds = new ArrayList();

@@ -179,6 +179,7 @@ public class Y2XConverter {
             .addArtifactTypes(convert(node.getArtifactTypes()))
             .addArtifactTemplates(this.artifactTemplates.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList()))
             .addPolicyTypes(convert(node.getPolicyTypes()))
+            .addInterfaceTypes(convert(node.getInterfaceTypes()))
             .setName(id)
             .addImports(this.imports)
             .addRequirementTypes(this.requirementTypes)
@@ -374,6 +375,19 @@ public class Y2XConverter {
         }
 
         return new TArtifact(builder);
+    }
+
+    /**
+     * Converts a TOSCA YAML TInterfaceType to a non-TOSCA XML TInterfaceType
+     *
+     * @param node TOSCA YAML TInterfaceType
+     * @return TOSCA XML TInterfaceType
+     */
+    private org.eclipse.winery.model.tosca.TInterfaceType convertToTInterfaceType(TInterfaceType node, QName type) {
+        org.eclipse.winery.model.tosca.TInterfaceType.Builder builder =
+            new org.eclipse.winery.model.tosca.TInterfaceType.Builder(type.getLocalPart(), type)
+                .setDescription(node.getDescription());
+        return new org.eclipse.winery.model.tosca.TInterfaceType(builder);
     }
 
     /**
@@ -1202,7 +1216,7 @@ public class Y2XConverter {
                 } else if (entry.getValue() instanceof TInterfaceType) {
                     assert (!interfaceTypes.containsKey(new QName(entry.getKey())));
                     this.interfaceTypes.put(new QName(entry.getKey()), (TInterfaceType) entry.getValue());
-                    return null;
+                    return convertToTInterfaceType((TInterfaceType) entry.getValue(), new QName(entry.getKey()));
                 } else if (entry.getValue() instanceof TInterfaceDefinition) {
                     return convert((TInterfaceDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TOperationDefinition) {

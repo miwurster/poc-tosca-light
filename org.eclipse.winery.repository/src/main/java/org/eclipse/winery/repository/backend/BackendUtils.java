@@ -76,6 +76,7 @@ import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.ComplianceRuleId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.EntityTypeId;
+import org.eclipse.winery.common.ids.definitions.InterfaceTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
@@ -114,6 +115,7 @@ import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts;
 import org.eclipse.winery.model.tosca.TImplementationArtifacts.ImplementationArtifact;
 import org.eclipse.winery.model.tosca.TImport;
+import org.eclipse.winery.model.tosca.TInterfaceType;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
 import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TNodeTypeImplementation;
@@ -658,6 +660,8 @@ public class BackendUtils {
             element = new TPatternRefinementModel();
         } else if (id instanceof TestRefinementModelId) {
             element = new TTestRefinementModel();
+        } else if (id instanceof InterfaceTypeId) {
+            element = new TInterfaceType();
         } else if (id instanceof XSDImportId) {
             // TImport has no id; thus directly generating it without setting an id
             TImport tImport = new TImport();
