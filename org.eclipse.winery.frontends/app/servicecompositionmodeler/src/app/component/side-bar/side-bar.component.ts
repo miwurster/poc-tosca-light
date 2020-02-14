@@ -27,13 +27,17 @@ import { Router } from '@angular/router';
 })
 export class SideBarComponent implements OnInit {
     public allServiceTemplates: ServiceTemplates;
-
+    public newServiceComposition: String[];
 
     constructor(private httpServiceTemplates: HttpServiceTemplates) {
     }
-
     ngOnInit() {
-        this.httpServiceTemplates.getServiceTemplates().subscribe(data => this.allServiceTemplates = data['serviceTemplates']);
+        this.httpServiceTemplates.getServiceTemplates().subscribe(data => {
+            this.allServiceTemplates = data['serviceTemplates'];
+            this.newServiceComposition = this.getServiceCompositions();
+            console.log(this.allServiceTemplates);
+            console.log(this.newServiceComposition);
+        });
         /* this.httpServiceTemplates.getTest().subscribe((data) => {
             console.log(data);
             this.allServiceTemplates = data['serviceTemplates'];
@@ -48,5 +52,18 @@ export class SideBarComponent implements OnInit {
         console.log(this.allServiceTemplates);
         console.log(this.allServiceTemplates[0].id);
         console.log(this.allServiceTemplates[0].inputParameters[0].name);
+        console.log(this.getServiceCompositions());
+    }
+    getServiceCompositions(): String[] {
+        const getRequestServiceComposition = this.allServiceTemplates;
+        const ServiceComposition = [];
+        const someArray = [1, 'string', false];
+
+        for (const entry in getRequestServiceComposition) {
+            const splitString = getRequestServiceComposition[entry].id;
+            const serviceCompositionTrimmed = splitString.split('servicetemplates}');
+            ServiceComposition.push(serviceCompositionTrimmed[1]);
+        }
+        return ServiceComposition;
     }
 }
