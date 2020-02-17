@@ -918,10 +918,15 @@ public class X2YConverter {
     public Map<String, TInterfaceType> convert(org.eclipse.winery.model.tosca.TInterfaceType node) {
         if (Objects.isNull(node)) return null;
 
+        Map<String, TOperationDefinition> ops = new HashMap<>();
+        node.getOperations().forEach((key, value) -> ops.putAll(convert(value)));
+
         return Collections.singletonMap(
             node.getName(),
             new TInterfaceType.Builder()
                 .setDescription(node.getDescription())
+                .setOperations(ops)
+                .setDerivedFrom(node.getDerivedFrom().getType())
                 .build()
         );
     }

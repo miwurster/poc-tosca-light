@@ -51,7 +51,8 @@ import org.eclipse.jdt.annotation.Nullable;
     TRequirementType.class,
     TCapabilityType.class,
     TArtifactType.class,
-    TPolicyType.class
+    TPolicyType.class,
+    TInterfaceType.class
 })
 public abstract class TEntityType extends TExtensibleElements implements HasName, HasInheritance, HasTargetNamespace {
     public static final String NS_SUFFIX_PROPERTIESDEFINITION_WINERY = "propertiesdefinition/winery";

@@ -115,7 +115,7 @@ public class Y2XConverter {
     private Map<String, TArtifactTemplate> artifactTemplates;
     private List<TRequirementType> requirementTypes;
     private List<TImport> imports;
-    private Map<QName, TInterfaceType> interfaceTypes;
+    //private Map<QName, TInterfaceType> interfaceTypes;
     private Map<String, List<TPolicy>> policies;
     private Map<String, Map.Entry<String, String>> relationshipSTMap;
     private Map<String, TNodeTemplate> nodeTemplateMap;
@@ -136,7 +136,7 @@ public class Y2XConverter {
         this.nodeTemplateMap = new LinkedHashMap<>();
         this.currentNodeTemplate = null;
         this.currentNodeTemplateName = null;
-        this.interfaceTypes = new LinkedHashMap<>();
+        //this.interfaceTypes = new LinkedHashMap<>();
     }
 
     /**
@@ -144,7 +144,7 @@ public class Y2XConverter {
      */
     private void init(org.eclipse.winery.model.tosca.yaml.TServiceTemplate node) {
         // no interface type for xml -> interface type information inserted into interface definitions
-        convert(node.getInterfaceTypes());
+        //convert(node.getInterfaceTypes());
         this.assignmentBuilder = new AssignmentBuilder(new LinkedHashMap<>());
     }
 
@@ -383,11 +383,11 @@ public class Y2XConverter {
      * @param node TOSCA YAML TInterfaceType
      * @return TOSCA XML TInterfaceType
      */
-    private org.eclipse.winery.model.tosca.TInterfaceType convertToTInterfaceType(TInterfaceType node, QName type) {
-        org.eclipse.winery.model.tosca.TInterfaceType.Builder builder =
-            new org.eclipse.winery.model.tosca.TInterfaceType.Builder(type.getLocalPart(), type)
-                .setDescription(node.getDescription());
-        return new org.eclipse.winery.model.tosca.TInterfaceType(builder);
+    private org.eclipse.winery.model.tosca.TInterfaceType convertToTInterfaceType(TInterfaceType node, String type) {
+        return new org.eclipse.winery.model.tosca.TInterfaceType.Builder(type)
+            .setDerivedFrom(node.getDerivedFrom())
+            .setDescription(node.getDescription())
+            .build();
     }
 
     /**
@@ -1214,9 +1214,9 @@ public class Y2XConverter {
                 } else if (entry.getValue() instanceof org.eclipse.winery.model.tosca.yaml.TRequirementDefinition) {
                     return convert((org.eclipse.winery.model.tosca.yaml.TRequirementDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TInterfaceType) {
-                    assert (!interfaceTypes.containsKey(new QName(entry.getKey())));
-                    this.interfaceTypes.put(new QName(entry.getKey()), (TInterfaceType) entry.getValue());
-                    return convertToTInterfaceType((TInterfaceType) entry.getValue(), new QName(entry.getKey()));
+                    //assert (!interfaceTypes.containsKey(new QName(entry.getKey())));
+                    //this.interfaceTypes.put(new QName(entry.getKey()), (TInterfaceType) entry.getValue());
+                    return convertToTInterfaceType((TInterfaceType) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TInterfaceDefinition) {
                     return convert((TInterfaceDefinition) entry.getValue(), entry.getKey());
                 } else if (entry.getValue() instanceof TOperationDefinition) {
@@ -1251,7 +1251,7 @@ public class Y2XConverter {
                         v instanceof TCapabilityAssignment ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TPolicyType ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TRequirementDefinition ||
-                        v instanceof TInterfaceType ||
+                        //v instanceof TInterfaceType ||
                         v instanceof TInterfaceDefinition ||
                         v instanceof TOperationDefinition ||
                         v instanceof org.eclipse.winery.model.tosca.yaml.TNodeTemplate ||

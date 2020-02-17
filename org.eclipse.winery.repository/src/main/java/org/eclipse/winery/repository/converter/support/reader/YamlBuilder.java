@@ -527,6 +527,7 @@ public class YamlBuilder {
                     .setBuilderOO(this::buildOperationDefinition)
                     .setFilter(this::filterInterfaceTypeOperation)
             ))
+            .setDerivedFrom(buildQName(stringValue(map.get("derived_from"))))
             .build();
     }
 

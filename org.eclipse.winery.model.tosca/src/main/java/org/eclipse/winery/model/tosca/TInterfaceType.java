@@ -21,9 +21,7 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
@@ -33,15 +31,14 @@ import org.eclipse.jdt.annotation.NonNull;
  * Class to represent an interface type in TOSCA YAML.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "tInterfaceType")
-public class TInterfaceType extends TEntityType implements HasType, HasInheritance {
-    @XmlAttribute(name = "type")
-    protected QName type;
-    @XmlAttribute(name = "description")
+@XmlType(name = "tInterfaceType", propOrder = {
+    "description",
+    "operations"
+//    "inputs"
+})
+public class TInterfaceType extends TEntityType {
     private String description;
-    @XmlAttribute(name = "inputs")
-    private Map<String, TPropertyDefinition> inputs;
-    @XmlAttribute(name = "operations")
+    //private Map<String, TPropertyDefinition> inputs;
     private Map<String, TOperationDefinition> operations;
 
     public TInterfaceType() {
@@ -49,7 +46,7 @@ public class TInterfaceType extends TEntityType implements HasType, HasInheritan
 
     public TInterfaceType(Builder builder) {
         this.setOperations(builder.operations);
-        this.setInputs(builder.inputs);
+        //this.setInputs(builder.inputs);
         this.setDescription(builder.description);
     }
 
@@ -59,13 +56,13 @@ public class TInterfaceType extends TEntityType implements HasType, HasInheritan
         if (!(o instanceof TInterfaceType)) return false;
         if (!super.equals(o)) return false;
         TInterfaceType that = (TInterfaceType) o;
-        return Objects.equals(getOperations(), that.getOperations()) &&
-            Objects.equals(getInputs(), that.getInputs());
+        return Objects.equals(getOperations(), that.getOperations()) /*&&
+            Objects.equals(getInputs(), that.getInputs())*/;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getOperations(), getInputs());
+        return Objects.hash(super.hashCode(), getOperations()/*, getInputs()*/);
     }
 
     @Override
@@ -77,7 +74,7 @@ public class TInterfaceType extends TEntityType implements HasType, HasInheritan
     public String toString() {
         return "TInterfaceType{" +
             "operations=" + getOperations() +
-            ", inputs=" + getInputs() +
+            //", inputs=" + getInputs() +
             "} " + super.toString();
     }
 
@@ -94,7 +91,7 @@ public class TInterfaceType extends TEntityType implements HasType, HasInheritan
         this.operations = operations;
     }
 
-    @NonNull
+    /*@NonNull
     public Map<String, TPropertyDefinition> getInputs() {
         if (this.inputs == null) {
             this.inputs = new LinkedHashMap<>();
@@ -105,17 +102,7 @@ public class TInterfaceType extends TEntityType implements HasType, HasInheritan
 
     public void setInputs(Map<String, TPropertyDefinition> inputs) {
         this.inputs = inputs;
-    }
-
-    @Override
-    public QName getTypeAsQName() {
-        return this.type;
-    }
-
-    @Override
-    public void setType(QName type) {
-        this.type = type;
-    }
+    }*/
 
     public String getDescription() {
         return description;
@@ -126,14 +113,12 @@ public class TInterfaceType extends TEntityType implements HasType, HasInheritan
     }
 
     public static class Builder extends TEntityType.Builder<TInterfaceType.Builder> {
-        public QName type;
         public String description;
         private Map<String, TOperationDefinition> operations;
         private Map<String, TPropertyDefinition> inputs;
 
-        public Builder(String name, QName type) {
-            super(name);
-            this.type = type;
+        public Builder(String name) {
+            super(name);            
         }
 
         public Builder(TEntityType entityType) {

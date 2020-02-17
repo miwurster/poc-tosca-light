@@ -469,6 +469,11 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return self();
         }
 
+        public T setInterfaceTypes(List<TInterfaceType> interfaceTypes) {
+            this.interfaceTypes = interfaceTypes;
+            return self();
+        }
+
         public T setPolicyTemplate(List<TPolicyTemplate> policyTemplate) {
             this.policyTemplate = policyTemplate;
             return self();
@@ -778,6 +783,16 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return self();
         }
 
+        public T addPolicyTypes(TPolicyType policyTypes) {
+            if (policyTypes == null) {
+                return self();
+            }
+
+            List<TPolicyType> tmp = new ArrayList<>();
+            tmp.add(policyTypes);
+            return addPolicyTypes(tmp);
+        }
+
         public T addInterfaceTypes(List<TInterfaceType> interfaceTypes) {
             if (interfaceTypes == null || interfaceTypes.isEmpty()) {
                 return self();
@@ -791,14 +806,14 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
             return self();
         }
 
-        public T addPolicyTypes(TPolicyType policyTypes) {
-            if (policyTypes == null) {
+        public T addInterfaceTypes(TInterfaceType interfaceTypes) {
+            if (interfaceTypes == null) {
                 return self();
             }
 
-            List<TPolicyType> tmp = new ArrayList<>();
-            tmp.add(policyTypes);
-            return addPolicyTypes(tmp);
+            List<TInterfaceType> tmp = new ArrayList<>();
+            tmp.add(interfaceTypes);
+            return addInterfaceTypes(tmp);
         }
 
         public T addPolicyTemplates(List<TPolicyTemplate> policyTemplate) {
