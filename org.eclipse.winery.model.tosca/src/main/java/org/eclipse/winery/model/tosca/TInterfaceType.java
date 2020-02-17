@@ -22,6 +22,7 @@ import java.util.Objects;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 import org.eclipse.winery.model.tosca.visitor.Visitor;
 
@@ -45,9 +46,13 @@ public class TInterfaceType extends TEntityType {
     }
 
     public TInterfaceType(Builder builder) {
+        TEntityType.DerivedFrom parent = new TEntityType.DerivedFrom();
+        parent.setType(builder.derivedFrom);
         this.setOperations(builder.operations);
         //this.setInputs(builder.inputs);
         this.setDescription(builder.description);
+        this.setName(builder.name);
+        this.setDerivedFrom(parent);
     }
 
     @Override
@@ -112,26 +117,24 @@ public class TInterfaceType extends TEntityType {
         this.description = description;
     }
 
-    public static class Builder extends TEntityType.Builder<TInterfaceType.Builder> {
+    public static class Builder {
         public String description;
+        public String name;
+        public QName derivedFrom;
         private Map<String, TOperationDefinition> operations;
         private Map<String, TPropertyDefinition> inputs;
 
         public Builder(String name) {
-            super(name);            
-        }
-
-        public Builder(TEntityType entityType) {
-            super(entityType);
-        }
-
-        @Override
-        public Builder self() {
-            return this;
+            this.name = name;
         }
 
         public Builder setDescription(String description) {
             this.description = description;
+            return this;
+        }
+
+        public Builder setDerivedFrom(QName derivedFrom) {
+            this.derivedFrom = derivedFrom;
             return this;
         }
 

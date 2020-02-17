@@ -31,6 +31,7 @@ import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
 import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
+import org.eclipse.winery.common.ids.definitions.InterfaceTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
@@ -496,6 +497,8 @@ public class X2YConverter {
             id = new CapabilityTypeId(node.getTypeRef());
         } else if (clazz.equals(org.eclipse.winery.model.tosca.TArtifactType.class)) {
             id = new ArtifactTypeId(node.getTypeRef());
+        } else if (clazz.equals(org.eclipse.winery.model.tosca.TInterfaceType.class)) {
+            id = new InterfaceTypeId(node.getTypeRef());
         } else {
             id = new PolicyTypeId(node.getTypeRef());
         }
@@ -926,7 +929,7 @@ public class X2YConverter {
             new TInterfaceType.Builder()
                 .setDescription(node.getDescription())
                 .setOperations(ops)
-                .setDerivedFrom(node.getDerivedFrom().getType())
+                .setDerivedFrom(convert(node.getDerivedFrom(), node.getClass()))
                 .build()
         );
     }

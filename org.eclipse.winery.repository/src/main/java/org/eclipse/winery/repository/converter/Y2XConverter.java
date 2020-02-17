@@ -16,6 +16,7 @@ package org.eclipse.winery.repository.converter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -384,9 +385,13 @@ public class Y2XConverter {
      * @return TOSCA XML TInterfaceType
      */
     private org.eclipse.winery.model.tosca.TInterfaceType convertToTInterfaceType(TInterfaceType node, String type) {
+        Map<String, org.eclipse.winery.model.tosca.TOperationDefinition> ops = new HashMap<>();
+        node.getOperations().forEach((key, value) -> ops.put(key, convert(value, key)));
+
         return new org.eclipse.winery.model.tosca.TInterfaceType.Builder(type)
             .setDerivedFrom(node.getDerivedFrom())
             .setDescription(node.getDescription())
+            .setOperations(ops)
             .build();
     }
 
