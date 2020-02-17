@@ -605,13 +605,18 @@ public interface IRepository extends IWineryRepositoryCommon {
         final TNodeType nodeType = this.getElement(id);
 
         // add all referenced requirement types, but only in XML mode. YAML does not have requirement types
-        if (!Environments.getUiConfig().getFeatures().get("yaml")) {
-            TNodeType.RequirementDefinitions reqDefsContainer = nodeType.getRequirementDefinitions();
-            if (reqDefsContainer != null) {
-                List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
-                for (TRequirementDefinition reqDef : reqDefs) {
+
+        TNodeType.RequirementDefinitions reqDefsContainer = nodeType.getRequirementDefinitions();
+        if (reqDefsContainer != null) {
+            List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
+            for (TRequirementDefinition reqDef : reqDefs) {
+                if (!Environments.getUiConfig().getFeatures().get("yaml")) {
                     RequirementTypeId reqTypeId = new RequirementTypeId(reqDef.getRequirementType());
                     ids.add(reqTypeId);
+                } else {
+                    if (Objects.nonNull(reqDef.getRelationship())) {
+                        ids.add(new RelationshipTypeId(reqDef.getRelationship()));
+                    }
                 }
             }
         }
