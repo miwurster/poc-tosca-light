@@ -631,6 +631,12 @@ public interface IRepository extends IWineryRepositoryCommon {
             }
         }
 
+        // Store all referenced artifact types 
+        TArtifacts artifacts = nodeType.getArtifacts();
+        if (Objects.nonNull(artifacts)) {
+            artifacts.getArtifact().forEach(a -> ids.add(new ArtifactTypeId(a.getType())));
+        }
+
         return ids;
     }
 

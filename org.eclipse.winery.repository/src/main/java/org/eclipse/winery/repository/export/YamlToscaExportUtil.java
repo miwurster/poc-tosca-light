@@ -30,6 +30,7 @@ import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.TArtifacts;
 import org.eclipse.winery.model.tosca.TImport;
 import org.eclipse.winery.model.tosca.TNodeTemplate;
+import org.eclipse.winery.model.tosca.TNodeType;
 import org.eclipse.winery.model.tosca.TServiceTemplate;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.IRepository;
@@ -81,11 +82,35 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
             this.addVisualAppearanceToCSAR(repository, (RelationshipTypeId) id);
         } else if (id instanceof NodeTypeId) {
             this.addVisualAppearanceToCSAR(repository, (NodeTypeId) id);
+            this.prepareForExport(repository, (NodeTypeId) id, entryDefinitions);
+        }
+    }
+
+    private void prepareForExport(IRepository repository, NodeTypeId id, Definitions entryDefinitions) {
+        // ensure that the plans stored locally are the same ones as stored in the definitions
+        TNodeType node = repository.getElement(id);
+        if (Objects.nonNull(node.getArtifacts())) {
+            node.getArtifacts().getArtifact().forEach(a -> {
+                Path p = Paths.get("files", a.getId());
+                RepositoryFileReference ref = new RepositoryFileReference(id, p, a.getFile());
+                // update file paths in the exported service template
+                if (repository.exists(ref)) {
+                    putRefAsReferencedItemInCsar(ref);
+                    entryDefinitions.getNodeTypes()
+                        .stream()
+                        .filter(nt -> nt.getQName().equals(node.getQName()))
+                        .forEach(nt -> nt.getArtifacts()
+                            .getArtifact()
+                            .stream()
+                            .filter(art -> art.getFile().equals(a.getFile()))
+                            .forEach(art -> art.setFile(BackendUtils.getPathInsideRepo(ref))));
+                }
+            });
         }
     }
 
     /**
-     * Synchronizes the plan model references and adds the plans to the csar (putRefAsReferencedItemInCsar)
+     * Prepares artifacts in Service Template
      */
     private void prepareForExport(IRepository repository, ServiceTemplateId id, Definitions entryDefinitions) throws IOException {
         // ensure that the plans stored locally are the same ones as stored in the definitions
@@ -100,6 +125,7 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
                     artifacts.getArtifact().forEach(a -> {
                         Path p = Paths.get("files", n.getName(), a.getId());
                         RepositoryFileReference ref = new RepositoryFileReference(id, p, a.getFile());
+                        // update file paths in the exported service template
                         if (repository.exists(ref)) {
                             putRefAsReferencedItemInCsar(ref);
                             entryDefinitions.getServiceTemplates()
