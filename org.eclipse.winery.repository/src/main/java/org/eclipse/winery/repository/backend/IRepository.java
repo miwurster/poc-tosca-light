@@ -814,6 +814,23 @@ public interface IRepository extends IWineryRepositoryCommon {
                     ids.add(new NodeTypeId(qname));
                     TNodeTemplate n = (TNodeTemplate) entityTemplate;
 
+                    // crawl through policies
+                    // TODO: this is relevant only for XML mode 
+                    TPolicies policies = n.getPolicies();
+                    if (policies != null) {
+                        for (TPolicy pol : policies.getPolicy()) {
+                            QName type = pol.getPolicyType();
+                            PolicyTypeId ctId = new PolicyTypeId(type);
+                            ids.add(ctId);
+
+                            QName template = pol.getPolicyRef();
+                            if (template != null) {
+                                PolicyTemplateId policyTemplateId = new PolicyTemplateId(template);
+                                ids.add(policyTemplateId);
+                            }
+                        }
+                    }
+
                     if (!Environments.getUiConfig().getFeatures().get("yaml")) {
                         // TODO: this information is collected differently for YAML and XML modes         
                         // crawl through deployment artifacts
@@ -838,22 +855,6 @@ public interface IRepository extends IWineryRepositoryCommon {
                                 ids.add(ctId);
                             }
                         }
-
-                        // crawl through policies
-                        TPolicies policies = n.getPolicies();
-                        if (policies != null) {
-                            for (TPolicy pol : policies.getPolicy()) {
-                                QName type = pol.getPolicyType();
-                                PolicyTypeId ctId = new PolicyTypeId(type);
-                                ids.add(ctId);
-
-                                QName template = pol.getPolicyRef();
-                                if (template != null) {
-                                    PolicyTemplateId policyTemplateId = new PolicyTemplateId(template);
-                                    ids.add(policyTemplateId);
-                                }
-                            }
-                        }
                     } else {
                         // Store all referenced artifact types 
                         TArtifacts artifacts = n.getArtifacts();
@@ -861,15 +862,18 @@ public interface IRepository extends IWineryRepositoryCommon {
                             artifacts.getArtifact().forEach(a -> ids.add(new ArtifactTypeId(a.getType())));
                         }
 
-                        this.getElement(new NodeTypeId(qname))
-                            .getInterfaceDefinitions()
-                            .stream()
-                            .filter(Objects::nonNull)
-                            .forEach(iDef -> {
-                                if (Objects.nonNull(iDef.getType())) {
-                                    ids.add(new InterfaceTypeId(iDef.getType()));
-                                }
-                            });
+                        TNodeType nodeType = this.getElement(new NodeTypeId(qname));
+                        if (Objects.nonNull(nodeType.getInterfaceDefinitions())) {
+                            nodeType
+                                .getInterfaceDefinitions()
+                                .stream()
+                                .filter(Objects::nonNull)
+                                .forEach(iDef -> {
+                                    if (Objects.nonNull(iDef.getType())) {
+                                        ids.add(new InterfaceTypeId(iDef.getType()));
+                                    }
+                                });
+                        }
                     }
                 } else {
                     assert (entityTemplate instanceof TRelationshipTemplate);
