@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -68,9 +68,9 @@ import org.eclipse.winery.repository.datatypes.ids.elements.SelfServiceMetaDataI
 import org.eclipse.winery.repository.datatypes.ids.elements.ServiceTemplateSelfServiceFilesDirectoryId;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
 import org.eclipse.winery.repository.export.entries.CsarEntry;
-import org.eclipse.winery.repository.export.entries.XMLDefinitionsBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.DocumentBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.RepositoryRefBasedCsarEntry;
+import org.eclipse.winery.repository.export.entries.XMLDefinitionsBasedCsarEntry;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -551,7 +551,7 @@ public class CsarExporter {
     }
 
     private String addManifest(IRepository repository, DefinitionsChildId id, Map<CsarContentProperties, CsarEntry> refMap,
-                                 ZipOutputStream out, Map<String, Object> exportConfiguration) throws IOException {
+                               ZipOutputStream out, Map<String, Object> exportConfiguration) throws IOException {
         String entryDefinitionsReference = CsarExporter.getDefinitionsPathInsideCSAR(repository, id);
 
         out.putNextEntry(new ZipEntry("TOSCA-Metadata/TOSCA.meta"));

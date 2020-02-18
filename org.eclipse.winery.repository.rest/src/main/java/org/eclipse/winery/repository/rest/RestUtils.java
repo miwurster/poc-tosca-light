@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -292,33 +292,6 @@ public class RestUtils {
             .type(MimeTypes.MIMETYPE_ZIP)
             .entity(so)
             .build();
-
-        // TODO
-//        final Converter converter = new Converter();
-//        StreamingOutput so = output -> {
-//            try {
-//                InputStream is = converter.convertX2Y(resource.getId());
-//                byte[] buffer = new byte[1024];
-//                int bytesRead;
-//                //read from is to buffer
-//                while ((bytesRead = is.read(buffer)) != -1) {
-//                    output.write(buffer, 0, bytesRead);
-//                }
-//                is.close();
-//                //flush OutputStream to write any buffered data to file
-//                output.flush();
-//                output.close();
-//            } catch (Exception e) {
-//                throw new WebApplicationException(e);
-//            }
-//        };
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("attachment;filename=\"");
-//        sb.append(resource.getXmlId().getEncoded());
-//        sb.append(Constants.SUFFIX_CSAR);
-//        sb.append("\"");
-//        return Response.ok().header("Content-Disposition", sb.toString()).type(MimeTypes.MIMETYPE_ZIP).entity(so).build();
-        // return Response.noContent().build();
     }
 
     public static Response getEdmmModel(TServiceTemplate element) {

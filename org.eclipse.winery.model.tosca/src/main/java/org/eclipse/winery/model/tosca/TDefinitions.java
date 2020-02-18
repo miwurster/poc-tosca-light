@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2013-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -70,7 +70,7 @@ public class TDefinitions extends HasId implements HasName, HasTargetNamespace {
         @XmlElement(name = "PolicyType", type = TPolicyType.class),
         @XmlElement(name = "ComplianceRule", type = TComplianceRule.class),
         @XmlElement(name = "PatternRefinementModel", type = TPatternRefinementModel.class),
-        @XmlElement(name = "TestRefinementModel", type = TTestRefinementModel.class)        
+        @XmlElement(name = "TestRefinementModel", type = TTestRefinementModel.class)
     })
     protected List<TExtensibleElements> serviceTemplateOrNodeTypeOrNodeTypeImplementation;
 

@@ -71,7 +71,6 @@ import static org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttribute
 import static org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes.NAME;
 import static org.eclipse.winery.model.csar.toscametafile.TOSCAMetaFileAttributes.TOSCA_META_VERSION;
 
-// TODO: Revise and fix (old Converter.java class)
 public class YamlExporter extends CsarExporter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlExporter.class);

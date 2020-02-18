@@ -32,8 +32,7 @@ import org.eclipse.winery.model.tosca.kvproperties.ParameterDefinition;
     "type",
     "description",
     "inputs",
-    "outputs",
-    "implementation",
+    "outputs"
 })
 public class TPropertyDefinition implements HasName, Serializable {
     private String name;

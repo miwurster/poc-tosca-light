@@ -293,9 +293,9 @@ public class YamlWriter extends AbstractVisitor<YamlPrinter, YamlWriter.Paramete
         return new YamlPrinter(parameter.getIndent())
             .printKeyValue("type", node.getType())
             .print(printMap("inputs", node.getInputs(), parameter))
-            
+
             .print(printMap("operations", node.getOperations(), parameter));
-            
+
 //            .print(node.getOperations().entrySet().stream()
 //                .filter(entry -> Objects.nonNull(entry) && Objects.nonNull(entry.getValue()))
 //                .map(entry ->
