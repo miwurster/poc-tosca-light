@@ -812,4 +812,8 @@ public class GitBasedRepository extends AbstractFileBasedRepository {
     public void doImport(InputStream in) {
         repository.doImport(in);
     }
+
+    public AbstractFileBasedRepository getRepository() {
+        return repository;
+    }
 }

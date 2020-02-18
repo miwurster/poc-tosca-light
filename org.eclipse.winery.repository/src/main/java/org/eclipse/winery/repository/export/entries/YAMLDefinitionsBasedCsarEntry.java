@@ -25,6 +25,7 @@ import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.repository.JAXBSupport;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
+import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 import org.eclipse.winery.repository.converter.X2YConverter;
 import org.eclipse.winery.repository.converter.support.writer.YamlWriter;
@@ -34,7 +35,8 @@ public class YAMLDefinitionsBasedCsarEntry implements CsarEntry {
 
     public YAMLDefinitionsBasedCsarEntry(Definitions definitions) {
         assert (definitions != null);
-        X2YConverter c = new X2YConverter((YamlRepository) RepositoryFactory.getRepository());
+        GitBasedRepository wrapper = (GitBasedRepository) RepositoryFactory.getRepository();
+        X2YConverter c = new X2YConverter((YamlRepository) wrapper.getRepository());
         this.definitions = c.convert(definitions, true);
     }
 
