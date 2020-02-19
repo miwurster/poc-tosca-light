@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -45,14 +45,14 @@ import org.slf4j.LoggerFactory;
  */
 public class JAXBSupport {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JAXBSupport.class);
+
     // thread-safe JAXB as inspired by https://jaxb.java.net/guide/Performance_and_thread_safety.html
     // The other possibility: Each subclass sets JAXBContext.newInstance(theSubClass.class); in its static {} part.
     // This seems to be more complicated than listing all subclasses in initContext
-    public final static JAXBContext context = JAXBSupport.initContext();
+    private static final JAXBContext CONTEXT = JAXBSupport.initContext();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JAXBSupport.class);
-
-    private final static PrefixMapper prefixMapper = new PrefixMapper();
+    private static final PrefixMapper PREFIX_MAPPER = new PrefixMapper();
 
     /**
      * Follows https://jaxb.java.net/2.2.5/docs/release-documentation.html#marshalling -changing-prefixes
@@ -102,6 +102,10 @@ public class JAXBSupport {
         return context;
     }
 
+    public static JAXBContext getContext() {
+        return CONTEXT;
+    }
+
     /**
      * Creates a marshaller.
      *
@@ -113,11 +117,11 @@ public class JAXBSupport {
     public static Marshaller createMarshaller(boolean includeProcessingInstruction) {
         Marshaller m;
         try {
-            m = JAXBSupport.context.createMarshaller();
+            m = CONTEXT.createMarshaller();
             // pretty printed output is required as the XML is sent 1:1 to the browser for editing
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             try {
-                m.setProperty("com.sun.xml.bind.namespacePrefixMapper", JAXBSupport.prefixMapper);
+                m.setProperty("com.sun.xml.bind.namespacePrefixMapper", PREFIX_MAPPER);
             } catch (PropertyException e) {
                 // Namespace-Prefixing is not supported by the used Provider. Nothing we can do about that
             }
@@ -126,7 +130,7 @@ public class JAXBSupport {
                 m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
             }
         } catch (JAXBException e) {
-            JAXBSupport.LOGGER.error("Could not instantiate marshaller", e);
+            LOGGER.error("Could not instantiate marshaller", e);
             throw new IllegalStateException(e);
         }
 
@@ -140,9 +144,9 @@ public class JAXBSupport {
      */
     public static Unmarshaller createUnmarshaller() {
         try {
-            return JAXBSupport.context.createUnmarshaller();
+            return CONTEXT.createUnmarshaller();
         } catch (JAXBException e) {
-            JAXBSupport.LOGGER.error("Could not instantiate unmarshaller", e);
+            LOGGER.error("Could not instantiate unmarshaller", e);
             throw new IllegalStateException(e);
         }
     }
