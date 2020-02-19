@@ -24,20 +24,34 @@ import javax.xml.bind.JAXBException;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.yaml.TServiceTemplate;
 import org.eclipse.winery.repository.JAXBSupport;
+import org.eclipse.winery.repository.backend.IRepository;
 import org.eclipse.winery.repository.backend.RepositoryFactory;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 import org.eclipse.winery.repository.converter.X2YConverter;
 import org.eclipse.winery.repository.converter.support.writer.YamlWriter;
+import org.eclipse.winery.repository.exceptions.WineryRepositoryException;
 
 public class YAMLDefinitionsBasedCsarEntry implements CsarEntry {
     private TServiceTemplate definitions;
 
     public YAMLDefinitionsBasedCsarEntry(Definitions definitions) {
         assert (definitions != null);
-        GitBasedRepository wrapper = (GitBasedRepository) RepositoryFactory.getRepository();
-        X2YConverter c = new X2YConverter((YamlRepository) wrapper.getRepository());
-        this.definitions = c.convert(definitions, true);
+        try {
+            IRepository repo = RepositoryFactory.getRepository();
+            X2YConverter c;
+            if (repo instanceof GitBasedRepository) {
+                GitBasedRepository wrapper = (GitBasedRepository) RepositoryFactory.getRepository();
+                c = new X2YConverter((YamlRepository) wrapper.getRepository());
+            } else if (repo instanceof YamlRepository) {
+                c = new X2YConverter((YamlRepository) repo);
+            } else {
+                throw new WineryRepositoryException("The chosen repository mode is incompatible with YAML-based export");
+            }
+            this.definitions = c.convert(definitions, true);
+        } catch (WineryRepositoryException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
