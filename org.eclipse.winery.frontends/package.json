@@ -58,7 +58,7 @@
         "ngx-toastr": "9.0.2",
         "redux": "4.0.0",
         "reflect-metadata": "0.1.12",
-        "rxjs": "6.3.2",
+        "rxjs": "6.4.0",
         "rxjs-compat": "6.3.2",
         "spinkit": "1.2.5",
         "zone.js": "0.8.26"

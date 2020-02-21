@@ -32,6 +32,7 @@ import { Visuals } from '../models/visuals';
 import { VersionElement } from '../models/versionElement';
 import { WineryRepositoryConfigurationService } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { concatMap } from 'rxjs/operators';
+import { TopologyService } from './topology.service';
 
 /**
  * Responsible for interchanging data between the app and the server.
@@ -54,7 +55,8 @@ export class BackendService {
     constructor(private http: HttpClient,
                 private alert: ToastrService,
                 private errorHandler: ErrorHandlerService,
-                private configurationService: WineryRepositoryConfigurationService) {
+                private configurationService: WineryRepositoryConfigurationService,
+                private topologyService: TopologyService) {
         this.endpointConfiguration$.subscribe((params: TopologyModelerConfiguration) => {
             if (!(isNullOrUndefined(params.id) && isNullOrUndefined(params.ns) &&
                 isNullOrUndefined(params.repositoryURL) && isNullOrUndefined(params.uiURL))) {
@@ -278,6 +280,23 @@ export class BackendService {
             return this.http.put(this.configuration.elementUrl,
                 topologyToBeSaved,
                 { headers: headers, responseType: 'text', observe: 'response' }
+            ).map(res => {
+                if (res.ok) {
+                    this.topologyService.lastSavedJsonTopology = topologyTemplate;
+                }
+                return res;
+            }).finally(() => {
+                this.topologyService.checkForSaveChanges();
+            });
+        }
+    }
+
+    createLiveModelingServiceTemplate(): Observable<any> {
+        if (this.configuration) {
+            const headers = new HttpHeaders().set('Content-Type', 'application/json');
+            return this.http.post(this.configuration.parentElementUrl + 'createlivemodelingversion',
+                null,
+                { headers: headers }
             );
         }
     }
@@ -309,14 +328,21 @@ export class BackendService {
             any: [],
             otherAttributes: {},
             relationshipTemplates: topologyTemplate.relationshipTemplates.map(relationship => {
-                delete relationship.state;
-                return relationship;
+                const clone = Object.assign({}, relationship)
+                delete clone.state;
+                return clone;
             }),
             // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
             nodeTemplates: topologyTemplate.nodeTemplates.map(nodeTemplate => {
-                nodeTemplate.deleteStateAndVisuals();
-                return nodeTemplate;
+                const clone = Object.assign({}, nodeTemplate)
+                delete clone._state;
+                delete clone.instanceState;
+                delete clone.valid;
+                delete clone.working;
+                delete clone.visuals;
+                return clone
             })
+            
         };
 
         return topologySkeleton;

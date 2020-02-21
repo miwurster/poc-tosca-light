@@ -53,18 +53,18 @@ import { WineryFeatureToggleModule } from '../../../tosca-management/src/app/win
 import { PlaceComponentsService } from './services/placement.service';
 import { LiveModelingService } from './services/live-modeling.service';
 import { ContainerService } from './services/container.service';
-import { LiveModelingSidebarComponent } from './live-modeling-sidebar/live-modeling-sidebar.component';
 import { ModalModule, ProgressbarModule, TooltipModule } from 'ngx-bootstrap';
-import { LiveModelingModalComponent } from './live-modeling-modal/live-modeling-modal.component';
 import { ReqCapRelationshipService } from './services/req-cap-relationship.service';
 import { LiveModelingActions } from './redux/actions/live-modeling.actions';
 import { AngularResizedEventModule } from 'angular-resize-event';
 import { NavbarComponent } from './navbar/navbar.component';
-import { ResizableModule } from 'angular-resizable-element';
 import { OverlayComponent } from './overlay/overlay.component';
-import { LiveModelingModalBuildplanComponent } from './live-modeling-modal/live-modeling-modal-buildplan/live-modeling-modal-buildplan.component';
-import { LiveModelingModalConfirmComponent } from './live-modeling-modal/live-modeling-modal-confirm/live-modeling-modal-confirm.component';
 import { EdmmTransformationCheckComponent } from './edmmTransformationCheck/edmmTransformationCheck.component';
+import { PropertyValidatorService } from './services/property-validator.service';
+import { OverlayService } from './services/overlay.service';
+import { TopologyService } from './services/topology.service';
+import { LoggingService } from './services/logging.service';
+import { LiveModelingSidebarModule } from './live-modeling/live-modeling-sidebar.module';
 
 @NgModule({
     declarations: [
@@ -76,10 +76,6 @@ import { EdmmTransformationCheckComponent } from './edmmTransformationCheck/edmm
         RefinementSidebarComponent,
         ProblemDetectionComponent,
         EnricherComponent,
-        LiveModelingSidebarComponent,
-        LiveModelingModalComponent,
-        LiveModelingModalBuildplanComponent,
-        LiveModelingModalConfirmComponent,
         OverlayComponent,
         EdmmTransformationCheckComponent,
     ],
@@ -109,11 +105,10 @@ import { EdmmTransformationCheckComponent } from './edmmTransformationCheck/edmm
         PopoverModule.forRoot(),
         PropertiesModule,
         WineryFeatureToggleModule,
-        ProgressbarModule.forRoot(),
         TooltipModule.forRoot(),
-        ResizableModule,
         AngularResizedEventModule,
-        ModalModule.forRoot()
+        ModalModule.forRoot(),
+        LiveModelingSidebarModule
     ],
     providers: [
         // { provide: ToastOptions, useClass: WineryCustomOption },
@@ -133,11 +128,14 @@ import { EdmmTransformationCheckComponent } from './edmmTransformationCheck/edmm
         StatefulAnnotationsService,
         PlaceComponentsService,
         ContainerService,
+        PropertyValidatorService,
         LiveModelingService,
-        ReqCapRelationshipService
+        ReqCapRelationshipService,
+        OverlayService,
+        TopologyService,
+        LoggingService
     ],
-    bootstrap: [WineryComponent],
-    entryComponents: [LiveModelingModalComponent, LiveModelingModalBuildplanComponent, LiveModelingModalConfirmComponent]
+    bootstrap: [WineryComponent]
 })
 export class WineryModule {
     constructor(ngRedux: NgRedux<IWineryState>,

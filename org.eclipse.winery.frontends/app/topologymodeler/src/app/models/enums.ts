@@ -67,6 +67,7 @@ export enum LiveModelingStates {
     INIT = 'INIT',
     DEPLOY = 'DEPLOY',
     TERMINATE = 'TERMINATE',
+    TERMINATED = 'TERMINATED',
     ENABLED = 'ENABLED',
     REDEPLOY = 'REDEPLOY',
     UPDATE = 'UPDATE',
@@ -106,6 +107,7 @@ export enum NodeTemplateInstanceStates {
     DELETED = 'DELETED',
     ERROR = 'ERROR',
     MIGRATED = 'MIGRATED',
+    NOT_AVAILABLE = 'NOT_AVAILABLE',
 }
 
 export enum LiveModelingLogTypes {
@@ -114,4 +116,12 @@ export enum LiveModelingLogTypes {
     WARNING = 'warning',
     DANGER = 'danger',
     CONTAINER = 'container'
+}
+
+export enum LiveModelingButtons {
+    START,
+    TERMINATE,
+    REFRESH,
+    SWITCH,
+    REDEPLOY,
 }

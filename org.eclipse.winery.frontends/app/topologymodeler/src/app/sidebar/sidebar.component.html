@@ -149,33 +149,6 @@
                     </div>
                 </div>
             </div>
-            <div *ngIf="sidebarState.nodeClicked && sidebarState.liveModelingNodeTemplateData">
-                <div class="form-group">
-                    <label>Live Modeling Data</label>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="input-group">
-                                <input type="text" class="form-control mr-2" disabled="disabled"
-                                       value="{{sidebarState.liveModelingNodeTemplateData.state}}">
-                                <span class="input-group-btn">
-                                     <button class="btn btn-success mr-2"
-                                             type="button" [disabled]="sidebarState.liveModelingNodeTemplateData.state === nodeTemplateInstanceStates.STARTED"
-                                             (click)="startNodeInstance()"
-                                     >
-                                        <i class="fa fa-play"></i>
-                                    </button>
-                                    <button class="btn btn-danger"
-                                            type="button" [disabled]="sidebarState.liveModelingNodeTemplateData.state === nodeTemplateInstanceStates.STOPPED"
-                                            (click)="stopNodeInstance()"
-                                    >
-                                        <i class="fa fa-stop"></i>
-                                    </button>
-                               </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="row">
                 <div class="col-lg-12">
                     <div class="btn-group" style="width: 100%; margin-top: 1em;">

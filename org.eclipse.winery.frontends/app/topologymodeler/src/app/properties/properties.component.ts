@@ -30,7 +30,6 @@ export class PropertiesComponent implements OnInit, OnChanges, OnDestroy {
     @Input() currentNodeData: any;
     @Input() readonly: boolean;
     @Input() nodeId: string;
-    @Output() errorEmitter: EventEmitter<boolean> = new EventEmitter<boolean>();
     key: string;
     nodeProperties: any;
     invalidNodeProperties: any = {};
@@ -103,7 +102,6 @@ export class PropertiesComponent implements OnInit, OnChanges, OnDestroy {
                     nodeId: this.currentNodeData.nodeTemplate.id
                 }
             }));
-            this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         }));
 
         this.subscriptions.push(this.ngRedux.select(state => state.topologyRendererState.buttonsState.checkNodePropertiesButton)
@@ -113,8 +111,7 @@ export class PropertiesComponent implements OnInit, OnChanges, OnDestroy {
                     this.checkAllProperties();
                 } else {
                     this.invalidNodeProperties = {};
-                    this.errorEmitter.emit(false);
-                    this.ngRedux.dispatch(this.actions.setNodePropertyValidity(this.nodeId, false));
+                    this.ngRedux.dispatch(this.actions.setNodePropertyValidity(this.nodeId, true));
                 }
             }));
     }
@@ -149,11 +146,9 @@ export class PropertiesComponent implements OnInit, OnChanges, OnDestroy {
 
     checkForErrors() {
         if (Object.keys(this.invalidNodeProperties).length > 0) {
-            this.ngRedux.dispatch(this.actions.setNodePropertyValidity(this.nodeId, true));
-            this.errorEmitter.emit(true);
-        } else {
-            this.errorEmitter.emit(false);
             this.ngRedux.dispatch(this.actions.setNodePropertyValidity(this.nodeId, false));
+        } else {
+            this.ngRedux.dispatch(this.actions.setNodePropertyValidity(this.nodeId, true));
         }
     }
 
@@ -169,7 +164,7 @@ export class PropertiesComponent implements OnInit, OnChanges, OnDestroy {
     checkProperty(key: string, value: string) {
         try {
             delete this.invalidNodeProperties[key];
-            if (value) {
+            if (value && this.kvPatternMap[key]) {
                 if (!(value.startsWith('get_input:') || value.startsWith('get_property:'))) {
                     const pattern = this.kvPatternMap[key];
                     if (!new RegExp(pattern).test(value)) {

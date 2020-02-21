@@ -34,6 +34,7 @@ import { IWineryState } from '../redux/store/winery.store';
 import { PlanInstance } from '../models/container/plan-instance.model';
 import { PlanLogEntry } from '../models/container/plan-log-entry.model';
 import { InputParameter } from '../models/container/input-parameter.model';
+import { OutputParameter } from '../models/container/output-parameter.model';
 
 @Injectable()
 export class ContainerService {
@@ -257,6 +258,12 @@ export class ContainerService {
         );
     }
 
+    public getBuildPlanOutputParameters(): Observable<Array<OutputParameter>> {
+        return this.getBuildPlan().pipe(
+            map(resp => resp.output_parameters)
+        );
+    }
+
     private getBuildPlan(): Observable<Plan> {
         return this.getServiceTemplate().pipe(
             concatMap(resp => this.http.get<PlanResources>(resp._links['buildplans'].href, this.headerAcceptJSON)),
@@ -287,10 +294,13 @@ export class ContainerService {
         );
     }
 
-    public getServiceTemplateInstanceBuildPlanParameters(): Observable<Array<InputParameter>> {
+    public getServiceTemplateInstanceBuildPlanInstance(): Observable<PlanInstance> {
         return this.getServiceTemplateInstance().pipe(
             concatMap(resp => this.http.get<PlanInstance>(resp._links['build_plan_instance'].href, this.headerAcceptJSON)),
-            map(resp => resp.inputs.filter(input => this.hidden_input_parameters.indexOf(input.name) === -1))
+            map(resp => {
+                resp.inputs = resp.inputs.filter(input => this.hidden_input_parameters.indexOf(input.name) === -1);
+                return resp;
+            })
         );
     }
 

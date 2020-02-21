@@ -1,0 +1,75 @@
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ Copyright (c) 2020 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+  ~ which is available at https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Enable Live-Modeling</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="dismissModal()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <p>Caution! This will enable live-modeling.</p>
+    <div class="form-group">
+        <label for="containerUrlInput">Enter OpenTOSCA container Url:</label>
+        <div class="input-wrapper"
+             [class.input-wrapper-check]="!isContainerUrlInvalid && isContainerUrlInvalid !== undefined"
+             [class.input-wrapper-times]="isContainerUrlInvalid">
+            <input [(ngModel)]="containerUrl" class="form-control"
+                   [class.is-valid]="!isContainerUrlInvalid && isContainerUrlInvalid !== undefined"
+                   [class.has-error]="isContainerUrlInvalid" type="text" id="containerUrlInput"
+                   placeholder="containerUrl">
+        </div>
+        <span class="error-text" *ngIf="isContainerUrlInvalid">Invalid container URL</span>
+    </div>
+
+<!--    <label>(Optional) Select already running instance: </label>-->
+<!--    <div class="wrapper">-->
+<!--        <div class="btn-group mr-2 dropdown" dropdown-->
+<!--             [isDisabled]="!(serviceTemplateInstanceIds && serviceTemplateInstanceIds?.length > 0)">-->
+<!--            <button id="button-basic" dropdownToggle type="button" class="btn btn-light dropdown-toggle"-->
+<!--                    aria-controls="dropdown-basic">-->
+<!--                Service Template Instance ID: <b>{{selectedServiceTemplateInstanceId || '(none)'}}</b>-->
+<!--            </button>-->
+<!--            <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu"-->
+<!--                role="menu" aria-labelledby="button-basic">-->
+<!--                <li *ngFor="let id of serviceTemplateInstanceIds" role="menuitem">-->
+<!--                    <span class="dropdown-item" (click)="selectServiceTemplateId(id)">{{id}}</span>-->
+<!--                </li>-->
+<!--                <ng-container *ngIf="selectedServiceTemplateInstanceId">-->
+<!--                    <li class="divider dropdown-divider"></li>-->
+<!--                    <li role="menuitem"><span class="dropdown-item" (click)="deselectServiceTemplateId()">Deploy New Service Template Instance</span>-->
+<!--                    </li>-->
+<!--                </ng-container>-->
+<!--            </ul>-->
+<!--        </div>-->
+<!--        <button type="button" class="btn btn-info" (click)="fetchServiceTemplateInstances()"-->
+<!--                [disabled]="fetchingServiceTemplateInstances">-->
+<!--            <i class="fa fa-refresh" style="pointer-events: none;"-->
+<!--               [class.fa-spin]="fetchingServiceTemplateInstances"></i>-->
+<!--        </button>-->
+<!--    </div>-->
+<!--    <span class="error-text" *ngIf="noRunningServiceTemplateInstancesFound">No running service template instances found</span>-->
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" (click)="dismissModal()">Close</button>
+    <button type="button"
+            class="btn btn-primary" (click)="enableLiveModeling()" [disabled]="testingContainerUrl">
+        <ng-container *ngIf="!testingContainerUrl">
+<!--            <span *ngIf="selectedServiceTemplateInstanceId">Enable</span>-->
+<!--            <span *ngIf="!selectedServiceTemplateInstanceId">Next</span>-->
+            <span>Enable</span>
+        </ng-container>
+        <i *ngIf="testingContainerUrl" class="fas fa-spinner fa-pulse"></i>
+    </button>
+</div>

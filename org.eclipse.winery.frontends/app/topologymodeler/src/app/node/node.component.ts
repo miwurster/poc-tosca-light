@@ -21,7 +21,7 @@ import { IWineryState } from '../redux/store/winery.store';
 import { WineryActions } from '../redux/actions/winery.actions';
 import { EntityType, TNodeTemplate } from '../models/ttopology-template';
 import { QName } from '../models/qname';
-import { PropertyDefinitionType, urlElement } from '../models/enums';
+import { LiveModelingStates, NodeTemplateInstanceStates, PropertyDefinitionType, urlElement } from '../models/enums';
 import { BackendService } from '../services/backend.service';
 import { isNullOrUndefined } from 'util';
 import { GroupedNodeTypeModel } from '../models/groupedNodeTypeModel';
@@ -34,8 +34,8 @@ import { VersionElement } from '../models/versionElement';
 import { VersionsComponent } from './versions/versions.component';
 import { WineryVersion } from '../../../../tosca-management/src/app/model/wineryVersion';
 import { FeatureEnum } from '../../../../tosca-management/src/app/wineryFeatureToggleModule/wineryRepository.feature.direct';
-import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
 import { PropertiesComponent } from '../properties/properties.component';
+import { Subscription } from 'rxjs';
 
 /**
  * Every node has its own component and gets created dynamically.
@@ -75,7 +75,6 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     propertyDefinitionType: string;
     policyIcons: string[];
     configEnum = FeatureEnum;
-    liveModelingNodeTemplateData: LiveModelingNodeTemplateData;
 
     @Input() readonly: boolean;
     @Input() entityTypes: EntityTypesModel;
@@ -114,7 +113,8 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
     newerVersionExist: boolean;
     newVersionElement: VersionElement;
 
-    nodePropertiesInvalid = false;
+    liveModelingEnabled = false;
+    subscriptions: Subscription[] = [];
 
     constructor(private zone: NgZone,
                 private $ngRedux: NgRedux<IWineryState>,
@@ -197,6 +197,10 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         this.setPolicyIcons();
         this.addNewVersions(new QName(this.nodeTemplate.type));
 
+        this.subscriptions.push(this.$ngRedux.select(state => state.liveModelingState.state)
+            .subscribe(state => {
+                this.liveModelingEnabled = state !== LiveModelingStates.DISABLED;
+            }));
     }
 
     /**
@@ -403,8 +407,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                     nameTextFieldValue: '',
                     type: '',
                     minInstances: -1,
-                    maxInstances: -1,
-                    liveModelingNodeTemplateData: null
+                    maxInstances: -1
                 }
             }));
         } else {
@@ -416,8 +419,7 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
                     nameTextFieldValue: this.nodeTemplate.name,
                     type: this.nodeTemplate.type,
                     minInstances: this.nodeTemplate.minInstances,
-                    maxInstances: this.nodeTemplate.maxInstances,
-                    liveModelingNodeTemplateData: this.liveModelingNodeTemplateData
+                    maxInstances: this.nodeTemplate.maxInstances
                 }
             }));
         }
@@ -450,6 +452,11 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         if (this.nodeRef) {
             this.nodeRef.destroy();
         }
+
+        this.subscriptions.forEach((subscription: Subscription) => {
+            subscription.unsubscribe();
+        });
+        this.subscriptions = [];
     }
 
     /**
@@ -490,11 +497,20 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
 
     }
 
-    public openVersionModal() {
-        this.versionModal.open();
+    getInstanceStateColor() {
+        switch (this.nodeTemplate.instanceState) {
+            case NodeTemplateInstanceStates.INITIAL:
+                return 'blue';
+            case NodeTemplateInstanceStates.STARTED:
+                return 'green';
+            case NodeTemplateInstanceStates.STOPPED:
+                return 'red';
+            default:
+                return '';
+        }
     }
 
-    private getPropertyErrors(invalid: boolean) {
-        this.nodePropertiesInvalid = invalid;
+    public openVersionModal() {
+        this.versionModal.open();
     }
 }

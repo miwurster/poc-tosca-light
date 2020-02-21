@@ -333,7 +333,6 @@ export class EntitiesModalComponent implements OnInit, OnChanges {
             newDeploymentArtifact: deploymentArtifactToBeSavedToRedux
         };
         this.ngRedux.dispatch(this.actions.setDeploymentArtifact(actionObject));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetDeploymentArtifactOrPolicyModalData();
     }
 
@@ -346,7 +345,6 @@ export class EntitiesModalComponent implements OnInit, OnChanges {
             newPolicy: policyToBeSavedToRedux
         };
         this.ngRedux.dispatch(this.actions.setPolicy(actionObject));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetDeploymentArtifactOrPolicyModalData();
     }
 
@@ -368,7 +366,6 @@ export class EntitiesModalComponent implements OnInit, OnChanges {
                 deletedPolicy: this.deploymentArtifactOrPolicyModalData.modalName
             };
             this.ngRedux.dispatch(this.actions.deletePolicy(actionObject));
-            this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             this.resetDeploymentArtifactOrPolicyModalData();
         } else if (this.modalVariantForEditDeleteTasks === ModalVariant.DeploymentArtifacts) {
             const actionObject = {
@@ -376,7 +373,6 @@ export class EntitiesModalComponent implements OnInit, OnChanges {
                 deletedDeploymentArtifact: this.deploymentArtifactOrPolicyModalData.modalName
             };
             this.ngRedux.dispatch(this.actions.deleteDeploymentArtifact(actionObject));
-            this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             this.resetDeploymentArtifactOrPolicyModalData();
         }
 

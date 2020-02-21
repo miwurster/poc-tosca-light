@@ -12,30 +12,40 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-import { NodeTemplateInstanceStates } from './enums';
+.scroll-container {
+    flex: 1 0 0;
+    overflow-y: scroll;
+}
 
-export class LiveModelingNodeTemplateData {
+.log-item {
+    width: 100%;
+    font-size: x-small;
+    text-align: left;
+    vertical-align: top;
+    display: flex;
+}
 
-    static initial(id: string) {
-        return new this(id, NodeTemplateInstanceStates.INITIAL);
-    }
+.log-item > span {
+    vertical-align: top;
+    padding: 2px;
+    cursor: text;
+}
 
-    constructor(
-        public id?: string,
-        public state?: NodeTemplateInstanceStates
-    ) {
-    }
+.log-timestamp {
+    font-weight: bold;
+    white-space: nowrap;
+}
 
-    get color() {
-        switch (this.state) {
-            case NodeTemplateInstanceStates.INITIAL:
-                return 'blue';
-            case NodeTemplateInstanceStates.STARTED:
-                return 'green';
-            case NodeTemplateInstanceStates.STOPPED:
-                return 'red';
-            default:
-                return '';
-        }
-    }
+.badge-xsmall {
+    font-size: xx-small;
+    color: white;
+    border-radius: 5px;
+    padding: 1px 2px;
+}
+
+.badge-small {
+    font-size: small;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 4px;
 }

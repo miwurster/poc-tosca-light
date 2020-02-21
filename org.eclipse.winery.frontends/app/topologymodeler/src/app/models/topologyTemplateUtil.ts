@@ -79,6 +79,9 @@ export class TopologyTemplateUtil {
             node.requirements ? node.requirements : {},
             node.deploymentArtifacts ? node.deploymentArtifacts : {},
             node.policies ? node.policies : {},
+            node.instanceState,
+            node.valid,
+            node.working,
             state
         );
     }
@@ -230,8 +233,6 @@ export class TopologyTemplateUtil {
             .forEach(
                 relationship => ngRedux.dispatch(wineryActions.saveRelationship(relationship))
             );
-
-        ngRedux.dispatch(wineryActions.checkForUnsavedChanges());
     }
 
     static hasTopologyTemplateChanged(currentTopology: TTopologyTemplate, lastSavedTopology: TTopologyTemplate) {

@@ -17,7 +17,7 @@
         <h3 style="margin-right: .5em;">winery</h3>
         <button *ngIf="!readonly"
                 class="btn btn-sm align-middle btn-success" type="button"
-                (click)="checkNodePropertiesBeforeContinue(saveTopologyTemplateToRepository.bind(this))">Save<span
+                (click)="handleSave()">Save<span
             *ngIf="unsavedChanges">*</span>
         </button>
 
@@ -260,3 +260,27 @@
         </div>
     </form>
 </nav>
+
+<ng-template #confirmModal>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Information</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="this.modalRef.hide()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="px-2">
+            <span>There are errors within the current configuration. Do you want to continue anyway?</span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                (click)="this.modalRef.hide()">
+            No
+        </button>
+        <button type="button" class="btn btn-primary"
+                (click)="this.modalRef.hide(); this.saveTopologyTemplateToRepository()">
+            Yes
+        </button>
+    </div>
+</ng-template>

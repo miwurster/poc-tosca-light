@@ -14,21 +14,13 @@
 
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap';
-import { NgRedux } from '@angular-redux/store';
-import { IWineryState } from '../../redux/store/winery.store';
-import { ContainerService } from '../../services/container.service';
-import { LiveModelingActions } from '../../redux/actions/live-modeling.actions';
-import { Observable } from 'rxjs';
-import { InputParameter } from '../../models/container/input-parameter.model';
-import { LiveModelingStates } from '../../models/enums';
 
 @Component({
-    selector: 'winery-live-modeling-modal-confirm',
-    templateUrl: './live-modeling-modal-confirm.component.html',
-    styleUrls: ['./live-modeling-modal-confirm.component.css']
+    selector: 'winery-live-modeling-confirm-modal',
+    templateUrl: './confirm-modal.component.html',
+    styleUrls: ['./confirm-modal.component.css']
 })
-export class LiveModelingModalConfirmComponent implements OnInit {
-
+export class ConfirmModalComponent implements OnInit {
     title: string;
     content: string;
     callback: Function;

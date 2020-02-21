@@ -15,19 +15,19 @@
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap';
 import { NgRedux } from '@angular-redux/store';
-import { IWineryState } from '../../redux/store/winery.store';
-import { ContainerService } from '../../services/container.service';
-import { LiveModelingActions } from '../../redux/actions/live-modeling.actions';
+import { InputParameter } from '../../../models/container/input-parameter.model';
+import { ContainerService } from '../../../services/container.service';
+import { IWineryState } from '../../../redux/store/winery.store';
+import { LiveModelingActions } from '../../../redux/actions/live-modeling.actions';
+import { LiveModelingStates } from '../../../models/enums';
 import { Observable } from 'rxjs';
-import { InputParameter } from '../../models/container/input-parameter.model';
-import { LiveModelingStates } from '../../models/enums';
 
 @Component({
-    selector: 'winery-live-modeling-modal-buildplan',
-    templateUrl: './live-modeling-modal-buildplan.component.html',
-    styleUrls: ['./live-modeling-modal-buildplan.component.css']
+    selector: 'winery-live-modeling-buildplan-modal',
+    templateUrl: './buildplan-modal.component.html',
+    styleUrls: ['./buildplan-modal.component.css']
 })
-export class LiveModelingModalBuildplanComponent implements OnInit {
+export class BuildplanModalComponent implements OnInit {
     fetchingBuildPlanParameters = true;
     requiredBuildPlanParameters: InputParameter[];
 
@@ -69,9 +69,7 @@ export class LiveModelingModalBuildplanComponent implements OnInit {
     }
 
     cancel() {
-        if (!this.ngRedux.getState().liveModelingState.currentServiceTemplateInstanceId) {
-            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DISABLED));
-        }
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DISABLED));
         this.dismissModal();
     }
 

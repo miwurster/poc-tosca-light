@@ -1,0 +1,272 @@
+/*******************************************************************************
+ * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache Software License 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ *******************************************************************************/
+
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { BsModalRef, BsModalService, ProgressbarConfig } from 'ngx-bootstrap';
+import { Subscription } from 'rxjs';
+import { NgRedux } from '@angular-redux/store';
+import { IWineryState } from '../redux/store/winery.store';
+import { LiveModelingStates, ServiceTemplateInstanceStates } from '../models/enums';
+import { LiveModelingActions } from '../redux/actions/live-modeling.actions';
+import { LiveModelingService } from '../services/live-modeling.service';
+import { WineryActions } from '../redux/actions/winery.actions';
+import { state, style, trigger } from '@angular/animations';
+import { ResizeEvent } from 'angular-resizable-element';
+import { TTopologyTemplate } from '../models/ttopology-template';
+import { EnableModalComponent } from './modals/enable-modal/enable-modal.component';
+import { SettingsModalComponent } from './modals/settings-modal/settings-modal.component';
+import { DisableModalComponent } from './modals/disable-modal/disable-modal.component';
+import { ConfirmModalComponent } from './modals/confirm-modal/confirm-modal.component';
+import { BuildplanModalComponent } from './modals/buildplan-modal/buildplan-modal.component';
+import { InputParameter } from '../models/container/input-parameter.model';
+
+export function getProgressbarConfig(): ProgressbarConfig {
+    return Object.assign(new ProgressbarConfig(), { animate: true, striped: true, max: 100 });
+}
+
+@Component({
+    selector: 'winery-live-modeling-sidebar',
+    templateUrl: './live-modeling-sidebar.component.html',
+    styleUrls: ['./live-modeling-sidebar.component.css'],
+    providers: [{ provide: ProgressbarConfig, useFactory: getProgressbarConfig }],
+    animations: [
+        trigger('sidebarContentState', [
+            state('shrunk', style({
+                display: 'none'
+            })),
+            state('extended', style({
+                display: 'block'
+            }))
+        ]),
+        trigger('sidebarButtonState', [
+            state('top', style({
+                transform: 'rotate(0deg)'
+            })),
+            state('right', style({
+                transform: 'rotate(90deg) translateY(-100%)'
+            })),
+        ])
+    ]
+})
+export class LiveModelingSidebarComponent implements OnInit, OnDestroy {
+    @Input() top: number;
+
+    sidebarWidth: number;
+    sidebarContentState = 'extended';
+    sidebarButtonState = 'right';
+
+    showProgressbar: boolean;
+
+    liveModelingState: LiveModelingStates;
+    liveModelingStates = LiveModelingStates;
+    serviceTemplateInstanceId: string;
+    serviceTemplateInstanceState: ServiceTemplateInstanceStates;
+    currentJsonTopology: TTopologyTemplate;
+    buildplanParameters: Array<InputParameter>;
+    currentCsarId: string;
+
+    subscriptions: Array<Subscription> = [];
+
+    modalRef: BsModalRef;
+
+    unsavedChanges: boolean;
+    deploymentChanges: boolean;
+
+    showLogs = false;
+
+    constructor(private ngRedux: NgRedux<IWineryState>,
+                private wineryActions: WineryActions,
+                private liveModelingActions: LiveModelingActions,
+                private liveModelingService: LiveModelingService,
+                private modalService: BsModalService) {
+    }
+
+    ngOnInit() {
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.state)
+            .subscribe(liveModelingState => {
+                this.liveModelingState = liveModelingState;
+                this.toggleProgressbar();
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.currentServiceTemplateInstanceId)
+            .subscribe(serviceTemplateInstanceId => {
+                this.serviceTemplateInstanceId = serviceTemplateInstanceId;
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.currentServiceTemplateInstanceState)
+            .subscribe(serviceTemplateInstanceState => {
+                this.serviceTemplateInstanceState = serviceTemplateInstanceState;
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingSidebarOpenedState)
+            .subscribe(sidebarOpened => {
+                this.updateSidebarState(sidebarOpened);
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology)
+            .subscribe(currentJsonTopology => {
+                this.currentJsonTopology = currentJsonTopology;
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.unsavedChanges)
+            .subscribe(unsavedChanges => {
+                this.unsavedChanges = unsavedChanges;
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.deploymentChanges)
+            .subscribe(deploymentChanges => {
+                this.deploymentChanges = deploymentChanges;
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.currentCsarId)
+            .subscribe(csarId => {
+                this.currentCsarId = csarId;
+            }));
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.buildPlanInputParameters)
+            .subscribe(parameters => {
+                this.buildplanParameters = parameters;
+            }));
+    }
+
+    handleEnable() {
+        this.openModal(EnableModalComponent);
+    }
+
+    handleSettings() {
+        this.openModal(SettingsModalComponent);
+    }
+
+    handleDisable() {
+        this.openModal(DisableModalComponent);
+    }
+
+    handleDeploy() {
+        const initialState = {
+            title: 'Deploy new Instance',
+            content: `Do you want to deploy a new instance of type ${this.currentCsarId}?`,
+            callback: () => {
+                if (this.buildplanParameters.length > 0) {
+                    this.openModal(BuildplanModalComponent);
+                } else {
+                    this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DEPLOY));
+                }
+            }
+        };
+        this.openModal(ConfirmModalComponent, { initialState });
+    }
+
+    isDeployDisabled() {
+        return this.serviceTemplateInstanceId || this.liveModelingState !== LiveModelingStates.TERMINATED || this.deploymentChanges;
+    }
+
+    handleTerminate() {
+        const initialState = {
+            title: 'Terminate Instance',
+            content: 'Are you sure you want to terminate the instance?',
+            callback: () => this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.TERMINATE))
+        };
+        this.openModal(ConfirmModalComponent, { initialState });
+    }
+
+    isTerminateDisabled() {
+        return this.liveModelingState !== LiveModelingStates.ENABLED && this.liveModelingState !== LiveModelingStates.ERROR;
+    }
+
+    handleRefresh() {
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
+    }
+
+    isRefreshDisabled() {
+        return this.liveModelingState !== LiveModelingStates.ENABLED;
+    }
+
+    handleRedeploy() {
+        this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.REDEPLOY));
+    }
+
+    isRedeployDisabled() {
+        return !(this.liveModelingState === LiveModelingStates.ENABLED &&
+            !this.unsavedChanges &&
+            this.deploymentChanges);
+    }
+
+    toggleLogs() {
+        this.showLogs = !this.showLogs;
+    }
+
+    getBackgroundForState(serviceTemplateInstanceState: ServiceTemplateInstanceStates) {
+        switch (serviceTemplateInstanceState) {
+            case ServiceTemplateInstanceStates.DELETED:
+            case ServiceTemplateInstanceStates.DELETING:
+            case ServiceTemplateInstanceStates.ERROR:
+                return '#dc3545';
+            case ServiceTemplateInstanceStates.MIGRATED:
+            case ServiceTemplateInstanceStates.MIGRATING:
+            case ServiceTemplateInstanceStates.CREATING:
+                return '#007bff';
+            case ServiceTemplateInstanceStates.CREATED:
+                return '#28a745';
+            case ServiceTemplateInstanceStates.INITIAL:
+            case ServiceTemplateInstanceStates.NOT_AVAILABLE:
+            default:
+                return '#6c757d';
+        }
+    }
+
+    toggleProgressbar() {
+        switch (this.liveModelingState) {
+            case LiveModelingStates.TERMINATED:
+            case LiveModelingStates.DISABLED:
+            case LiveModelingStates.ENABLED:
+            case LiveModelingStates.ERROR:
+                this.showProgressbar = false;
+                break;
+            default:
+                this.showProgressbar = true;
+        }
+    }
+
+    updateSidebarState(sidebarOpened: boolean) {
+        if (sidebarOpened) {
+            this.sidebarButtonState = 'top';
+            this.sidebarContentState = 'extended';
+        } else {
+            this.sidebarButtonState = 'right';
+            this.sidebarContentState = 'shrunk';
+        }
+    }
+
+    toggleSidebarState() {
+        if (this.sidebarContentState === 'shrunk') {
+            this.ngRedux.dispatch(this.wineryActions.sendLiveModelingSidebarOpened(true));
+        } else {
+            this.ngRedux.dispatch(this.wineryActions.sendLiveModelingSidebarOpened(false));
+        }
+    }
+
+    validateResize(event: ResizeEvent) {
+        const SIDEBAR_MIN_WIDTH = 300;
+        return event.rectangle.width >= SIDEBAR_MIN_WIDTH;
+    }
+
+    onResizeEnd(event: ResizeEvent): void {
+        this.sidebarWidth = event.rectangle.width;
+    }
+
+    openModal(modal: any, options?: any) {
+        const defaultConfig = { backdrop: 'static' };
+        this.modalRef = this.modalService.show(modal, { ...defaultConfig, ...options });
+    }
+
+    dismissModal() {
+        this.modalRef.hide();
+    }
+
+    ngOnDestroy() {
+        this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    }
+}

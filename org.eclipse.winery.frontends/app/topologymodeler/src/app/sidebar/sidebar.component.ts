@@ -21,10 +21,9 @@ import { Subject, Subscription } from 'rxjs';
 
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { QName } from '../models/qname';
-import { NodeTemplateInstanceStates, PropertyDefinitionType, urlElement } from '../models/enums';
+import { PropertyDefinitionType, urlElement } from '../models/enums';
 import { BackendService } from '../services/backend.service';
 import { isNullOrUndefined } from 'util';
-import { LiveModelingService } from '../services/live-modeling.service';
 
 /**
  * This is the right sidebar, where attributes of nodes and relationships get displayed.
@@ -63,12 +62,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public nodeMaxInstancesKeyUp: Subject<string> = new Subject<string>();
     subscription: Subscription;
 
-    nodeTemplateInstanceStates = NodeTemplateInstanceStates;
-
     constructor(private $ngRedux: NgRedux<IWineryState>,
                 private actions: WineryActions,
-                private backendService: BackendService,
-                private liveModelingService: LiveModelingService) {
+                private backendService: BackendService) {
     }
 
     deleteButtonSidebarClicked($event) {
@@ -92,7 +88,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 minInstances: -1,
                 maxInstances: -1,
                 properties: '',
-                liveModelingNodeTemplateData: null
             }
         }));
     }
@@ -148,7 +143,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             id: this.sidebarState.id
                         }
                     }));
-                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 } else {
                     this.$ngRedux.dispatch(this.actions.updateRelationshipName({
                         relData: {
@@ -159,7 +153,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             target: this.sidebarState.target
                         }
                     }));
-                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 }
                 // refresh
                 this.$ngRedux.dispatch(this.actions.openSidebar({
@@ -172,7 +165,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         minInstances: Number(this.sidebarState.minInstances),
                         maxInstances: Number(this.sidebarState.maxInstances),
                         properties: this.sidebarState.properties,
-                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
                         source: this.sidebarState.source,
                         target: this.sidebarState.target
                     }
@@ -191,7 +183,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             count: data
                         }
                     }));
-                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 }
                 // refresh
                 this.$ngRedux.dispatch(this.actions.openSidebar({
@@ -204,7 +195,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         minInstances: Number(data),
                         maxInstances: this.sidebarState.maxInstances,
                         properties: this.sidebarState.properties,
-                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
                         source: this.sidebarState.source,
                         target: this.sidebarState.target
                     }
@@ -222,7 +212,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             count: data
                         }
                     }));
-                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 }
                 // refresh
                 this.$ngRedux.dispatch(this.actions.openSidebar({
@@ -235,7 +224,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         minInstances: this.sidebarState.minInstances,
                         maxInstances: Number(data),
                         properties: this.sidebarState.properties,
-                        liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
                         source: this.sidebarState.source,
                         target: this.sidebarState.target
                     }
@@ -254,7 +242,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     id: this.sidebarState.id
                 }
             }));
-            this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             let number: number = this.sidebarState.minInstances;
             number += 1;
             this.sidebarState.minInstances = number;
@@ -267,7 +254,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         id: this.sidebarState.id
                     }
                 }));
-                this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 this.sidebarState.minInstances -= 1;
             }
         }
@@ -282,7 +268,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
                 properties: this.sidebarState.properties,
-                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
                 source: this.sidebarState.source,
                 target: this.sidebarState.target
             }
@@ -301,7 +286,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         id: this.sidebarState.id
                     }
                 }));
-                this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                 this.sidebarState.maxInstances = Number.parseInt(this.sidebarState.maxInstances, 10) + 1;
             } else if ($event === 'dec') {
                 if (this.sidebarState.maxInstances === 0) {
@@ -312,7 +296,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             id: this.sidebarState.id
                         }
                     }));
-                    this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                     this.sidebarState.maxInstances -= 1;
                 }
             } else if ($event === 'inf') {
@@ -325,7 +308,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         count: '\u221E'
                     }
                 }));
-                this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             }
         } else {
             this.$ngRedux.dispatch(this.actions.changeMaxInstances({
@@ -334,7 +316,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     count: 0
                 }
             }));
-            this.$ngRedux.dispatch(this.actions.checkForUnsavedChanges());
             this.sidebarState.maxInstances = 0;
             this.maxInputEnabled = true;
         }
@@ -349,7 +330,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 minInstances: this.sidebarState.minInstances,
                 maxInstances: this.sidebarState.maxInstances,
                 properties: this.sidebarState.properties,
-                liveModelingNodeTemplateData: this.sidebarState.liveModelingNodeTemplateData,
                 source: this.sidebarState.source,
                 target: this.sidebarState.target
             }
@@ -398,16 +378,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 encodeURIComponent(encodeURIComponent(qName.nameSpace)) + qName.localName + urlElement.ReadMe;
         }
         window.open(typeURL, '_blank');
-    }
-
-    startNodeInstance() {
-        this.liveModelingService.startNode(this.sidebarState.id);
-        this.closeSidebar();
-    }
-
-    stopNodeInstance() {
-        this.liveModelingService.stopNode(this.sidebarState.id);
-        this.closeSidebar();
     }
 
     ngOnDestroy() {

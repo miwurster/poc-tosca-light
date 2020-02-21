@@ -55,7 +55,6 @@ import { ThreatCreation } from '../models/threatCreation';
 import { TopologyTemplateUtil } from '../models/topologyTemplateUtil';
 import { ReqCapRelationshipService } from '../services/req-cap-relationship.service';
 import { TPolicy } from '../models/policiesModalData';
-import { LiveModelingNodeTemplateData } from '../models/liveModelingNodeTemplateData';
 
 @Component({
     selector: 'winery-canvas',
@@ -179,8 +178,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         this.gridTemplate = new GridTemplate(100, false, false, 30);
         this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentPaletteOpenedState)
             .subscribe(currentPaletteOpened => this.setPaletteState(currentPaletteOpened)));
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.nodeTemplatesData)
-            .subscribe(currentLiveModelingNodeTemplatesData => this.updateNodesLiveModelingData(currentLiveModelingNodeTemplatesData)));
         this.hotkeysService.add(new Hotkey('mod+a', (event: KeyboardEvent): boolean => {
             event.stopPropagation();
             this.allNodeTemplates.forEach(node => this.enhanceDragSelection(node.id));
@@ -553,7 +550,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newCapabilityData = this.capabilities.capabilities;
         newCapabilityData.nodeId = this.capabilities.nodeId;
         this.ngRedux.dispatch(this.actions.setCapability(newCapabilityData));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetCapabilities();
         this.capabilitiesModal.hide();
     }
@@ -585,7 +581,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newRequirementData = this.requirements.requirements;
         newRequirementData.nodeId = this.requirements.nodeId;
         this.ngRedux.dispatch(this.actions.setRequirement(newRequirementData));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetRequirements();
         this.requirementsModal.hide();
     }
@@ -633,7 +628,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newCapabilityData = this.capabilities.capabilities;
         newCapabilityData.nodeId = this.capabilities.nodeId;
         this.ngRedux.dispatch(this.actions.setCapability(newCapabilityData));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetCapabilities();
         this.capabilitiesModal.hide();
     }
@@ -693,7 +687,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             capability: this.currentModalData.capabilities.capability.filter(req => req.id !== this.currentModalData.currentCapability.id)
         };
         this.ngRedux.dispatch(this.actions.setCapability(capabilities));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetCapabilities();
         this.capabilitiesModal.hide();
     }
@@ -741,7 +734,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         const newRequirementData = this.requirements.requirements;
         newRequirementData.nodeId = this.requirements.nodeId;
         this.ngRedux.dispatch(this.actions.setRequirement(newRequirementData));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetRequirements();
         this.requirementsModal.hide();
     }
@@ -802,7 +794,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
             requirement: this.currentModalData.requirements.requirement.filter(req => req.id !== this.currentModalData.currentRequirement.id)
         };
         this.ngRedux.dispatch(this.actions.setRequirement(requirements));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
         this.resetRequirements();
         this.requirementsModal.hide();
     }
@@ -1095,7 +1086,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
         );
 
         this.ngRedux.dispatch(this.actions.saveNodeTemplate(newNode));
-        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
     }
 
     /**
@@ -1362,8 +1352,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             this.newJsPlumbInstance.unmakeSource(node.dragSource);
                         }
                     }
-                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id));
-                    this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
+                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id))
                 }
             });
             this.selectedNodes.length = 0;
@@ -1372,7 +1361,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 for (const con of this.newJsPlumbInstance.getAllConnections()) {
                     if (con.hasType('marked')) {
                         this.ngRedux.dispatch(this.actions.deleteRelationshipTemplate(con.id));
-                        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                         this.newJsPlumbInstance.deleteConnection(con);
                         this.hideSidebar();
                     }
@@ -1875,6 +1863,15 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                 } else if (nodeTemplate.deploymentArtifacts !== node.deploymentArtifacts) {
                     nodeTemplate.deploymentArtifacts = node.deploymentArtifacts;
                     return true;
+                } else if (nodeTemplate.instanceState !== node.instanceState) {
+                    nodeTemplate.instanceState = node.instanceState;
+                    return true;
+                } else if (nodeTemplate.valid !== node.valid) {
+                    nodeTemplate.valid = node.valid;
+                    return true;
+                } else if (nodeTemplate.working !== node.working) {
+                    nodeTemplate.working = node.working;
+                    return true;
                 } else if (nodeTemplate.policies !== node.policies) {
                     nodeTemplate.policies = node.policies;
                     return true;
@@ -2093,7 +2090,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             {}
                         );
                         this.ngRedux.dispatch(this.actions.saveRelationship(newRelationship));
-                        this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                     }
                 }
                 this.unbindConnection();
@@ -2135,7 +2131,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                                 {}
                             );
                             this.ngRedux.dispatch(this.actions.saveRelationship(newRelationship));
-                            this.ngRedux.dispatch(this.actions.checkForUnsavedChanges());
                         }
                         for (const rel of this.newJsPlumbInstance.getConnections()) {
                             if (rel.targetId === info.targetId) {
@@ -2235,19 +2230,6 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     private layoutTopology() {
         this.layoutDirective.layoutNodes(this.nodeChildrenArray, this.allRelationshipTemplates);
         this.ngRedux.dispatch(this.topologyRendererActions.executeLayout());
-    }
-
-    private updateNodesLiveModelingData(currentLiveModelingNodeTemplatesData: LiveModelingNodeTemplateData[]) {
-        this.allNodeTemplates.forEach(nodeTemplate => {
-            const liveModelingData = currentLiveModelingNodeTemplatesData.find(el => el.id === nodeTemplate.id);
-            if (liveModelingData) {
-                const nodeId = this.nodeChildrenIdArray.indexOf(nodeTemplate.id);
-                this.nodeChildrenArray[nodeId].liveModelingNodeTemplateData = liveModelingData;
-            } else if (!liveModelingData && this.nodeChildrenArray) {
-                const nodeId = this.nodeChildrenIdArray.indexOf(nodeTemplate.id);
-                this.nodeChildrenArray[nodeId].liveModelingNodeTemplateData = null;
-            }
-        });
     }
 
     private getNodeEntityType(name: string): EntityType {

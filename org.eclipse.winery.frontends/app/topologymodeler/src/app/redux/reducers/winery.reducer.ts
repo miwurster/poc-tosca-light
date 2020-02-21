@@ -17,28 +17,25 @@ import {
     DecMaxInstances, DecMinInstances, DeleteDeploymentArtifactAction, DeleteNodeAction, DeletePolicyAction,
     DeleteRelationshipAction, HideNavBarAndPaletteAction, IncMaxInstances, IncMinInstances, SaveNodeTemplateAction,
     SaveRelationshipAction, SendCurrentNodeIdAction, SendLiveModelingSidebarOpenedAction, SendPaletteOpenedAction, SetCababilityAction,
-    SetDeploymentArtifactAction, SetNodePropertyValidityAction, SetNodeVisuals, SetOverlayContentAction, SetOverlayVisibilityAction, SetPolicyAction,
+    SetDeploymentArtifactAction, SetNodeInstanceStateAction, SetNodePropertyValidityAction, SetNodeVisuals, SetNodeWorkingAction,
+    SetPolicyAction,
     SetPropertyAction, SetRequirementAction,
-    SetTargetLocation, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
+    SetTargetLocation, SetUnsavedChangesAction, SidebarMaxInstanceChanges, SidebarMinInstanceChanges, SidebarNodeNamechange, SidebarStateAction,
     UpdateNodeCoordinatesAction, UpdateRelationshipNameAction, WineryActions
 } from '../actions/winery.actions';
 import { TNodeTemplate, TRelationshipTemplate, TTopologyTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 import { Visuals } from '../../models/visuals';
-import { TopologyTemplateUtil } from '../../models/topologyTemplateUtil';
 
 export interface WineryState {
     currentPaletteOpenedState: boolean;
     hideNavBarAndPaletteState: boolean;
     sidebarContents: any;
     currentJsonTopology: TTopologyTemplate;
-    lastSavedJsonTopology: TTopologyTemplate;
     currentNodeData: any;
     nodeVisuals: Visuals[];
     liveModelingSidebarOpenedState: boolean;
-    overlayState: any;
     unsavedChanges: boolean;
-    nodePropertiesValidity: any;
 }
 
 export const INITIAL_WINERY_STATE: WineryState = {
@@ -58,19 +55,13 @@ export const INITIAL_WINERY_STATE: WineryState = {
         target: ''
     },
     currentJsonTopology: new TTopologyTemplate,
-    lastSavedJsonTopology: new TTopologyTemplate,
     currentNodeData: {
         id: '',
         focus: false
     },
     nodeVisuals: null,
     liveModelingSidebarOpenedState: false,
-    overlayState: {
-        content: '',
-        visible: false
-    },
     unsavedChanges: false,
-    nodePropertiesValidity: {}
 };
 
 /**
@@ -513,49 +504,56 @@ export const WineryReducer =
                     liveModelingSidebarOpenedState: sidebarOpened
                 };
             }
-            case WineryActions.SET_OVERLAY_CONTENT: {
-                const overlayContent: string = (<SetOverlayContentAction>action).content;
+            case WineryActions.SET_UNSAVED_CHANGES: {
+                const unsavedChanges: boolean = (<SetUnsavedChangesAction>action).unsavedChanges;
+                
+                return {
+                    ...lastState,
+                    unsavedChanges: unsavedChanges
+                };
+            }
+            case WineryActions.SET_NODE_VALIDITY: {
+                const nodeValidity = (<SetNodePropertyValidityAction>action).nodeValidity;
 
                 return {
                     ...lastState,
-                    overlayState: {
-                        ...lastState.overlayState,
-                        content: overlayContent
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                            .map(nodeTemplate => nodeTemplate.id === nodeValidity.nodeId ?
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('valid', nodeValidity.valid)
+                                : nodeTemplate
+                            )
                     }
                 };
             }
-            case WineryActions.SET_OVERLAY_VISIBILITY: {
-                const overlayVisible: boolean = (<SetOverlayVisibilityAction>action).visible;
+            case WineryActions.SET_NODE_INSTANCE_STATE: {
+                const nodeInstanceState = (<SetNodeInstanceStateAction>action).nodeInstanceState;
 
                 return {
                     ...lastState,
-                    overlayState: {
-                        ...lastState.overlayState,
-                        visible: overlayVisible
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                            .map(nodeTemplate => nodeTemplate.id === nodeInstanceState.nodeId ?
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('instanceState', nodeInstanceState.state)
+                                : nodeTemplate
+                            )
                     }
                 };
             }
-            case WineryActions.SAVE_TOPOLOGY_TEMPLATE: {
-                return {
-                    ...lastState,
-                    lastSavedJsonTopology: JSON.parse(JSON.stringify(lastState.currentJsonTopology))
-                };
-            }
-            case WineryActions.CHECK_FOR_UNSAVED_CHANGES: {
-                return {
-                    ...lastState,
-                    unsavedChanges: TopologyTemplateUtil.hasTopologyTemplateChanged(lastState.currentJsonTopology, lastState.lastSavedJsonTopology)
-                };
-            }
-            case WineryActions.SET_NODE_PROPERTY_VALIDITY: {
-                const nodeId = (<SetNodePropertyValidityAction>action).nodeId;
-                const invalid = (<SetNodePropertyValidityAction>action).invalid;
+            case WineryActions.SET_NODE_WORKING: {
+                const nodeWorking = (<SetNodeWorkingAction>action).nodeWorking;
 
                 return {
                     ...lastState,
-                    nodePropertiesValidity: {
-                        ...lastState.nodePropertiesValidity,
-                        [nodeId]: invalid
+                    currentJsonTopology: {
+                        ...lastState.currentJsonTopology,
+                        nodeTemplates: lastState.currentJsonTopology.nodeTemplates
+                            .map(nodeTemplate => nodeTemplate.id === nodeWorking.nodeId ?
+                                nodeTemplate.generateNewNodeTemplateWithUpdatedAttribute('working', nodeWorking.working)
+                                : nodeTemplate
+                            )
                     }
                 };
             }

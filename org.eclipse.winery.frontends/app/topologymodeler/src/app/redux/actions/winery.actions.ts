@@ -12,13 +12,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  ********************************************************************************/
 
-import { Action, ActionCreator } from 'redux';
+import { Action } from 'redux';
 import { Injectable } from '@angular/core';
 import { TNodeTemplate, TRelationshipTemplate } from '../../models/ttopology-template';
 import { TDeploymentArtifact } from '../../models/artifactsModalData';
 import { TPolicy } from '../../models/policiesModalData';
 import { Visuals } from '../../models/visuals';
-import { LiveModelingNodeTemplateData } from '../../models/liveModelingNodeTemplateData';
+import { NodeTemplateInstanceStates } from '../../models/enums';
 
 export interface SendPaletteOpenedAction extends Action {
     paletteOpened: boolean;
@@ -38,7 +38,6 @@ export interface SidebarStateAction extends Action {
         minInstances: string,
         maxInstances: string,
         properties: string,
-        liveModelingNodeTemplateData: LiveModelingNodeTemplateData,
         source: string,
         target: string
     };
@@ -193,17 +192,29 @@ export interface SendLiveModelingSidebarOpenedAction extends Action {
     sidebarOpened: boolean;
 }
 
-export interface SetOverlayContentAction extends Action {
-    content: string;
-}
-
-export interface SetOverlayVisibilityAction extends Action {
-    visible: boolean;
+export interface SetUnsavedChangesAction extends Action {
+    unsavedChanges: boolean;
 }
 
 export interface SetNodePropertyValidityAction extends Action {
-    nodeId: string;
-    invalid: boolean;
+    nodeValidity: {
+        nodeId: string;
+        valid: boolean;
+    }
+}
+
+export interface SetNodeInstanceStateAction extends Action {
+    nodeInstanceState: {
+        nodeId: string;
+        state: NodeTemplateInstanceStates
+    }
+}
+
+export interface SetNodeWorkingAction extends Action {
+    nodeWorking: {
+        nodeId: string;
+        working: boolean;
+    }
 }
 
 /**
@@ -242,12 +253,10 @@ export class WineryActions {
     static SET_NODE_VISUALS = 'SET_NODE_VISUALS';
     static SEND_LIVE_MODELING_SIDEBAR_OPENED = 'SEND_LIVE_MODELING_SIDEBAR_OPENED';
 
-    static SET_OVERLAY_CONTENT = 'SET_OVERLAY_CONTENT';
-    static SET_OVERLAY_VISIBILITY = 'SET_OVERLAY_VISIBILITY';
-
-    static SAVE_TOPOLOGY_TEMPLATE = 'SAVE_TOPOLOGY_TEMPLATE';
-    static CHECK_FOR_UNSAVED_CHANGES = 'CHECK_FOR_UNSAVED_CHANGES';
-    static SET_NODE_PROPERTY_VALIDITY = 'SET_NODE_PROPERTY_VALIDITY';
+    static SET_UNSAVED_CHANGES = 'SET_UNSAVED_CHANGES';
+    static SET_NODE_VALIDITY = 'SET_NODE_VALIDITY';
+    static SET_NODE_INSTANCE_STATE = 'SET_NODE_INSTANCE_STATE';
+    static SET_NODE_WORKING = 'SET_NODE_WORKING';
 
     sendPaletteOpened(paletteOpened: boolean): SendPaletteOpenedAction {
         return {
@@ -438,37 +447,40 @@ export class WineryActions {
         };
     }
 
-    setOverlayContent(content): SetOverlayContentAction {
+    setUnsavedChanges(unsavedChanges: boolean): SetUnsavedChangesAction {
         return {
-            type: WineryActions.SET_OVERLAY_CONTENT,
-            content: content
+            type: WineryActions.SET_UNSAVED_CHANGES,
+            unsavedChanges: unsavedChanges
         };
     }
 
-    setOverlayVisibility(visible): SetOverlayVisibilityAction {
+    setNodePropertyValidity(nodeId: string, valid: boolean): SetNodePropertyValidityAction {
         return {
-            type: WineryActions.SET_OVERLAY_VISIBILITY,
-            visible: visible
+            type: WineryActions.SET_NODE_VALIDITY,
+            nodeValidity: {
+                nodeId: nodeId,
+                valid: valid
+            }
         };
     }
 
-    saveTopologyTemplate(): Action {
+    setNodeInstanceState(nodeId: string, state: NodeTemplateInstanceStates): SetNodeInstanceStateAction {
         return {
-            type: WineryActions.SAVE_TOPOLOGY_TEMPLATE
+            type: WineryActions.SET_NODE_INSTANCE_STATE,
+            nodeInstanceState: {
+                nodeId: nodeId,
+                state: state
+            }
         };
     }
 
-    checkForUnsavedChanges(): Action {
+    setNodeWorking(nodeId: string, working: boolean): SetNodeWorkingAction {
         return {
-            type: WineryActions.CHECK_FOR_UNSAVED_CHANGES
-        };
-    }
-
-    setNodePropertyValidity(nodeId: string, invalid: boolean): SetNodePropertyValidityAction {
-        return {
-            type: WineryActions.SET_NODE_PROPERTY_VALIDITY,
-            nodeId: nodeId,
-            invalid: invalid
+            type: WineryActions.SET_NODE_WORKING,
+            nodeWorking: {
+                nodeId: nodeId,
+                working: working
+            }
         };
     }
 }
