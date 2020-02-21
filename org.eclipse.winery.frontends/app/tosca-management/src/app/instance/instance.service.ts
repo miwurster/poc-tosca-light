@@ -151,7 +151,7 @@ export class InstanceService {
         }
 
         if (this.configurationService.isYaml()) {
-            subMenu = subMenu.filter(item => item !== SubMenuItems.xml);
+            subMenu = subMenu.filter(item => item !== SubMenuItems.xml && item !== SubMenuItems.documentation);
         }
 
         return subMenu;
