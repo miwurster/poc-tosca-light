@@ -123,7 +123,7 @@ public class YamlToscaExportUtil extends ToscaExportUtil {
 
                 if (Objects.nonNull(artifacts)) {
                     artifacts.getArtifact().forEach(a -> {
-                        Path p = Paths.get("files", n.getName(), a.getId());
+                        Path p = Paths.get("files", n.getId(), a.getId());
                         RepositoryFileReference ref = new RepositoryFileReference(id, p, a.getFile());
                         // update file paths in the exported service template
                         if (repository.exists(ref)) {
