@@ -230,7 +230,7 @@ public class YamlBuilder {
 
     @Nullable
     public String buildDescription(Object object) {
-        if (Objects.isNull(object)) return null;
+        if (Objects.isNull(object)) return "";
         return stringValue(object);
     }
 
@@ -345,12 +345,14 @@ public class YamlBuilder {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public <T> TPropertyDefinition buildPropertyDefinition(Object object, Parameter<T> parameter) {
         if (Objects.isNull(object)) return new TPropertyDefinition();
         if (!validate(parameter.getClazz(), object, parameter)) return null;
-        @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map<String, Object>) object;
-        return new TPropertyDefinition.Builder(buildQName(stringValue(map.get("type"))))
+        String type = stringValue(map.get("type"));
+        if (type == null) type = "string";
+        return new TPropertyDefinition.Builder<>(buildQName(type))
             .setDescription(buildDescription(map.get("description")))
             .setRequired(buildRequired(map.get("required")))
             .setDefault(map.get("default"))
@@ -364,7 +366,7 @@ public class YamlBuilder {
 
     @Nullable
     public Boolean buildRequired(Object object) {
-        if (Objects.isNull(object)) return null;
+        if (Objects.isNull(object)) return true;
         if (object instanceof String) return "true".equals(object) ? Boolean.TRUE : Boolean.FALSE;
         return object instanceof Boolean ? (Boolean) object : Boolean.FALSE;
     }
@@ -525,6 +527,7 @@ public class YamlBuilder {
                     .setBuilderOO(this::buildOperationDefinition)
                     .setFilter(this::filterInterfaceTypeOperation)
             ))
+            .setDerivedFrom(buildQName(stringValue(map.get("derived_from"))))
             .build();
     }
 
@@ -824,8 +827,10 @@ public class YamlBuilder {
         if (Objects.isNull(object) || !validate(TParameterDefinition.class, object, parameter)) return null;
         @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map<String, Object>) object;
+        String type = stringValue(map.get("type"));
+        if (type == null) type = "string";
         return new TParameterDefinition.Builder()
-            .setType(buildQName(stringValue(map.get("type"))))
+            .setType(buildQName(type))
             .setDescription(buildDescription(map.get("description")))
             .setRequired(buildRequired(map.get("required")))
             .setDefault(map.get("default"))

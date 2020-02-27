@@ -49,6 +49,7 @@ import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.ComplianceRuleId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.definitions.HasInheritanceId;
+import org.eclipse.winery.common.ids.definitions.InterfaceTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PatternRefinementModelId;
@@ -66,6 +67,7 @@ import org.eclipse.winery.model.tosca.HasInheritance;
 import org.eclipse.winery.model.tosca.HasType;
 import org.eclipse.winery.model.tosca.TAppliesTo;
 import org.eclipse.winery.model.tosca.TArtifactTemplate;
+import org.eclipse.winery.model.tosca.TArtifacts;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TCapability;
 import org.eclipse.winery.model.tosca.TCapabilityDefinition;
@@ -603,14 +605,19 @@ public interface IRepository extends IWineryRepositoryCommon {
 
         final TNodeType nodeType = this.getElement(id);
 
-        // add all referenced requirement types
+        // add all referenced requirement types, but only in XML mode. YAML does not have requirement types
+
         TNodeType.RequirementDefinitions reqDefsContainer = nodeType.getRequirementDefinitions();
         if (reqDefsContainer != null) {
             List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
-            if (Environments.getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.FILE) {
-                for (TRequirementDefinition reqDef : reqDefs) {
+            for (TRequirementDefinition reqDef : reqDefs) {
+                if (!Environments.getUiConfig().getFeatures().get("yaml")) {
                     RequirementTypeId reqTypeId = new RequirementTypeId(reqDef.getRequirementType());
                     ids.add(reqTypeId);
+                } else {
+                    if (Objects.nonNull(reqDef.getRelationship())) {
+                        ids.add(new RelationshipTypeId(reqDef.getRelationship()));
+                    }
                 }
             }
         }
@@ -623,6 +630,12 @@ public interface IRepository extends IWineryRepositoryCommon {
                 CapabilityTypeId capTypeId = new CapabilityTypeId(capDef.getCapabilityType());
                 ids.add(capTypeId);
             }
+        }
+
+        // Store all referenced artifact types 
+        TArtifacts artifacts = nodeType.getArtifacts();
+        if (Objects.nonNull(artifacts)) {
+            artifacts.getArtifact().forEach(a -> ids.add(new ArtifactTypeId(a.getType())));
         }
 
         return ids;
@@ -802,30 +815,8 @@ public interface IRepository extends IWineryRepositoryCommon {
                     ids.add(new NodeTypeId(qname));
                     TNodeTemplate n = (TNodeTemplate) entityTemplate;
 
-                    // crawl through deployment artifacts
-                    TDeploymentArtifacts deploymentArtifacts = n.getDeploymentArtifacts();
-                    if (deploymentArtifacts != null) {
-                        List<TDeploymentArtifact> das = deploymentArtifacts.getDeploymentArtifact();
-                        for (TDeploymentArtifact da : das) {
-                            ids.add(new ArtifactTypeId(da.getArtifactType()));
-                            if ((qname = da.getArtifactRef()) != null) {
-                                ids.add(new ArtifactTemplateId(qname));
-                            }
-                        }
-                    }
-
-                    getReferencedRequirementTypeIds(ids, n);
-
-                    TNodeTemplate.Capabilities capabilities = n.getCapabilities();
-                    if (capabilities != null) {
-                        for (TCapability cap : capabilities.getCapability()) {
-                            QName type = cap.getType();
-                            CapabilityTypeId ctId = new CapabilityTypeId(type);
-                            ids.add(ctId);
-                        }
-                    }
-
                     // crawl through policies
+                    // TODO: this is relevant only for XML mode 
                     TPolicies policies = n.getPolicies();
                     if (policies != null) {
                         for (TPolicy pol : policies.getPolicy()) {
@@ -838,6 +829,51 @@ public interface IRepository extends IWineryRepositoryCommon {
                                 PolicyTemplateId policyTemplateId = new PolicyTemplateId(template);
                                 ids.add(policyTemplateId);
                             }
+                        }
+                    }
+
+                    if (!Environments.getUiConfig().getFeatures().get("yaml")) {
+                        // TODO: this information is collected differently for YAML and XML modes         
+                        // crawl through deployment artifacts
+                        TDeploymentArtifacts deploymentArtifacts = n.getDeploymentArtifacts();
+                        if (deploymentArtifacts != null) {
+                            List<TDeploymentArtifact> das = deploymentArtifacts.getDeploymentArtifact();
+                            for (TDeploymentArtifact da : das) {
+                                ids.add(new ArtifactTypeId(da.getArtifactType()));
+                                if ((qname = da.getArtifactRef()) != null) {
+                                    ids.add(new ArtifactTemplateId(qname));
+                                }
+                            }
+                        }
+
+                        // TODO: this information is also collected from NodeTypes -> not needed for YAML mode                    
+                        getReferencedRequirementTypeIds(ids, n);
+                        TNodeTemplate.Capabilities capabilities = n.getCapabilities();
+                        if (capabilities != null) {
+                            for (TCapability cap : capabilities.getCapability()) {
+                                QName type = cap.getType();
+                                CapabilityTypeId ctId = new CapabilityTypeId(type);
+                                ids.add(ctId);
+                            }
+                        }
+                    } else {
+                        // Store all referenced artifact types 
+                        TArtifacts artifacts = n.getArtifacts();
+                        if (Objects.nonNull(artifacts)) {
+                            artifacts.getArtifact().forEach(a -> ids.add(new ArtifactTypeId(a.getType())));
+                        }
+
+                        TNodeType nodeType = this.getElement(new NodeTypeId(qname));
+                        if (Objects.nonNull(nodeType.getInterfaceDefinitions())) {
+                            nodeType
+                                .getInterfaceDefinitions()
+                                .stream()
+                                .filter(Objects::nonNull)
+                                .forEach(iDef -> {
+                                    if (Objects.nonNull(iDef.getType())) {
+                                        ids.add(new InterfaceTypeId(iDef.getType()));
+                                    }
+                                });
                         }
                     }
                 } else {
@@ -957,7 +993,7 @@ public interface IRepository extends IWineryRepositoryCommon {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((ArtifactTemplateId) id);
         } else if (id instanceof PolicyTemplateId) {
             referencedDefinitionsChildIds = this.getReferencedDefinitionsChildIds((PolicyTemplateId) id);
-        } else if (id instanceof ArtifactTypeId || id instanceof GenericImportId || id instanceof PolicyTypeId || id instanceof CapabilityTypeId) {
+        } else if (id instanceof ArtifactTypeId || id instanceof GenericImportId || id instanceof PolicyTypeId || id instanceof CapabilityTypeId || id instanceof InterfaceTypeId) {
             // in case of artifact types, imports, policy types, and capability types, there are no other ids referenced
             // Collections.emptyList() cannot be used as we add elements later on in the case of inheritance
             referencedDefinitionsChildIds = new ArrayList();

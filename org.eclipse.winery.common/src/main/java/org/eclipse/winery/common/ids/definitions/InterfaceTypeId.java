@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,26 +11,30 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-package org.eclipse.winery.repository;
 
-import org.junit.jupiter.api.Test;
+package org.eclipse.winery.common.ids.definitions;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import javax.xml.namespace.QName;
 
-public class JAXBSupportTest {
+import org.eclipse.winery.common.ids.Namespace;
+import org.eclipse.winery.common.ids.XmlId;
 
-    @Test
-    public void createMarshaller() {
-        assertNotNull(JAXBSupport.createMarshaller(true));
+public class InterfaceTypeId extends EntityTypeId {
+
+    public InterfaceTypeId(Namespace namespace, XmlId xmlId) {
+        super(namespace, xmlId);
     }
 
-    @Test
-    public void createUnmarshaller() {
-        assertNotNull(JAXBSupport.createUnmarshaller());
+    public InterfaceTypeId(String ns, String id, boolean URLencoded) {
+        super(ns, id, URLencoded);
     }
 
-    @Test
-    public void JAXBContextIsNotNull() {
-        assertNotNull(JAXBSupport.getContext());
+    public InterfaceTypeId(QName qname) {
+        super(qname);
+    }
+
+    @Override
+    public String getGroup() {
+        return "InterfaceType";
     }
 }

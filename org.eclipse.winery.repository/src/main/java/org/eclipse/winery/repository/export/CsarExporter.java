@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -68,9 +68,9 @@ import org.eclipse.winery.repository.datatypes.ids.elements.SelfServiceMetaDataI
 import org.eclipse.winery.repository.datatypes.ids.elements.ServiceTemplateSelfServiceFilesDirectoryId;
 import org.eclipse.winery.repository.exceptions.RepositoryCorruptException;
 import org.eclipse.winery.repository.export.entries.CsarEntry;
-import org.eclipse.winery.repository.export.entries.DefinitionsBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.DocumentBasedCsarEntry;
 import org.eclipse.winery.repository.export.entries.RepositoryRefBasedCsarEntry;
+import org.eclipse.winery.repository.export.entries.XMLDefinitionsBasedCsarEntry;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -260,8 +260,8 @@ public class CsarExporter {
      * @param fileProperties Describing the path to the file inside the archive
      * @throws IOException thrown when the temporary directory can not be created
      */
-    private void addArtifactTemplateToZipFile(ZipOutputStream zos, RepositoryRefBasedCsarEntry csarEntry,
-                                              CsarContentProperties fileProperties) throws IOException {
+    protected void addArtifactTemplateToZipFile(ZipOutputStream zos, RepositoryRefBasedCsarEntry csarEntry,
+                                                CsarContentProperties fileProperties) throws IOException {
         GitInfo gitInfo = BackendUtils.getGitInformation((DirectoryId) csarEntry.getReference().getParent());
 
         if (gitInfo == null) {
@@ -519,7 +519,7 @@ public class CsarExporter {
         }
     }
 
-    private void addLicenseAndReadmeFiles(IRepository repository, DefinitionsChildId entryId, Map<CsarContentProperties, CsarEntry> refMap) {
+    protected void addLicenseAndReadmeFiles(IRepository repository, DefinitionsChildId entryId, Map<CsarContentProperties, CsarEntry> refMap) {
         final RepositoryFileReference licenseRef = new RepositoryFileReference(entryId, Constants.LICENSE_FILE_NAME);
         if (repository.exists(licenseRef)) {
             refMap.put(new CsarContentProperties(BackendUtils.getPathInsideRepo(licenseRef)), new RepositoryRefBasedCsarEntry(licenseRef));
@@ -587,7 +587,7 @@ public class CsarExporter {
 
             if (csarEntry instanceof DocumentBasedCsarEntry) {
                 mimeType = MimeTypes.MIMETYPE_XSD;
-            } else if (csarEntry instanceof DefinitionsBasedCsarEntry) {
+            } else if (csarEntry instanceof XMLDefinitionsBasedCsarEntry) {
                 mimeType = MimeTypes.MIMETYPE_TOSCA_DEFINITIONS;
             } else {
                 mimeType = repository.getMimeType(((RepositoryRefBasedCsarEntry) csarEntry).getReference());

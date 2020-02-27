@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -94,6 +94,7 @@ import org.eclipse.winery.repository.backend.xsd.NamespaceAndDefinedLocalNames;
 import org.eclipse.winery.repository.export.CsarExportOptions;
 import org.eclipse.winery.repository.export.CsarExporter;
 import org.eclipse.winery.repository.export.ToscaExportUtil;
+import org.eclipse.winery.repository.export.YamlExporter;
 import org.eclipse.winery.repository.rest.datatypes.LocalNameForAngular;
 import org.eclipse.winery.repository.rest.datatypes.NamespaceAndDefinedLocalNamesForAngular;
 import org.eclipse.winery.repository.rest.resources._support.AbstractComponentInstanceResource;
@@ -269,32 +270,28 @@ public class RestUtils {
     }
 
     public static Response getYamlCSARofSelectedResource(final AbstractComponentInstanceResource resource) {
-        // TODO
-//        final Converter converter = new Converter();
-//        StreamingOutput so = output -> {
-//            try {
-//                InputStream is = converter.convertX2Y(resource.getId());
-//                byte[] buffer = new byte[1024];
-//                int bytesRead;
-//                //read from is to buffer
-//                while ((bytesRead = is.read(buffer)) != -1) {
-//                    output.write(buffer, 0, bytesRead);
-//                }
-//                is.close();
-//                //flush OutputStream to write any buffered data to file
-//                output.flush();
-//                output.close();
-//            } catch (Exception e) {
-//                throw new WebApplicationException(e);
-//            }
-//        };
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("attachment;filename=\"");
-//        sb.append(resource.getXmlId().getEncoded());
-//        sb.append(Constants.SUFFIX_CSAR);
-//        sb.append("\"");
-//        return Response.ok().header("Content-Disposition", sb.toString()).type(MimeTypes.MIMETYPE_ZIP).entity(so).build();
-        return Response.noContent().build();
+        LocalDateTime start = LocalDateTime.now();
+        final YamlExporter exporter = new YamlExporter();
+        Map<String, Object> exportConfiguration = new HashMap<>();
+
+        StreamingOutput so = output -> {
+            try {
+                exporter.writeCsar(RepositoryFactory.getRepository(), resource.getId(), output, exportConfiguration);
+                LOGGER.debug("CSAR export lasted {}", Duration.between(LocalDateTime.now(), start).toString());
+            } catch (Exception e) {
+                LOGGER.error("Error while exporting CSAR", e);
+                throw new WebApplicationException(e);
+            }
+        };
+        String contentDisposition = String.format("attachment;filename=\"%s%s\"",
+            resource.getXmlId().getEncoded(),
+            Constants.SUFFIX_CSAR);
+
+        return Response.ok()
+            .header("Content-Disposition", contentDisposition)
+            .type(MimeTypes.MIMETYPE_ZIP)
+            .entity(so)
+            .build();
     }
 
     public static Response getEdmmModel(TServiceTemplate element) {

@@ -26,10 +26,12 @@ import java.util.stream.Stream;
 
 import javax.xml.namespace.QName;
 
+import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
 import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
+import org.eclipse.winery.common.ids.definitions.InterfaceTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
@@ -81,6 +83,7 @@ import org.eclipse.winery.model.tosca.yaml.TConstraintClause;
 import org.eclipse.winery.model.tosca.yaml.TImplementation;
 import org.eclipse.winery.model.tosca.yaml.TImportDefinition;
 import org.eclipse.winery.model.tosca.yaml.TInterfaceDefinition;
+import org.eclipse.winery.model.tosca.yaml.TInterfaceType;
 import org.eclipse.winery.model.tosca.yaml.TNodeTemplate;
 import org.eclipse.winery.model.tosca.yaml.TNodeType;
 import org.eclipse.winery.model.tosca.yaml.TOperationDefinition;
@@ -109,6 +112,7 @@ import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 import org.eclipse.winery.repository.converter.support.Namespaces;
 import org.eclipse.winery.repository.converter.support.ValueConverter;
 import org.eclipse.winery.repository.converter.support.xml.TypeConverter;
+import org.eclipse.winery.repository.export.YamlExporter;
 
 import org.eclipse.collections.impl.bimap.mutable.HashBiMap;
 import org.eclipse.jdt.annotation.NonNull;
@@ -150,7 +154,8 @@ public class X2YConverter {
             .setCapabilityTypes(convert(node.getCapabilityTypes()))
             .setRelationshipTypes(convert(node.getRelationshipTypes()))
             .setNodeTypes(convert(node.getNodeTypes()))
-            .setPolicyTypes(convert(node.getPolicyTypes()));
+            .setPolicyTypes(convert(node.getPolicyTypes()))
+            .setInterfaceTypes(convert(node.getInterfaceTypes()));
 
         if (node.getServiceTemplates().size() == 1) {
             builder.setTopologyTemplate(convert(node.getServiceTemplates().get(0)));
@@ -168,7 +173,7 @@ public class X2YConverter {
         List<TMapImportDefinition> imports = new ArrayList<>();
         TMapImportDefinition tMapImportDefinition = new TMapImportDefinition();
         for (Map.Entry<DefinitionsChildId, Definitions> importDefinition : importDefinitions.entrySet()) {
-            TImportDefinition tImportDefinition = new TImportDefinition.Builder(repository.id2AbsolutePath(importDefinition.getKey()).toString())
+            TImportDefinition tImportDefinition = new TImportDefinition.Builder(YamlExporter.getDefinitionsName(repository, importDefinition.getKey()).concat(Constants.SUFFIX_TOSCA_DEFINITIONS))
                 .setNamespacePrefix(getNamespacePrefix(importDefinition.getKey().getQName().getNamespaceURI()))
                 .setNamespaceUri(importDefinition.getKey().getQName().getNamespaceURI())
                 .build();
@@ -492,6 +497,8 @@ public class X2YConverter {
             id = new CapabilityTypeId(node.getTypeRef());
         } else if (clazz.equals(org.eclipse.winery.model.tosca.TArtifactType.class)) {
             id = new ArtifactTypeId(node.getTypeRef());
+        } else if (clazz.equals(org.eclipse.winery.model.tosca.TInterfaceType.class)) {
+            id = new InterfaceTypeId(node.getTypeRef());
         } else {
             id = new PolicyTypeId(node.getTypeRef());
         }
@@ -911,6 +918,22 @@ public class X2YConverter {
         );
     }
 
+    public Map<String, TInterfaceType> convert(org.eclipse.winery.model.tosca.TInterfaceType node) {
+        if (Objects.isNull(node)) return null;
+
+        Map<String, TOperationDefinition> ops = new HashMap<>();
+        node.getOperations().forEach((key, value) -> ops.putAll(convert(value)));
+
+        return Collections.singletonMap(
+            node.getName(),
+            new TInterfaceType.Builder()
+                .setDescription(node.getDescription())
+                .setOperations(ops)
+                .setDerivedFrom(convert(node.getDerivedFrom(), node.getClass()))
+                .build()
+        );
+    }
+
     public Map<String, TCapabilityAssignment> convert(TCapability node) {
         if (Objects.isNull(node)) return null;
 
@@ -997,6 +1020,8 @@ public class X2YConverter {
                     return convert((org.eclipse.winery.model.tosca.TOperationDefinition) node).entrySet().stream();
                 } else if (node instanceof org.eclipse.winery.model.tosca.TArtifact) {
                     return convert((org.eclipse.winery.model.tosca.TArtifact) node).entrySet().stream();
+                } else if (node instanceof org.eclipse.winery.model.tosca.TInterfaceType) {
+                    return convert((org.eclipse.winery.model.tosca.TInterfaceType) node).entrySet().stream();
                 }
                 throw new AssertionError();
             })

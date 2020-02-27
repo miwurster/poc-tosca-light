@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2018 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.repository.JAXBSupport;
@@ -28,11 +27,10 @@ import org.eclipse.winery.repository.JAXBSupport;
 /**
  * Provides access to an entry that represents a TOSCA definition.
  */
-public class DefinitionsBasedCsarEntry implements CsarEntry {
-    private static Marshaller marshaller;
+public class XMLDefinitionsBasedCsarEntry implements CsarEntry {
     private Definitions definitions;
 
-    public DefinitionsBasedCsarEntry(Definitions definitions) {
+    public XMLDefinitionsBasedCsarEntry(Definitions definitions) {
         assert (definitions != null);
         this.definitions = definitions;
     }

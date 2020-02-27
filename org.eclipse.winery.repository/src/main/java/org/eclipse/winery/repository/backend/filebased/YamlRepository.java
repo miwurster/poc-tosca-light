@@ -43,6 +43,7 @@ import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
 import org.eclipse.winery.common.ids.definitions.ArtifactTypeId;
 import org.eclipse.winery.common.ids.definitions.CapabilityTypeId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
+import org.eclipse.winery.common.ids.definitions.InterfaceTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeId;
 import org.eclipse.winery.common.ids.definitions.NodeTypeImplementationId;
 import org.eclipse.winery.common.ids.definitions.PolicyTypeId;
@@ -508,6 +509,8 @@ public class YamlRepository extends AbstractFileBasedRepository {
                 requestedDefinitions.addRequirementTypes(definitions.getRequirementTypes());
             } else if (id instanceof PolicyTypeId) {
                 requestedDefinitions.addPolicyTypes(definitions.getPolicyTypes());
+            } else if (id instanceof InterfaceTypeId) {
+                requestedDefinitions.addInterfaceTypes(definitions.getInterfaceTypes());
             } else {
                 // we do not need to filter anything
                 return definitions;

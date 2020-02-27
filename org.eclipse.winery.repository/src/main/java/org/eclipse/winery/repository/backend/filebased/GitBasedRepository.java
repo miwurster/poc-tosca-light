@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2012-2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -811,5 +811,9 @@ public class GitBasedRepository extends AbstractFileBasedRepository {
     @Override
     public void doImport(InputStream in) {
         repository.doImport(in);
+    }
+
+    public AbstractFileBasedRepository getRepository() {
+        return repository;
     }
 }
