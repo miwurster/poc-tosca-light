@@ -20,7 +20,7 @@ import { Injectable } from '@angular/core';
 export class PropertyValidatorService {
     private validationEnabled: boolean;
     private nodeTemplates: any[];
-    
+
     constructor(private ngRedux: NgRedux<IWineryState>,
                 private modalService: BsModalService) {
         this.ngRedux.select(state => state.topologyRendererState.buttonsState.checkNodePropertiesButton)
@@ -32,7 +32,7 @@ export class PropertyValidatorService {
                 this.nodeTemplates = nodeTemplates;
             });
     }
-    
+
     public isTopologyInvalid(): boolean {
         if (this.validationEnabled) {
             return this.nodeTemplates.some(node => !node.valid);

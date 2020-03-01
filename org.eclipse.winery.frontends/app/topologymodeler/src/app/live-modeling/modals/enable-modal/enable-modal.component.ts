@@ -34,16 +34,8 @@ export class EnableModalComponent {
     containerUrl: string;
     currentCsarId: string;
 
-    fetchingServiceTemplateInstances = false;
-    noRunningServiceTemplateInstancesFound = false;
-
     testingContainerUrl = false;
     isContainerUrlInvalid: boolean;
-
-    selectedServiceTemplateInstanceId: string;
-    serviceTemplateInstanceIds: string[];
-
-    terminateInstance: boolean;
 
     constructor(private bsModalRef: BsModalRef,
                 private liveModelingService: LiveModelingService,
@@ -55,42 +47,11 @@ export class EnableModalComponent {
     ) {
         this.currentCsarId = this.normalizeCsarId(this.backendService.configuration.id);
         this.containerUrl = 'http://' + window.location.hostname + ':1337';
-        this.terminateInstance = true;
     }
 
     private normalizeCsarId(csarId: string) {
         const csarEnding = '.csar';
         return csarId.endsWith(csarEnding) ? csarId : csarId + csarEnding;
-    }
-
-    fetchServiceTemplateInstances() {
-        this.resetErrorsAndAnimations();
-        this.serviceTemplateInstanceIds = [];
-        this.fetchingServiceTemplateInstances = true;
-        this.containerService.fetchRunningServiceTemplateInstances(this.containerUrl, this.currentCsarId).subscribe(resp => {
-            this.serviceTemplateInstanceIds = resp;
-
-            if (this.serviceTemplateInstanceIds.length === 0) {
-                this.noRunningServiceTemplateInstancesFound = true;
-            } else {
-                this.noRunningServiceTemplateInstancesFound = false;
-            }
-
-            this.isContainerUrlInvalid = false;
-        }, error => {
-            this.isContainerUrlInvalid = true;
-        }).add(() => {
-                this.fetchingServiceTemplateInstances = false;
-            }
-        );
-    }
-
-    selectServiceTemplateId(id: string) {
-        this.selectedServiceTemplateInstanceId = id;
-    }
-
-    deselectServiceTemplateId() {
-        this.selectedServiceTemplateInstanceId = null;
     }
 
     enableLiveModeling() {
@@ -102,13 +63,7 @@ export class EnableModalComponent {
                 return;
             }
             this.ngRedux.dispatch(this.liveModelingActions.setContainerUrl(this.containerUrl));
-
-            if (this.selectedServiceTemplateInstanceId) {
-                this.ngRedux.dispatch(this.liveModelingActions.setCurrentServiceTemplateInstanceId(this.selectedServiceTemplateInstanceId));
-                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.UPDATE));
-            } else {
-                this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.INIT));
-            }
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.INIT));
             this.dismissModal();
         }, error => {
             this.isContainerUrlInvalid = true;
@@ -124,8 +79,6 @@ export class EnableModalComponent {
     }
 
     resetErrorsAndAnimations() {
-        this.fetchingServiceTemplateInstances = false;
-        this.noRunningServiceTemplateInstancesFound = false;
         this.testingContainerUrl = undefined;
         this.isContainerUrlInvalid = undefined;
     }

@@ -28,7 +28,6 @@ import { EnableModalComponent } from './modals/enable-modal/enable-modal.compone
 import { SettingsModalComponent } from './modals/settings-modal/settings-modal.component';
 import { DisableModalComponent } from './modals/disable-modal/disable-modal.component';
 import { ConfirmModalComponent } from './modals/confirm-modal/confirm-modal.component';
-import { BuildplanModalComponent } from './modals/buildplan-modal/buildplan-modal.component';
 import { InputParameter } from '../models/container/input-parameter.model';
 
 export function getProgressbarConfig(): ProgressbarConfig {
@@ -73,7 +72,6 @@ export class LiveModelingSidebarComponent implements OnInit, OnDestroy {
     serviceTemplateInstanceId: string;
     serviceTemplateInstanceState: ServiceTemplateInstanceStates;
     currentJsonTopology: TTopologyTemplate;
-    buildplanParameters: Array<InputParameter>;
     currentCsarId: string;
 
     subscriptions: Array<Subscription> = [];
@@ -93,42 +91,38 @@ export class LiveModelingSidebarComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.state)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.state)
             .subscribe(liveModelingState => {
                 this.liveModelingState = liveModelingState;
                 this.toggleProgressbar();
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.currentServiceTemplateInstanceId)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.currentServiceTemplateInstanceId)
             .subscribe(serviceTemplateInstanceId => {
                 this.serviceTemplateInstanceId = serviceTemplateInstanceId;
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.currentServiceTemplateInstanceState)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.currentServiceTemplateInstanceState)
             .subscribe(serviceTemplateInstanceState => {
                 this.serviceTemplateInstanceState = serviceTemplateInstanceState;
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.liveModelingSidebarOpenedState)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.wineryState.liveModelingSidebarOpenedState)
             .subscribe(sidebarOpened => {
                 this.updateSidebarState(sidebarOpened);
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.currentJsonTopology)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.wineryState.currentJsonTopology)
             .subscribe(currentJsonTopology => {
                 this.currentJsonTopology = currentJsonTopology;
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.wineryState.unsavedChanges)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.wineryState.unsavedChanges)
             .subscribe(unsavedChanges => {
                 this.unsavedChanges = unsavedChanges;
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.deploymentChanges)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.deploymentChanges)
             .subscribe(deploymentChanges => {
                 this.deploymentChanges = deploymentChanges;
             }));
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.currentCsarId)
+        this.subscriptions.push(this.ngRedux.select(wineryState => wineryState.liveModelingState.currentCsarId)
             .subscribe(csarId => {
                 this.currentCsarId = csarId;
-            }));
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.buildPlanInputParameters)
-            .subscribe(parameters => {
-                this.buildplanParameters = parameters;
             }));
     }
 
@@ -144,32 +138,22 @@ export class LiveModelingSidebarComponent implements OnInit, OnDestroy {
         this.openModal(DisableModalComponent);
     }
 
-    handleDeploy() {
-        const initialState = {
-            title: 'Deploy new Instance',
-            content: `Do you want to deploy a new instance of type ${this.currentCsarId}?`,
-            callback: () => {
-                if (this.buildplanParameters.length > 0) {
-                    this.openModal(BuildplanModalComponent);
-                } else {
-                    this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DEPLOY));
-                }
-            }
-        };
-        this.openModal(ConfirmModalComponent, { initialState });
+    async handleDeploy() {
+        const resp = await this.openConfirmModal('Deploy new Instance', `Do you want to deploy a new instance of type ${this.currentCsarId}?`);
+        if (resp) {
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DEPLOY));
+        }
     }
 
     isDeployDisabled() {
         return this.serviceTemplateInstanceId || this.liveModelingState !== LiveModelingStates.TERMINATED || this.deploymentChanges;
     }
 
-    handleTerminate() {
-        const initialState = {
-            title: 'Terminate Instance',
-            content: 'Are you sure you want to terminate the instance?',
-            callback: () => this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.TERMINATE))
-        };
-        this.openModal(ConfirmModalComponent, { initialState });
+    async handleTerminate() {
+        const resp = await this.openConfirmModal('Terminate Instance', 'Are you sure you want to terminate the instance?');
+        if (resp) {
+            this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.TERMINATE));
+        }
     }
 
     isTerminateDisabled() {
@@ -260,6 +244,22 @@ export class LiveModelingSidebarComponent implements OnInit, OnDestroy {
     openModal(modal: any, options?: any) {
         const defaultConfig = { backdrop: 'static' };
         this.modalRef = this.modalService.show(modal, { ...defaultConfig, ...options });
+    }
+
+    async openConfirmModal(title: string, content: string): Promise<boolean> {
+        const initialState = {
+            title: title,
+            content: content,
+        };
+        const modalRef = this.modalService.show(ConfirmModalComponent, { initialState, backdrop: 'static' });
+        await new Promise(resolve => {
+            const subscription = this.modalService.onHidden.subscribe(_ => {
+                subscription.unsubscribe();
+                resolve();
+            });
+        });
+
+        return modalRef.content.confirmed;
     }
 
     dismissModal() {

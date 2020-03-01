@@ -14,7 +14,7 @@
 import { LiveModelingStates, ServiceTemplateInstanceStates } from '../../models/enums';
 import { Action } from 'redux';
 import {
-    LiveModelingActions, SetBuildPlanInputParametersAction, SetCurrentBuildPlanInstance, SetContainerUrlAction, SetCurrentCsarAction,
+    LiveModelingActions, SetCurrentBuildPlanInstance, SetContainerUrlAction, SetCurrentCsarAction,
     SetCurrentCsarIdAction,
     SetCurrentServiceTemplateInstanceIdAction, SetCurrentServiceTemplateInstanceStateAction, SetDeploymentChangesAction, SetSettingsAction, SetStateAction
 } from '../actions/live-modeling.actions';
@@ -29,7 +29,6 @@ export interface LiveModelingState {
     currentCsar: Csar;
     currentServiceTemplateInstanceId: string;
     currentServiceTemplateInstanceState: ServiceTemplateInstanceStates;
-    buildPlanInputParameters: InputParameter[];
     settings: any;
     deploymentChanges: boolean;
     currentBuildPlanInstance: PlanInstance;
@@ -42,7 +41,6 @@ export const INITIAL_LIVE_MODELING_STATE: LiveModelingState = {
     currentCsar: null,
     currentServiceTemplateInstanceId: null,
     currentServiceTemplateInstanceState: ServiceTemplateInstanceStates.INITIAL,
-    buildPlanInputParameters: <InputParameter[]>[],
     settings: { timeout: 60000, interval: 1000 },
     deploymentChanges: false,
     currentBuildPlanInstance: null,
@@ -157,14 +155,6 @@ export const LiveModelingReducer =
                 return <LiveModelingState>{
                     ...lastState,
                     currentServiceTemplateInstanceState: serviceTemplateInstanceState
-                };
-            }
-            case LiveModelingActions.SET_BUILD_PLAN_INPUT_PARAMETERS: {
-                const inputParameters = (<SetBuildPlanInputParametersAction>action).inputParameters;
-
-                return <LiveModelingState>{
-                    ...lastState,
-                    buildPlanInputParameters: inputParameters
                 };
             }
             case LiveModelingActions.SET_SETTINGS: {

@@ -28,7 +28,7 @@ import { Subscription } from 'rxjs';
 export class DisableModalComponent implements OnInit, OnDestroy {
     subscriptions: Array<Subscription> = [];
     currentServiceTemplateInstanceId: string;
-    
+
     constructor(private bsModalRef: BsModalRef,
                 private ngRedux: NgRedux<IWineryState>,
                 private liveModelingActions: LiveModelingActions,
@@ -41,7 +41,7 @@ export class DisableModalComponent implements OnInit, OnDestroy {
                 this.currentServiceTemplateInstanceId = instanceId;
             }));
     }
-    
+
     disable() {
         this.ngRedux.dispatch(this.liveModelingActions.setState(LiveModelingStates.DISABLED));
         this.dismissModal();

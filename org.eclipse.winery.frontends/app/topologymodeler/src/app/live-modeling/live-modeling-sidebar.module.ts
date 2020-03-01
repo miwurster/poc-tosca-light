@@ -32,9 +32,9 @@ import { NodeTemplateComponent } from './node-template/node-template.component';
 import { EnableModalComponent } from './modals/enable-modal/enable-modal.component';
 import { DisableModalComponent } from './modals/disable-modal/disable-modal.component';
 import { ConfirmModalComponent } from './modals/confirm-modal/confirm-modal.component';
-import { BuildplanModalComponent } from './modals/buildplan-modal/buildplan-modal.component';
 import { SettingsModalComponent } from './modals/settings-modal/settings-modal.component';
 import { CsarInfoComponent } from './csar-info/csar-info.component';
+import { InputParametersModalComponent } from './modals/input-parameters-modal/input-parameters-modal.component';
 
 @NgModule({
     imports: [
@@ -63,8 +63,8 @@ import { CsarInfoComponent } from './csar-info/csar-info.component';
         EnableModalComponent,
         DisableModalComponent,
         ConfirmModalComponent,
-        BuildplanModalComponent,
-        SettingsModalComponent
+        SettingsModalComponent,
+        InputParametersModalComponent
     ],
     exports: [
         LiveModelingSidebarComponent
@@ -73,8 +73,8 @@ import { CsarInfoComponent } from './csar-info/csar-info.component';
         EnableModalComponent,
         DisableModalComponent,
         ConfirmModalComponent,
-        BuildplanModalComponent,
-        SettingsModalComponent
+        SettingsModalComponent,
+        InputParametersModalComponent
     ]
 })
 export class LiveModelingSidebarModule {

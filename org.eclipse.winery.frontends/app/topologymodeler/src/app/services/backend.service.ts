@@ -328,21 +328,21 @@ export class BackendService {
             any: [],
             otherAttributes: {},
             relationshipTemplates: topologyTemplate.relationshipTemplates.map(relationship => {
-                const clone = Object.assign({}, relationship)
+                const clone = Object.assign({}, relationship);
                 delete clone.state;
                 return clone;
             }),
             // remove the 'Color' field from all nodeTemplates as the REST Api does not recognize it.
             nodeTemplates: topologyTemplate.nodeTemplates.map(nodeTemplate => {
-                const clone = Object.assign({}, nodeTemplate)
+                const clone = Object.assign({}, nodeTemplate);
                 delete clone._state;
                 delete clone.instanceState;
                 delete clone.valid;
                 delete clone.working;
                 delete clone.visuals;
-                return clone
+                return clone;
             })
-            
+
         };
 
         return topologySkeleton;

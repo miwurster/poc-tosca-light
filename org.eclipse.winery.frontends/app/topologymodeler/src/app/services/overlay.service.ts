@@ -18,19 +18,19 @@ import { OverlayComponent } from '../overlay/overlay.component';
 @Injectable()
 export class OverlayService {
     private overlay: OverlayComponent;
-    
+
     constructor() {
     }
-    
+
     public initOverlayService(overlay: OverlayComponent) {
         this.overlay = overlay;
     }
-    
+
     public showOverlay(content: string) {
         this.overlay.content = content;
         this.overlay.visible = true;
     }
-    
+
     public hideOverlay() {
         this.overlay.visible = false;
     }

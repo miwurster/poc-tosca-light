@@ -506,7 +506,7 @@ export const WineryReducer =
             }
             case WineryActions.SET_UNSAVED_CHANGES: {
                 const unsavedChanges: boolean = (<SetUnsavedChangesAction>action).unsavedChanges;
-                
+
                 return {
                     ...lastState,
                     unsavedChanges: unsavedChanges

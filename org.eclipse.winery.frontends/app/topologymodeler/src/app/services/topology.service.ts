@@ -67,7 +67,7 @@ export class TopologyService {
         const changed = TopologyTemplateUtil.hasTopologyTemplateChanged(this.currentJsonTopology, this.lastSavedJsonTopology);
         this.ngRedux.dispatch(this.wineryActions.setUnsavedChanges(changed));
     }
-    
+
     public checkForDeployChanges() {
         if (this.liveModelingState === LiveModelingStates.DISABLED) {
             return;

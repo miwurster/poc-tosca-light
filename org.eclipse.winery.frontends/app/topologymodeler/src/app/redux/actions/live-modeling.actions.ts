@@ -43,10 +43,6 @@ export interface SetCurrentServiceTemplateInstanceStateAction extends Action {
     serviceTemplateInstanceState: ServiceTemplateInstanceStates;
 }
 
-export interface SetBuildPlanInputParametersAction extends Action {
-    inputParameters: Array<InputParameter>;
-}
-
 export interface SetSettingsAction extends Action {
     settings: any;
 }
@@ -70,7 +66,6 @@ export class LiveModelingActions {
     static SET_CURRENT_CSAR = 'SET_CURRENT_CSAR';
     static SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID = 'SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_ID';
     static SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE = 'SET_CURRENT_SERVICE_TEMPLATE_INSTANCE_STATE';
-    static SET_BUILD_PLAN_INPUT_PARAMETERS = 'SET_BUILD_PLAN_INPUT_PARAMETERS';
     static SET_SETTINGS = 'SET_SETTING';
     static SET_DEPLOYMENT_CHANGES = 'SET_DEPLOYMENT_CHANGES';
     static SET_CURRENT_BUILD_PLAN_INSTANCE = 'SET_CURRENT_BUILD_PLAN_INSTANCE';
@@ -117,13 +112,6 @@ export class LiveModelingActions {
         };
     }
 
-    setBuildPlanInputParameters(inputParameters: Array<InputParameter>): SetBuildPlanInputParametersAction {
-        return {
-            type: LiveModelingActions.SET_BUILD_PLAN_INPUT_PARAMETERS,
-            inputParameters: inputParameters
-        };
-    }
-
     setSettings(settings: any): SetSettingsAction {
         return {
             type: LiveModelingActions.SET_SETTINGS,
@@ -137,11 +125,11 @@ export class LiveModelingActions {
             deploymentChanges: deploymentChanges
         };
     }
-    
+
     setCurrentBuildPlanInstance(buildPlanInstance: PlanInstance): SetCurrentBuildPlanInstance {
         return {
             type: LiveModelingActions.SET_CURRENT_BUILD_PLAN_INSTANCE,
             buildPlanInstance: buildPlanInstance
-        }
+        };
     }
 }

@@ -41,7 +41,6 @@ export class ContainerService {
     private containerUrl: string;
     private currentCsarId: string;
     private currentServiceTemplateInstanceId: string;
-    private buildPlanInputParameters: Array<InputParameter>;
 
     private readonly headerAcceptJSON = {
         headers: new HttpHeaders({
@@ -65,16 +64,17 @@ export class ContainerService {
         { 'name': 'CorrelationID', 'type': 'String', 'required': 'YES' }
     ];
 
-    private readonly terminationPayload = [
+    private readonly baseTerminationPayload = [
         { 'name': 'instanceDataAPIUrl', 'type': 'String', 'required': 'YES' },
         { 'name': 'OpenTOSCAContainerAPIServiceInstanceURL', 'type': 'String', 'required': 'YES' },
         { 'name': 'CorrelationID', 'type': 'String', 'required': 'YES' }
     ];
-    private readonly transformationPayload = [
+    private readonly baseTransformationPayload = [
         { 'name': 'CorrelationID', 'type': 'String', 'required': 'YES' },
         { 'name': 'instanceDataAPIUrl', 'type': 'String', 'required': 'YES' },
         { 'name': 'planCallbackAddress_invoker', 'type': 'String', 'required': 'YES' },
-        { 'name': 'csarEntrypoint', 'type': 'String', 'required': 'YES' }
+        { 'name': 'csarEntrypoint', 'type': 'String', 'required': 'YES' },
+        { 'name': 'OpenTOSCAContainerAPIServiceInstanceURL', 'type': 'String', 'required': 'YES' },
     ];
     private readonly hidden_input_parameters = [
         'CorrelationID',
@@ -84,7 +84,8 @@ export class ContainerService {
         'instanceDataAPIUrl',
         'planCallbackAddress_invoker',
         'csarEntrypoint',
-        'OpenTOSCAContainerAPIServiceInstanceID'
+        'OpenTOSCAContainerAPIServiceInstanceID',
+        'OpenTOSCAContainerAPIServiceInstanceURL'
     ];
 
     constructor(
@@ -103,37 +104,31 @@ export class ContainerService {
             .subscribe(serviceTemplateInstanceId => {
                 this.currentServiceTemplateInstanceId = serviceTemplateInstanceId;
             });
-        this.ngRedux.select(state => state.liveModelingState.buildPlanInputParameters)
-            .subscribe(buildPlanInputParameters => {
-                this.buildPlanInputParameters = buildPlanInputParameters;
-            });
     }
 
     public installApplication(uploadPayload: CsarUpload): Observable<any> {
         return this.http.post(this.combineURLs(this.containerUrl, 'csars'), uploadPayload, this.headerContentJSON);
     }
 
-    public isApplicationInstalled(): Observable<boolean> {
-        const csarUrl = this.combineURLs(this.combineURLs(this.containerUrl, 'csars'), this.currentCsarId);
+    public isApplicationInstalled(csarId: string): Observable<boolean> {
+        const csarUrl = this.combineURLs(this.combineURLs(this.containerUrl, 'csars'), csarId);
         return this.http.get(csarUrl, { observe: 'response' }).pipe(
             map(resp => resp.ok),
             catchError(() => of(false))
         );
     }
 
-    public deployServiceTemplateInstance(): Observable<string> {
+    public deployServiceTemplateInstance(buildPlanInputParameters: InputParameter[]): Observable<string> {
+        const payload = [...buildPlanInputParameters, ...this.baseInstallationPayload];
+
         return this.getBuildPlan().pipe(
-            concatMap(resp => this.http.post(resp._links['instances'].href, this.getBuildPlanInputParameters(), {
+            concatMap(resp => this.http.post(resp._links['instances'].href, payload, {
                 headers: new HttpHeaders({
                     'Content-Type': 'application/json'
                 }),
                 responseType: 'text'
             }))
         );
-    }
-
-    private getBuildPlanInputParameters(): any[] {
-        return [...this.buildPlanInputParameters, ...this.baseInstallationPayload];
     }
 
     public waitForServiceTemplateInstanceIdAfterDeployment(correlationId: string, interval: number, timeout: number): Observable<string> {
@@ -170,7 +165,7 @@ export class ContainerService {
 
     public terminateServiceTemplateInstance(): Observable<string> {
         return this.getTerminationPlan().pipe(
-            concatMap(resp => this.http.post(resp._links['instances'].href, this.terminationPayload, {
+            concatMap(resp => this.http.post(resp._links['instances'].href, this.baseTerminationPayload, {
                 headers: new HttpHeaders({
                     'Content-Type': 'application/json'
                 }),
@@ -179,26 +174,38 @@ export class ContainerService {
         );
     }
 
-    public generateTransformationPlan(sourceCsarId: string, targetCsarId: string): Observable<any> {
+    public generateTransformationPlan(sourceCsarId: string, targetCsarId: string): Observable<string> {
         const transformPayload = {
             'source_csar_name': sourceCsarId,
             'target_csar_name': targetCsarId
         };
+        const transformationPlanId = this.stripCsarSuffix(sourceCsarId) + '_transformTo_' + this.stripCsarSuffix(targetCsarId) + '_plan';
 
         const endpoint = this.combineURLs(this.containerUrl, 'csars/transform');
-        return this.http.post(endpoint, transformPayload, this.headerContentJSON);
+        return this.http.post(endpoint, transformPayload, this.headerContentJSON).pipe(
+            map(_ => transformationPlanId)
+        );
     }
 
-    public executeTransformationPlan(sourceCsarId: string, targetCsarId: string): Observable<string> {
+    public getManagementPlanInputParameters(planId: string): Observable<InputParameter[]> {
+        return this.getManagementPlan(planId).pipe(
+            map(resp => resp.input_parameters.filter(input => this.hidden_input_parameters.indexOf(input.name) === -1))
+        );
+    }
+
+    public executeTransformationPlan(sourceCsarId: string, targetCsarId: string, inputParameters: InputParameter[]): Observable<string> {
         const planId = this.stripCsarSuffix(this.currentCsarId) + '_transformTo_' + this.stripCsarSuffix(targetCsarId) + '_plan';
+        const payload = [...inputParameters, ...this.baseTransformationPayload];
 
         return this.getManagementPlan(planId).pipe(
-            concatMap(resp => this.http.post(resp._links['instances'].href, this.transformationPayload, {
-                headers: new HttpHeaders({
-                    'Content-Type': 'application/json'
-                }),
-                responseType: 'text'
-            }))
+            concatMap(resp => this.http.post(resp._links['instances'].href,
+                payload,
+                {
+                    headers: new HttpHeaders({
+                        'Content-Type': 'application/json'
+                    }),
+                    responseType: 'text'
+                }))
         );
     }
 

@@ -14,16 +14,16 @@
 
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap';
+import { InputParameter } from '../../../models/container/input-parameter.model';
 
 @Component({
-    selector: 'winery-live-modeling-confirm-modal',
-    templateUrl: './confirm-modal.component.html',
-    styleUrls: ['./confirm-modal.component.css']
+    selector: 'winery-live-modeling-input-parameters-modal',
+    templateUrl: './input-parameters-modal.component.html',
+    styleUrls: ['./input-parameters-modal.component.css']
 })
-export class ConfirmModalComponent implements OnInit {
-    title: string;
-    content: string;
-    confirmed = false;
+export class InputParametersModalComponent implements OnInit {
+    inputParameters: InputParameter[];
+    cancelled = true;
 
     constructor(private bsModalRef: BsModalRef,
     ) {
@@ -32,13 +32,24 @@ export class ConfirmModalComponent implements OnInit {
     ngOnInit(): void {
     }
 
-    cancel() {
-        this.confirmed = false;
-        this.dismissModal();
+    disableButton(): boolean {
+        for (let i = 0; i < this.inputParameters.length; i++) {
+            if (this.inputParameters[i].value === null ||
+                this.inputParameters[i].value === undefined ||
+                this.inputParameters[i].value === '') {
+                return true;
+            }
+        }
+        return false;
     }
 
     confirm() {
-        this.confirmed = true;
+        this.cancelled = false;
+        this.dismissModal();
+    }
+
+    cancel() {
+        this.cancelled = true;
         this.dismissModal();
     }
 

@@ -200,21 +200,21 @@ export interface SetNodePropertyValidityAction extends Action {
     nodeValidity: {
         nodeId: string;
         valid: boolean;
-    }
+    };
 }
 
 export interface SetNodeInstanceStateAction extends Action {
     nodeInstanceState: {
         nodeId: string;
         state: NodeTemplateInstanceStates
-    }
+    };
 }
 
 export interface SetNodeWorkingAction extends Action {
     nodeWorking: {
         nodeId: string;
         working: boolean;
-    }
+    };
 }
 
 /**

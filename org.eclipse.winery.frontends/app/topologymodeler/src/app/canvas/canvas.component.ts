@@ -1352,7 +1352,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
                             this.newJsPlumbInstance.unmakeSource(node.dragSource);
                         }
                     }
-                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id))
+                    this.ngRedux.dispatch(this.actions.deleteNodeTemplate(node.nodeTemplate.id));
                 }
             });
             this.selectedNodes.length = 0;

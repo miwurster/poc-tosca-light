@@ -197,9 +197,9 @@ export class NodeComponent implements OnInit, AfterViewInit, OnDestroy, DoCheck 
         this.setPolicyIcons();
         this.addNewVersions(new QName(this.nodeTemplate.type));
 
-        this.subscriptions.push(this.$ngRedux.select(state => state.liveModelingState.state)
-            .subscribe(state => {
-                this.liveModelingEnabled = state !== LiveModelingStates.DISABLED;
+        this.subscriptions.push(this.$ngRedux.select(wineryState => wineryState.liveModelingState.state)
+            .subscribe(liveModelingState => {
+                this.liveModelingEnabled = liveModelingState !== LiveModelingStates.DISABLED;
             }));
     }
 

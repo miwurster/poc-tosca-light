@@ -29,20 +29,20 @@ export class SettingsModalComponent implements OnInit, OnDestroy {
     objectKeys = Object.keys;
     settings: any;
     subscriptions: Array<Subscription> = [];
-    
+
     constructor(private bsModalRef: BsModalRef,
                 private ngRedux: NgRedux<IWineryState>,
                 private liveModelingActions: LiveModelingActions,
     ) {
     }
-    
+
     ngOnInit(): void {
         this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.settings)
             .subscribe(settings => {
                 this.settings = settings;
             }));
     }
-    
+
     setSettings() {
         this.ngRedux.dispatch(this.liveModelingActions.setSettings(this.settings));
         this.dismissModal();

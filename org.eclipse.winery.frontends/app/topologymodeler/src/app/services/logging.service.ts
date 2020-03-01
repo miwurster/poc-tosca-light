@@ -20,25 +20,25 @@ import { LiveModelingLogTypes } from '../models/enums';
 export class LoggingService {
     private logsSubject = new ReplaySubject<LiveModelingLog[]>();
     private logs: LiveModelingLog[];
-    
+
     constructor() {
         this.logs = new Array<LiveModelingLog>();
     }
-    
+
     get logStream() {
         return this.logsSubject.asObservable();
     }
-    
+
     public clearLogs() {
         this.logs = new Array<LiveModelingLog>();
         this.logsSubject.next(this.logs);
     }
-    
+
     public logInfo(message: string) {
         this.logs = [...this.logs, new LiveModelingLog(message, LiveModelingLogTypes.INFO)];
         this.logsSubject.next(this.logs);
     }
-    
+
     public logWarning(message: string) {
         this.logs = [...this.logs, new LiveModelingLog(message, LiveModelingLogTypes.WARNING)];
         this.logsSubject.next(this.logs);

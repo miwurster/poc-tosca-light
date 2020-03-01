@@ -27,16 +27,18 @@ import { IWineryState } from '../../redux/store/winery.store';
 })
 export class BuildplanParametersComponent implements OnInit, OnDestroy {
 
-    buildPlanInputParameters: Array<InputParameter>;
+    buildPlanInputParameters: Array<InputParameter> = [];
     subscriptions: Array<Subscription> = [];
 
     constructor(private ngRedux: NgRedux<IWineryState>) {
     }
 
     ngOnInit() {
-        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.buildPlanInputParameters)
-            .subscribe(parameters => {
-                this.buildPlanInputParameters = parameters;
+        this.subscriptions.push(this.ngRedux.select(state => state.liveModelingState.currentBuildPlanInstance)
+            .subscribe(buildPlanInstance => {
+                if (buildPlanInstance && buildPlanInstance.hasOwnProperty('inputs')) {
+                    this.buildPlanInputParameters = buildPlanInstance.inputs;
+                }
             }));
     }
 
