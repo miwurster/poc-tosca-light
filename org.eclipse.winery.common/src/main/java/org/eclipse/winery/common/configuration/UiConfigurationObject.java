@@ -32,21 +32,25 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
     private final String key = "ui";
     private final String featurePrefix = key + ".features.";
     private final String endpointPrefix = key + ".endpoints.";
-    private YAMLConfiguration configuration;
 
+    /**
+     * Required for REST API
+     */
     public UiConfigurationObject() {
-        this.configuration = Environment.getConfiguration();
+        if (Environment.getInstance().checkConfigurationForUpdate()) {
+            Environment.getInstance().updateConfig();
+        }
+        this.configuration = Environment.getInstance().getConfiguration();
     }
 
     UiConfigurationObject(YAMLConfiguration configuration) {
-        this.configuration = configuration;
         HashMap<String, Boolean> features = new HashMap<>();
         HashMap<String, String> endpoints = new HashMap<>();
         Iterator<String> featureIterator = configuration.getKeys(featurePrefix);
         Iterator<String> endpointIterator = configuration.getKeys(endpointPrefix);
         featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), configuration.getBoolean((key))));
         endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), configuration.getString(key)));
-        if (RepositoryConfigurationObject.RepositoryProvider.YAML.equals(Environments.getRepositoryConfig().getProvider())) {
+        if (RepositoryConfigurationObject.RepositoryProvider.YAML.equals(Environments.getInstance().getRepositoryConfig().getProvider())) {
             features.put(RepositoryConfigurationObject.RepositoryProvider.YAML.name().toLowerCase(), true);
         } else {
             // closed-world assumption. Apparently..
@@ -55,6 +59,7 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
         this.features = features;
         this.endpoints = endpoints;
         this.configuration = configuration;
+        initialize();
     }
 
     public HashMap<String, Boolean> getFeatures() {
@@ -73,6 +78,24 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
             ).forEach(property -> configuration.setProperty(featurePrefix + property, this.features.get(property)));
         this.endpoints.keySet()
             .forEach(property -> configuration.setProperty(endpointPrefix + property, this.endpoints.get(property)));
-        Environment.save();
+        Environment.getInstance().save();
+    }
+
+    @Override
+    void update(YAMLConfiguration configuration) {
+        this.configuration = configuration;
+        HashMap<String, Boolean> features = new HashMap<>();
+        HashMap<String, String> endpoints = new HashMap<>();
+        Iterator<String> featureIterator = configuration.getKeys(featurePrefix);
+        Iterator<String> endpointIterator = configuration.getKeys(endpointPrefix);
+        featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), configuration.getBoolean((key))));
+        endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), configuration.getString(key)));
+        this.features = features;
+        this.endpoints = endpoints;
+    }
+
+    @Override
+    void initialize() {
+
     }
 }

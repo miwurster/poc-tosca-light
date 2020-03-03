@@ -102,8 +102,8 @@ public class RepositoryFactory {
      * Reconfigures based on Environment
      */
     public static void reconfigure() throws Exception {
-        final GitBasedRepositoryConfiguration gitBasedRepositoryConfiguration = Environments.getGitBasedRepositoryConfiguration();
-        final FileBasedRepositoryConfiguration filebasedRepositoryConfiguration = Environments.getFilebasedRepositoryConfiguration();
+        final Optional<GitBasedRepositoryConfiguration> gitBasedRepositoryConfiguration = Environments.getInstance().getGitBasedRepsitoryConfiguration();
+        final FileBasedRepositoryConfiguration filebasedRepositoryConfiguration = Environments.getInstance().getFilebasedRepositoryConfiguration();
 
         // Determine whether the filebased repository could be git repository.
         // We do not use JGit's capabilities, but do it just by checking for the existance of a ".git" directory.
