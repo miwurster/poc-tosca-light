@@ -512,7 +512,6 @@ public abstract class AbstractFileBasedRepository implements IRepository {
         return new JsonBasedEdmmManager(ref2AbsolutePath(ref).toFile());
     }
     
-
     public Collection<? extends DefinitionsChildId> getAllIdsInNamespace(Class<? extends DefinitionsChildId> clazz, Namespace namespace) {
         Collection<DefinitionsChildId> result = new HashSet<>();
         String rootPathFragment = Util.getRootPathFragment(clazz);

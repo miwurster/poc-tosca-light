@@ -394,7 +394,6 @@ public class MultiRepository implements IRepository {
         return new JsonBasedEdmmManager(ref2AbsolutePath(ref).toFile());
     }
     
-
     @Override
     public boolean flagAsExisting(GenericId id) {
         return RepositoryUtils.getRepositoryById(id, this).flagAsExisting(id);

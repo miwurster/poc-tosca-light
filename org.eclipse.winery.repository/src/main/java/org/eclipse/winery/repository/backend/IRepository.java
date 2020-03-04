@@ -1200,7 +1200,6 @@ public interface IRepository extends IWineryRepositoryCommon {
 
     EdmmManager getEdmmManager();
     
-
     default XsdImportManager getXsdImportManager() {
         return new RepositoryBasedXsdImportManager();
     }

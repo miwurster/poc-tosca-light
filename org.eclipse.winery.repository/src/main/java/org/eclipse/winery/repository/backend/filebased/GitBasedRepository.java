@@ -646,7 +646,6 @@ public class GitBasedRepository extends AbstractFileBasedRepository {
     public EdmmManager getEdmmManager() {
         return repository.getEdmmManager();
     }
-    
 
     @Override
     public XsdImportManager getXsdImportManager() {
