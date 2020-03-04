@@ -20,7 +20,7 @@ import org.apache.commons.configuration2.YAMLConfiguration;
 
 public class RepositoryConfigurationObject extends AbstractConfigurationObject {
 
-    private final String key = "repository.";
+    private static final String key = "repository.";
     private GitConfigurationObject gitConfiguration;
     private String repositoryRoot;
     private RepositoryProvider provider;
@@ -43,15 +43,12 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
     }
 
     RepositoryConfigurationObject(YAMLConfiguration configuration, GitConfigurationObject gitConfigurationObject) {
-        this.repositoryRoot = configuration.getString(key + "repositoryRoot");
-        this.configuration = configuration;
         this.setGitConfiguration(gitConfigurationObject);
-        String provider = Environment.getInstance().getConfiguration().getString(key + "provider");
-        if (provider.equalsIgnoreCase(RepositoryProvider.YAML.name())) {
-            this.setProvider(RepositoryProvider.YAML);
-        } else {
-            this.setProvider(RepositoryProvider.FILE);
-        }
+        this.update(configuration);
+    }
+    
+    public static String getProviderConfigurationKey() {
+        return key + "provider";
     }
 
     @Override
@@ -66,7 +63,7 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
     void update(YAMLConfiguration updatedConfiguration) {
         this.configuration = updatedConfiguration;
         this.repositoryRoot = configuration.getString(key + "repositoryRoot");
-        String provider = Environment.getInstance().getConfiguration().getString(key + "provider");
+        String provider = Environment.getInstance().getConfiguration().getString(getProviderConfigurationKey());
         if (provider.equalsIgnoreCase(RepositoryProvider.YAML.name())) {
             this.setProvider(RepositoryProvider.YAML);
         } else {

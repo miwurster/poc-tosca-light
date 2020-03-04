@@ -17,8 +17,6 @@ package org.eclipse.winery.common.configuration;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.eclipse.winery.common.Enums;
-
 import org.apache.commons.configuration2.YAMLConfiguration;
 
 /**
@@ -29,9 +27,9 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
 
     private HashMap<String, Boolean> features;
     private HashMap<String, String> endpoints;
-    private final String key = "ui";
-    private final String featurePrefix = key + ".features.";
-    private final String endpointPrefix = key + ".endpoints.";
+    private static final String key = "ui";
+    private static final String featurePrefix = key + ".features.";
+    private static final String endpointPrefix = key + ".endpoints.";
 
     /**
      * Required for REST API
@@ -43,22 +41,8 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
         this.configuration = Environment.getInstance().getConfiguration();
     }
 
-    UiConfigurationObject(YAMLConfiguration configuration, RepositoryConfigurationObject repositoryConfigurationObject) {
-        HashMap<String, Boolean> features = new HashMap<>();
-        HashMap<String, String> endpoints = new HashMap<>();
-        Iterator<String> featureIterator = configuration.getKeys(featurePrefix);
-        Iterator<String> endpointIterator = configuration.getKeys(endpointPrefix);
-        featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), configuration.getBoolean((key))));
-        endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), configuration.getString(key)));
-        if (RepositoryConfigurationObject.RepositoryProvider.YAML.equals(repositoryConfigurationObject.getProvider())) {
-            features.put(RepositoryConfigurationObject.RepositoryProvider.YAML.name().toLowerCase(), true);
-        } else {
-            // closed-world assumption. Apparently..
-            features.put(RepositoryConfigurationObject.RepositoryProvider.YAML.name().toLowerCase(), false);
-        }
-        this.features = features;
-        this.endpoints = endpoints;
-        this.configuration = configuration;
+    UiConfigurationObject(YAMLConfiguration configuration) {
+        this.update(configuration);
         initialize();
     }
 
@@ -73,8 +57,7 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
     @Override
     void save() {
         this.features.keySet().stream()
-            .filter(p -> !RepositoryConfigurationObject.RepositoryProvider.YAML
-                .equals(Enums.valueOf(RepositoryConfigurationObject.RepositoryProvider.class, p))
+            .filter(p -> !RepositoryConfigurationObject.RepositoryProvider.YAML.toString().equals(p)
             ).forEach(property -> configuration.setProperty(featurePrefix + property, this.features.get(property)));
         this.endpoints.keySet()
             .forEach(property -> configuration.setProperty(endpointPrefix + property, this.endpoints.get(property)));
@@ -90,6 +73,15 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
         Iterator<String> endpointIterator = configuration.getKeys(endpointPrefix);
         featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), configuration.getBoolean((key))));
         endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), configuration.getString(key)));
+        final String providerAsString = configuration.getString(RepositoryConfigurationObject.getProviderConfigurationKey());
+
+        if (RepositoryConfigurationObject.RepositoryProvider.YAML.toString().equals(providerAsString)) {
+            features.put(RepositoryConfigurationObject.RepositoryProvider.YAML.toString(), true);
+        } else {
+            // closed-world assumption. Apparently..
+            features.put(RepositoryConfigurationObject.RepositoryProvider.YAML.toString(), false);
+        }
+
         this.features = features;
         this.endpoints = endpoints;
     }

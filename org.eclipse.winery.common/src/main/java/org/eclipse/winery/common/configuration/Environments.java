@@ -47,7 +47,7 @@ public final class Environments {
         accountabilityConfigurationObject = new AccountabilityConfigurationObject(Environment.getInstance().getConfiguration());
         gitConfigurationObject = new GitConfigurationObject(Environment.getInstance().getConfiguration());
         repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration(), gitConfigurationObject);
-        uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration(), repositoryConfigurationObject);
+        uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration());
     }
 
     public static Environments getInstance() {
@@ -81,8 +81,7 @@ public final class Environments {
     public UiConfigurationObject getUiConfig() {
         checkForUpdateAndUpdateInstances();
         if (uiConfigurationObject == null) {
-            uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration(),
-                Environments.getInstance().getRepositoryConfig());
+            uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration());
         }
         return uiConfigurationObject;
     }
@@ -111,7 +110,7 @@ public final class Environments {
         checkForUpdateAndUpdateInstances();
         if (repositoryConfigurationObject == null) {
             repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration(),
-                Environments.getInstance().getGitConfig());
+                getGitConfig());
         }
         return repositoryConfigurationObject;
     }
@@ -137,7 +136,7 @@ public final class Environments {
      */
     public String getVersion() {
         try {
-            return new Environments().getVersionFromProperties();
+            return this.getVersionFromProperties();
         } catch (IOException e) {
             LOGGER.debug("Error while retrieving version from pom.", e);
         }
@@ -174,7 +173,7 @@ public final class Environments {
      * @return an instance of FileBasedRepositoryConfiguration
      */
     public FileBasedRepositoryConfiguration getFilebasedRepositoryConfiguration() {
-        Path path = Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot());
+        Path path = Paths.get(this.getRepositoryConfig().getRepositoryRoot());
         return new FileBasedRepositoryConfiguration(path);
     }
 
@@ -185,7 +184,7 @@ public final class Environments {
      */
     public Optional<GitBasedRepositoryConfiguration> getGitBasedRepsitoryConfiguration() {
         final FileBasedRepositoryConfiguration filebasedRepositoryConfiguration = getFilebasedRepositoryConfiguration();
-        return Optional.of(new GitBasedRepositoryConfiguration(Environments.getInstance().getGitConfig().isAutocommit(), filebasedRepositoryConfiguration));
+        return Optional.of(new GitBasedRepositoryConfiguration(this.getGitConfig().isAutocommit(), filebasedRepositoryConfiguration));
     }
 
     /**

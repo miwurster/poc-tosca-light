@@ -18,7 +18,7 @@ import org.apache.commons.configuration2.YAMLConfiguration;
 
 public class GitConfigurationObject extends AbstractConfigurationObject {
 
-    private final String key = "repository.git.";
+    private static final String key = "repository.git.";
     private String clientSecret;
     private String password;
     private String clientID;
@@ -26,12 +26,7 @@ public class GitConfigurationObject extends AbstractConfigurationObject {
     private boolean autocommit;
 
     GitConfigurationObject(YAMLConfiguration configuration) {
-        this.setClientSecret(configuration.getString(key + "clientSecret"));
-        this.setPassword(configuration.getString(key + "password"));
-        this.setClientID(configuration.getString(key + "clientID"));
-        this.setUsername(configuration.getString(key + "username"));
-        this.setAutocommit(configuration.getBoolean(key + "autocommit", false));
-        this.configuration = configuration;
+        this.update(configuration);
         initialize();
     }
 
@@ -47,12 +42,12 @@ public class GitConfigurationObject extends AbstractConfigurationObject {
 
     @Override
     void update(YAMLConfiguration updatedConfiguration) {
-        this.configuration = updatedConfiguration;
         this.setClientSecret(configuration.getString(key + "clientSecret"));
         this.setPassword(configuration.getString(key + "password"));
         this.setClientID(configuration.getString(key + "clientID"));
         this.setUsername(configuration.getString(key + "username"));
-        this.setAutocommit(configuration.getBoolean(key + "autocommit"));
+        this.setAutocommit(configuration.getBoolean(key + "autocommit", false));
+        this.configuration = updatedConfiguration;
     }
 
     @Override
