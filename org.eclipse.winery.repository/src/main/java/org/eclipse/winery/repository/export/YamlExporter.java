@@ -282,7 +282,7 @@ public class YamlExporter extends CsarExporter {
         // Setting Versions
         stringBuilder.append(TOSCA_META_VERSION).append(": 1.0").append("\n");
         stringBuilder.append(CSAR_VERSION).append(": 1.1").append("\n");
-        stringBuilder.append(CREATED_BY).append(": Winery ").append(Environments.getVersion()).append("\n");
+        stringBuilder.append(CREATED_BY).append(": Winery ").append(Environments.getInstance().getVersion()).append("\n");
 
         // Winery currently is unaware of tDefinitions, therefore, we use the
         // name of the service template

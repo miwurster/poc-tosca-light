@@ -42,7 +42,7 @@ public class MultiRepositoryManager {
      */
     void initializeRepositoryListForMultiRepositoryAndReconfigureFactory(List<RepositoryProperties> repositoryList) {
         ObjectMapper objectMapper = new ObjectMapper();
-        File repositoryConfiguration = new File(Environments.getRepositoryConfig().getRepositoryRoot(), Filename.FILENAME_JSON_REPOSITORIES);
+        File repositoryConfiguration = new File(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), Filename.FILENAME_JSON_REPOSITORIES);
         if (!repositoryConfiguration.exists()) {
             try {
                 Files.createFile(repositoryConfiguration.toPath());

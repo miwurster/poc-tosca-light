@@ -43,14 +43,14 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
         this.configuration = Environment.getInstance().getConfiguration();
     }
 
-    UiConfigurationObject(YAMLConfiguration configuration) {
+    UiConfigurationObject(YAMLConfiguration configuration, RepositoryConfigurationObject repositoryConfigurationObject) {
         HashMap<String, Boolean> features = new HashMap<>();
         HashMap<String, String> endpoints = new HashMap<>();
         Iterator<String> featureIterator = configuration.getKeys(featurePrefix);
         Iterator<String> endpointIterator = configuration.getKeys(endpointPrefix);
         featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), configuration.getBoolean((key))));
         endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), configuration.getString(key)));
-        if (RepositoryConfigurationObject.RepositoryProvider.YAML.equals(Environments.getInstance().getRepositoryConfig().getProvider())) {
+        if (RepositoryConfigurationObject.RepositoryProvider.YAML.equals(repositoryConfigurationObject.getProvider())) {
             features.put(RepositoryConfigurationObject.RepositoryProvider.YAML.name().toLowerCase(), true);
         } else {
             // closed-world assumption. Apparently..

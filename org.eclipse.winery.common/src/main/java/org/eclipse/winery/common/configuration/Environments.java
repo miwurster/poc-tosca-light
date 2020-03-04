@@ -45,9 +45,9 @@ public final class Environments {
 
     private Environments() {
         accountabilityConfigurationObject = new AccountabilityConfigurationObject(Environment.getInstance().getConfiguration());
-        uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration());
-        repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration());
         gitConfigurationObject = new GitConfigurationObject(Environment.getInstance().getConfiguration());
+        repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration(), gitConfigurationObject);
+        uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration(), repositoryConfigurationObject);
     }
 
     public static Environments getInstance() {
@@ -81,7 +81,8 @@ public final class Environments {
     public UiConfigurationObject getUiConfig() {
         checkForUpdateAndUpdateInstances();
         if (uiConfigurationObject == null) {
-            uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration());
+            uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration(),
+                Environments.getInstance().getRepositoryConfig());
         }
         return uiConfigurationObject;
     }
@@ -109,7 +110,8 @@ public final class Environments {
     public RepositoryConfigurationObject getRepositoryConfig() {
         checkForUpdateAndUpdateInstances();
         if (repositoryConfigurationObject == null) {
-            repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration());
+            repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration(),
+                Environments.getInstance().getGitConfig());
         }
         return repositoryConfigurationObject;
     }

@@ -94,7 +94,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     @Override
     public void setTopology(TTopologyTemplate topologyTemplate, String type) {
         // if we are in yaml mode, replacing the topology can result in yaml artifacts having to be deleted.
-        if (Environments.getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.YAML) {
+        if (Environments.getInstance().getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.YAML) {
             try {
                 YamlArtifactsSynchronizer synchronizer = new YamlArtifactsSynchronizer
                     .Builder()

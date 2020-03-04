@@ -62,7 +62,7 @@ public class EnvironmentsTest {
         assertFalse(Environment.getInstance().checkConfigurationForUpdate());
         configuration.setProperty("ui.features.foo", false);
         Environment.getInstance().save();
-        assertFalse(Environments.getInstance().getUiConfig().features.get("foo"));
+        assertFalse(Environments.getInstance().getUiConfig().getFeatures().get("foo"));
     }
 
     /**

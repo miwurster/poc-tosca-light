@@ -42,10 +42,10 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
         }
     }
 
-    RepositoryConfigurationObject(YAMLConfiguration configuration) {
+    RepositoryConfigurationObject(YAMLConfiguration configuration, GitConfigurationObject gitConfigurationObject) {
         this.repositoryRoot = configuration.getString(key + "repositoryRoot");
         this.configuration = configuration;
-        this.setGitConfiguration(Environments.getInstance().getGitConfig());
+        this.setGitConfiguration(gitConfigurationObject);
         String provider = Environment.getInstance().getConfiguration().getString(key + "provider");
         if (provider.equalsIgnoreCase(RepositoryProvider.YAML.name())) {
             this.setProvider(RepositoryProvider.YAML);

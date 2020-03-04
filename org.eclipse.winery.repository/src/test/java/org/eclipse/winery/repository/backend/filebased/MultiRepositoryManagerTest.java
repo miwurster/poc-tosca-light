@@ -53,7 +53,7 @@ public class MultiRepositoryManagerTest {
      */
     @BeforeAll
     static void getRepositoryRootBeforeTestAndSetUpTestRoot() {
-        workspaceRepositoryRoot = Environments.getRepositoryConfig().getRepositoryRoot();
+        workspaceRepositoryRoot = Environments.getInstance().getRepositoryConfig().getRepositoryRoot();
         Path testRepositoryRoot = Paths.get(System.getProperty("java.io.tmpdir")).resolve("test-multi-repository");
         if (!Files.exists(testRepositoryRoot)) {
             try {
@@ -68,13 +68,13 @@ public class MultiRepositoryManagerTest {
                 LOGGER.debug("Error clearing out the test directory before test execution.", e);
             }
         }
-        Environments.getRepositoryConfig().setRepositoryRoot(testRepositoryRoot.toString());
+        Environments.getInstance().getRepositoryConfig().setRepositoryRoot(testRepositoryRoot.toString());
     }
 
     @BeforeEach
     void cleanDirectory() {
         try {
-            FileUtils.cleanDirectory(new File(Environments.getRepositoryConfig().getRepositoryRoot()));
+            FileUtils.cleanDirectory(new File(Environments.getInstance().getRepositoryConfig().getRepositoryRoot()));
         } catch (IOException e) {
             LOGGER.error("Error while cleaning. Could not clear the temporary directory.", e);
         }
@@ -91,11 +91,11 @@ public class MultiRepositoryManagerTest {
     @AfterAll
     static void setRepositoryRootBack() {
         try {
-            FileUtils.deleteDirectory(new File(Environments.getRepositoryConfig().getRepositoryRoot()));
+            FileUtils.deleteDirectory(new File(Environments.getInstance().getRepositoryConfig().getRepositoryRoot()));
         } catch (IOException e) {
             LOGGER.error("Error while cleanup. Could not delete temporary directory.", e);
         }
-        Environments.getRepositoryConfig().setRepositoryRoot(workspaceRepositoryRoot);
+        Environments.getInstance().getRepositoryConfig().setRepositoryRoot(workspaceRepositoryRoot);
     }
 
     /**
@@ -108,12 +108,12 @@ public class MultiRepositoryManagerTest {
             "https://github.com/winery/mulit-repo-test"));
         MultiRepositoryManager multiRepositoryManager = new MultiRepositoryManager();
         multiRepositoryManager.initializeRepositoryListForMultiRepositoryAndReconfigureFactory(repositoryList);
-        assertTrue(Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(),
+        assertTrue(Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(),
             Filename.FILENAME_JSON_REPOSITORIES).toFile().exists());
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectReader reader = objectMapper.readerFor(new TypeReference<List<RepositoryProperties>>() {
         });
-        repositoryList = reader.readValue(Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(),
+        repositoryList = reader.readValue(Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(),
             Filename.FILENAME_JSON_REPOSITORIES).toFile());
         assertEquals(1, repositoryList.size());
         assertEquals("https://github.com/winery/mulit-repo-test", repositoryList.get(0).getUrl());
@@ -147,10 +147,10 @@ public class MultiRepositoryManagerTest {
         MultiRepositoryManager multiRepositoryManager = new MultiRepositoryManager();
         multiRepositoryManager.addRepositoryToFile(repositoryList);
         try {
-            assertTrue(Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8")).toFile().exists());
-            assertTrue(Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8"), "mulit-repo-test").toFile().exists());
-            assertTrue(Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8"), "multi-repo-dependency").toFile().exists());
-            assertTrue(Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8"), "test-repository").toFile().exists());
+            assertTrue(Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8")).toFile().exists());
+            assertTrue(Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8"), "mulit-repo-test").toFile().exists());
+            assertTrue(Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8"), "multi-repo-dependency").toFile().exists());
+            assertTrue(Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), URLEncoder.encode("https://github.com/winery", "UTF-8"), "test-repository").toFile().exists());
         } catch (UnsupportedEncodingException e) {
             LOGGER.error("Error while encoding.");
             throw e;
@@ -198,7 +198,7 @@ public class MultiRepositoryManagerTest {
      * Also reconfigures the Factory to a MultiRepository.
      */
     void writeDependencyFile() {
-        File dependencyFile = Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(), Filename.FILENAME_JSON_REPOSITORIES).toFile();
+        File dependencyFile = Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), Filename.FILENAME_JSON_REPOSITORIES).toFile();
         try (FileWriter writer = new FileWriter(dependencyFile)) {
             writer.write("[\n" +
                 "   {\n" +
