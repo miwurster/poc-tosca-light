@@ -111,6 +111,7 @@ export class WineryArtifactComponent implements OnInit {
         } else {
             this.artifact.namespace = this.sharedData.toscaComponent.namespace;
         }
+        this.artifact.namespace = this.artifact.namespace.slice(0, this.sharedData.toscaComponent.namespace.lastIndexOf('/')) + '/artifacttemplates';
         const implementation = this.isImplementationArtifact ? 'Implementation' : 'Deployment';
         this.artifact.name = this.sharedData.toscaComponent.localName.replace('_', '-') + '-' + implementation + 'Artifact';
         this.artifact.toscaType = ToscaTypes.ArtifactTemplate;
