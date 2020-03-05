@@ -42,12 +42,12 @@ public class GitConfigurationObject extends AbstractConfigurationObject {
 
     @Override
     void update(YAMLConfiguration updatedConfiguration) {
+        this.configuration = updatedConfiguration;
         this.setClientSecret(configuration.getString(key + "clientSecret"));
         this.setPassword(configuration.getString(key + "password"));
         this.setClientID(configuration.getString(key + "clientID"));
         this.setUsername(configuration.getString(key + "username"));
         this.setAutocommit(configuration.getBoolean(key + "autocommit", false));
-        this.configuration = updatedConfiguration;
     }
 
     @Override

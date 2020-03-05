@@ -69,11 +69,11 @@ public class UiConfigurationObject extends AbstractConfigurationObject {
         this.configuration = configuration;
         HashMap<String, Boolean> features = new HashMap<>();
         HashMap<String, String> endpoints = new HashMap<>();
-        Iterator<String> featureIterator = configuration.getKeys(featurePrefix);
-        Iterator<String> endpointIterator = configuration.getKeys(endpointPrefix);
-        featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), configuration.getBoolean((key))));
-        endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), configuration.getString(key)));
-        final String providerAsString = configuration.getString(RepositoryConfigurationObject.getProviderConfigurationKey());
+        Iterator<String> featureIterator = this.configuration.getKeys(featurePrefix);
+        Iterator<String> endpointIterator = this.configuration.getKeys(endpointPrefix);
+        featureIterator.forEachRemaining(key -> features.put(key.replace(featurePrefix, ""), this.configuration.getBoolean((key))));
+        endpointIterator.forEachRemaining(key -> endpoints.put(key.replace(endpointPrefix, ""), this.configuration.getString(key)));
+        final String providerAsString = this.configuration.getString(RepositoryConfigurationObject.getProviderConfigurationKey());
 
         if (RepositoryConfigurationObject.RepositoryProvider.YAML.toString().equals(providerAsString)) {
             features.put(RepositoryConfigurationObject.RepositoryProvider.YAML.toString(), true);
