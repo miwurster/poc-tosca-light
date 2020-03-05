@@ -3,11 +3,11 @@
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="UPDATING_POLICY" value="restart-server" />
     <deployment>
-      <file path="$PROJECT_DIR$/org.eclipse.winery.repository.rest/target/winery.war">
+      <artifact name="org.eclipse.winery.repository.rest:war exploded">
         <settings>
           <option name="CONTEXT_PATH" value="/winery" />
         </settings>
-      </file>
+      </artifact>
     </deployment>
     <server-settings>
       <option name="BASE_DIRECTORY_NAME" value="Unnamed_winery_3" />

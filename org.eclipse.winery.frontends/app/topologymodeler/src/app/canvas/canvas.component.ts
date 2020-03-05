@@ -1569,7 +1569,7 @@ export class CanvasComponent implements OnInit, OnDestroy, OnChanges, AfterViewI
     /**
      * Lifecycle hook
      */
-    ngOnInit() {
+    ngfInit() {
         this.layoutDirective.setJsPlumbInstance(this.newJsPlumbInstance);
         this.newJsPlumbInstance.registerConnectionTypes({
             marked: {

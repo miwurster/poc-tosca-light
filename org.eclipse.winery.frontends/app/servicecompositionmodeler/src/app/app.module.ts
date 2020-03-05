@@ -22,12 +22,14 @@ import { HttpServiceTemplates } from './services/httpClient';
 import { AppComponent } from './app.component';
 import { TopBarComponent } from './component/top-bar/top-bar.component';
 import { SideBarComponent } from './component/side-bar/side-bar.component';
+import { CanvasComponent } from './component/canvas/canvas.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TopBarComponent,
-      SideBarComponent
+      SideBarComponent,
+      CanvasComponent
   ],
   imports: [
     BrowserModule,

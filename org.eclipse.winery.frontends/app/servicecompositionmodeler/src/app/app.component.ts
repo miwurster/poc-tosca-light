@@ -12,13 +12,21 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-import { Component } from '@angular/core';
-
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { HttpServiceTemplates } from '../app/services/httpClient';
+import { PageParameter } from '../../../workflowmodeler/src/app/model/page-parameter';
 
 @Component({
+    // tslint:disable-next-line:component-selector
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: [ './app.component.css' ]
 })
-export class AppComponent  {}
+export class AppComponent {
+
+   //  public ngOnInit() {
+        // this.route.queryParams.subscribe(params => this.httpclient.setRequestParam(<PageParameter>params));
+    // }
+}
 

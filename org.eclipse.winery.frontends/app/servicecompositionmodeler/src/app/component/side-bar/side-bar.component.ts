@@ -57,12 +57,12 @@ export class SideBarComponent implements OnInit {
     getServiceCompositions(): String[] {
         const getRequestServiceComposition = this.allServiceTemplates;
         const ServiceComposition = [];
-        const someArray = [1, 'string', false];
-
         for (const entry in getRequestServiceComposition) {
-            const splitString = getRequestServiceComposition[entry].id;
-            const serviceCompositionTrimmed = splitString.split('servicetemplates}');
-            ServiceComposition.push(serviceCompositionTrimmed[1]);
+            if (entry != null) {
+                const splitString = getRequestServiceComposition[entry].id;
+                const serviceCompositionTrimmed = splitString.split('servicetemplates}');
+                ServiceComposition.push(serviceCompositionTrimmed[1]);
+            }
         }
         return ServiceComposition;
     }

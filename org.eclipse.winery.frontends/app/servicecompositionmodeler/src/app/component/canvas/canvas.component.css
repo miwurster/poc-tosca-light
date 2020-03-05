@@ -1,0 +1,49 @@
+.model-area {
+    margin-left: 250px;
+    height: 100%;/* Full-height: remove this if you want "auto" height */
+    width: 100%;/* Set the width of the sidebar */
+
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    border: solid 1px #ccc;
+    display: block;
+    border-radius: 4px;
+    overflow-x: auto;
+    cursor: move;
+    padding-top: 10px;
+}
+
+/** ELEMENTS **/
+.window {
+    font-family: serif;
+    font-style: italic;
+    background-color: white;
+    border: 1px solid #346789;
+    text-align: center;
+    z-index: 24;
+    cursor: pointer;
+    box-shadow: 2px 2px 19px #aaa;
+    -o-box-shadow: 2px 2px 19px #aaa;
+    -webkit-box-shadow: 2px 2px 19px #aaa;
+    -moz-box-shadow: 2px 2px 19px #aaa;
+    -moz-border-radius: 0.5em;
+    border-radius: 0.5em;
+    position: absolute;
+    color: black;
+    padding-top: 5px;
+    width: 140px;
+    height: 120px;
+    line-height: 12px;
+    -webkit-transition: -webkit-box-shadow 0.15s ease-in;
+    -moz-transition: -moz-box-shadow 0.15s ease-in;
+    -o-transition: -o-box-shadow 0.15s ease-in;
+    transition: box-shadow 0.15s ease-in;
+}
+
+
+
+/** ELEMENT POSITIONS **/
+#dragDropWindow1 { top:76px;left:100px; }
+#dragDropWindow2 { top:148px; left:600px; }
+#dragDropWindow3 { top:340px; left:100px; }
+#dragDropWindow4 { top:416px; left:600px; }
+
