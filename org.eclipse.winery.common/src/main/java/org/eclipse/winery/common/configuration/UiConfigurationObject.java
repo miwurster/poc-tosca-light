@@ -25,12 +25,13 @@ import org.apache.commons.configuration2.YAMLConfiguration;
  */
 public class UiConfigurationObject extends AbstractConfigurationObject {
 
-    private HashMap<String, Boolean> features;
-    private HashMap<String, String> endpoints;
     private static final String key = "ui";
     private static final String featurePrefix = key + ".features.";
     private static final String endpointPrefix = key + ".endpoints.";
-
+    
+    private HashMap<String, Boolean> features;
+    private HashMap<String, String> endpoints;
+    
     /**
      * Required for REST API
      */

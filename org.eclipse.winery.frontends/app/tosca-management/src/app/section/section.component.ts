@@ -32,7 +32,6 @@ import { FileProvenanceElement } from '../model/provenance';
 import { WineryVersion } from '../model/wineryVersion';
 import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 import { FeatureEnum } from '../wineryFeatureToggleModule/wineryRepository.feature.direct';
-import { WineryRepositoryConfigurationService } from '../wineryFeatureToggleModule/WineryRepositoryConfiguration.service';
 
 const showAll = 'Show all Items';
 const showGrouped = 'Group by Namespace';
@@ -90,7 +89,6 @@ export class SectionComponent implements OnInit, OnDestroy {
                 private router: Router,
                 private service: SectionService,
                 private notify: WineryNotificationService,
-                private configurationService: WineryRepositoryConfigurationService,
                 protected accountability: AccountabilityService,
                 private modalService: BsModalService,
                 private configurationService: WineryRepositoryConfigurationService) {
