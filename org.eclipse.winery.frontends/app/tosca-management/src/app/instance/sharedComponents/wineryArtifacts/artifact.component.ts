@@ -29,6 +29,7 @@ import { GenerateData } from '../../../wineryComponentExists/wineryComponentExis
 import { ToscaTypes } from '../../../model/enums';
 import { WineryVersion } from '../../../model/wineryVersion';
 import { HttpErrorResponse } from '@angular/common/http';
+import { WineryAddComponent } from '../../../wineryAddComponentModule/addComponent.component';
 
 @Component({
     selector: 'winery-artifact',
@@ -73,10 +74,13 @@ export class WineryArtifactComponent implements OnInit {
     @ViewChild('uploadFileModal') uploadFileModal: ModalDirective;
     @ViewChild('removeElementModal') removeElementModal: ModalDirective;
 
+    @ViewChild('addComponent') addComponent: WineryAddComponent;
+
     private implementationArtifactColumns = [
         { title: 'Interface Name', name: 'interfaceName' },
         { title: 'Operation Name', name: 'operationName' }
     ];
+    toscaType = ToscaTypes.ArtifactTemplate;
 
     constructor(private service: WineryArtifactService,
                 public sharedData: InstanceService,
@@ -111,10 +115,11 @@ export class WineryArtifactComponent implements OnInit {
         } else {
             this.artifact.namespace = this.sharedData.toscaComponent.namespace;
         }
-        this.artifact.namespace = this.artifact.namespace.slice(0, this.sharedData.toscaComponent.namespace.lastIndexOf('/')) + '/artifacttemplates';
+        this.artifact.namespace = this.artifact.namespace.slice(0, this.sharedData.toscaComponent.namespace.lastIndexOf('/') + 1) + ToscaTypes.ArtifactTemplate;
         const implementation = this.isImplementationArtifact ? 'Implementation' : 'Deployment';
         this.artifact.name = this.sharedData.toscaComponent.localName.replace('_', '-') + '-' + implementation + 'Artifact';
         this.artifact.toscaType = ToscaTypes.ArtifactTemplate;
+        //this.addComponent.onAdd();
         this.addArtifactModal.show();
     }
 

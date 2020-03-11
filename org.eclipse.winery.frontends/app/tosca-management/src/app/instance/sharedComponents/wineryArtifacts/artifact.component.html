@@ -112,24 +112,31 @@
                 </div>
             </fieldset>
             <winery-qname-selector
-                *ngIf="selectedRadioButton === 'createArtifactTemplate' || selectedRadioButton === 'skipArtifactTemplate' "
-                [title]="'Artifact Type'"
-                [displayList]="artifactTypesList"
-                [width]="'none'"
-                [showOpenButton]="false"
-                (selectedValueChanged)="onSelectedArtifactTypeChanged($event.value)">
+                    *ngIf="selectedRadioButton === 'skipArtifactTemplate' "
+                    [title]="'Artifact Type'"
+                    [displayList]="artifactTypesList"
+                    [width]="'none'"
+                    [showOpenButton]="false"
+                    (selectedValueChanged)="onSelectedArtifactTypeChanged($event.value)">
             </winery-qname-selector>
             <winery-qname-selector
-                *ngIf="selectedRadioButton === 'linkArtifactTemplate'"
-                [title]="'Artifact Template'"
-                [displayList]="artifactTemplatesList"
-                (selectedValueChanged)="onSelectedArtifactTemplateChanged($event.value)">
+                    *ngIf="selectedRadioButton === 'linkArtifactTemplate'"
+                    [title]="'Artifact Template'"
+                    [displayList]="artifactTemplatesList"
+                    [width]="'none'"
+                    (selectedValueChanged)="onSelectedArtifactTemplateChanged($event.value)">
             </winery-qname-selector>
-            <winery-component-exists
-                *ngIf="selectedRadioButton === 'createArtifactTemplate'"
-                [generateData]=artifact
-                [modalRef]="addArtifactModal">
-            </winery-component-exists>
+            <!--<winery-component-exists
+                    *ngIf="selectedRadioButton === 'createArtifactTemplate'"
+                    [generateData]=artifact
+                    [modalRef]="addArtifactModal">
+            </winery-component-exists>-->
+            <div class="form-group-grouping typeimplementation">
+                <winery-add-component-data-component *ngIf="selectedRadioButton === 'createArtifactTemplate'"
+                                                     [toscaType]=toscaType
+                                                     [generateData]=artifact>
+                </winery-add-component-data-component>
+            </div>
         </form>
     </winery-modal-body>
     <winery-modal-footer [showDefaultButtons]="false">
@@ -164,7 +171,8 @@
                                                  title="{{file.name}}"><img src="{{file.thumbnailUrl}}"></a></span>
                     </td>
                     <td>
-                        <p class="name"><a href="{{baseUrl + file.url}}" download="{{file.name}}" title="{{file.name}}">{{file.name}}</a>
+                        <p class="name"><a href="{{baseUrl + file.url}}" download="{{file.name}}"
+                                           title="{{file.name}}">{{file.name}}</a>
                         </p>
                     </td>
                     <td>
