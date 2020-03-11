@@ -30,12 +30,15 @@ import { ToscaTypes } from '../../../model/enums';
 import { WineryVersion } from '../../../model/wineryVersion';
 import { HttpErrorResponse } from '@angular/common/http';
 import { WineryAddComponent } from '../../../wineryAddComponentModule/addComponent.component';
+import { SelectData } from '../../../model/selectData';
+import { Utils } from '../../../wineryUtils/utils';
+import { SectionService } from '../../../section/section.service';
 
 @Component({
     selector: 'winery-artifact',
     templateUrl: 'artifact.component.html',
     styleUrls: ['artifact.component.css'],
-    providers: [WineryArtifactService, WineryArtifactFilesService]
+    providers: [WineryArtifactService, WineryArtifactFilesService, SectionService]
 })
 export class WineryArtifactComponent implements OnInit {
 
@@ -74,18 +77,19 @@ export class WineryArtifactComponent implements OnInit {
     @ViewChild('uploadFileModal') uploadFileModal: ModalDirective;
     @ViewChild('removeElementModal') removeElementModal: ModalDirective;
 
-    @ViewChild('addComponent') addComponent: WineryAddComponent;
-
     private implementationArtifactColumns = [
         { title: 'Interface Name', name: 'interfaceName' },
         { title: 'Operation Name', name: 'operationName' }
     ];
     toscaType = ToscaTypes.ArtifactTemplate;
+    private typeRequired = false;
+    private types: SelectData[];
 
     constructor(private service: WineryArtifactService,
                 public sharedData: InstanceService,
                 private notify: WineryNotificationService,
                 private fileService: WineryArtifactFilesService,
+                private sectionService: SectionService,
                 private router: Router) {
     }
 
@@ -105,6 +109,7 @@ export class WineryArtifactComponent implements OnInit {
         }
 
         this.name = this.isImplementationArtifact ? 'Implementation' : 'Deployment';
+        this.getTypes();
     }
 
     onAddClick() {
@@ -119,7 +124,6 @@ export class WineryArtifactComponent implements OnInit {
         const implementation = this.isImplementationArtifact ? 'Implementation' : 'Deployment';
         this.artifact.name = this.sharedData.toscaComponent.localName.replace('_', '-') + '-' + implementation + 'Artifact';
         this.artifact.toscaType = ToscaTypes.ArtifactTemplate;
-        //this.addComponent.onAdd();
         this.addArtifactModal.show();
     }
 
@@ -143,8 +147,8 @@ export class WineryArtifactComponent implements OnInit {
             this.noneSelected = true;
         } else {
             this.noneSelected = false;
-            this.selectedArtifactType = value;
-            this.newArtifact.artifactType = value;
+            this.selectedArtifactType = value.id;
+            this.newArtifact.artifactType = value.id;
         }
     }
 
@@ -375,6 +379,26 @@ export class WineryArtifactComponent implements OnInit {
         return '/artifacttypes/' + encodeURIComponent(encodeURIComponent(nameAndNamespace.namespace))
             + '/' + nameAndNamespace.localname + '/';
 
+    }
+
+    private getTypes(componentType?: SelectData) {
+        const typesUrl = Utils.getTypeOfTemplateOrImplementation(this.toscaType);
+        if (!isNullOrUndefined(typesUrl) && !componentType) {
+            this.loading = true;
+            this.typeRequired = true;
+            this.sectionService.getSectionData('/' + typesUrl + '?grouped=angularSelect')
+                .subscribe(
+                    data => this.handleTypes(data),
+                    error => this.showError(error)
+                );
+        } else {
+            this.typeRequired = false;
+        }
+    }
+
+    private handleTypes(types: SelectData[]): void {
+        this.types = types.length > 0 ? types : null;
+        this.loading = false;
     }
 
 }

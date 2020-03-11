@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SectionService } from '../section/section.service';
 import { InheritanceService } from '../instance/sharedComponents/inheritance/inheritance.service';
 import { TooltipConfig } from 'ngx-bootstrap';
@@ -25,6 +25,7 @@ import { SectionData } from '../section/sectionData';
 import { ToscaTypes } from '../model/enums';
 import { Utils } from '../wineryUtils/utils';
 import { GenerateData } from '../wineryComponentExists/wineryComponentExists.component';
+import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
 
 @Component({
     selector: 'winery-add-component-data-component',
@@ -32,6 +33,7 @@ import { GenerateData } from '../wineryComponentExists/wineryComponentExists.com
     providers: [
         SectionService,
         InheritanceService,
+        WineryNotificationService,
         {
             provide: TooltipConfig,
             useFactory: getToolTip
@@ -44,31 +46,35 @@ export class WineryAddComponentDataComponent {
     @Input() componentData: SectionData[];
     @Input() toscaType: ToscaTypes;
     @Input() generateData: GenerateData;
+    @Input() types: SelectData[];
+    @Input() typeRequired: boolean;
+    @Input() newComponentName: string;
+    @Output() typeChanged: EventEmitter<SelectData> = new EventEmitter();
 
     loading: boolean;
     validation: AddComponentValidation;
-    newComponentName: string;
     newComponentFinalName: string;
-    typeRequired = false;
     newComponentSelectedType: SelectData = new SelectData();
     newComponentVersion: WineryVersion = new WineryVersion('', 1, 1);
     newComponentNamespace: string;
     collapseVersioning = true;
     hideHelp = true;
     storage: Storage = localStorage;
-    types: SelectData[];
     useStartNamespace = true;
 
     private readonly storageKey = 'hideVersionHelp';
 
-    constructor(private sectionService: SectionService) {
-    }
-
-    ngOnInit() {
-        this.getTypes();
+    constructor(private sectionService: SectionService, private notify: WineryNotificationService) {
     }
 
     onInputChange() {
+        if (!this.componentData) {
+            this.sectionService.getSectionData('/' + this.toscaType)
+                .subscribe(
+                    data => this.handleComponentData(data),
+                    error => this.showError(error)
+                );
+        }
         this.validation = new AddComponentValidation();
         this.newComponentFinalName = this.newComponentName;
 
@@ -76,7 +82,29 @@ export class WineryAddComponentDataComponent {
             this.validation.noTypeAvailable = true;
             return { noTypeAvailable: true };
         }
+    }
 
+    showHelp() {
+        if (this.hideHelp) {
+            this.storage.removeItem(this.storageKey);
+        } else {
+            this.storage.setItem(this.storageKey, 'true');
+        }
+        this.hideHelp = !this.hideHelp;
+    }
+
+    typeSelected(event: SelectData) {
+        this.newComponentSelectedType = event;
+        this.typeChanged.emit(this.newComponentSelectedType);
+    }
+
+    private showError(error: any) {
+        this.notify.error(error.message);
+        this.loading = false;
+    }
+
+    private handleComponentData(data: SectionData[]) {
+        this.componentData = data;
         if (!isNullOrUndefined(this.newComponentFinalName) && this.newComponentFinalName.length > 0) {
             this.newComponentFinalName += WineryVersion.WINERY_NAME_FROM_VERSION_SEPARATOR + this.newComponentVersion.toString();
             const duplicate = this.componentData.find((component) => component.name.toLowerCase() === this.newComponentFinalName.toLowerCase());
@@ -96,43 +124,5 @@ export class WineryAddComponentDataComponent {
                 }
             }
         }
-    }
-
-    showHelp() {
-        if (this.hideHelp) {
-            this.storage.removeItem(this.storageKey);
-        } else {
-            this.storage.setItem(this.storageKey, 'true');
-        }
-        this.hideHelp = !this.hideHelp;
-    }
-
-    typeSelected(event: SelectData) {
-        this.newComponentSelectedType = event;
-    }
-
-    private handleTypes(types: SelectData[]): void {
-        this.types = types.length > 0 ? types : null;
-        this.loading = false;
-
-    }
-
-    private getTypes(componentType?: SelectData) {
-        const typesUrl = Utils.getTypeOfTemplateOrImplementation(this.toscaType);
-        if (!isNullOrUndefined(typesUrl) && !componentType) {
-            this.loading = true;
-            this.typeRequired = true;
-            this.sectionService.getSectionData('/' + typesUrl + '?grouped=angularSelect')
-                .subscribe(
-                    data => this.handleTypes(data),
-                    error => this.handleError(error)
-                );
-        } else {
-            this.typeRequired = false;
-        }
-    }
-
-    private handleError(error: any) {
-
     }
 }

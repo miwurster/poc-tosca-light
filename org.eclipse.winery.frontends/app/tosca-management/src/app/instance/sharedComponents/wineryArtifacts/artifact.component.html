@@ -112,19 +112,19 @@
                 </div>
             </fieldset>
             <winery-qname-selector
-                    *ngIf="selectedRadioButton === 'skipArtifactTemplate' "
-                    [title]="'Artifact Type'"
-                    [displayList]="artifactTypesList"
-                    [width]="'none'"
-                    [showOpenButton]="false"
-                    (selectedValueChanged)="onSelectedArtifactTypeChanged($event.value)">
+                *ngIf="selectedRadioButton === 'skipArtifactTemplate' "
+                [title]="'Artifact Type'"
+                [displayList]="artifactTypesList"
+                [width]="'none'"
+                [showOpenButton]="false"
+                (selectedValueChanged)="onSelectedArtifactTypeChanged($event.value)">
             </winery-qname-selector>
             <winery-qname-selector
-                    *ngIf="selectedRadioButton === 'linkArtifactTemplate'"
-                    [title]="'Artifact Template'"
-                    [displayList]="artifactTemplatesList"
-                    [width]="'none'"
-                    (selectedValueChanged)="onSelectedArtifactTemplateChanged($event.value)">
+                *ngIf="selectedRadioButton === 'linkArtifactTemplate'"
+                [title]="'Artifact Template'"
+                [displayList]="artifactTemplatesList"
+                [width]="'none'"
+                (selectedValueChanged)="onSelectedArtifactTemplateChanged($event.value)">
             </winery-qname-selector>
             <!--<winery-component-exists
                     *ngIf="selectedRadioButton === 'createArtifactTemplate'"
@@ -133,8 +133,12 @@
             </winery-component-exists>-->
             <div class="form-group-grouping typeimplementation">
                 <winery-add-component-data-component *ngIf="selectedRadioButton === 'createArtifactTemplate'"
-                                                     [toscaType]=toscaType
-                                                     [generateData]=artifact>
+                                                     [toscaType]="toscaType"
+                                                     [generateData]="artifact"
+                                                     [types]="types"
+                                                     [typeRequired]="typeRequired"
+                                                     [newComponentName]="artifact.name"
+                                                     (typeChanged)="onSelectedArtifactTypeChanged($event)">
                 </winery-add-component-data-component>
             </div>
         </form>
