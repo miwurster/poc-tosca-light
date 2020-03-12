@@ -110,19 +110,19 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
             } catch (IOException e) {
                 LOGGER.error("Failed to delete yaml artifact files from disk. Reason {}", e.getMessage());
             }
+            // filter unused requirements
+            // (1) get a list of requirement template ids
+            // (2) filter requirement entry on node template if there is relations assigned
+            Set<String> usedRelationshipTemplateIds = topologyTemplate.getRelationshipTemplates()
+                .stream().map(HasId::getId).collect(Collectors.toSet());
+            topologyTemplate.getNodeTemplates().forEach(node -> {
+                List<TRequirement> requirements = node.getRequirements().getRequirement().stream()
+                    .filter(r -> usedRelationshipTemplateIds.contains(r.getRelationship()))
+                    .collect(Collectors.toList());
+                node.getRequirements().getRequirement().clear();
+                node.getRequirements().getRequirement().addAll(requirements);
+            });
         }
-        // filter unused requirements
-        // (1) get a list of requirement template ids
-        // (2) filter requirement entry on node template if there is relations assigned
-        Set<String> usedRelationshipTemplateIds = topologyTemplate.getRelationshipTemplates()
-            .stream().map(HasId::getId).collect(Collectors.toSet());
-        topologyTemplate.getNodeTemplates().forEach(node -> {
-            List<TRequirement> requirements = node.getRequirements().getRequirement().stream()
-                .filter(r -> usedRelationshipTemplateIds.contains(r.getRelationship()))
-                .collect(Collectors.toList());
-            node.getRequirements().getRequirement().clear();
-            node.getRequirements().getRequirement().addAll(requirements);
-        });
         this.getServiceTemplate().setTopologyTemplate(topologyTemplate);
     }
 
