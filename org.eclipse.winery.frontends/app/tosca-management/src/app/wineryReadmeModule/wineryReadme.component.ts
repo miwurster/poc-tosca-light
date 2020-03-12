@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2017-2018 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,13 +11,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
-import { Component, OnInit } from '@angular/core';
-import { ReadmeService } from './wineryReadme.service';
-import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
-import { InstanceService } from '../instance/instance.service';
-import { ToscaTypes } from '../model/enums';
-import { HttpErrorResponse } from '@angular/common/http';
-import { FeatureEnum } from '../wineryFeatureToggleModule/wineryRepository.feature.direct';
+import {Component, OnInit} from '@angular/core';
+import {ReadmeService} from './wineryReadme.service';
+import {WineryNotificationService} from '../wineryNotificationModule/wineryNotification.service';
+import {InstanceService} from '../instance/instance.service';
+import {ToscaTypes} from '../model/enums';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 
 @Component({
     templateUrl: 'wineryReadme.component.html',
@@ -26,16 +25,13 @@ import { FeatureEnum } from '../wineryFeatureToggleModule/wineryRepository.featu
 })
 
 export class WineryReadmeComponent implements OnInit {
-    configEnum = FeatureEnum;
+
     loading = true;
     readmeContent = '';
-    description = '';
     initialReadmeContent = '';
-    initialDescription = '';
 
     isEditable = false;
     readmeAvailable = true;
-    descriptionAvailable = true;
     toscaType: ToscaTypes;
 
     constructor(private service: ReadmeService, private notify: WineryNotificationService, public sharedData: InstanceService) {
@@ -51,17 +47,6 @@ export class WineryReadmeComponent implements OnInit {
             },
             () => this.handleMissingReadme()
         );
-        this.service.getDescription().subscribe(
-            data => {
-                this.description = data;
-                if (this.description === null) {
-                    this.descriptionAvailable = false;
-                }
-                this.initialDescription = data;
-                this.loading = false;
-            },
-            () => this.handleMissingDescription()
-        );
     }
 
     saveReadmeFile() {
@@ -71,19 +56,9 @@ export class WineryReadmeComponent implements OnInit {
         );
     }
 
-    saveDescription() {
-        this.service.saveDescription(this.description).subscribe(
-            () => {
-                this.handleDescriptionSave();
-            },
-            error => this.handleError(error)
-        );
-    }
-
     cancelEdit() {
         this.isEditable = false;
         this.readmeContent = this.initialReadmeContent;
-        this.description = this.initialDescription;
     }
 
     private handleError(error: HttpErrorResponse) {
@@ -92,21 +67,12 @@ export class WineryReadmeComponent implements OnInit {
     }
 
     private handleMissingReadme() {
+        this.loading = false;
         this.readmeAvailable = false;
     }
 
-    private handleMissingDescription() {
-        this.loading = false;
-        this.descriptionAvailable = false;
-    }
-
     private handleSave() {
-        this.initialReadmeContent = this.readmeContent;
         this.notify.success('Successfully saved README.md');
     }
 
-    private handleDescriptionSave() {
-        this.initialDescription = this.description;
-        this.notify.success('Successfully saved Description.');
-    }
 }
