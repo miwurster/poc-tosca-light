@@ -95,24 +95,18 @@ export class TopologyTemplateUtil {
             });
 
             // we assume that either all requirements are in the template, or none are (and therefore must be retrieved from the type hierarchy)
-            if (node.requirements && node.requirements.requirement) {
-                node.requirements.requirement.forEach(req => req.id = this.generateYAMLRequirementID(node, req.name));
-            } else {
-                // If the requirements are not found in the template, they are acquired from the inheritance hierarchy.
-                const reqDefs: RequirementDefinitionModel[] = InheritanceUtils.getEffectiveRequirementDefinitionsOfNodeType(node.type, types);
-
-                if (reqDefs && reqDefs.length > 0) {
-                    node.requirements.requirement = reqDefs
-                        .map(reqDef => RequirementModel.fromRequirementDefinition(reqDef))
-                        .map(reqDef => {
-                            reqDef.id = this.generateYAMLRequirementID(node, reqDef.name);
-                            return reqDef;
-                        })
-                        .filter(reqDef => reqDef !== null);
-                } else {
-                    node.requirements.requirement = [];
-                }
+            const reqDefs: RequirementDefinitionModel[] = InheritanceUtils.getEffectiveRequirementDefinitionsOfNodeType(node.type, types);
+            if (!node.requirements) {
+                node.requirements = { requirement: [] };
             }
+            reqDefs.forEach(reqDef => {
+                let req = RequirementModel.fromRequirementDefinition(reqDef);
+                let find = node.requirements.requirement.find(r => r.name === req.name);
+                if (!find) {
+                    node.requirements.requirement.push(req);
+                }
+            });
+            node.requirements.requirement.forEach(req => req.id = this.generateYAMLRequirementID(node, req.name));
         }
 
         return new TNodeTemplate(
