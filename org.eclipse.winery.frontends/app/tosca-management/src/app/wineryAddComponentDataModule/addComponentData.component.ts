@@ -23,8 +23,6 @@ import { WineryVersion } from '../model/wineryVersion';
 import { SelectData } from '../model/selectData';
 import { SectionData } from '../section/sectionData';
 import { ToscaTypes } from '../model/enums';
-import { Utils } from '../wineryUtils/utils';
-import { GenerateData } from '../wineryComponentExists/wineryComponentExists.component';
 import { WineryNotificationService } from '../wineryNotificationModule/wineryNotification.service';
 
 @Component({
@@ -45,11 +43,12 @@ export class WineryAddComponentDataComponent {
 
     @Input() componentData: SectionData[];
     @Input() toscaType: ToscaTypes;
-    @Input() generateData: GenerateData;
     @Input() types: SelectData[];
     @Input() typeRequired: boolean;
     @Input() newComponentName: string;
     @Output() typeChanged: EventEmitter<SelectData> = new EventEmitter();
+    @Output() newComponentNameEvent: EventEmitter<string> = new EventEmitter();
+    @Output() newComponentNamespaceEvent: EventEmitter<string> = new EventEmitter();
 
     loading: boolean;
     validation: AddComponentValidation;
@@ -82,6 +81,8 @@ export class WineryAddComponentDataComponent {
             this.validation.noTypeAvailable = true;
             return { noTypeAvailable: true };
         }
+        this.newComponentNameEvent.emit(this.newComponentFinalName);
+        this.newComponentNamespaceEvent.emit(this.newComponentNamespace);
     }
 
     showHelp() {

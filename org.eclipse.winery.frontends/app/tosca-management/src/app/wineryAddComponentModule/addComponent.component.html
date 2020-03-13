@@ -14,7 +14,7 @@
 <winery-modal bsModal #addModal="bs-modal" [modalRef]="addModal">
     <winery-modal-header [title]="'Add a new ' + addModalType"></winery-modal-header>
     <winery-modal-body>
-        <form #addComponentForm="ngForm">
+        <!--<form #addComponentForm="ngForm">
             <div *ngIf="!loading; else showLoader">
                 <div *ngIf="!validation?.noTypeAvailable; else showNoTypeAvailable">
                     <div class="form-group">
@@ -109,9 +109,9 @@
                         <ng-select id="typeSelect" [items]="types" (selected)="typeSelected($event)"
                                    [active]="[newComponentSelectedType]"></ng-select>
                     </div>
-                    <br>
+                    <br>-->
                     <!-- pattern parameter is required to enable form validation -->
-                    <winery-namespace-selector #namespaceInput
+                    <!--<winery-namespace-selector #namespaceInput
                                                name="namespace"
                                                required
                                                pattern="^\S*$"
@@ -130,13 +130,21 @@
             <ng-template #showLoader>
                 <winery-loader></winery-loader>
             </ng-template>
-        </form>
+        </form>-->
+        <winery-add-component-data-component [toscaType]="toscaType"
+                                             [types]="types"
+                                             [typeRequired]="typeRequired"
+                                             [newComponentName]="newComponentName"
+                                             (typeChanged)="typeSelected($event)"
+                                                (newComponentNameEvent)="setNewComponentName($event)"
+        (newComponentNamespaceEvent)="setNewComponentNamespace($event)">
+        </winery-add-component-data-component>
     </winery-modal-body>
     <winery-modal-footer
         (onOk)="addComponent()"
         [closeButtonLabel]="'Cancel'"
         [okButtonLabel]="'Add'"
         [hideOnOk]="false"
-        [disableOkButton]="!addComponentForm?.valid || validation?.noTypeAvailable">
+        [disableOkButton]="validation?.noTypeAvailable">
     </winery-modal-footer>
 </winery-modal>

@@ -70,9 +70,9 @@ export class WineryAddComponent {
 
     types: SelectData[];
 
-    @ViewChild('addComponentForm') addComponentForm: NgForm;
+    //@ViewChild('addComponentForm') addComponentForm: NgForm;
     @ViewChild('addModal') addModal: ModalDirective;
-    @ViewChild('namespaceInput') namespaceInput: WineryNamespaceSelectorComponent;
+    //@ViewChild('namespaceInput') namespaceInput: WineryNamespaceSelectorComponent;
     useStartNamespace = true;
 
     private readonly storageKey = 'hideVersionHelp';
@@ -126,6 +126,7 @@ export class WineryAddComponent {
     }
 
     addComponent() {
+        console.log(this.newComponentNamespace);
         this.loading = true;
         const compType = this.newComponentSelectedType ? this.newComponentSelectedType.id : null;
 
@@ -174,16 +175,16 @@ export class WineryAddComponent {
         } else {
             this.newComponentNamespace = '';
 
-            if (!isNullOrUndefined(this.addComponentForm)) {
+            /**      if (!isNullOrUndefined(this.addComponentForm)) {
                 this.addComponentForm.reset();
-            }
+            }*/
         }
         this.change.detectChanges();
 
         this.newComponentSelectedType = this.types ?
             this.types[0].children ? this.types[0].children[0] : this.types[0]
             : null;
-        this.namespaceInput.writeValue(this.newComponentNamespace);
+        //this.namespaceInput.writeValue(this.newComponentNamespace);
 
         this.addModal.show();
     }
@@ -260,5 +261,13 @@ export class WineryAddComponent {
         if (!this.typeRequired || this.types) {
             this.showModal();
         }
+    }
+
+    setNewComponentName(name: string) {
+        this.newComponentFinalName = name;
+    }
+
+    setNewComponentNamespace(namespace: string) {
+        this.newComponentNamespace = namespace;
     }
 }
