@@ -27,7 +27,6 @@ import { Utils } from '../wineryUtils/utils';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ImportMetaInformation } from '../model/importMetaInformation';
 import { KeyValueItem } from '../model/keyValueItem';
-import { ConfigurationService } from '../instance/admin/accountability/configuration/configuration.service';
 import { AccountabilityService } from '../instance/admin/accountability/accountability.service';
 import { FileProvenanceElement } from '../model/provenance';
 import { WineryVersion } from '../model/wineryVersion';
@@ -90,7 +89,6 @@ export class SectionComponent implements OnInit, OnDestroy {
                 private router: Router,
                 private service: SectionService,
                 private notify: WineryNotificationService,
-                private accountabilityConfig: ConfigurationService,
                 protected accountability: AccountabilityService,
                 private modalService: BsModalService,
                 private configurationService: WineryRepositoryConfigurationService) {
@@ -102,7 +100,7 @@ export class SectionComponent implements OnInit, OnDestroy {
      * Subscribe to the url on initialisation in order to get the corresponding resource type.
      */
     ngOnInit(): void {
-        this.isAccountabilityCheckEnabled = this.accountabilityConfig.isAccountablilityCheckEnabled();
+        this.isAccountabilityCheckEnabled = this.configurationService.configuration.features.accountability;
         this.loading = true;
         this.routeSub = this.route
             .data

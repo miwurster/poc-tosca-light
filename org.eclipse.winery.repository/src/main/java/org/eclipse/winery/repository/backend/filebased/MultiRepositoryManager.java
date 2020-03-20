@@ -46,8 +46,7 @@ public class MultiRepositoryManager {
      */
     void initializeRepositoryListForMultiRepositoryAndReconfigureFactory(List<RepositoryProperties> repositoryList) {
         ObjectMapper objectMapper = new ObjectMapper();
-        File repositoryConfiguration = new File(Environments.getRepositoryConfig().getRepositoryRoot(),
-            Filename.FILENAME_JSON_REPOSITORIES);
+        File repositoryConfiguration = new File(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), Filename.FILENAME_JSON_REPOSITORIES);
         if (!repositoryConfiguration.exists()) {
             try {
                 Files.createFile(repositoryConfiguration.toPath());
@@ -56,8 +55,8 @@ public class MultiRepositoryManager {
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
-            createMultiRepositoryFileStructure(Paths.get(Environments.getRepositoryConfig().getRepositoryRoot()),
-                Paths.get(Environments.getRepositoryConfig().getRepositoryRoot(), Constants.DEFAULT_LOCAL_REPO_NAME));
+            createMultiRepositoryFileStructure(Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot()),
+                Paths.get(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), Constants.DEFAULT_LOCAL_REPO_NAME));
         }
         try {
             RepositoryFactory.reconfigure();

@@ -18,21 +18,16 @@ import org.apache.commons.configuration2.YAMLConfiguration;
 
 public class GitConfigurationObject extends AbstractConfigurationObject {
 
-    private final String key = "repository.git.";
+    private static final String key = "repository.git.";
     private String clientSecret;
     private String password;
     private String clientID;
     private String username;
     private boolean autocommit;
-    private YAMLConfiguration configuration;
 
     GitConfigurationObject(YAMLConfiguration configuration) {
-        this.setClientSecret(configuration.getString(key + "clientSecret"));
-        this.setPassword(configuration.getString(key + "password"));
-        this.setClientID(configuration.getString(key + "clientID"));
-        this.setUsername(configuration.getString(key + "username"));
-        this.setAutocommit(configuration.getBoolean(key + "autocommit", false));
-        this.configuration = configuration;
+        this.update(configuration);
+        initialize();
     }
 
     @Override
@@ -42,7 +37,22 @@ public class GitConfigurationObject extends AbstractConfigurationObject {
         configuration.setProperty(key + "clientID", this.getClientID());
         configuration.setProperty(key + "username", this.getUsername());
         configuration.setProperty(key + "autocommit", this.isAutocommit());
-        Environment.save();
+        Environment.getInstance().save();
+    }
+
+    @Override
+    void update(YAMLConfiguration updatedConfiguration) {
+        this.configuration = updatedConfiguration;
+        this.setClientSecret(configuration.getString(key + "clientSecret"));
+        this.setPassword(configuration.getString(key + "password"));
+        this.setClientID(configuration.getString(key + "clientID"));
+        this.setUsername(configuration.getString(key + "username"));
+        this.setAutocommit(configuration.getBoolean(key + "autocommit", false));
+    }
+
+    @Override
+    void initialize() {
+
     }
 
     public String getClientSecret() {

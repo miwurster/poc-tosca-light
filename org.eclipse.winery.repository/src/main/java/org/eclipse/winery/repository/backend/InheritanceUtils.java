@@ -48,7 +48,7 @@ public class InheritanceUtils {
         TExtensibleElements currentElement;
         HasType currentParent;
         final boolean isYaml =
-            Environments.getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.YAML;
+            Environments.getInstance().getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.YAML;
 
         while (currentQName != null) {
             currentElement = map.get(currentQName);

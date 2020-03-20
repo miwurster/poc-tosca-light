@@ -143,6 +143,7 @@ import org.eclipse.winery.repository.backend.constants.Filename;
 import org.eclipse.winery.repository.backend.constants.MediaTypes;
 import org.eclipse.winery.repository.backend.filebased.GitBasedRepository;
 import org.eclipse.winery.repository.backend.filebased.MultiRepository;
+import org.eclipse.winery.repository.backend.filebased.YamlRepository;
 import org.eclipse.winery.repository.backend.xsd.XsdImportManager;
 import org.eclipse.winery.repository.datatypes.ids.elements.ArtifactTemplateFilesDirectoryId;
 import org.eclipse.winery.repository.datatypes.ids.elements.DirectoryId;
@@ -1705,8 +1706,6 @@ public class BackendUtils {
                 }
             }
         }
-        // Check for single Repository
-        GitBasedRepository gitRepo2 = (GitBasedRepository) RepositoryFactory.getRepository();
         if (current[0].isVersionedInWinery() && RepositoryFactory.getRepository() instanceof GitBasedRepository) {
             GitBasedRepository gitRepo = (GitBasedRepository) RepositoryFactory.getRepository();
             if (gitRepo.hasChangesInFile(BackendUtils.getRefOfDefinitions(id))) {

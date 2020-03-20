@@ -81,6 +81,12 @@ public class YamlPrinter extends AbstractResult<YamlPrinter> {
         return this;
     }
 
+    public YamlPrinter printQName(QName value) {
+        this.stringBuilder.append(qNameToString(value));
+        this.printNewLine();
+        return this;
+    }
+
     public YamlPrinter print(YamlPrinter printer) {
         if (Objects.isNull(printer) || printer.isEmpty()) return this;
         if (endsWithNewLine()) {
@@ -101,7 +107,6 @@ public class YamlPrinter extends AbstractResult<YamlPrinter> {
         if (printer.indent > this.indent && printer.endsWithNewLine()) {
             printer.stringBuilder.setLength(printer.stringBuilder.length() + this.indent - printer.indent);
         }
-
         print(printer.toString());
         return this;
     }
@@ -112,6 +117,10 @@ public class YamlPrinter extends AbstractResult<YamlPrinter> {
     }
 
     public YamlPrinter printKeyValue(String key, String value) {
+        return printKeyValue(key, value, false);
+    }
+
+    public YamlPrinter printKeyValue(String key, String value, boolean quote) {
         if (Objects.isNull(value) || value.isEmpty()) return this;
         if (value.contains("\n")) {
             return print(key)
@@ -122,10 +131,15 @@ public class YamlPrinter extends AbstractResult<YamlPrinter> {
                 .indent(-2)
                 .printCheckNewLine();
         }
-        return print(key)
-            .print(": ")
-            .print(value)
-            .printNewLine();
+        YamlPrinter printer = print(key).print(": ");
+        if (quote) {
+            printer.print("\"")
+                .print(value)
+                .print("\"");
+        } else {
+            printer.print(value);
+        }
+        return printer.printNewLine();
     }
 
     public YamlPrinter printKeyValue(String key, TVersion value) {
@@ -145,13 +159,6 @@ public class YamlPrinter extends AbstractResult<YamlPrinter> {
             .print(' ')
             .print(value.toString())
             .printNewLine();
-    }
-
-    public YamlPrinter printKeyValue(String key, String value, boolean print) {
-        if (print) {
-            printKeyValue(key, value);
-        }
-        return this;
     }
 
     public YamlPrinter printKeyValue(String key, List<?> value) {
@@ -195,7 +202,7 @@ public class YamlPrinter extends AbstractResult<YamlPrinter> {
     public YamlPrinter printKeyObject(String key, Object object) {
         if (Objects.isNull(object)) return this;
         if (object instanceof String) {
-            printKeyValue(key, (String) object);
+            printKeyValue(key, (String) object, true);
         } else if (object instanceof Map) {
             if (key.isEmpty()) {
                 print("{")

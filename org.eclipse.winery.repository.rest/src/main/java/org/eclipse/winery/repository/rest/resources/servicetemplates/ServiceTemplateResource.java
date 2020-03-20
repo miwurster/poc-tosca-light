@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -46,6 +48,7 @@ import org.eclipse.winery.compliance.checking.ServiceTemplateComplianceRuleRuleC
 import org.eclipse.winery.model.adaptation.substitution.Substitution;
 import org.eclipse.winery.model.threatmodeling.ThreatAssessment;
 import org.eclipse.winery.model.threatmodeling.ThreatModeling;
+import org.eclipse.winery.model.tosca.HasId;
 import org.eclipse.winery.model.tosca.TBoundaryDefinitions;
 import org.eclipse.winery.model.tosca.TExtensibleElements;
 import org.eclipse.winery.model.tosca.TPlans;
@@ -94,7 +97,7 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
     @Override
     public void setTopology(TTopologyTemplate topologyTemplate, String type) {
         // if we are in yaml mode, replacing the topology can result in yaml artifacts having to be deleted.
-        if (Environments.getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.YAML) {
+        if (Environments.getInstance().getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.YAML) {
             try {
                 YamlArtifactsSynchronizer synchronizer = new YamlArtifactsSynchronizer
                     .Builder()
@@ -107,6 +110,18 @@ public class ServiceTemplateResource extends AbstractComponentInstanceResourceCo
             } catch (IOException e) {
                 LOGGER.error("Failed to delete yaml artifact files from disk. Reason {}", e.getMessage());
             }
+            // filter unused requirements
+            // (1) get a list of requirement template ids
+            // (2) filter requirement entry on node template if there is relations assigned
+            Set<String> usedRelationshipTemplateIds = topologyTemplate.getRelationshipTemplates()
+                .stream().map(HasId::getId).collect(Collectors.toSet());
+            topologyTemplate.getNodeTemplates().forEach(node -> {
+                List<TRequirement> requirements = node.getRequirements().getRequirement().stream()
+                    .filter(r -> usedRelationshipTemplateIds.contains(r.getRelationship()))
+                    .collect(Collectors.toList());
+                node.getRequirements().getRequirement().clear();
+                node.getRequirements().getRequirement().addAll(requirements);
+            });
         }
         this.getServiceTemplate().setTopologyTemplate(topologyTemplate);
     }

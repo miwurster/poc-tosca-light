@@ -40,6 +40,7 @@ import javax.xml.namespace.QName;
 import org.eclipse.winery.common.Constants;
 import org.eclipse.winery.common.RepositoryFileReference;
 import org.eclipse.winery.common.configuration.Environments;
+import org.eclipse.winery.common.configuration.RepositoryConfigurationObject;
 import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.Namespace;
 import org.eclipse.winery.common.ids.definitions.ArtifactTemplateId;
@@ -610,7 +611,7 @@ public interface IRepository extends IWineryRepositoryCommon {
         if (reqDefsContainer != null) {
             List<TRequirementDefinition> reqDefs = reqDefsContainer.getRequirementDefinition();
             for (TRequirementDefinition reqDef : reqDefs) {
-                if (!Environments.getUiConfig().getFeatures().get("yaml")) {
+                if (!Environments.getInstance().getUiConfig().getFeatures().get("yaml")) {
                     RequirementTypeId reqTypeId = new RequirementTypeId(reqDef.getRequirementType());
                     ids.add(reqTypeId);
                 } else {
@@ -831,7 +832,8 @@ public interface IRepository extends IWineryRepositoryCommon {
                         }
                     }
 
-                    if (!Environments.getUiConfig().getFeatures().get("yaml")) {
+                    if (!Environments.getInstance().getUiConfig().getFeatures()
+                        .get(RepositoryConfigurationObject.RepositoryProvider.YAML.toString())) {
                         // TODO: this information is collected differently for YAML and XML modes         
                         // crawl through deployment artifacts
                         TDeploymentArtifacts deploymentArtifacts = n.getDeploymentArtifacts();
@@ -1199,9 +1201,7 @@ public interface IRepository extends IWineryRepositoryCommon {
     NamespaceManager getNamespaceManager();
 
     EdmmManager getEdmmManager();
-
-    AccountabilityConfigurationManager getAccountabilityConfigurationManager();
-
+    
     default XsdImportManager getXsdImportManager() {
         return new RepositoryBasedXsdImportManager();
     }

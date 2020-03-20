@@ -97,7 +97,7 @@ public class AdminTopResource {
     @Path("config")
     @Produces(MediaType.APPLICATION_JSON)
     public UiConfigurationObject getConfig() {
-        return Environments.getUiConfig();
+        return Environments.getInstance().getUiConfig();
     }
 
     @PUT
@@ -106,8 +106,8 @@ public class AdminTopResource {
     @Produces(MediaType.APPLICATION_JSON)
     public UiConfigurationObject setConfig(UiConfigurationObject changedConfiguration) {
         Environments.save(changedConfiguration);
-        Environments.save(Environments.getRepositoryConfig());
-        return Environments.getUiConfig();
+        Environments.save(Environments.getInstance().getRepositoryConfig());
+        return Environments.getInstance().getUiConfig();
     }
 
     @POST
@@ -121,8 +121,8 @@ public class AdminTopResource {
 
         List<NameValuePair> params = new ArrayList<>(4);
 
-        params.add(new BasicNameValuePair("client_id", Environments.getGitConfig().getClientID()));
-        params.add(new BasicNameValuePair("client_secret", Environments.getGitConfig().getClientSecret()));
+        params.add(new BasicNameValuePair("client_id", Environments.getInstance().getGitConfig().getClientID()));
+        params.add(new BasicNameValuePair("client_secret", Environments.getInstance().getGitConfig().getClientSecret()));
         params.add(new BasicNameValuePair("code", codeApiData.code));
         params.add(new BasicNameValuePair("state", codeApiData.state));
         httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));

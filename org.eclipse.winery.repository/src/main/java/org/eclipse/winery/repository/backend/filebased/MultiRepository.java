@@ -42,12 +42,10 @@ import org.eclipse.winery.common.configuration.GitBasedRepositoryConfiguration;
 import org.eclipse.winery.common.configuration.RepositoryConfigurationObject;
 import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.Namespace;
-import org.eclipse.winery.common.ids.admin.AccountabilityId;
 import org.eclipse.winery.common.ids.admin.EdmmMappingsId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.elements.ToscaElementId;
 import org.eclipse.winery.model.tosca.Definitions;
-import org.eclipse.winery.repository.backend.AccountabilityConfigurationManager;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.EdmmManager;
 import org.eclipse.winery.repository.backend.IRepository;
@@ -150,7 +148,7 @@ public class MultiRepository implements IRepository {
 
             String pns;
             try {
-                if (Environments.getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.FILE) {
+                if (Environments.getInstance().getRepositoryConfig().getProvider() == RepositoryConfigurationObject.RepositoryProvider.FILE) {
                     pns = namespace.getEncoded().substring(0, namespace.getEncoded()
                         .lastIndexOf(RepositoryUtils.getUrlSeparatorEncoded()));
                 } else {
@@ -329,7 +327,7 @@ public class MultiRepository implements IRepository {
             File ownerRootFile;
             try {
                 ownerDirectory = URLEncoder.encode(resolver.getRepositoryMaintainerUrl(), "UTF-8");
-                ownerRootFile = new File(Environments.getRepositoryConfig().getRepositoryRoot(), ownerDirectory);
+                ownerRootFile = new File(Environments.getInstance().getRepositoryConfig().getRepositoryRoot(), ownerDirectory);
                 if (!ownerRootFile.exists()) {
                     Files.createDirectories(ownerRootFile.toPath());
                 }
@@ -410,17 +408,7 @@ public class MultiRepository implements IRepository {
         RepositoryFileReference ref = BackendUtils.getRefOfJsonConfiguration(new EdmmMappingsId());
         return new JsonBasedEdmmManager(ref2AbsolutePath(ref).toFile());
     }
-
-    @Override
-    public AccountabilityConfigurationManager getAccountabilityConfigurationManager() {
-        RepositoryFileReference repoRef = BackendUtils.getRefOfConfiguration(new AccountabilityId());
-        RepositoryFileReference keystoreRef = new RepositoryFileReference(new AccountabilityId(), "CustomKeystore.json");
-        RepositoryFileReference defaultKeystoreRef = new RepositoryFileReference(new AccountabilityId(), "DefaultKeystore.json");
-
-        return AccountabilityConfigurationManager.getInstance(ref2AbsolutePath(repoRef).toFile(),
-            ref2AbsolutePath(keystoreRef).toFile(), ref2AbsolutePath(defaultKeystoreRef).toFile());
-    }
-
+    
     @Override
     public boolean flagAsExisting(GenericId id) {
         return RepositoryUtils.getRepositoryById(id, this).flagAsExisting(id);

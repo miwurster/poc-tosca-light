@@ -51,14 +51,12 @@ import org.eclipse.winery.common.Util;
 import org.eclipse.winery.common.ids.GenericId;
 import org.eclipse.winery.common.ids.Namespace;
 import org.eclipse.winery.common.ids.XmlId;
-import org.eclipse.winery.common.ids.admin.AccountabilityId;
 import org.eclipse.winery.common.ids.admin.EdmmMappingsId;
 import org.eclipse.winery.common.ids.admin.NamespacesId;
 import org.eclipse.winery.common.ids.definitions.DefinitionsChildId;
 import org.eclipse.winery.common.ids.elements.ToscaElementId;
 import org.eclipse.winery.model.tosca.Definitions;
 import org.eclipse.winery.model.tosca.HasIdInIdOrNameField;
-import org.eclipse.winery.repository.backend.AccountabilityConfigurationManager;
 import org.eclipse.winery.repository.backend.BackendUtils;
 import org.eclipse.winery.repository.backend.EdmmManager;
 import org.eclipse.winery.repository.backend.IRepository;
@@ -513,17 +511,7 @@ public abstract class AbstractFileBasedRepository implements IRepository {
         RepositoryFileReference ref = BackendUtils.getRefOfJsonConfiguration(new EdmmMappingsId());
         return new JsonBasedEdmmManager(ref2AbsolutePath(ref).toFile());
     }
-
-    @Override
-    public AccountabilityConfigurationManager getAccountabilityConfigurationManager() {
-        RepositoryFileReference repoRef = BackendUtils.getRefOfConfiguration(new AccountabilityId());
-        RepositoryFileReference keystoreRef = new RepositoryFileReference(new AccountabilityId(), "CustomKeystore.json");
-        RepositoryFileReference defaultKeystoreRef = new RepositoryFileReference(new AccountabilityId(), "DefaultKeystore.json");
-
-        return AccountabilityConfigurationManager.getInstance(ref2AbsolutePath(repoRef).toFile(),
-            ref2AbsolutePath(keystoreRef).toFile(), ref2AbsolutePath(defaultKeystoreRef).toFile());
-    }
-
+    
     public Collection<? extends DefinitionsChildId> getAllIdsInNamespace(Class<? extends DefinitionsChildId> clazz, Namespace namespace) {
         Collection<DefinitionsChildId> result = new HashSet<>();
         String rootPathFragment = Util.getRootPathFragment(clazz);

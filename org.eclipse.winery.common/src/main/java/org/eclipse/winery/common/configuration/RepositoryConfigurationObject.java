@@ -20,7 +20,7 @@ import org.apache.commons.configuration2.YAMLConfiguration;
 
 public class RepositoryConfigurationObject extends AbstractConfigurationObject {
 
-    private final String key = "repository.";
+    private static final String key = "repository.";
     private GitConfigurationObject gitConfiguration;
     private String repositoryRoot;
     private RepositoryProvider provider;
@@ -42,11 +42,28 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
         }
     }
 
-    RepositoryConfigurationObject(YAMLConfiguration configuration) {
+    RepositoryConfigurationObject(YAMLConfiguration configuration, GitConfigurationObject gitConfigurationObject) {
+        this.setGitConfiguration(gitConfigurationObject);
+        this.update(configuration);
+    }
+    
+    public static String getProviderConfigurationKey() {
+        return key + "provider";
+    }
+
+    @Override
+    void save() {
+        configuration.setProperty(key + "provider", this.getProvider().toString());
+        configuration.setProperty(key + "repositoryRoot", this.repositoryRoot);
+        this.getGitConfiguration().save();
+        Environment.getInstance().save();
+    }
+
+    @Override
+    void update(YAMLConfiguration updatedConfiguration) {
+        this.configuration = updatedConfiguration;
         this.repositoryRoot = configuration.getString(key + "repositoryRoot");
-        this.configuration = configuration;
-        this.setGitConfiguration(Environments.getGitConfig());
-        String provider = Environment.getConfiguration().getString(key + "provider");
+        String provider = Environment.getInstance().getConfiguration().getString(getProviderConfigurationKey());
         if (provider.equalsIgnoreCase(RepositoryProvider.YAML.name())) {
             this.setProvider(RepositoryProvider.YAML);
         } else {
@@ -55,11 +72,8 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
     }
 
     @Override
-    void save() {
-        configuration.setProperty(key + "provider", this.getProvider().toString());
-        configuration.setProperty(key + "repositoryRoot", this.repositoryRoot);
-        this.getGitConfiguration().save();
-        Environment.save();
+    void initialize() {
+
     }
 
     /**
@@ -71,7 +85,7 @@ public class RepositoryConfigurationObject extends AbstractConfigurationObject {
         String repositoryRoot = this.repositoryRoot;
         if (repositoryRoot == null || repositoryRoot.isEmpty()) {
             repositoryRoot = Util.determineAndCreateRepositoryPath().toString();
-            Environments.getRepositoryConfig().setRepositoryRoot(repositoryRoot);
+            Environments.getInstance().getRepositoryConfig().setRepositoryRoot(repositoryRoot);
             return repositoryRoot;
         } else {
             return repositoryRoot;

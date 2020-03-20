@@ -32,7 +32,7 @@ public class FileBasedRepositoryConfiguration {
     }
 
     public FileBasedRepositoryConfiguration(@NonNull Path repositoryPath) {
-        this(repositoryPath, Environments.getRepositoryConfig().getProvider());
+        this(repositoryPath, Environments.getInstance().getRepositoryConfig().getProvider());
     }
 
     private FileBasedRepositoryConfiguration(@NonNull Path repositoryPath, RepositoryConfigurationObject.RepositoryProvider repositoryProvider) {

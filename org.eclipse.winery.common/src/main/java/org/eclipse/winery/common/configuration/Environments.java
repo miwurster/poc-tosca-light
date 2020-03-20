@@ -15,10 +15,15 @@
 package org.eclipse.winery.common.configuration;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.configuration2.YAMLConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,14 +39,37 @@ public final class Environments {
     private static RepositoryConfigurationObject repositoryConfigurationObject;
     private static GitConfigurationObject gitConfigurationObject;
     private static UiConfigurationObject uiConfigurationObject;
+    private static AccountabilityConfigurationObject accountabilityConfigurationObject;
+    private static Environments instance;
+    private static ArrayList<ConfigurationChangeListener> configurationChangeListeners = new ArrayList<>();
 
     private Environments() {
+        accountabilityConfigurationObject = new AccountabilityConfigurationObject(Environment.getInstance().getConfiguration());
+        gitConfigurationObject = new GitConfigurationObject(Environment.getInstance().getConfiguration());
+        repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration(), gitConfigurationObject);
+        uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration());
     }
 
-    public static void clearInstances() {
-        repositoryConfigurationObject = null;
-        gitConfigurationObject = null;
-        uiConfigurationObject = null;
+    public static Environments getInstance() {
+        if (Objects.isNull(instance)) {
+            instance = new Environments();
+            initializeConfigurationObjects();
+        }
+        return instance;
+    }
+
+    static void updateInstances(YAMLConfiguration updatedConfiguration) {
+        repositoryConfigurationObject.update(updatedConfiguration);
+        gitConfigurationObject.update(updatedConfiguration);
+        uiConfigurationObject.update(updatedConfiguration);
+        accountabilityConfigurationObject.update(updatedConfiguration);
+    }
+
+    static void initializeConfigurationObjects() {
+        uiConfigurationObject.initialize();
+        repositoryConfigurationObject.initialize();
+        gitConfigurationObject.initialize();
+        accountabilityConfigurationObject.initialize();
     }
 
     /**
@@ -50,10 +78,10 @@ public final class Environments {
      * @return Returns an UiConfigurationObject object which represtents the ui configuration of the winery.yml
      * configuration file.
      */
-    public static UiConfigurationObject getUiConfig() {
-        checkForUpdateAndClear();
+    public UiConfigurationObject getUiConfig() {
+        checkForUpdateAndUpdateInstances();
         if (uiConfigurationObject == null) {
-            uiConfigurationObject = new UiConfigurationObject(Environment.getConfiguration());
+            uiConfigurationObject = new UiConfigurationObject(Environment.getInstance().getConfiguration());
         }
         return uiConfigurationObject;
     }
@@ -64,10 +92,10 @@ public final class Environments {
      * @return Returns a GitConfigurationObject object which represtents the git configuration of the winery.yml
      * configuration file.
      */
-    public static GitConfigurationObject getGitConfig() {
-        checkForUpdateAndClear();
+    public GitConfigurationObject getGitConfig() {
+        checkForUpdateAndUpdateInstances();
         if (gitConfigurationObject == null) {
-            gitConfigurationObject = new GitConfigurationObject(Environment.getConfiguration());
+            gitConfigurationObject = new GitConfigurationObject(Environment.getInstance().getConfiguration());
         }
         return gitConfigurationObject;
     }
@@ -78,12 +106,27 @@ public final class Environments {
      * @return Returns a RepositoryConfigurationObject object which represtents the repository configuration of the
      * winery.yml configuration file.
      */
-    public static RepositoryConfigurationObject getRepositoryConfig() {
-        checkForUpdateAndClear();
+    public RepositoryConfigurationObject getRepositoryConfig() {
+        checkForUpdateAndUpdateInstances();
         if (repositoryConfigurationObject == null) {
-            repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getConfiguration());
+            repositoryConfigurationObject = new RepositoryConfigurationObject(Environment.getInstance().getConfiguration(),
+                getGitConfig());
         }
         return repositoryConfigurationObject;
+    }
+
+    /**
+     * Returns an instance of the ui configuration.
+     *
+     * @return Returns an AccountabilityConfigurationObject object which represtents the accountability configuration of
+     * the winery.yml configuration file.
+     */
+    public AccountabilityConfigurationObject getAccountabilityConfig() {
+        checkForUpdateAndUpdateInstances();
+        if (accountabilityConfigurationObject == null) {
+            accountabilityConfigurationObject = new AccountabilityConfigurationObject(Environment.getInstance().getConfiguration());
+        }
+        return accountabilityConfigurationObject;
     }
 
     /**
@@ -91,9 +134,9 @@ public final class Environments {
      *
      * @return the version declared in the pom file in case of an exception returns the version 0.0.0
      */
-    public static String getVersion() {
+    public String getVersion() {
         try {
-            return new Environments().getVersionFromProperties();
+            return this.getVersionFromProperties();
         } catch (IOException e) {
             LOGGER.debug("Error while retrieving version from pom.", e);
         }
@@ -101,13 +144,27 @@ public final class Environments {
     }
 
     /**
-     * Checks the configuration file for an update and clears the configuration object instances, so that they will be
-     * reloaded from the changed configuration file when their corresponding getter is invoked.
+     * Checks the configuration file for an update and updates the configuration object instances, so that they will be
+     * up to date with the new changes
      */
-    private static void checkForUpdateAndClear() {
-        if (Environment.checkConfigurationForUpdate()) {
-            Environments.clearInstances();
+    private void checkForUpdateAndUpdateInstances() {
+        if (Environment.getInstance().checkConfigurationForUpdate()) {
+            Environment.getInstance().updateConfig();
+            Environments.updateInstances(Environment.getInstance().getConfiguration());
+            afterUpdateNotify();
         }
+    }
+
+    public void addConfigurationChangeListener(ConfigurationChangeListener newListener) {
+        configurationChangeListeners.add(newListener);
+    }
+
+    public void removeConfigurationChangeListener(ConfigurationChangeListener toRemoveListener) {
+        configurationChangeListeners.remove(toRemoveListener);
+    }
+
+    private void afterUpdateNotify() {
+        configurationChangeListeners.forEach(configurationChangeListener -> configurationChangeListener.update());
     }
 
     /**
@@ -115,8 +172,8 @@ public final class Environments {
      *
      * @return an instance of FileBasedRepositoryConfiguration
      */
-    public static FileBasedRepositoryConfiguration getFilebasedRepositoryConfiguration() {
-        Path path = Paths.get(getRepositoryConfig().getRepositoryRoot());
+    public FileBasedRepositoryConfiguration getFilebasedRepositoryConfiguration() {
+        Path path = Paths.get(this.getRepositoryConfig().getRepositoryRoot());
         return new FileBasedRepositoryConfiguration(path);
     }
 
@@ -125,9 +182,9 @@ public final class Environments {
      *
      * @return an instance of GitBasedRepositoryConfiguration
      */
-    public static GitBasedRepositoryConfiguration getGitBasedRepositoryConfiguration() {
+    public Optional<GitBasedRepositoryConfiguration> getGitBasedRepsitoryConfiguration() {
         final FileBasedRepositoryConfiguration filebasedRepositoryConfiguration = getFilebasedRepositoryConfiguration();
-        return new GitBasedRepositoryConfiguration(getGitConfig().isAutocommit(), filebasedRepositoryConfiguration);
+        return Optional.of(new GitBasedRepositoryConfiguration(this.getGitConfig().isAutocommit(), filebasedRepositoryConfiguration));
     }
 
     /**
@@ -144,4 +201,14 @@ public final class Environments {
         properties.load(this.getClass().getClassLoader().getResourceAsStream("version.properties"));
         return properties.getProperty("version");
     }
+
+    /**
+     * Invokes the reloadAccountabilityConfiguration method from Environment.
+     */
+    public static void resetAccountabilityConfiguration() throws IOException {
+        try (InputStream inputStream = Environment.getDefaultConfigInputStream()) {
+            Environment.getInstance().reloadAccountabilityConfiguration(inputStream);
+        }
+    }
 }
+ 
