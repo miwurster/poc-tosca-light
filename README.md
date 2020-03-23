@@ -9,6 +9,11 @@ Winery is also part of the OpenTOSCA ecosystem where more information is availab
 
 
 
+![](docs/tosca-light/st-lite.png)
+
+![](docs/tosca-light/st-lite-log.png)
+
+
 
 **The code and the linked libraries are NOT approved by Eclipse Legal.**
 
