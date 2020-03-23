@@ -9,10 +9,12 @@ Winery is also part of the OpenTOSCA ecosystem where more information is availab
 
 The proof of concept implemenation is based on Eclipse Winery.
 The modeling tools has been extended to check existing and imported Service Templates for TOSCA Light compliancy.
-The first screenshot show the Service Template view of such a TOSCA Light compliant blueprint.
+The first screenshot shows the Service Template view of such a TOSCA Light compliant blueprint.
 Winery will flag it to be TOSCA Light compliant by adding a special logo to the top left header.
 
 ![](docs/tosca-light/st-lite.png)
+
+If a Service Template does not comply with TOSCA Light, Winery has been extended to produce an "error log" as depicted in the screenshot.
 
 ![](docs/tosca-light/st-lite-log.png)
 
