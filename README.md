@@ -23,8 +23,9 @@ If a Service Template does not comply with TOSCA Light, Winery has been extended
 
 Check out the repository and execute the following commands to build and run the POC implemenation:
 
-1. `docker build -t winery .`.
-2. `docker run -p 8080:8080 winery` (you may `-v <path_on_your_host>:/var/opentosca/repository` to mount an existing modeling repository)
+1. `docker build -t winery .`
+2. `docker run -p 8080:8080 winery`
+   (you may add the option `-v <path_on_your_host>:/var/opentosca/repository` to mount an existing modeling repository)
 
 Winery finally runs on <http://localhost:8080>.
 
