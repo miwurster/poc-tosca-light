@@ -19,6 +19,17 @@ If a Service Template does not comply with TOSCA Light, Winery has been extended
 ![](docs/tosca-light/st-lite-log.png)
 
 
+## Running via Docker
+
+Check out the repository and execute the following commands to build and run the POC implemenation:
+
+1. `docker build -t winery .`.
+2. `docker run -p 8080:8080 winery` (you may `-v <path_on_your_host>:/var/opentosca/repository` to mount an existing modeling repository)
+
+Winery finally runs on <http://localhost:8080>.
+
+
+## Disclaimer
 
 **The code and the linked libraries are NOT approved by Eclipse Legal.**
 
@@ -26,19 +37,6 @@ If a Service Template does not comply with TOSCA Light, Winery has been extended
 
 Both development and user documentation is rendered at <https://eclipse.github.io/winery/>.
 The source for the documentation can be found at [docs/](docs).
-
-## Running Winery
-
-### Running via Docker
-
-1. `docker build -t winery .`.
-   In case, there are issues, you can also try `docker build --no-cache -t winery .`
-2. `docker run -p 8080:8080 winery` to run Winery on <http://localhost:8080>
-
-You can also use the pre-built image and bin it to a local repository:
-
-    docker run -it -p 8080:8080 -v $(pwd):/var/opentosca/repository opentosca/winery
-
 
 ## Acknowledgements
 
