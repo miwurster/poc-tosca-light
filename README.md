@@ -7,7 +7,10 @@ Winery is a Web-based environment to graphically model TOSCA topologies and plan
 It is an Eclipse project and thus support is available through its project page <https://eclipse.org/winery>.
 Winery is also part of the OpenTOSCA ecosystem where more information is available at <http://www.opentosca.org>.
 
-
+The proof of concept implemenation is based on Eclipse Winery.
+The modeling tools has been extended to check existing and imported Service Templates for TOSCA Light compliancy.
+The first screenshot show the Service Template view of such a TOSCA Light compliant blueprint.
+Winery will flag it to be TOSCA Light compliant by adding a special logo to the top left header.
 
 ![](docs/tosca-light/st-lite.png)
 
@@ -33,53 +36,6 @@ The source for the documentation can be found at [docs/](docs).
 You can also use the pre-built image and bin it to a local repository:
 
     docker run -it -p 8080:8080 -v $(pwd):/var/opentosca/repository opentosca/winery
-
-### Running Winery CLI via Docker
-
-1. `docker build -t winery-cli -f Dockerfile.cli .`
-2. `docker run -v $(pwd):/root/winery-repository -it winery-cli` to check `${pwd}` for consistency.
-
-You can also use the pre-built image:
-
-- Linux: `docker run -it -v $(pwd):/root/winery-repository opentosca/winery-cli`
-- Windows: `docker run -it -v ${PWD}:/root/winery-repository opentosca/winery-cli`
-
-In case you want to have verbose information, you can execute following:
-
-- Linux: `docker run -it -v $(pwd):/root/winery-repository opentosca/winery-cli winery -v`
-- Windows: `docker run -it -v ${PWD}:/root/winery-repository opentosca/winery-cli winery -v`
-
-Currently supported CLI arguments:
-
-```
-usage: winery
- -h,--help         prints this help
- -p,--path <arg>   use given path as repository path
- -v,--verbose      be verbose: Output the checked elements
-```
-
-## Next steps
-
-Winery currently is far from being a production ready modeling tool.
-The next steps are:
-
-* Add more usability features to the topology modeler
-* Add support for multiple repositories
-* Develop a plugin-system for user-defined editors. For instance, a constraint has a type. If a type is known to Winery, it can present a specific plugin to edit the type content instead of a generic XML editor.
-* Add a real DAO layer to enable querying the available TOSCA contents using SQL or similar query language
-
-## Known issues
-
-* XSD Type declarations are not directly supported
-** Declared types are converted to imports during a CSAR Import
-** Editing of XSDs is not possible
-* **The XSD of OASIS TOSCA v1.0 has been modified** - see https://github.com/eclipse/winery/issues/71
-  * An Implementation Artifact may carry a `name` attribute
-  * The contents of properties of Boundary Definitions are processed in `lax` mode
-  * New elements have been added:
-    * Pattern Refinement Models
-    * Compliance Rules
-* See https://github.com/eclipse/winery/issues
 
 
 ## Acknowledgements
